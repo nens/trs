@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from setuptools import setup
 
 version = '0.1dev'
@@ -10,6 +11,7 @@ long_description = '\n\n'.join([
 
 install_requires = [
     'setuptools',
+    'Django >= 1.6b4',
     ],
 
 tests_require = [
