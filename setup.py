@@ -12,6 +12,7 @@ long_description = '\n\n'.join([
 install_requires = [
     'setuptools',
     'Django >= 1.6b4',
+    'django-extensions',
     ],
 
 tests_require = [
