@@ -13,6 +13,7 @@ install_requires = [
     'setuptools',
     'Django >= 1.6b4',
     'django-extensions',
+    'south',
     ],
 
 tests_require = [
