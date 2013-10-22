@@ -5,3 +5,12 @@ body, h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 code, pre {
     font-family: "Fira mono",Monaco,Menlo,Consolas,"Courier New",monospace;
 }
+
+/* Bigger "logo" */
+a.navbar-brand {
+    font-weight: 600;
+    font-size: 50px;
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 50px;
+}
