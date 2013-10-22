@@ -1,17 +1,20 @@
 {
-  "name": "trs",
-  "version": "0.1dev",
-  "homepage": "https://github.com/nens/trs",
-  "authors": [
-    "Reinout van Rees <reinout@vanrees.org>"
-  ],
-  "license": "GPL",
-  "private": true,
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
-  ]
+    "name": "trs",
+    "version": "0.1dev",
+    "homepage": "https://github.com/nens/trs",
+    "authors": [
+        "Reinout van Rees <reinout@vanrees.org>"
+    ],
+    "license": "GPL",
+    "private": true,
+    "dependencies": {
+        "bootstrap": "v3.0.0"
+    },
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ]
 }
