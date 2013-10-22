@@ -27,4 +27,8 @@ INSTALLED_APPS = [
 SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
 BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, '..'))
 STATIC_ROOT = os.path.join(BUILDOUT_DIR, 'var', 'static')
+STATICFILES_DIRS = [
+    os.path.join(BUILDOUT_DIR, 'bower_components'),
+    # ^^^ bower-managed files.
+]
 STATIC_URL = '/static/'
