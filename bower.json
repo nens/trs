@@ -8,7 +8,8 @@
     "license": "GPL",
     "private": true,
     "dependencies": {
-        "bootstrap": "v3.0.0"
+        "bootstrap": "v3.0.0",
+        "fira": "v0.1.0"
     },
     "ignore": [
         "**/.*",
