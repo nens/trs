@@ -4,5 +4,4 @@ python:
 install:
   - "python bootstrap.py"
   - "bin/buildout"
-script:
-  - "bin/django test trs"
+script: bin/django test trs
