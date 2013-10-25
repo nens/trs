@@ -1,7 +1,13 @@
 language: python
 python:
   - "3.3"
+notifications:
+  irc:
+    channels: "irc.freenode.org#nens"
+    on_success: change
+  email: false
 install:
+  - deactivate
   - "python bootstrap.py"
   - "bin/buildout"
 script: bin/django test trs
