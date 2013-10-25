@@ -1,7 +1,15 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # TODO: add setting ADMIN_USER_CAN_DELETE_PERSONS_AND_PROJECTS
 # TODO: add django-appconf
+
+# Hours are always an integer. You cannot work 2.5 hours. At least, that's
+# what they assure me right now. I'm only 60% sure that it stays that way, so
+# I use DecimalField instead of IntegerField. I want to use it for targets,
+# too. 999999.99 should be possible, so that's 8 digits with 2 decimal places.
+MAX_DIGITS = 8
+DECIMAL_PLACES = 2
 
 
 class Person(models.Model):
@@ -51,3 +59,42 @@ class Project(models.Model):
 
     def __str__(self):
         return "Project {}".format(self.code)
+
+
+class EventBase(models.Model):
+    added = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="toegevoegd op")
+    added_by = models.ForeignKey(
+        User,
+        blank=True,
+        null=True,
+        #editable=False,
+        verbose_name="toegevoegd door")
+    year = models.IntegerField(
+        verbose_name="jaar")
+    week = models.IntegerField(
+        verbose_name="week")
+
+    class Meta:
+        abstract = True
+        ordering = ['added']
+
+
+class PersonChange(EventBase):
+    hours_per_week = models.DecimalField(
+        max_digits=MAX_DIGITS,
+        decimal_places=DECIMAL_PLACES,
+        blank=True,
+        null=True,
+        verbose_name="uren per week")
+    target = models.DecimalField(
+        max_digits=MAX_DIGITS,
+        decimal_places=DECIMAL_PLACES,
+        blank=True,
+        null=True,
+        verbose_name="target")
+
+    class Meta:
+        verbose_name = "verandering aan persoon"
+        verbose_name_plural = "veranderingen aan personen"

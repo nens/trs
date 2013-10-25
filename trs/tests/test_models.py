@@ -43,3 +43,11 @@ class ProjectTestCase(TestCase):
         project2.save()
         self.assertEqual(models.Project.objects.all()[0].code,
                          'P0123')
+
+
+class PersonChangeTestCase(TestCase):
+
+    def test_smoke(self):
+        person_change = models.PersonChange(year=1972, week=51)
+        person_change.save()
+        self.assertTrue(person_change)
