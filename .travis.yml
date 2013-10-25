@@ -7,7 +7,7 @@ notifications:
     on_success: change
   email: false
 install:
-  - "pip update setuptools"
+  - "pip install -u setuptools"
   - "python bootstrap.py"
   - "bin/buildout"
 script: bin/django test trs
