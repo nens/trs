@@ -10,4 +10,7 @@ install:
   - "pip install -U setuptools"
   - "python bootstrap.py"
   - "bin/buildout"
-script: bin/django test trs
+script:
+  - "bin/django test trs"
+after_success:
+  - bin/coveralls

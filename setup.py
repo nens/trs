@@ -20,6 +20,7 @@ tests_require = [
     'nose',
     'coverage',
     'django-nose',
+    'coveralls',
     ]
 
 setup(name='trs',
