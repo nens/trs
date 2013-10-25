@@ -19,6 +19,7 @@ install_requires = [
 tests_require = [
     'nose',
     'coverage',
+    'django-nose',
     ]
 
 setup(name='trs',

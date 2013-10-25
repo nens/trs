@@ -17,12 +17,14 @@ INSTALLED_APPS = [
     'south',
     'django.contrib.staticfiles',
     'django_extensions',
+    'django_nose',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
     ]
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
 BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, '..'))
