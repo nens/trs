@@ -2,7 +2,7 @@ language: python
 python:
   - "3.3"
 install:
-    python bootstrap.py
-    bin/buildout
+  - "python bootstrap.py"
+  - "bin/buildout"
 script:
-    bin/django test trs
+  - "bin/django test trs"
