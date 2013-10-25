@@ -5,11 +5,15 @@ from django.db import models
 
 
 class Person(models.Model):
-    slug = models.SlugField(
-        verbose_name="ID voor in de URL")
     name = models.CharField(
         verbose_name="naam",
         max_length=255)
+    login_name = models.CharField(
+        verbose_name="inlognaam bij N&S",
+        max_length=255,
+        help_text="Dit is dus het eerste deel van het emailadres.")
+    slug = models.SlugField(
+        verbose_name="ID voor in de URL")
     description = models.CharField(
         verbose_name="omschrijving",
         blank=True,
@@ -27,11 +31,11 @@ class Person(models.Model):
 
 
 class Project(models.Model):
-    slug = models.SlugField(
-        verbose_name="ID voor in de URL")
     code = models.CharField(
         verbose_name="projectcode",
         max_length=255)
+    slug = models.SlugField(
+        verbose_name="ID voor in de URL")
     description = models.CharField(
         verbose_name="omschrijving",
         blank=True,

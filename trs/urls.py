@@ -5,6 +5,7 @@ from django.contrib import admin
 
 from trs import views
 
+admin.autodiscover()
 
 urlpatterns = patterns(
     '',
