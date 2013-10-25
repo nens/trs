@@ -17,6 +17,9 @@ class Person(models.Model):
     # Description on persons is useful for noting that someone doesn't work
     # for us anymore, for instance. And other corner cases.
 
+    def __str__(self):
+        return "Person {}".format(self.name)
+
 
 class Project(models.Model):
     slug = models.SlugField(
@@ -31,3 +34,6 @@ class Project(models.Model):
     added = models.DateTimeField(
         auto_now_add=True,
         verbose_name="toegevoegd op")
+
+    def __str__(self):
+        return "Project {}".format(self.code)

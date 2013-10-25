@@ -12,6 +12,10 @@ class PersonTestCase(TestCase):
         person.save()
         self.assertTrue(person)
 
+    def test_representation(self):
+        person = models.Person(name='Reinout')
+        self.assertEqual(str(person), 'Person Reinout')
+
 
 class ProjectTestCase(TestCase):
 
@@ -19,3 +23,7 @@ class ProjectTestCase(TestCase):
         project = models.Project()
         project.save()
         self.assertTrue(project)
+
+    def test_representation(self):
+        project = models.Project(code='P1234')
+        self.assertEqual(str(project), 'Project P1234')
