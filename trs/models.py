@@ -172,3 +172,35 @@ class Booking(EventBase):
     class Meta:
         verbose_name = "boeking"
         verbose_name_plural = "boekingen"
+
+
+class WorkAssignment(EventBase):
+    hours = models.DecimalField(
+        max_digits=MAX_DIGITS,
+        decimal_places=DECIMAL_PLACES,
+        blank=True,
+        null=True,
+        verbose_name="uren")
+    hourly_tariff = models.DecimalField(
+        max_digits=MAX_DIGITS,
+        decimal_places=DECIMAL_PLACES,
+        blank=True,
+        null=True,
+        verbose_name="uurtarief")
+
+    assigned_on = models.ForeignKey(
+        Project,
+        blank=True,
+        null=True,
+        verbose_name="toegekend op",
+        related_name="work_assignments")
+    assigned_to = models.ForeignKey(
+        Person,
+        blank=True,
+        null=True,
+        verbose_name="toegekend aan",
+        related_name="work_assignments")
+
+    class Meta:
+        verbose_name = "toekenning van werk"
+        verbose_name_plural = "toekenningen van werk"

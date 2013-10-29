@@ -19,7 +19,12 @@ class BookingAdmin(admin.ModelAdmin):
     pass
 
 
+class WorkAssignmentAdmin(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(models.Person, PersonAdmin)
 admin.site.register(models.Project, ProjectAdmin)
 admin.site.register(models.PersonChange, PersonChangeAdmin)
 admin.site.register(models.Booking, BookingAdmin)
+admin.site.register(models.WorkAssignment, WorkAssignmentAdmin)
