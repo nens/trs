@@ -11,5 +11,10 @@ class ProjectAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('code',)}
 
 
+class PersonChangeAdmin(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(models.Person, PersonAdmin)
 admin.site.register(models.Project, ProjectAdmin)
+admin.site.register(models.PersonChange, PersonChangeAdmin)

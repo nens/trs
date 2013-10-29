@@ -61,6 +61,14 @@ class Person(models.Model):
         return mark_safe(render_to_string('trs/person-widget.html',
                                           {'person': self}))
 
+    def hours_per_week(self):
+        return self.person_changes.all().aggregate(
+            models.Sum('hours_per_week'))['hours_per_week__sum']
+
+    def target(self):
+        return self.person_changes.all().aggregate(
+            models.Sum('target'))['target__sum']
+
 
 class Project(models.Model):
     code = models.CharField(
@@ -126,6 +134,14 @@ class PersonChange(EventBase):
         blank=True,
         null=True,
         verbose_name="target")
+
+    person = models.ForeignKey(
+        Person,
+        blank=True,
+        null=True,
+        verbose_name="persoon",
+        help_text="persoon waar de verandering voor is",
+        related_name="person_changes")
 
     class Meta:
         verbose_name = "verandering aan persoon"
