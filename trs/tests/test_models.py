@@ -20,6 +20,10 @@ class PersonTestCase(TestCase):
         person = models.Person(name='Reinout', slug='reinout')
         self.assertEqual(person.get_absolute_url(), '/persons/reinout/')
 
+    def test_as_widget(self):
+        person = models.Person(name='Reinout', slug='reinout')
+        self.assertTrue(person.as_widget())
+
     def test_sorting(self):
         person1 = models.Person(name='Reinout')
         person1.save()
@@ -43,6 +47,10 @@ class ProjectTestCase(TestCase):
     def test_get_absolute_url(self):
         project = models.Project(code='P1234', slug='P1234')
         self.assertEqual(project.get_absolute_url(), '/projects/P1234/')
+
+    def test_as_widget(self):
+        project = models.Project(code='P1234', slug='P1234')
+        self.assertTrue(project.as_widget())
 
     def test_sorting(self):
         project1 = models.Project(code='P1234')
