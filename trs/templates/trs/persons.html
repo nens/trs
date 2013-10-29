@@ -1,0 +1,10 @@
+{% extends "trs/base.html" %}
+
+{% block main-column %}
+  <h1>Wij</h1>
+  <ul>
+    {% for person in view.persons %}
+      <li>{{ person.as_widget }}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

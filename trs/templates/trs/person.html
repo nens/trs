@@ -1,0 +1,11 @@
+{% extends "trs/base.html" %}
+
+{% block main-column %}
+  <h1>{{ view.person.name }}</h1>
+  <dl>
+    <dt>Target</dt>
+    <dd>{{ view.person.target }}</dd>
+    <dt>Uren per week</dt>
+    <dd>{{ view.person.hours_per_week }}</dd>
+  </dl>
+{% endblock %}
