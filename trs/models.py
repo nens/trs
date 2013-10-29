@@ -192,7 +192,7 @@ class WorkAssignment(EventBase):
         Project,
         blank=True,
         null=True,
-        verbose_name="toegekend op",
+        verbose_name="toegekend voor",
         related_name="work_assignments")
     assigned_to = models.ForeignKey(
         Person,
