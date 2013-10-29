@@ -1,3 +1,6 @@
+import re
+
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -10,6 +13,17 @@ from django.contrib.auth.models import User
 # too. 999999.99 should be possible, so that's 8 digits with 2 decimal places.
 MAX_DIGITS = 8
 DECIMAL_PLACES = 2
+YYYY_WW_FORMAT = re.compile(r"\d\d\d\d-\d\d")
+
+
+def is_year_and_week_format(value):
+    """Raise ValidationError when the value isn't in the yyyy-ww format."""
+    if not YYYY_WW_FORMAT.match(value):
+        raise ValidationError("Value not in yyyy-ww format")
+    parts = value.split('-')
+    week = int(parts[1])
+    if week < 0 or week > 53:
+        raise ValidationError("Week should be 0-53 (inclusive)")
 
 
 class Person(models.Model):
@@ -71,10 +85,11 @@ class EventBase(models.Model):
         null=True,
         #editable=False,
         verbose_name="toegevoegd door")
-    year = models.IntegerField(
-        verbose_name="jaar")
-    week = models.IntegerField(
-        verbose_name="week")
+    year_and_week = models.CharField(
+        max_length=7,  # yyyy-ww
+        db_index=True,
+        verbose_name="jaar en week",
+        validators=[is_year_and_week_format])
 
     class Meta:
         abstract = True

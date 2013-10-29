@@ -1,6 +1,6 @@
 # import unittest  # Note: this is 3.3's unittest2!
-
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 
 from trs import models
 
@@ -48,6 +48,41 @@ class ProjectTestCase(TestCase):
 class PersonChangeTestCase(TestCase):
 
     def test_smoke(self):
-        person_change = models.PersonChange(year=1972, week=51)
+        person_change = models.PersonChange(year_and_week='1972-51')
         person_change.save()
         self.assertTrue(person_change)
+
+
+class YearWeekValidatorTestCase(TestCase):
+
+    def test_correct1(self):
+        value = '1972-51'
+        self.assertEqual(models.is_year_and_week_format(value), None)
+
+    def test_correct2(self):
+        value = '1972-00'
+        self.assertEqual(models.is_year_and_week_format(value), None)
+
+    def test_correct3(self):
+        value = '1972-53'
+        self.assertEqual(models.is_year_and_week_format(value), None)
+
+    def test_faulty_format1(self):
+        value = '1972_51'
+        with self.assertRaises(ValidationError):
+            models.is_year_and_week_format(value)
+
+    def test_faulty_format2(self):
+        value = '72_51'
+        with self.assertRaises(ValidationError):
+            models.is_year_and_week_format(value)
+
+    def test_faulty_format3(self):
+        value = '1972-54'
+        with self.assertRaises(ValidationError):
+            models.is_year_and_week_format(value)
+
+    def test_faulty_format4(self):
+        value = '197251'
+        with self.assertRaises(ValidationError):
+            models.is_year_and_week_format(value)
