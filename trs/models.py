@@ -204,3 +204,24 @@ class WorkAssignment(EventBase):
     class Meta:
         verbose_name = "toekenning van werk"
         verbose_name_plural = "toekenningen van werk"
+
+
+class BudgetAssignment(EventBase):
+    budget = models.DecimalField(
+        max_digits=12,  # We don't mind a metric ton of hard cash.
+        decimal_places=DECIMAL_PLACES,
+        blank=True,
+        null=True,
+        verbose_name="uren")
+    # TODO: link to doc or so
+
+    assigned_to = models.ForeignKey(
+        Project,
+        blank=True,
+        null=True,
+        verbose_name="toegekend aan",
+        related_name="budget_assignments")
+
+    class Meta:
+        verbose_name = "toekenning van budget"
+        verbose_name_plural = "toekenningen van budget"
