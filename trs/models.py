@@ -146,3 +146,29 @@ class PersonChange(EventBase):
     class Meta:
         verbose_name = "verandering aan persoon"
         verbose_name_plural = "veranderingen aan personen"
+
+
+class Booking(EventBase):
+    hours = models.DecimalField(
+        max_digits=MAX_DIGITS,
+        decimal_places=DECIMAL_PLACES,
+        blank=True,
+        null=True,
+        verbose_name="uren")
+
+    booked_by = models.ForeignKey(
+        Person,
+        blank=True,
+        null=True,
+        verbose_name="geboekd door",
+        related_name="bookings")
+    booked_on = models.ForeignKey(
+        Project,
+        blank=True,
+        null=True,
+        verbose_name="geboekd op",
+        related_name="bookings")
+
+    class Meta:
+        verbose_name = "boeking"
+        verbose_name_plural = "boekingen"
