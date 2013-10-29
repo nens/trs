@@ -69,6 +69,30 @@ class PersonChangeTestCase(TestCase):
         self.assertTrue(person_change)
 
 
+class BookingTestCase(TestCase):
+
+    def test_smoke(self):
+        booking = models.Booking(year_and_week='1972-51')
+        booking.save()
+        self.assertTrue(booking)
+
+
+class WorkAssignmentTestCase(TestCase):
+
+    def test_smoke(self):
+        work_assignment = models.WorkAssignment(year_and_week='1972-51')
+        work_assignment.save()
+        self.assertTrue(work_assignment)
+
+
+class BudgetAssignmentTestCase(TestCase):
+
+    def test_smoke(self):
+        budget_assignment = models.BudgetAssignment(year_and_week='1972-51')
+        budget_assignment.save()
+        self.assertTrue(budget_assignment)
+
+
 class YearWeekValidatorTestCase(TestCase):
 
     def test_correct1(self):
