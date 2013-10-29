@@ -1,8 +1,11 @@
 import re
 
-from django.core.exceptions import ValidationError
-from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
+from django.db import models
+from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
 
 # TODO: add setting ADMIN_USER_CAN_DELETE_PERSONS_AND_PROJECTS
 # TODO: add django-appconf
@@ -51,6 +54,13 @@ class Person(models.Model):
     def __str__(self):
         return "Person {}".format(self.name)
 
+    def get_absolute_url(self):
+        return reverse('trs.person', kwargs={'slug': self.slug})
+
+    def as_widget(self):
+        return mark_safe(render_to_string('trs/person-widget.html',
+                                          {'person': self}))
+
 
 class Project(models.Model):
     code = models.CharField(
@@ -93,7 +103,7 @@ class EventBase(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ['added']
+        ordering = ['year_and_week', 'added']
 
 
 class PersonChange(EventBase):

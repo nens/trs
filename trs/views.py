@@ -1,5 +1,7 @@
 from django.views.generic.base import TemplateView
 
+from trs import models
+
 
 class BaseView(TemplateView):
     template_name = 'trs/base.html'
@@ -27,3 +29,19 @@ class ProjectsView(BaseView):
 
     """
     template_name = 'trs/home.html'
+
+
+class PersonsView(BaseView):
+    template_name = 'trs/persons.html'
+
+    @property
+    def persons(self):
+        return models.Person.objects.all()
+
+
+class PersonView(BaseView):
+    template_name = 'trs/person.html'
+
+    @property
+    def person(self):
+        return models.Person.objects.get(slug=self.kwargs['slug'])

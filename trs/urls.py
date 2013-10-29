@@ -13,4 +13,10 @@ urlpatterns = patterns(
     url(r'^$',
         views.HomeView.as_view(),
         name='trs.home'),
+    url(r'^persons/$',
+        views.PersonsView.as_view(),
+        name='trs.persons'),
+    url(r'^persons/(?P<slug>\w+)/$',
+        views.PersonView.as_view(),
+        name='trs.person'),
     )
