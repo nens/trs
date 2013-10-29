@@ -19,4 +19,10 @@ urlpatterns = patterns(
     url(r'^persons/(?P<slug>\w+)/$',
         views.PersonView.as_view(),
         name='trs.person'),
+    url(r'^projects/$',
+        views.ProjectsView.as_view(),
+        name='trs.projects'),
+    url(r'^projects/(?P<slug>\w+)/$',
+        views.ProjectView.as_view(),
+        name='trs.project'),
     )

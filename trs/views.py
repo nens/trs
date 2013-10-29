@@ -12,25 +12,6 @@ class HomeView(BaseView):
     template_name = 'trs/home.html'
 
 
-class ProjectsView(BaseView):
-    """Show project list and individual projects.
-
-    TODO: thinkwork.
-
-    A single page for showing a list and for showing individual projects? Een
-    soort deel-single-page-app?
-
-    Then what are the specific things that this view ought to do? Configure
-    the overview column, for instance?
-
-    Template snippets klaarzetten?
-
-    => djangorestframework, angularjs :-)
-
-    """
-    template_name = 'trs/home.html'
-
-
 class PersonsView(BaseView):
     template_name = 'trs/persons.html'
 
@@ -45,3 +26,19 @@ class PersonView(BaseView):
     @property
     def person(self):
         return models.Person.objects.get(slug=self.kwargs['slug'])
+
+
+class ProjectsView(BaseView):
+    template_name = 'trs/projects.html'
+
+    @property
+    def projects(self):
+        return models.Project.objects.all()
+
+
+class ProjectView(BaseView):
+    template_name = 'trs/project.html'
+
+    @property
+    def project(self):
+        return models.Project.objects.get(slug=self.kwargs['slug'])

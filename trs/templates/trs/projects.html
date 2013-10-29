@@ -1,0 +1,10 @@
+{% extends "trs/base.html" %}
+
+{% block main-column %}
+  <h1>Projecten</h1>
+  <ul>
+    {% for project in view.projects %}
+      <li>{{ project.as_widget }}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

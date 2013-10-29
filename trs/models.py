@@ -84,6 +84,13 @@ class Project(models.Model):
     def __str__(self):
         return "Project {}".format(self.code)
 
+    def get_absolute_url(self):
+        return reverse('trs.project', kwargs={'slug': self.slug})
+
+    def as_widget(self):
+        return mark_safe(render_to_string('trs/project-widget.html',
+                                          {'project': self}))
+
 
 class EventBase(models.Model):
     added = models.DateTimeField(
