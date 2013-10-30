@@ -42,3 +42,7 @@ class ProjectView(BaseView):
     @property
     def project(self):
         return models.Project.objects.get(slug=self.kwargs['slug'])
+
+
+class BookingView(BaseView):
+    template_name = 'trs/booking.html'
