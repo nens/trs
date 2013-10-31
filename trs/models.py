@@ -33,6 +33,12 @@ class Person(models.Model):
     name = models.CharField(
         verbose_name="naam",
         max_length=255)
+    user = models.ForeignKey(
+        User,
+        blank=True,
+        null=True,
+        verbose_name="gebruiker",
+        help_text="De interne (django) gebruiker die deze persoon is.")
     login_name = models.CharField(
         verbose_name="inlognaam bij N&S",
         max_length=255,
