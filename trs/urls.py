@@ -28,4 +28,7 @@ urlpatterns = patterns(
     url(r'^booking/$',
         views.BookingView.as_view(),
         name='trs.booking'),
+    url(r'^booking/(?P<year_and_week>\d\d\d\d-\d\d)/$',
+        views.BookingView.as_view(),
+        name='trs.booking'),
     )

@@ -2,6 +2,27 @@
 
 {% block main-column %}
   <h1>Uren boeken</h1>
+  <p>Projecten waar <i>ik, {{ view.active_person.name }}</i> op kan boeken:</p>
+
+  <table>
+    <thead>
+      <th>Code</th>
+      <th>Omschrijving</th>
+      <th>Week {{ view.active_year_week }}</th>
+      <!-- TODO: add nice week widget including hover for starting date and so -->
+    </thead>
+    <tbody>
+      {% for project in view.active_projects %}
+        <tr>
+          <td>{{ project.as_widget }}</td>
+          <td>{{ project.description }}</td>
+          <td>
+            <input size="2"></input>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endblock %}
 
 {% block overview-column %}

@@ -38,6 +38,7 @@ class Person(models.Model):
         blank=True,
         null=True,
         verbose_name="gebruiker",
+        # TODO: make unique.
         help_text="De interne (django) gebruiker die deze persoon is.")
     login_name = models.CharField(
         verbose_name="inlognaam bij N&S",
