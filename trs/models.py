@@ -16,7 +16,6 @@ from django.utils.safestring import mark_safe
 # too. 999999.99 should be possible, so that's 8 digits with 2 decimal places.
 MAX_DIGITS = 8
 DECIMAL_PLACES = 2
-YYYY_WW_FORMAT = re.compile(r"\d\d\d\d-\d\d")
 
 
 class Person(models.Model):
@@ -49,7 +48,7 @@ class Person(models.Model):
         ordering = ['name']
 
     def __str__(self):
-        return "Person {}".format(self.name)
+        return self.name
 
     def get_absolute_url(self):
         return reverse('trs.person', kwargs={'slug': self.slug})
@@ -87,7 +86,7 @@ class Project(models.Model):
         ordering = ['code']
 
     def __str__(self):
-        return "Project {}".format(self.code)
+        return self.code
 
     def get_absolute_url(self):
         return reverse('trs.project', kwargs={'slug': self.slug})
@@ -108,13 +107,21 @@ class YearWeek(models.Model):
         # Note: 1 january won't always be a monday, that's fine.
         db_index=True)
 
-    def __str__(self):
-        return "{:04d}-{:02d}".format(self.year, self.week)
-
     class Meta:
         verbose_name = "jaar/week combinatie"
         verbose_name_plural = "jaar/week combinaties"
         ordering = ['year', 'week']
+
+    def __str__(self):
+        return "{:04d}-{:02d}".format(self.year, self.week)
+
+    def get_absolute_url(self):
+        return reverse('trs.booking', kwargs={'year': self.year,
+                                              'week': self.week})
+
+    def as_widget(self):
+        return mark_safe(render_to_string('trs/year-week-widget.html',
+                                          {'year_week': self}))
 
 
 class EventBase(models.Model):

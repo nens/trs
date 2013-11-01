@@ -14,7 +14,7 @@ class PersonTestCase(TestCase):
 
     def test_representation(self):
         person = models.Person(name='Reinout')
-        self.assertEqual(str(person), 'Person Reinout')
+        self.assertEqual(str(person), 'Reinout')
 
     def test_get_absolute_url(self):
         person = models.Person(name='Reinout', slug='reinout')
@@ -42,7 +42,7 @@ class ProjectTestCase(TestCase):
 
     def test_representation(self):
         project = models.Project(code='P1234')
-        self.assertEqual(str(project), 'Project P1234')
+        self.assertEqual(str(project), 'P1234')
 
     def test_get_absolute_url(self):
         project = models.Project(code='P1234', slug='P1234')

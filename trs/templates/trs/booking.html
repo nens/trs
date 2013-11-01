@@ -8,8 +8,9 @@
     <thead>
       <th>Code</th>
       <th>Omschrijving</th>
-      <th>Week {{ view.active_year_week }}<br>
-      <span class="quiet">12 oktober</span></th>
+      {% for year_week in view.year_weeks_to_display %}
+        <th>{{ year_week.as_widget }}</th>
+      {% endfor %}
       <!-- TODO: add nice week widget including hover for starting date and so -->
     </thead>
     <tbody>
@@ -17,9 +18,12 @@
         <tr>
           <td>{{ project.as_widget }}</td>
           <td>{{ project.description }}</td>
+          <td>10</td>
+          <td>12</td>
           <td>
             <input size="2"></input>
           </td>
+          <td>0</td>
         </tr>
       {% endfor %}
     </tbody>

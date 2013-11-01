@@ -82,3 +82,7 @@ Logging = {
 TRS_START_YEAR = 2012
 TRS_END_YEAR = 2020
 # ^^^ TODO: appconf defaults.
+
+USE_L10N = True
+USE_I18N = True
+LANGUAGE_CODE = 'nl-nl'

@@ -13,6 +13,10 @@ class BaseView(TemplateView):
     title = "TRS tijdregistratiesysteem"
 
     @property
+    def today(self):
+        return datetime.date.today()
+
+    @property
     def active_person(self):
         if self.request.user.is_anonymous():
             logger.debug("Anonymous user")
@@ -73,9 +77,20 @@ class BookingView(BaseView):
     template_name = 'trs/booking.html'
 
     @property
-    def active_year_week(self):
-        from_url = self.kwargs.get('year_and_week')
-        if from_url:
-            return from_url
-        today = datetime.date.today()
-        return year_and_week_from_date(today)
+    def active_first_day(self):
+        year = self.kwargs.get('year')
+        week = self.kwargs.get('week')
+        if year is not None:  # (Week is also not None, then)
+            return models.YearWeek.objects.get(year=year, week=week).first_day
+        # Default: this week's first day.
+        this_year_week = models.YearWeek.objects.filter(
+            first_day__lte=self.today).last()
+        return this_year_week.first_day
+
+    @property
+    def year_weeks_to_display(self):
+        """Return the active YearWeek and the two previous ones."""
+        end = self.active_first_day + datetime.timedelta(days=7)
+        start = self.active_first_day - datetime.timedelta(days=2 * 7)
+        return models.YearWeek.objects.filter(first_day__lte=end).filter(
+            first_day__gte=start)
