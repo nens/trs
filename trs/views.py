@@ -8,18 +8,6 @@ from trs import models
 logger = logging.getLogger()
 
 
-def year_and_week_from_date(date):
-    """Return year and week (as string).
-
-    Adjustment to the normal ISO rules
-    (http://www.staff.science.uu.nl/~gent0113/calendar/isocalendar.htm): The
-    first or last days of the year can be in a week that belongs to the next
-    or previous year. We adjust this so that the year always matches, using
-    week 53 and week 0 when necessary."""
-    year, week = date.isocalendar()[0, 1]
-    return "%04d-%02d" % (year, week)
-
-
 class BaseView(TemplateView):
     template_name = 'trs/base.html'
     title = "TRS tijdregistratiesysteem"

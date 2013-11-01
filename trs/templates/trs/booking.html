@@ -4,11 +4,12 @@
   <h1>Uren boeken</h1>
   <p>Projecten waar <i>ik, {{ view.active_person.name }}</i> op kan boeken:</p>
 
-  <table>
+  <table class="table">
     <thead>
       <th>Code</th>
       <th>Omschrijving</th>
-      <th>Week {{ view.active_year_week }}</th>
+      <th>Week {{ view.active_year_week }}<br>
+      <span class="quiet">12 oktober</span></th>
       <!-- TODO: add nice week widget including hover for starting date and so -->
     </thead>
     <tbody>

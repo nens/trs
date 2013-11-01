@@ -77,3 +77,8 @@ Logging = {
          }
      }
 }
+# Start and end year are used for creating YearWeek objects for those years
+# with the ``bin/django update_weeks`` command.
+TRS_START_YEAR = 2012
+TRS_END_YEAR = 2020
+# ^^^ TODO: appconf defaults.

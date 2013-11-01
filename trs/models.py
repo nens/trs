@@ -107,6 +107,26 @@ class Project(models.Model):
                                           {'project': self}))
 
 
+class YearWeek(models.Model):
+    # This ought to be automatically generated.
+    year = models.IntegerField(
+        verbose_name="jaar")
+    week = models.IntegerField(
+        verbose_name="weeknummer")
+    first_day = models.DateField(
+        verbose_name="eerste maandag van de week",
+        # Note: 1 january won't always be a monday, that's fine.
+        db_index=True)
+
+    def __str__(self):
+        return "{:04d}-{:02d}".format(self.year, self.week)
+
+    class Meta:
+        verbose_name = "jaar/week combinatie"
+        verbose_name_plural = "jaar/week combinaties"
+        ordering = ['year', 'week']
+
+
 class EventBase(models.Model):
     added = models.DateTimeField(
         auto_now_add=True,
@@ -117,11 +137,11 @@ class EventBase(models.Model):
         null=True,
         #editable=False,
         verbose_name="toegevoegd door")
-    year_and_week = models.CharField(
-        max_length=7,  # yyyy-ww
-        db_index=True,
-        verbose_name="jaar en week",
-        validators=[is_year_and_week_format])
+    year_week = models.ForeignKey(
+        YearWeek,
+        blank=True,
+        null=True,
+        verbose_name="jaar en week")
 
     class Meta:
         abstract = True
