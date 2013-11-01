@@ -14,16 +14,17 @@
       <!-- TODO: add nice week widget including hover for starting date and so -->
     </thead>
     <tbody>
-      {% for project in view.active_projects %}
+      {% for line in view.lines %}
         <tr>
-          <td>{{ project.as_widget }}</td>
-          <td>{{ project.description }}</td>
-          <td>10</td>
-          <td>12</td>
+          <td>{{ line.project.as_widget }}</td>
+          <td>{{ line.project.description }}</td>
+          <td>{{ line.hours0 }}</td>
+          <td>{{ line.hours1 }}</td>
           <td>
-            <input size="2"></input>
+            <input size="2"
+                   value="{{ line.hours2 }}"></input>
           </td>
-          <td>0</td>
+          <td>{{ line.hours3 }}</td>
         </tr>
       {% endfor %}
     </tbody>

@@ -8,6 +8,7 @@ STATIC_URL = '/static/'
 ROOT_URLCONF = 'trs.urls'
 SECRET_KEY = 'sleutel van het secreet'
 DEBUG = True
+TEMPLATE_DEBUG = True
 DATABASES = {
     'default': {'ENGINE': 'django.db.backends.sqlite3',
                 'NAME': os.path.join(BUILDOUT_DIR, 'var/db/test.db')},

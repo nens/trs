@@ -77,15 +77,19 @@ class BookingView(BaseView):
     template_name = 'trs/booking.html'
 
     @property
-    def active_first_day(self):
+    def active_year_week(self):
         year = self.kwargs.get('year')
         week = self.kwargs.get('week')
         if year is not None:  # (Week is also not None, then)
-            return models.YearWeek.objects.get(year=year, week=week).first_day
+            return models.YearWeek.objects.get(year=year, week=week)
         # Default: this week's first day.
         this_year_week = models.YearWeek.objects.filter(
             first_day__lte=self.today).last()
-        return this_year_week.first_day
+        return this_year_week
+
+    @property
+    def active_first_day(self):
+        return self.active_year_week.first_day
 
     @property
     def year_weeks_to_display(self):
@@ -94,3 +98,21 @@ class BookingView(BaseView):
         start = self.active_first_day - datetime.timedelta(days=2 * 7)
         return models.YearWeek.objects.filter(first_day__lte=end).filter(
             first_day__gte=start)
+
+    @property
+    def lines(self):
+        """Return project plus a set of four hours."""
+        result = []
+        for project in self.active_projects:
+            line = {'project': project}
+            for index, year_week in enumerate(self.year_weeks_to_display):
+                booked = models.Booking.objects.filter(
+                    year_week=year_week,
+                    booked_by=self.active_person,
+                    booked_on=project) #.value_list('hours', flat=True)
+                booked = sum([item.hours for item in booked])
+                # TODO: I couldn't get .aggregate(Sum()) to work...
+                key = 'hours%s' % index
+                line[key] = booked
+            result.append(line)
+        return result
