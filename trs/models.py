@@ -7,7 +7,7 @@ from django.db import models
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
-# TODO: add setting ADMIN_USER_CAN_DELETE_PERSONS_AND_PROJECTS
+# TODO: add setting TRS_ADMIN_USER_CAN_DELETE_PERSONS_AND_PROJECTS
 # TODO: add django-appconf
 
 # Hours are always an integer. You cannot work 2.5 hours. At least, that's

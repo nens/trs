@@ -8,8 +8,11 @@
     <thead>
       <th>Code</th>
       <th>Omschrijving</th>
+      <th>Beschikbaar</th>
+      <th>Geboekt</th>
       {% for year_week in view.year_weeks_to_display %}
         <th>{{ year_week.as_widget }}</th>
+        <!-- TODO: give feedback in widget if you need to book in that week -->
       {% endfor %}
       <!-- TODO: add nice week widget including hover for starting date and so -->
     </thead>
@@ -18,6 +21,8 @@
         <tr>
           <td>{{ line.project.as_widget }}</td>
           <td>{{ line.project.description }}</td>
+          <td>{{ line.available }}</td>
+          <td>{{ line.already_booked }}</td>
           <td>{{ line.hours0 }}</td>
           <td>{{ line.hours1 }}</td>
           <td>
