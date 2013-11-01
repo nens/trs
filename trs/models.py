@@ -19,16 +19,6 @@ DECIMAL_PLACES = 2
 YYYY_WW_FORMAT = re.compile(r"\d\d\d\d-\d\d")
 
 
-def is_year_and_week_format(value):
-    """Raise ValidationError when the value isn't in the yyyy-ww format."""
-    if not YYYY_WW_FORMAT.match(value):
-        raise ValidationError("Value not in yyyy-ww format")
-    parts = value.split('-')
-    week = int(parts[1])
-    if week < 0 or week > 53:
-        raise ValidationError("Week should be 0-53 (inclusive)")
-
-
 class Person(models.Model):
     name = models.CharField(
         verbose_name="naam",
