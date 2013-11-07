@@ -25,4 +25,10 @@ urlpatterns = patterns(
     url(r'^projects/(?P<slug>\w+)/$',
         views.ProjectView.as_view(),
         name='trs.project'),
+    url(r'^booking/$',
+        views.BookingView.as_view(),
+        name='trs.booking'),
+    url(r'^booking/(?P<year>\d\d\d\d)-(?P<week>\d\d)/$',
+        views.BookingView.as_view(),
+        name='trs.booking'),
     )

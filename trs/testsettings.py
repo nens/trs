@@ -8,6 +8,7 @@ STATIC_URL = '/static/'
 ROOT_URLCONF = 'trs.urls'
 SECRET_KEY = 'sleutel van het secreet'
 DEBUG = True
+TEMPLATE_DEBUG = True
 DATABASES = {
     'default': {'ENGINE': 'django.db.backends.sqlite3',
                 'NAME': os.path.join(BUILDOUT_DIR, 'var/db/test.db')},
@@ -34,3 +35,55 @@ STATICFILES_DIRS = [
     # ^^^ bower-managed files.
 ]
 STATIC_URL = '/static/'
+
+Logging = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s %(name)s %(levelname)s\n%(message)s',
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'null': {
+            'level': 'DEBUG',
+            'class': 'django.utils.log.NullHandler',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'logfile': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'formatter': 'verbose',
+            'filename': os.path.join(BUILDOUT_DIR,
+                                     'var', 'log', 'django.log'),
+        },
+         'loggers': {
+             '': {
+                 'handlers': [],
+                 'propagate': True,
+                 'level': 'DEBUG',
+             },
+             'django.db.backends': {
+                 'handlers': ['null'],  # Quiet by default!
+                 'propagate': False,
+                 'level': 'DEBUG',
+             },
+         }
+     }
+}
+# Start and end year are used for creating YearWeek objects for those years
+# with the ``bin/django update_weeks`` command.
+TRS_START_YEAR = 2012
+TRS_END_YEAR = 2020
+# ^^^ TODO: appconf defaults.
+
+USE_L10N = True
+USE_I18N = True
+LANGUAGE_CODE = 'nl-nl'

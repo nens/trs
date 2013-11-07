@@ -14,7 +14,7 @@ class PersonTestCase(TestCase):
 
     def test_representation(self):
         person = models.Person(name='Reinout')
-        self.assertEqual(str(person), 'Person Reinout')
+        self.assertEqual(str(person), 'Reinout')
 
     def test_get_absolute_url(self):
         person = models.Person(name='Reinout', slug='reinout')
@@ -42,7 +42,7 @@ class ProjectTestCase(TestCase):
 
     def test_representation(self):
         project = models.Project(code='P1234')
-        self.assertEqual(str(project), 'Project P1234')
+        self.assertEqual(str(project), 'P1234')
 
     def test_get_absolute_url(self):
         project = models.Project(code='P1234', slug='P1234')
@@ -64,7 +64,7 @@ class ProjectTestCase(TestCase):
 class PersonChangeTestCase(TestCase):
 
     def test_smoke(self):
-        person_change = models.PersonChange(year_and_week='1972-51')
+        person_change = models.PersonChange()
         person_change.save()
         self.assertTrue(person_change)
 
@@ -72,7 +72,7 @@ class PersonChangeTestCase(TestCase):
 class BookingTestCase(TestCase):
 
     def test_smoke(self):
-        booking = models.Booking(year_and_week='1972-51')
+        booking = models.Booking()
         booking.save()
         self.assertTrue(booking)
 
@@ -80,7 +80,7 @@ class BookingTestCase(TestCase):
 class WorkAssignmentTestCase(TestCase):
 
     def test_smoke(self):
-        work_assignment = models.WorkAssignment(year_and_week='1972-51')
+        work_assignment = models.WorkAssignment()
         work_assignment.save()
         self.assertTrue(work_assignment)
 
@@ -88,41 +88,6 @@ class WorkAssignmentTestCase(TestCase):
 class BudgetAssignmentTestCase(TestCase):
 
     def test_smoke(self):
-        budget_assignment = models.BudgetAssignment(year_and_week='1972-51')
+        budget_assignment = models.BudgetAssignment()
         budget_assignment.save()
         self.assertTrue(budget_assignment)
-
-
-class YearWeekValidatorTestCase(TestCase):
-
-    def test_correct1(self):
-        value = '1972-51'
-        self.assertEqual(models.is_year_and_week_format(value), None)
-
-    def test_correct2(self):
-        value = '1972-00'
-        self.assertEqual(models.is_year_and_week_format(value), None)
-
-    def test_correct3(self):
-        value = '1972-53'
-        self.assertEqual(models.is_year_and_week_format(value), None)
-
-    def test_faulty_format1(self):
-        value = '1972_51'
-        with self.assertRaises(ValidationError):
-            models.is_year_and_week_format(value)
-
-    def test_faulty_format2(self):
-        value = '72_51'
-        with self.assertRaises(ValidationError):
-            models.is_year_and_week_format(value)
-
-    def test_faulty_format3(self):
-        value = '1972-54'
-        with self.assertRaises(ValidationError):
-            models.is_year_and_week_format(value)
-
-    def test_faulty_format4(self):
-        value = '197251'
-        with self.assertRaises(ValidationError):
-            models.is_year_and_week_format(value)

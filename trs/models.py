@@ -1,13 +1,10 @@
-import re
-
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
-# TODO: add setting ADMIN_USER_CAN_DELETE_PERSONS_AND_PROJECTS
+# TODO: add setting TRS_ADMIN_USER_CAN_DELETE_PERSONS_AND_PROJECTS
 # TODO: add django-appconf
 
 # Hours are always an integer. You cannot work 2.5 hours. At least, that's
@@ -16,23 +13,19 @@ from django.utils.safestring import mark_safe
 # too. 999999.99 should be possible, so that's 8 digits with 2 decimal places.
 MAX_DIGITS = 8
 DECIMAL_PLACES = 2
-YYYY_WW_FORMAT = re.compile(r"\d\d\d\d-\d\d")
-
-
-def is_year_and_week_format(value):
-    """Raise ValidationError when the value isn't in the yyyy-ww format."""
-    if not YYYY_WW_FORMAT.match(value):
-        raise ValidationError("Value not in yyyy-ww format")
-    parts = value.split('-')
-    week = int(parts[1])
-    if week < 0 or week > 53:
-        raise ValidationError("Week should be 0-53 (inclusive)")
 
 
 class Person(models.Model):
     name = models.CharField(
         verbose_name="naam",
         max_length=255)
+    user = models.ForeignKey(
+        User,
+        blank=True,
+        null=True,
+        verbose_name="gebruiker",
+        # TODO: make unique.
+        help_text="De interne (django) gebruiker die deze persoon is.")
     login_name = models.CharField(
         verbose_name="inlognaam bij N&S",
         max_length=255,
@@ -52,7 +45,7 @@ class Person(models.Model):
         ordering = ['name']
 
     def __str__(self):
-        return "Person {}".format(self.name)
+        return self.name
 
     def get_absolute_url(self):
         return reverse('trs.person', kwargs={'slug': self.slug})
@@ -68,6 +61,10 @@ class Person(models.Model):
     def target(self):
         return self.person_changes.all().aggregate(
             models.Sum('target'))['target__sum']
+
+    def assigned_projects(self):
+        return Project.objects.filter(
+            work_assignments__assigned_to=self)
 
 
 class Project(models.Model):
@@ -90,7 +87,7 @@ class Project(models.Model):
         ordering = ['code']
 
     def __str__(self):
-        return "Project {}".format(self.code)
+        return self.code
 
     def get_absolute_url(self):
         return reverse('trs.project', kwargs={'slug': self.slug})
@@ -98,6 +95,38 @@ class Project(models.Model):
     def as_widget(self):
         return mark_safe(render_to_string('trs/project-widget.html',
                                           {'project': self}))
+
+    def assigned_persons(self):
+        return Person.objects.filter(
+            work_assignments__assigned_on=self)
+
+
+class YearWeek(models.Model):
+    # This ought to be automatically generated.
+    year = models.IntegerField(
+        verbose_name="jaar")
+    week = models.IntegerField(
+        verbose_name="weeknummer")
+    first_day = models.DateField(
+        verbose_name="eerste maandag van de week",
+        # Note: 1 january won't always be a monday, that's fine.
+        db_index=True)
+
+    class Meta:
+        verbose_name = "jaar/week combinatie"
+        verbose_name_plural = "jaar/week combinaties"
+        ordering = ['year', 'week']
+
+    def __str__(self):
+        return "{:04d}-{:02d}".format(self.year, self.week)
+
+    def get_absolute_url(self):
+        return reverse('trs.booking', kwargs={'year': self.year,
+                                              'week': self.week})
+
+    def as_widget(self):
+        return mark_safe(render_to_string('trs/year-week-widget.html',
+                                          {'year_week': self}))
 
 
 class EventBase(models.Model):
@@ -110,11 +139,11 @@ class EventBase(models.Model):
         null=True,
         #editable=False,
         verbose_name="toegevoegd door")
-    year_and_week = models.CharField(
-        max_length=7,  # yyyy-ww
-        db_index=True,
-        verbose_name="jaar en week",
-        validators=[is_year_and_week_format])
+    year_week = models.ForeignKey(
+        YearWeek,
+        blank=True,
+        null=True,
+        verbose_name="jaar en week")
 
     class Meta:
         abstract = True
@@ -160,13 +189,13 @@ class Booking(EventBase):
         Person,
         blank=True,
         null=True,
-        verbose_name="geboekd door",
+        verbose_name="geboekt door",
         related_name="bookings")
     booked_on = models.ForeignKey(
         Project,
         blank=True,
         null=True,
-        verbose_name="geboekd op",
+        verbose_name="geboekt op",
         related_name="bookings")
 
     class Meta:

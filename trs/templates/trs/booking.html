@@ -1,0 +1,65 @@
+{% extends "trs/base.html" %}
+
+{% block main-column %}
+  <h1>Uren boeken</h1>
+  <p>Projecten waar <i>ik, {{ view.active_person.name }}</i> op kan boeken:</p>
+
+  <form action="." method="post">
+    {% csrf_token %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Omschrijving</th>
+          <th>Beschikbaar</th>
+          <th>Geboekt</th>
+          {% for year_week in view.year_weeks_to_display %}
+            <th>{{ year_week.as_widget }}</th>
+            <!-- TODO: give feedback in widget if you need to book in that week -->
+          {% endfor %}
+          <!-- TODO: add nice week widget including hover for starting date
+            and so -->
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in view.lines %}
+          <tr>
+            <td>{{ line.project.as_widget }}</td>
+            <td>{{ line.project.description }}</td>
+            <td>{{ line.available }}</td>
+            <td>{{ line.already_booked }}</td>
+            <td>{{ line.hours0 }}</td>
+            <td>{{ line.hours1 }}</td>
+            <td>
+              {{ line.field }}
+              {% for error in line.field.errors %}
+                {{ error }}<br>
+              {% endfor %}
+            </td>
+            <td>{{ line.hours3 }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th colspan="2">
+            <input type="submit"
+                   class="btn"
+                   tabindex="{{  view.tabindex_submit_button }}"
+                   value="Submit" /></th>
+        </tr>
+      </tfoot>
+    </table>
+  </form>
+
+{% endblock %}
+
+{% block overview-column %}
+  Overview column
+{% endblock %}
