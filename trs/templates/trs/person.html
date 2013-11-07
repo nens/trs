@@ -8,4 +8,10 @@
     <dt>Uren per week</dt>
     <dd>{{ view.person.hours_per_week }}</dd>
   </dl>
+  <h2>Waar werk ik aan?</h2>
+  <ul>
+    {% for project in view.person.assigned_projects %}
+      <li>{{ project.as_widget }}</li>
+    {% endfor %}
+  </ul>
 {% endblock %}

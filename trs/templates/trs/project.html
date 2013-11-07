@@ -2,4 +2,12 @@
 
 {% block main-column %}
   <h1>{{ view.project.code }} <small>{{ view.project.description }}</small></h1>
+  <h2>Wie werkt hierop?</h2>
+  <ul>
+    {% for person in view.project.assigned_persons %}
+      <li>{{ person.as_widget }}</li>
+    {% endfor %}
+  </ul>
+
+
 {% endblock %}

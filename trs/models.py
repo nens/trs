@@ -65,6 +65,10 @@ class Person(models.Model):
         return self.person_changes.all().aggregate(
             models.Sum('target'))['target__sum']
 
+    def assigned_projects(self):
+        return Project.objects.filter(
+            work_assignments__assigned_to=self)
+
 
 class Project(models.Model):
     code = models.CharField(
@@ -94,6 +98,10 @@ class Project(models.Model):
     def as_widget(self):
         return mark_safe(render_to_string('trs/project-widget.html',
                                           {'project': self}))
+
+    def assigned_persons(self):
+        return Person.objects.filter(
+            work_assignments__assigned_on=self)
 
 
 class YearWeek(models.Model):

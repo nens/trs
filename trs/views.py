@@ -38,8 +38,7 @@ class BaseView(TemplateView):
         # TODO: extra filtering for projects that are past their date.
         if not self.active_person:
             return
-        return Project.objects.filter(
-            work_assignments__assigned_to=self.active_person)
+        return self.active_person.assigned_projects()
 
 
 class HomeView(BaseView):
@@ -99,7 +98,7 @@ class BookingView(BaseView):
 
     @property
     def year_weeks_to_display(self):
-        """Return the active YearWeek and the two previous ones."""
+        """Return the active YearWeek, the two previous ones and the next."""
         end = self.active_first_day + datetime.timedelta(days=7)
         start = self.active_first_day - datetime.timedelta(days=2 * 7)
         return YearWeek.objects.filter(first_day__lte=end).filter(
