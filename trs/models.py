@@ -1,7 +1,4 @@
-import re
-
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.loader import render_to_string
@@ -192,13 +189,13 @@ class Booking(EventBase):
         Person,
         blank=True,
         null=True,
-        verbose_name="geboekd door",
+        verbose_name="geboekt door",
         related_name="bookings")
     booked_on = models.ForeignKey(
         Project,
         blank=True,
         null=True,
-        verbose_name="geboekd op",
+        verbose_name="geboekt op",
         related_name="bookings")
 
     class Meta:

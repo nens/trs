@@ -16,7 +16,8 @@ class PersonChangeAdmin(admin.ModelAdmin):
 
 
 class BookingAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['year_week', 'hours', 'booked_by', 'booked_on']
+    list_filter = ['booked_by', 'booked_on']
 
 
 class WorkAssignmentAdmin(admin.ModelAdmin):

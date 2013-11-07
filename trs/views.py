@@ -1,8 +1,11 @@
 import datetime
 import logging
 
-from django.views.generic.base import TemplateView
+from django import forms
 from django.db import models
+from django.utils.datastructures import SortedDict
+from django.views.generic.base import TemplateView
+from django.views.generic.edit import FormView
 
 from trs.models import Person
 from trs.models import Project
@@ -14,7 +17,7 @@ from trs.models import WorkAssignment
 logger = logging.getLogger()
 
 
-class BaseView(TemplateView):
+class BaseMixin(object):
     template_name = 'trs/base.html'
     title = "TRS tijdregistratiesysteem"
 
@@ -40,6 +43,9 @@ class BaseView(TemplateView):
             return
         return self.active_person.assigned_projects()
 
+
+class BaseView(TemplateView, BaseMixin):
+    pass
 
 class HomeView(BaseView):
     template_name = 'trs/home.html'
@@ -77,7 +83,7 @@ class ProjectView(BaseView):
         return Project.objects.get(slug=self.kwargs['slug'])
 
 
-class BookingView(BaseView):
+class BookingView(FormView, BaseMixin):
     # TODO: also allow /booking/yyyy-ww/ format.
     template_name = 'trs/booking.html'
 
@@ -104,11 +110,57 @@ class BookingView(BaseView):
         return YearWeek.objects.filter(first_day__lte=end).filter(
             first_day__gte=start)
 
+    def get_form_class(self):
+        """Return dynamically generated form class."""
+        fields = SortedDict()
+        field_type = forms.IntegerField(
+            min_value=0,
+            max_value=100,
+            widget=forms.TextInput(attrs={'size': 2}))
+        for project in self.active_projects:
+            fields[project.code] = field_type
+        return type("GeneratedBookingForm", (forms.Form,), fields)
+
+    @property
+    def initial(self):
+        result = {}
+        for project in self.active_projects:
+            booked = Booking.objects.filter(
+                year_week=self.active_year_week,
+                booked_by=self.active_person,
+                booked_on=project).aggregate(
+                    models.Sum('hours'))['hours__sum']
+            if booked is None:
+                booked = 0
+            result[project.code] = int(booked)
+        return result
+
+    def form_valid(self, form):
+        for project_code, new_hours in form.cleaned_data.items():
+            old_hours = self.initial[project_code]
+            difference = new_hours - old_hours
+            if difference:
+                project = [project for project in self.active_projects
+                           if project.code == project_code][0]
+                booking = Booking(hours=difference,
+                                  booked_by=self.active_person,
+                                  booked_on=project,
+                                  year_week=self.active_year_week)
+                booking.save()
+                logger.info("Added booking %s", booking)
+        return super(BookingView, self).form_valid(form)
+
+    @property
+    def success_url(self):
+        return self.active_year_week.get_absolute_url()
+
     @property
     def lines(self):
         """Return project plus a set of four hours."""
         result = []
-        for project in self.active_projects:
+        form = self.get_form(self.get_form_class())
+        fields = list(form)  # A form's __iter__ returns 'bound fields'.
+        for project_index, project in enumerate(self.active_projects):
             line = {'project': project}
             # import pdb;pdb.set_trace()
             line['available'] = WorkAssignment.objects.filter(
@@ -125,7 +177,10 @@ class BookingView(BaseView):
                     booked_by=self.active_person,
                     booked_on=project).aggregate(
                         models.Sum('hours'))['hours__sum']
+                if booked is None:
+                    booked = 0
                 key = 'hours%s' % index
                 line[key] = booked
+            line['field'] = fields[project_index]
             result.append(line)
         return result
