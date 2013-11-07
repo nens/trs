@@ -113,11 +113,12 @@ class BookingView(FormView, BaseMixin):
     def get_form_class(self):
         """Return dynamically generated form class."""
         fields = SortedDict()
-        field_type = forms.IntegerField(
-            min_value=0,
-            max_value=100,
-            widget=forms.TextInput(attrs={'size': 2}))
-        for project in self.active_projects:
+        for index, project in enumerate(self.active_projects):
+            field_type = forms.IntegerField(
+                min_value=0,
+                max_value=100,
+                widget=forms.TextInput(attrs={'size': 2,
+                                              'tabindex': index + 1}))
             fields[project.code] = field_type
         return type("GeneratedBookingForm", (forms.Form,), fields)
 
@@ -149,6 +150,10 @@ class BookingView(FormView, BaseMixin):
                 booking.save()
                 logger.info("Added booking %s", booking)
         return super(BookingView, self).form_valid(form)
+
+    @property
+    def tabindex_submit_button(self):
+        return len(self.active_projects) + 1
 
     @property
     def success_url(self):
