@@ -55,6 +55,18 @@ class ProjectTestCase(TestCase):
                          'P0123')
 
 
+class YearWeekTestCase(TestCase):
+
+    def test_smoke(self):
+        year_week = factories.YearWeekFactory.create()
+        self.assertTrue(year_week)
+
+    def test_create_two_from_factory(self):
+        factories.YearWeekFactory.create()
+        year_week2 = factories.YearWeekFactory.create()
+        self.assertTrue(year_week2)
+
+
 class PersonChangeTestCase(TestCase):
 
     def test_smoke(self):

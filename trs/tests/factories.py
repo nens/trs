@@ -1,3 +1,6 @@
+import calendar
+import datetime
+
 import factory
 from django.contrib.auth.models import User
 
@@ -23,3 +26,14 @@ class ProjectFactory(factory.django.DjangoModelFactory):
 
     code = 'P1234'
     slug = 'p1234'
+
+
+class YearWeekFactory(factory.django.DjangoModelFactory):
+    FACTORY_FOR = models.YearWeek
+
+    year = 2013
+    # Start in week 2, which starts 7 jan 2013.
+    week = factory.Sequence(lambda n: n + 1)
+    first_day = factory.Sequence(
+        lambda n: (datetime.date(year=2013, month=1, day=7) +
+              datetime.timedelta(days=7) * n))
