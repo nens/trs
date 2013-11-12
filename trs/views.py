@@ -2,7 +2,11 @@ import datetime
 import logging
 
 from django import forms
+from django.contrib.auth import logout, login, authenticate
+from django.contrib.auth.forms import AuthenticationForm
+from django.core.urlresolvers import reverse
 from django.db import models
+from django.shortcuts import redirect
 from django.utils.datastructures import SortedDict
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
@@ -47,6 +51,7 @@ class BaseMixin(object):
 class BaseView(TemplateView, BaseMixin):
     pass
 
+
 class HomeView(BaseView):
     template_name = 'trs/home.html'
 
@@ -81,6 +86,27 @@ class ProjectView(BaseView):
     @property
     def project(self):
         return Project.objects.get(slug=self.kwargs['slug'])
+
+
+class LoginView(FormView, BaseMixin):
+    template_name = 'trs/login.html'
+    form_class = AuthenticationForm
+
+    @property
+    def success_url(self):
+        return reverse('trs.booking')
+
+    def form_valid(self, form):
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+        user = authenticate(username=username, password=password)
+        login(self.request, user)
+        return super(LoginView, self).form_valid(form)
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('trs.home')
 
 
 class BookingView(FormView, BaseMixin):

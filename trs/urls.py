@@ -9,7 +9,6 @@ admin.autodiscover()
 
 urlpatterns = patterns(
     '',
-    (r'^admin/', include(admin.site.urls)),
     url(r'^$',
         views.HomeView.as_view(),
         name='trs.home'),
@@ -25,6 +24,7 @@ urlpatterns = patterns(
     url(r'^projects/(?P<slug>\w+)/$',
         views.ProjectView.as_view(),
         name='trs.project'),
+
     url(r'^booking/$',
         views.BookingView.as_view(),
         name='trs.booking'),
@@ -36,4 +36,13 @@ urlpatterns = patterns(
     url(r'^booking/(?P<year>\d\d\d\d)-0(?P<week>\d)/$',
         views.BookingView.as_view(),
         name='trs.booking'),
-    )
+
+    url(r'^login/$',
+        views.LoginView.as_view(),
+        name='trs.login'),
+    url(r'^logout/$',
+        views.logout_view,
+        name='trs.logout'),
+
+    (r'^admin/', include(admin.site.urls)),
+)
