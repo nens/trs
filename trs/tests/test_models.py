@@ -2,32 +2,30 @@
 from django.test import TestCase
 
 from trs import models
+from trs.tests import factories
 
 
 class PersonTestCase(TestCase):
 
     def test_smoke(self):
-        person = models.Person()
-        person.save()
+        person = factories.PersonFactory.create()
         self.assertTrue(person)
 
     def test_representation(self):
-        person = models.Person(name='Reinout')
-        self.assertEqual(str(person), 'Reinout')
+        person = factories.PersonFactory.build(name='Pietje')
+        self.assertEqual(str(person), 'Pietje')
 
     def test_get_absolute_url(self):
-        person = models.Person(name='Reinout', slug='reinout')
+        person = factories.PersonFactory.build(slug='reinout')
         self.assertEqual(person.get_absolute_url(), '/persons/reinout/')
 
     def test_as_widget(self):
-        person = models.Person(name='Reinout', slug='reinout')
+        person = factories.PersonFactory.build()
         self.assertTrue(person.as_widget())
 
     def test_sorting(self):
-        person1 = models.Person(name='Reinout')
-        person1.save()
-        person2 = models.Person(name='Maurits')
-        person2.save()
+        factories.PersonFactory.create(name='Reinout')
+        factories.PersonFactory.create(name='Maurits')
         self.assertEqual(models.Person.objects.all()[0].name,
                          'Maurits')
 
