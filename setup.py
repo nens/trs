@@ -19,6 +19,8 @@ install_requires = [
 
 tests_require = [
     'nose',
+    'mock',
+    'factory_boy',
     'coverage',
     'django-nose',
     'coveralls',
