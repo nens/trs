@@ -55,12 +55,18 @@ class Person(models.Model):
                                           {'person': self}))
 
     def hours_per_week(self):
-        return self.person_changes.all().aggregate(
+        result = self.person_changes.all().aggregate(
             models.Sum('hours_per_week'))['hours_per_week__sum']
+        if result is None:
+            return 0
+        return result
 
     def target(self):
-        return self.person_changes.all().aggregate(
+        result = self.person_changes.all().aggregate(
             models.Sum('target'))['target__sum']
+        if result is None:
+            return 0
+        return result
 
     def assigned_projects(self):
         return Project.objects.filter(
@@ -121,6 +127,7 @@ class YearWeek(models.Model):
         return "{:04d}-{:02d}".format(self.year, self.week)
 
     def get_absolute_url(self):
+        """Return link to the booking page for this year/week."""
         return reverse('trs.booking', kwargs={'year': self.year,
                                               'week': self.week})
 

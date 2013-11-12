@@ -29,6 +29,48 @@ class PersonTestCase(TestCase):
         self.assertEqual(models.Person.objects.all()[0].name,
                          'Maurits')
 
+    def test_hours_per_week1(self):
+        person = factories.PersonFactory.create()
+        self.assertEqual(person.hours_per_week(), 0)
+
+    def test_hours_per_week2(self):
+        person = factories.PersonFactory.create()
+        factories.PersonChangeFactory.create(hours_per_week=40, person=person)
+        self.assertEqual(person.hours_per_week(), 40)
+
+    def test_hours_per_week3(self):
+        person = factories.PersonFactory.create()
+        factories.PersonChangeFactory.create(hours_per_week=40, person=person)
+        factories.PersonChangeFactory.create(hours_per_week=-2, person=person)
+        self.assertEqual(person.hours_per_week(), 38)
+
+    def test_target1(self):
+        person = factories.PersonFactory.create()
+        self.assertEqual(person.target(), 0)
+
+    def test_target2(self):
+        person = factories.PersonFactory.create()
+        factories.PersonChangeFactory.create(target=10000, person=person)
+        self.assertEqual(person.target(), 10000)
+
+    def test_target3(self):
+        person = factories.PersonFactory.create()
+        factories.PersonChangeFactory.create(target=10000, person=person)
+        factories.PersonChangeFactory.create(target=-1000, person=person)
+        self.assertEqual(person.target(), 9000)
+
+    def test_assigned_projects1(self):
+        person = factories.PersonFactory.create()
+        self.assertEqual(len(person.assigned_projects()), 0)
+
+    def test_assigned_projects2(self):
+        person = factories.PersonFactory.create()
+        project = factories.ProjectFactory.create()
+        factories.WorkAssignmentFactory(assigned_to=person,
+                                        assigned_on=project)
+        self.assertEqual(person.assigned_projects()[0], project)
+
+
 
 class ProjectTestCase(TestCase):
 
@@ -54,6 +96,17 @@ class ProjectTestCase(TestCase):
         self.assertEqual(models.Project.objects.all()[0].code,
                          'P0123')
 
+    def test_assigned_persons1(self):
+        project = factories.ProjectFactory.create()
+        self.assertEqual(len(project.assigned_persons()), 0)
+
+    def test_assigned_persons2(self):
+        person = factories.PersonFactory.create()
+        project = factories.ProjectFactory.create()
+        factories.WorkAssignmentFactory(assigned_to=person,
+                                        assigned_on=project)
+        self.assertEqual(project.assigned_persons()[0], person)
+
 
 class YearWeekTestCase(TestCase):
 
@@ -65,6 +118,18 @@ class YearWeekTestCase(TestCase):
         factories.YearWeekFactory.create()
         year_week2 = factories.YearWeekFactory.create()
         self.assertTrue(year_week2)
+
+    def test_representation(self):
+        year_week = factories.YearWeekFactory.create(year=1972, week=51)
+        self.assertEqual(str(year_week), '1972-51')
+
+    def test_get_absolute_url(self):
+        year_week = factories.YearWeekFactory.create(year=1972, week=51)
+        self.assertEqual(year_week.get_absolute_url(), '/booking/1972-51/')
+
+    def test_as_widget(self):
+        year_week = factories.YearWeekFactory.create()
+        self.assertTrue(year_week.as_widget())
 
 
 class PersonChangeTestCase(TestCase):
