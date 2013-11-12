@@ -16,3 +16,10 @@ class PersonFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     login_name = 'reinout.vanrees'
     slug = 'reinoutvanrees'
+
+
+class ProjectFactory(factory.django.DjangoModelFactory):
+    FACTORY_FOR = models.Project
+
+    code = 'P1234'
+    slug = 'p1234'

@@ -33,27 +33,24 @@ class PersonTestCase(TestCase):
 class ProjectTestCase(TestCase):
 
     def test_smoke(self):
-        project = models.Project()
-        project.save()
+        project = factories.ProjectFactory.create()
         self.assertTrue(project)
 
     def test_representation(self):
-        project = models.Project(code='P1234')
+        project = factories.ProjectFactory.build(code='P1234')
         self.assertEqual(str(project), 'P1234')
 
     def test_get_absolute_url(self):
-        project = models.Project(code='P1234', slug='P1234')
-        self.assertEqual(project.get_absolute_url(), '/projects/P1234/')
+        project = factories.ProjectFactory.build(slug='p1234')
+        self.assertEqual(project.get_absolute_url(), '/projects/p1234/')
 
     def test_as_widget(self):
-        project = models.Project(code='P1234', slug='P1234')
+        project = factories.ProjectFactory.build()
         self.assertTrue(project.as_widget())
 
     def test_sorting(self):
-        project1 = models.Project(code='P1234')
-        project1.save()
-        project2 = models.Project(code='P0123')
-        project2.save()
+        factories.ProjectFactory.create(code='P1234')
+        factories.ProjectFactory.create(code='P0123')
         self.assertEqual(models.Project.objects.all()[0].code,
                          'P0123')
 
