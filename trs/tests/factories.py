@@ -1,4 +1,3 @@
-import calendar
 import datetime
 
 import factory
@@ -37,3 +36,19 @@ class YearWeekFactory(factory.django.DjangoModelFactory):
     first_day = factory.Sequence(
         lambda n: (datetime.date(year=2013, month=1, day=7) +
               datetime.timedelta(days=7) * n))
+
+
+class PersonChangeFactory(factory.django.DjangoModelFactory):
+    FACTORY_FOR = models.PersonChange
+
+
+class BookingFactory(factory.django.DjangoModelFactory):
+    FACTORY_FOR = models.Booking
+
+
+class WorkAssignmentFactory(factory.django.DjangoModelFactory):
+    FACTORY_FOR = models.WorkAssignment
+
+
+class BudgetAssignmentFactory(factory.django.DjangoModelFactory):
+    FACTORY_FOR = models.BudgetAssignment

@@ -70,30 +70,26 @@ class YearWeekTestCase(TestCase):
 class PersonChangeTestCase(TestCase):
 
     def test_smoke(self):
-        person_change = models.PersonChange()
-        person_change.save()
+        person_change = factories.PersonChangeFactory.create()
         self.assertTrue(person_change)
 
 
 class BookingTestCase(TestCase):
 
     def test_smoke(self):
-        booking = models.Booking()
-        booking.save()
+        booking = factories.BookingFactory.create()
         self.assertTrue(booking)
 
 
 class WorkAssignmentTestCase(TestCase):
 
     def test_smoke(self):
-        work_assignment = models.WorkAssignment()
-        work_assignment.save()
+        work_assignment = factories.WorkAssignmentFactory.create()
         self.assertTrue(work_assignment)
 
 
 class BudgetAssignmentTestCase(TestCase):
 
     def test_smoke(self):
-        budget_assignment = models.BudgetAssignment()
-        budget_assignment.save()
+        budget_assignment = factories.BudgetAssignmentFactory.create()
         self.assertTrue(budget_assignment)
