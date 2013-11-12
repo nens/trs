@@ -1,8 +1,10 @@
 import datetime
 import logging
 
+from django.utils.decorators import method_decorator
 from django import forms
 from django.contrib.auth import logout, login, authenticate
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -19,6 +21,14 @@ from trs.models import WorkAssignment
 
 
 logger = logging.getLogger()
+
+
+class LoginRequiredMixin(object):
+    """See http://stackoverflow.com/a/10304880/27401"""
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(LoginRequiredMixin, self).dispatch(*args, **kwargs)
 
 
 class BaseMixin(object):
@@ -48,7 +58,7 @@ class BaseMixin(object):
         return self.active_person.assigned_projects()
 
 
-class BaseView(TemplateView, BaseMixin):
+class BaseView(LoginRequiredMixin, TemplateView, BaseMixin):
     pass
 
 
@@ -109,7 +119,7 @@ def logout_view(request):
     return redirect('trs.home')
 
 
-class BookingView(FormView, BaseMixin):
+class BookingView(LoginRequiredMixin, FormView, BaseMixin):
     # TODO: also allow /booking/yyyy-ww/ format.
     template_name = 'trs/booking.html'
 
