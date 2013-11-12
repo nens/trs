@@ -33,7 +33,7 @@ class BaseMixin(object):
         persons = Person.objects.filter(user=self.request.user)
         if persons:
             person = persons[0]
-            logger.debug("Found active person: {}", person)
+            logger.debug("Found active person: %s", person)
             return person
 
     @property
