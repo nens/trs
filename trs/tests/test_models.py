@@ -1,6 +1,5 @@
 # import unittest  # Note: this is 3.3's unittest2!
 from django.test import TestCase
-from django.core.exceptions import ValidationError
 
 from trs import models
 

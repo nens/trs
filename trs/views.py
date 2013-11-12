@@ -40,7 +40,7 @@ class BaseMixin(object):
     def active_projects(self):
         # TODO: extra filtering for projects that are past their date.
         if not self.active_person:
-            return
+            return []
         return self.active_person.assigned_projects()
 
 
