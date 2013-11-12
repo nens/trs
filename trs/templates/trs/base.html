@@ -45,7 +45,14 @@
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li><p class="navbar-text">{{ view.today }}</p></li>
-            <li><a href="#">Log in</a></li>
+            {% if view.active_person %}
+              <li><p class="navbar-text">{{ view.active_person.as_widget }}</p></li>
+            {% endif %}
+            {% if user.is_authenticated %}
+              <li><a href="{% url 'trs.logout' %}">Log uit</a></li>
+            {% else %}
+              <li><a href="{% url 'trs.login' %}">Log in</a></li>
+            {% endif %}
           </ul>
         </div><!-- /.navbar-collapse -->
       </nav>

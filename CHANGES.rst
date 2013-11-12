@@ -5,6 +5,8 @@ Changelog of trs
 0.1 (unreleased)
 ----------------
 
+- Added login/logout views.
+
 - Added booking page including actual booking.
 
 - Added the initial set of models and base overview pages for
