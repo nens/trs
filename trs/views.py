@@ -33,14 +33,14 @@ class BaseMixin(object):
         persons = Person.objects.filter(user=self.request.user)
         if persons:
             person = persons[0]
-            logger.debug("Found active person: {}", person)
+            logger.debug("Found active person: %s", person)
             return person
 
     @property
     def active_projects(self):
         # TODO: extra filtering for projects that are past their date.
         if not self.active_person:
-            return
+            return []
         return self.active_person.assigned_projects()
 
 
