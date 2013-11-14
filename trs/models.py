@@ -279,6 +279,10 @@ class BudgetAssignment(EventBase):
         blank=True,
         null=True,
         verbose_name="budget")
+    description = models.CharField(
+        verbose_name="omschrijving",
+        blank=True,
+        max_length=255)
     # TODO: link to doc or so
 
     assigned_to = models.ForeignKey(
