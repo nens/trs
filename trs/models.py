@@ -106,6 +106,13 @@ class Project(models.Model):
         return Person.objects.filter(
             work_assignments__assigned_on=self)
 
+    def budget(self):
+        result = self.budget_assignments.all().aggregate(
+            models.Sum('budget'))['budget__sum']
+        if result is None:
+            return 0
+        return result
+
 
 class YearWeek(models.Model):
     # This ought to be automatically generated.
