@@ -31,7 +31,15 @@
       <tbody>
         {% for line in view.lines %}
           <tr>
-            <td>{{ line.person.as_widget }}</td>
+            <td>
+              {{ line.person.as_widget }}
+              {% if line.is_project_leader %}
+                <span class="badge">PL</span>
+              {% endif %}
+              {% if line.is_project_manager %}
+                <span class="badge">PM</span>
+              {% endif %}
+            </td>
             <td class="text-right">{{ line.budget|hours }}</td>
             <td class="text-right">{{ line.booked|hours }}</td>
             <td class="text-right">{{ line.hourly_tariff|money }}</td>

@@ -104,6 +104,8 @@ class ProjectView(BaseView):
         for person in self.project.assigned_persons():
             line = {}
             line['person'] = person
+            line['is_project_leader'] = (person == self.project.project_leader)
+            line['is_project_manager'] = (person == self.project.project_manager)
             line['budget'] = person.work_assignments.filter(
                 assigned_on=self.project).aggregate(
                     models.Sum('hours'))['hours__sum'] or 0
