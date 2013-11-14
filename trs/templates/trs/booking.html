@@ -1,4 +1,5 @@
 {% extends "trs/base.html" %}
+{% load trs_formatting %}
 
 {% block main-column %}
   <h1>Uren boeken</h1>
@@ -26,17 +27,17 @@
           <tr>
             <td>{{ line.project.as_widget }}</td>
             <td>{{ line.project.description }}</td>
-            <td>{{ line.available }}</td>
-            <td>{{ line.already_booked }}</td>
-            <td>{{ line.hours0 }}</td>
-            <td>{{ line.hours1 }}</td>
+            <td>{{ line.available|hours }}</td>
+            <td>{{ line.already_booked|hours }}</td>
+            <td>{{ line.hours0|hours }}</td>
+            <td>{{ line.hours1|hours }}</td>
             <td>
               {{ line.field }}
               {% for error in line.field.errors %}
                 {{ error }}<br>
               {% endfor %}
             </td>
-            <td>{{ line.hours3 }}</td>
+            <td>{{ line.hours3|hours }}</td>
           </tr>
         {% endfor %}
       </tbody>

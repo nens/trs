@@ -1,12 +1,13 @@
 {% extends "trs/base.html" %}
+{% load trs_formatting %}
 
 {% block main-column %}
   <h1>{{ view.person.name }}</h1>
   <dl>
     <dt>Target</dt>
-    <dd>{{ view.person.target }}</dd>
+    <dd>{{ view.person.target|money }}</dd>
     <dt>Uren per week</dt>
-    <dd>{{ view.person.hours_per_week }}</dd>
+    <dd>{{ view.person.hours_per_week|hours }}</dd>
   </dl>
   <h2>Waar werk ik aan?</h2>
   <ul>

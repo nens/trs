@@ -1,4 +1,5 @@
 {% extends "trs/base.html" %}
+{% load trs_formatting %}
 
 {% block main-column %}
   <h1>
@@ -31,10 +32,10 @@
         {% for line in view.lines %}
           <tr>
             <td>{{ line.person.as_widget }}</td>
-            <td class="text-right">{{ line.budget }}</td>
-            <td class="text-right">{{ line.booked }}</td>
-            <td class="text-right">{{ line.hourly_tariff }}</td>
-            <td class="text-right">{{ line.turnover }}</td>
+            <td class="text-right">{{ line.budget|hours }}</td>
+            <td class="text-right">{{ line.booked|hours }}</td>
+            <td class="text-right">{{ line.hourly_tariff|money }}</td>
+            <td class="text-right">{{ line.turnover|money }}</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -45,7 +46,7 @@
           <td class="text-right"></td>
           <td class="text-right"></td>
           <td class="text-right"></td>
-          <th class="text-right">{{ view.total_turnover }}</th>
+          <th class="text-right">{{ view.total_turnover|money }}</th>
         </tr>
       </tfoot>
     </table>
@@ -64,24 +65,24 @@
         {% for budget_assignment in view.project.budget_assignments.all %}
           <tr>
             <td>TODO{{ budget_assignment.as_widget }}</td>
-            <td class="text-right">{{ budget_assignment.budget }}</td>
+            <td class="text-right">{{ budget_assignment.budget|money }}</td>
           </tr>
         {% endfor %}
       </tbody>
       <tbody>
         <tr>
           <th>Subtotaal</th>
-          <th class="text-right">{{ view.subtotal }}</th>
+          <th class="text-right">{{ view.subtotal|money }}</th>
         </tr>
         <tr>
           <td>Totaal omgezet</td>
-          <td class="text-right">{{ view.total_turnover }}</td>
+          <td class="text-right">{{ view.total_turnover|money }}</td>
         </tr>
       </tbody>
       <tfoot>
         <tr>
           <th>Nog niet omgezet</th>
-          <th class="text-right">{{ view.amount_left }}</th>
+          <th class="text-right">{{ view.amount_left|money }}</th>
         </tr>
       </tfoot>
     </table>
