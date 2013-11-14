@@ -44,7 +44,9 @@
             <li><a href="#">Overzichten</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li><p class="navbar-text">{{ view.today }}</p></li>
+            <li class="hidden-xs hidden-sm">
+              <p class="navbar-text">{{ view.today }}</p>
+            </li>
             {% if view.active_person %}
               <li><p class="navbar-text">{{ view.active_person.as_widget }}</p></li>
             {% endif %}
