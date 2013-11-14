@@ -1,13 +1,52 @@
 {% extends "trs/base.html" %}
 
 {% block main-column %}
-  <h1>{{ view.project.code }} <small>{{ view.project.description }}</small></h1>
-  <h2>Wie werkt hierop?</h2>
-  <ul>
-    {% for person in view.project.assigned_persons %}
-      <li>{{ person.as_widget }}</li>
-    {% endfor %}
-  </ul>
+  <h1>
+    {{ view.project.code }}
+    <small>{{ view.project.description }}</small>
+  </h1>
+  <dl>
+    <dt>Opdrachtgever</dt>
+    <dd>TODO</dd>
+    <dt>Begindatum</dt>
+    <dd>TODO</dd>
+    <dt>Einddatum</dt>
+    <dd>TODO</dd>
+  </dl>
 
+  <h2>Wie werkt hierop?</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Wie</th>
+        <th>Budget</th>
+        <th>Geboekt</th>
+        <th>Tarief</th>
+        <th>Omgezet</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for line in view.lines %}
+        <tr>
+          <td>{{ line.person.as_widget }}</td>
+          <td>{{ line.budget }}</td>
+          <td>{{ line.booked }}</td>
+          <td>{{ line.hourly_tariff }}</td>
+          <td>{{ line.turnover }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+
+    <tfoot>
+      <tr>
+        <th>Totaal omgezet</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <th>{{ view.total_turnover }}</th>
+      </tr>
+    </tfoot>
+  </table>
 
 {% endblock %}

@@ -97,6 +97,30 @@ class ProjectView(BaseView):
     def project(self):
         return Project.objects.get(slug=self.kwargs['slug'])
 
+    @property
+    def lines(self):
+        """Return assigned persons plus their relevant data."""
+        result = []
+        for person in self.project.assigned_persons():
+            line = {}
+            line['person'] = person
+            line['budget'] = person.work_assignments.filter(
+                assigned_on=self.project).aggregate(
+                    models.Sum('hours'))['hours__sum'] or 0
+            line['hourly_tariff'] = person.work_assignments.filter(
+                assigned_on=self.project).aggregate(
+                    models.Sum('hourly_tariff'))['hourly_tariff__sum'] or 0
+            result.append(line)
+            line['booked'] = person.bookings.filter(
+                booked_on=self.project).aggregate(
+                    models.Sum('hours'))['hours__sum'] or 0
+            line['turnover'] = line['booked'] * line['hourly_tariff']
+        return result
+
+    @property
+    def total_turnover(self):
+        return sum([line['turnover'] for line in self.lines])
+
 
 class LoginView(FormView, BaseMixin):
     template_name = 'trs/login.html'
