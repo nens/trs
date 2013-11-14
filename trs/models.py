@@ -55,18 +55,12 @@ class Person(models.Model):
                                           {'person': self}))
 
     def hours_per_week(self):
-        result = self.person_changes.all().aggregate(
-            models.Sum('hours_per_week'))['hours_per_week__sum']
-        if result is None:
-            return 0
-        return result
+        return self.person_changes.all().aggregate(
+            models.Sum('hours_per_week'))['hours_per_week__sum'] or 0
 
     def target(self):
-        result = self.person_changes.all().aggregate(
-            models.Sum('target'))['target__sum']
-        if result is None:
-            return 0
-        return result
+        return self.person_changes.all().aggregate(
+            models.Sum('target'))['target__sum'] or 0
 
     def assigned_projects(self):
         return Project.objects.filter(
@@ -107,11 +101,8 @@ class Project(models.Model):
             work_assignments__assigned_on=self)
 
     def budget(self):
-        result = self.budget_assignments.all().aggregate(
-            models.Sum('budget'))['budget__sum']
-        if result is None:
-            return 0
-        return result
+        return self.budget_assignments.all().aggregate(
+            models.Sum('budget'))['budget__sum'] or 0
 
 
 class YearWeek(models.Model):
