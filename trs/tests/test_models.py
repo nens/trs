@@ -142,6 +142,10 @@ class YearWeekTestCase(TestCase):
         year_week = factories.YearWeekFactory.create()
         self.assertTrue(year_week.as_widget())
 
+    def test_friendly(self):
+        year_week = factories.YearWeekFactory.create()
+        self.assertTrue(year_week.friendly())
+
 
 class PersonChangeTestCase(TestCase):
 

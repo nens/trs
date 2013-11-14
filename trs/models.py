@@ -133,6 +133,10 @@ class YearWeek(models.Model):
         return mark_safe(render_to_string('trs/year-week-widget.html',
                                           {'year_week': self}))
 
+    def friendly(self):
+        return mark_safe(render_to_string('trs/year-week-friendly.html',
+                                          {'year_week': self}))
+
 
 class EventBase(models.Model):
     added = models.DateTimeField(

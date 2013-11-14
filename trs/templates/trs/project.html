@@ -58,6 +58,7 @@
       <thead>
         <tr>
           <th>Beschrijving</th>
+          <th>Wanneer</th>
           <th class="text-right">Bedrag</th>
         </tr>
       </thead>
@@ -65,6 +66,7 @@
         {% for budget_assignment in view.project.budget_assignments.all %}
           <tr>
             <td>TODO{{ budget_assignment.as_widget }}</td>
+            <td>{{ budget_assignment.year_week.friendly }}</td>
             <td class="text-right">{{ budget_assignment.budget|money }}</td>
           </tr>
         {% endfor %}
@@ -72,16 +74,19 @@
       <tbody>
         <tr>
           <th>Subtotaal</th>
+          <th></th>
           <th class="text-right">{{ view.subtotal|money }}</th>
         </tr>
         <tr>
           <td>Totaal omgezet</td>
+          <td></td>
           <td class="text-right">{{ view.total_turnover|money }}</td>
         </tr>
       </tbody>
       <tfoot>
         <tr>
           <th>Nog niet omgezet</th>
+          <th></th>
           <th class="text-right">{{ view.amount_left|money }}</th>
         </tr>
       </tfoot>
