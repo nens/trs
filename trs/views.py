@@ -121,6 +121,15 @@ class ProjectView(BaseView):
     def total_turnover(self):
         return sum([line['turnover'] for line in self.lines])
 
+    @property
+    def subtotal(self):
+        return self.project.budget_assignments.all().aggregate(
+            models.Sum('budget'))['budget__sum'] or 0
+
+    @property
+    def amount_left(self):
+        return self.subtotal - self.total_turnover
+
 
 class LoginView(FormView, BaseMixin):
     template_name = 'trs/login.html'

@@ -255,7 +255,7 @@ class BudgetAssignment(EventBase):
         decimal_places=DECIMAL_PLACES,
         blank=True,
         null=True,
-        verbose_name="uren")
+        verbose_name="budget")
     # TODO: link to doc or so
 
     assigned_to = models.ForeignKey(

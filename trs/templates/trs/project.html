@@ -15,38 +15,76 @@
   </dl>
 
   <h2>Wie werkt hierop?</h2>
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Wie</th>
-        <th>Budget</th>
-        <th>Geboekt</th>
-        <th>Tarief</th>
-        <th>Omgezet</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      {% for line in view.lines %}
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
         <tr>
-          <td>{{ line.person.as_widget }}</td>
-          <td>{{ line.budget }}</td>
-          <td>{{ line.booked }}</td>
-          <td>{{ line.hourly_tariff }}</td>
-          <td>{{ line.turnover }}</td>
+          <th>Wie</th>
+          <th class="text-right">Budget</th>
+          <th class="text-right">Geboekt</th>
+          <th class="text-right">Tarief</th>
+          <th class="text-right">Omgezet</th>
         </tr>
-      {% endfor %}
-    </tbody>
+      </thead>
 
-    <tfoot>
-      <tr>
-        <th>Totaal omgezet</th>
-        <td></td>
-        <td></td>
-        <td></td>
-        <th>{{ view.total_turnover }}</th>
-      </tr>
-    </tfoot>
-  </table>
+      <tbody>
+        {% for line in view.lines %}
+          <tr>
+            <td>{{ line.person.as_widget }}</td>
+            <td class="text-right">{{ line.budget }}</td>
+            <td class="text-right">{{ line.booked }}</td>
+            <td class="text-right">{{ line.hourly_tariff }}</td>
+            <td class="text-right">{{ line.turnover }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+
+      <tfoot>
+        <tr>
+          <th>Totaal omgezet</th>
+          <td class="text-right"></td>
+          <td class="text-right"></td>
+          <td class="text-right"></td>
+          <th class="text-right">{{ view.total_turnover }}</th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <h2>Financi&euml;n</h2>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Beschrijving</th>
+          <th class="text-right">Bedrag</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for budget_assignment in view.project.budget_assignments.all %}
+          <tr>
+            <td>TODO{{ budget_assignment.as_widget }}</td>
+            <td class="text-right">{{ budget_assignment.budget }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tbody>
+        <tr>
+          <th>Subtotaal</th>
+          <th class="text-right">{{ view.subtotal }}</th>
+        </tr>
+        <tr>
+          <td>Totaal omgezet</td>
+          <td class="text-right">{{ view.total_turnover }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <th>Nog niet omgezet</th>
+          <th class="text-right">{{ view.amount_left }}</th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
 
 {% endblock %}
