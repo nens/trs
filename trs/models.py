@@ -80,6 +80,34 @@ class Project(models.Model):
     added = models.DateTimeField(
         auto_now_add=True,
         verbose_name="toegevoegd op")
+    principal = models.CharField(
+        verbose_name="opdrachtgever",
+        blank=True,
+        max_length=255)
+    start = models.ForeignKey(
+        'YearWeek',
+        blank=True,
+        null=True,
+        related_name="starting_projects",
+        verbose_name="startweek")
+    end = models.ForeignKey(
+        'YearWeek',
+        blank=True,
+        null=True,
+        related_name="ending_projects",
+        verbose_name="laatste week")
+    project_leader = models.ForeignKey(
+        Person,
+        blank=True,
+        null=True,
+        verbose_name="projectleider",
+        related_name="projects_i_lead")
+    project_manager = models.ForeignKey(
+        Person,
+        blank=True,
+        null=True,
+        verbose_name="projectmanager",
+        related_name="projects_i_manage")
 
     class Meta:
         verbose_name = "project"
