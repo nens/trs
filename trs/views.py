@@ -117,6 +117,7 @@ class ProjectView(BaseView):
                 booked_on=self.project).aggregate(
                     models.Sum('hours'))['hours__sum'] or 0
             line['turnover'] = line['booked'] * line['hourly_tariff']
+            line['overbooked'] = (line['booked'] > line['budget'])
         return result
 
     @property

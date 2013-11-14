@@ -41,7 +41,10 @@
               {% endif %}
             </td>
             <td class="text-right">{{ line.budget|hours }}</td>
-            <td class="text-right">{{ line.booked|hours }}</td>
+            <td class="text-right
+                       {% if line.overbooked %}text-danger{% endif %}">
+              {{ line.booked|hours }}
+            </td>
             <td class="text-right">{{ line.hourly_tariff|money }}</td>
             <td class="text-right">{{ line.turnover|money }}</td>
           </tr>
