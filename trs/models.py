@@ -126,7 +126,7 @@ class Project(models.Model):
 
     def assigned_persons(self):
         return Person.objects.filter(
-            work_assignments__assigned_on=self)
+            work_assignments__assigned_on=self).distinct()
 
     def budget(self):
         return self.budget_assignments.all().aggregate(

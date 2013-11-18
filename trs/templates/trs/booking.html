@@ -28,7 +28,9 @@
             <td>{{ line.project.as_widget }}</td>
             <td>{{ line.project.description }}</td>
             <td>{{ line.available|hours }}</td>
-            <td>{{ line.already_booked|hours }}</td>
+            <td {% if line.overbooked %}class="text-danger"{% endif %}>
+              {{ line.already_booked|hours }}
+            </td>
             <td>{{ line.hours0|hours }}</td>
             <td>{{ line.hours1|hours }}</td>
             <td>

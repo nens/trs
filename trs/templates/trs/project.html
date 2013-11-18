@@ -59,6 +59,13 @@
           <td class="text-right"></td>
           <th class="text-right">{{ view.total_turnover|money }}</th>
         </tr>
+        <tr>
+          <th>Resterende omzet</th>
+          <td class="text-right"></td>
+          <td class="text-right"></td>
+          <td class="text-right"></td>
+          <th class="text-right">{{ view.total_turnover_left|money }}</th>
+        </tr>
       </tfoot>
     </table>
   </div>
@@ -93,10 +100,15 @@
           <td></td>
           <td class="text-right">-{{ view.total_turnover|money }}</td>
         </tr>
+        <tr>
+          <td>Af: resterende te boeken omzet</td>
+          <td></td>
+          <td class="text-right">-{{ view.total_turnover_left|money }}</td>
+        </tr>
       </tbody>
       <tfoot>
         <tr>
-          <th>Nog niet omgezet</th>
+          <th>Nog niet verdeeld</th>
           <th></th>
           <th class="text-right">{{ view.amount_left|money }}</th>
         </tr>

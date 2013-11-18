@@ -118,11 +118,21 @@ class ProjectView(BaseView):
                     models.Sum('hours'))['hours__sum'] or 0
             line['turnover'] = line['booked'] * line['hourly_tariff']
             line['overbooked'] = (line['booked'] > line['budget'])
+            if line['overbooked']:
+                left_to_turn_over = 0
+            else:
+                left_to_turn_over = ((line['budget'] - line['booked'])
+                                     * line['hourly_tariff'])
+            line['left_to_turn_over'] = left_to_turn_over
         return result
 
     @property
     def total_turnover(self):
         return sum([line['turnover'] for line in self.lines])
+
+    @property
+    def total_turnover_left(self):
+        return sum([line['left_to_turn_over'] for line in self.lines])
 
     @property
     def subtotal(self):
@@ -131,7 +141,7 @@ class ProjectView(BaseView):
 
     @property
     def amount_left(self):
-        return self.subtotal - self.total_turnover
+        return self.subtotal - self.total_turnover - self.total_turnover_left
 
 
 class LoginView(FormView, BaseMixin):
@@ -247,6 +257,7 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
                     booked_by=self.active_person,
                     booked_on=project).aggregate(
                         models.Sum('hours'))['hours__sum']
+            line['overbooked'] = (line['already_booked'] > line['available'])
             for index, year_week in enumerate(self.year_weeks_to_display):
                 booked = Booking.objects.filter(
                     year_week=year_week,
