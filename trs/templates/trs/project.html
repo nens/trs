@@ -1,13 +1,119 @@
 {% extends "trs/base.html" %}
+{% load trs_formatting %}
 
 {% block main-column %}
-  <h1>{{ view.project.code }} <small>{{ view.project.description }}</small></h1>
-  <h2>Wie werkt hierop?</h2>
-  <ul>
-    {% for person in view.project.assigned_persons %}
-      <li>{{ person.as_widget }}</li>
-    {% endfor %}
-  </ul>
+  <h1>
+    {{ view.project.code }}
+    <small>{{ view.project.description }}</small>
+  </h1>
+  <dl>
+    <dt>Opdrachtgever</dt>
+    <dd>{{ view.project.principal }}</dd>
+    <dt>Startweek</dt>
+    <dd>{{ view.project.start.friendly }}</dd>
+    <dt>Laatste week</dt>
+    <dd>{{ view.project.end.friendly }}</dd>
+  </dl>
 
+  <h2>Wie werkt hierop?</h2>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Wie</th>
+          <th class="text-right">Budget</th>
+          <th class="text-right">Geboekt</th>
+          <th class="text-right">Tarief</th>
+          <th class="text-right">Omgezet</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for line in view.lines %}
+          <tr>
+            <td>
+              {{ line.person.as_widget }}
+              {% if line.is_project_leader %}
+                <span class="badge">PL</span>
+              {% endif %}
+              {% if line.is_project_manager %}
+                <span class="badge">PM</span>
+              {% endif %}
+            </td>
+            <td class="text-right">{{ line.budget|hours }}</td>
+            <td class="text-right
+                       {% if line.overbooked %}text-danger{% endif %}">
+              {{ line.booked|hours }}
+            </td>
+            <td class="text-right">{{ line.hourly_tariff|money }}</td>
+            <td class="text-right">{{ line.turnover|money }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+
+      <tfoot>
+        <tr>
+          <th>Totaal omgezet</th>
+          <td class="text-right"></td>
+          <td class="text-right"></td>
+          <td class="text-right"></td>
+          <th class="text-right">{{ view.total_turnover|money }}</th>
+        </tr>
+        <tr>
+          <th>Resterende omzet</th>
+          <td class="text-right"></td>
+          <td class="text-right"></td>
+          <td class="text-right"></td>
+          <th class="text-right">{{ view.total_turnover_left|money }}</th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <h2>Financi&euml;n</h2>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Beschrijving</th>
+          <th>Wanneer</th>
+          <th class="text-right">Bedrag</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for budget_assignment in view.project.budget_assignments.all %}
+          <tr>
+            <td>{{ budget_assignment.description }}</td>
+            <td>{{ budget_assignment.year_week.friendly }}</td>
+            <td class="text-right">{{ budget_assignment.budget|money }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tbody>
+        <tr>
+          <th>Subtotaal</th>
+          <th></th>
+          <th class="text-right">{{ view.subtotal|money }}</th>
+        </tr>
+        <tr>
+          <td>Af: totaal omgezet</td>
+          <td></td>
+          <td class="text-right">-{{ view.total_turnover|money }}</td>
+        </tr>
+        <tr>
+          <td>Af: resterende te boeken omzet</td>
+          <td></td>
+          <td class="text-right">-{{ view.total_turnover_left|money }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <th>Nog niet verdeeld</th>
+          <th></th>
+          <th class="text-right">{{ view.amount_left|money }}</th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
 
 {% endblock %}

@@ -107,6 +107,17 @@ class ProjectTestCase(TestCase):
                                         assigned_on=project)
         self.assertEqual(project.assigned_persons()[0], person)
 
+    def test_budget1(self):
+        project = factories.ProjectFactory.create()
+        self.assertEqual(project.budget(), 0)
+
+    def test_budget2(self):
+        project = factories.ProjectFactory.create()
+        factories.BudgetAssignmentFactory.create(
+            budget=1000,
+            assigned_to=project)
+        self.assertEqual(project.budget(), 1000)
+
 
 class YearWeekTestCase(TestCase):
 
@@ -130,6 +141,10 @@ class YearWeekTestCase(TestCase):
     def test_as_widget(self):
         year_week = factories.YearWeekFactory.create()
         self.assertTrue(year_week.as_widget())
+
+    def test_friendly(self):
+        year_week = factories.YearWeekFactory.create()
+        self.assertTrue(year_week.friendly())
 
 
 class PersonChangeTestCase(TestCase):

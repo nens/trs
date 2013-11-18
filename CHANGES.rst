@@ -5,6 +5,11 @@ Changelog of trs
 0.1 (unreleased)
 ----------------
 
+- Fixed formatting of hours and money. Note: money is in a fixed width font
+  now.
+
+- Filled in most of the project page, including the financial data.
+
 - Added login/logout views.
 
 - Added booking page including actual booking.

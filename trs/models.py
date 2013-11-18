@@ -55,18 +55,12 @@ class Person(models.Model):
                                           {'person': self}))
 
     def hours_per_week(self):
-        result = self.person_changes.all().aggregate(
-            models.Sum('hours_per_week'))['hours_per_week__sum']
-        if result is None:
-            return 0
-        return result
+        return self.person_changes.all().aggregate(
+            models.Sum('hours_per_week'))['hours_per_week__sum'] or 0
 
     def target(self):
-        result = self.person_changes.all().aggregate(
-            models.Sum('target'))['target__sum']
-        if result is None:
-            return 0
-        return result
+        return self.person_changes.all().aggregate(
+            models.Sum('target'))['target__sum'] or 0
 
     def assigned_projects(self):
         return Project.objects.filter(
@@ -86,6 +80,34 @@ class Project(models.Model):
     added = models.DateTimeField(
         auto_now_add=True,
         verbose_name="toegevoegd op")
+    principal = models.CharField(
+        verbose_name="opdrachtgever",
+        blank=True,
+        max_length=255)
+    start = models.ForeignKey(
+        'YearWeek',
+        blank=True,
+        null=True,
+        related_name="starting_projects",
+        verbose_name="startweek")
+    end = models.ForeignKey(
+        'YearWeek',
+        blank=True,
+        null=True,
+        related_name="ending_projects",
+        verbose_name="laatste week")
+    project_leader = models.ForeignKey(
+        Person,
+        blank=True,
+        null=True,
+        verbose_name="projectleider",
+        related_name="projects_i_lead")
+    project_manager = models.ForeignKey(
+        Person,
+        blank=True,
+        null=True,
+        verbose_name="projectmanager",
+        related_name="projects_i_manage")
 
     class Meta:
         verbose_name = "project"
@@ -104,7 +126,11 @@ class Project(models.Model):
 
     def assigned_persons(self):
         return Person.objects.filter(
-            work_assignments__assigned_on=self)
+            work_assignments__assigned_on=self).distinct()
+
+    def budget(self):
+        return self.budget_assignments.all().aggregate(
+            models.Sum('budget'))['budget__sum'] or 0
 
 
 class YearWeek(models.Model):
@@ -133,6 +159,10 @@ class YearWeek(models.Model):
 
     def as_widget(self):
         return mark_safe(render_to_string('trs/year-week-widget.html',
+                                          {'year_week': self}))
+
+    def friendly(self):
+        return mark_safe(render_to_string('trs/year-week-friendly.html',
                                           {'year_week': self}))
 
 
@@ -248,7 +278,11 @@ class BudgetAssignment(EventBase):
         decimal_places=DECIMAL_PLACES,
         blank=True,
         null=True,
-        verbose_name="uren")
+        verbose_name="budget")
+    description = models.CharField(
+        verbose_name="omschrijving",
+        blank=True,
+        max_length=255)
     # TODO: link to doc or so
 
     assigned_to = models.ForeignKey(

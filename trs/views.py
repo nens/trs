@@ -97,6 +97,52 @@ class ProjectView(BaseView):
     def project(self):
         return Project.objects.get(slug=self.kwargs['slug'])
 
+    @property
+    def lines(self):
+        """Return assigned persons plus their relevant data."""
+        result = []
+        for person in self.project.assigned_persons():
+            line = {}
+            line['person'] = person
+            line['is_project_leader'] = (person == self.project.project_leader)
+            line['is_project_manager'] = (person == self.project.project_manager)
+            line['budget'] = person.work_assignments.filter(
+                assigned_on=self.project).aggregate(
+                    models.Sum('hours'))['hours__sum'] or 0
+            line['hourly_tariff'] = person.work_assignments.filter(
+                assigned_on=self.project).aggregate(
+                    models.Sum('hourly_tariff'))['hourly_tariff__sum'] or 0
+            result.append(line)
+            line['booked'] = person.bookings.filter(
+                booked_on=self.project).aggregate(
+                    models.Sum('hours'))['hours__sum'] or 0
+            line['turnover'] = line['booked'] * line['hourly_tariff']
+            line['overbooked'] = (line['booked'] > line['budget'])
+            if line['overbooked']:
+                left_to_turn_over = 0
+            else:
+                left_to_turn_over = ((line['budget'] - line['booked'])
+                                     * line['hourly_tariff'])
+            line['left_to_turn_over'] = left_to_turn_over
+        return result
+
+    @property
+    def total_turnover(self):
+        return sum([line['turnover'] for line in self.lines])
+
+    @property
+    def total_turnover_left(self):
+        return sum([line['left_to_turn_over'] for line in self.lines])
+
+    @property
+    def subtotal(self):
+        return self.project.budget_assignments.all().aggregate(
+            models.Sum('budget'))['budget__sum'] or 0
+
+    @property
+    def amount_left(self):
+        return self.subtotal - self.total_turnover - self.total_turnover_left
+
 
 class LoginView(FormView, BaseMixin):
     template_name = 'trs/login.html'
@@ -160,15 +206,14 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
 
     @property
     def initial(self):
+        """Return initial form values. Turn the decimals into integers already."""
         result = {}
         for project in self.active_projects:
             booked = Booking.objects.filter(
                 year_week=self.active_year_week,
                 booked_by=self.active_person,
                 booked_on=project).aggregate(
-                    models.Sum('hours'))['hours__sum']
-            if booked is None:
-                booked = 0
+                    models.Sum('hours'))['hours__sum'] or 0
             result[project.code] = int(booked)
         return result
 
@@ -212,14 +257,13 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
                     booked_by=self.active_person,
                     booked_on=project).aggregate(
                         models.Sum('hours'))['hours__sum']
+            line['overbooked'] = (line['already_booked'] > line['available'])
             for index, year_week in enumerate(self.year_weeks_to_display):
                 booked = Booking.objects.filter(
                     year_week=year_week,
                     booked_by=self.active_person,
                     booked_on=project).aggregate(
-                        models.Sum('hours'))['hours__sum']
-                if booked is None:
-                    booked = 0
+                        models.Sum('hours'))['hours__sum'] or 0
                 key = 'hours%s' % index
                 line[key] = booked
             line['field'] = fields[project_index]
