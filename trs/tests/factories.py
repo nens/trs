@@ -43,6 +43,7 @@ class PersonChangeFactory(factory.django.DjangoModelFactory):
 
     hours_per_week = 0
     target = 0
+    year_week = factory.SubFactory(YearWeekFactory)
 
 
 class BookingFactory(factory.django.DjangoModelFactory):

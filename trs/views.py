@@ -13,11 +13,13 @@ from django.utils.datastructures import SortedDict
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
 
+from trs import core
 from trs.models import Person
 from trs.models import Project
 from trs.models import Booking
 from trs.models import YearWeek
 from trs.models import WorkAssignment
+from trs.models import this_year_week
 
 
 logger = logging.getLogger()
@@ -81,6 +83,23 @@ class PersonView(BaseView):
     def person(self):
         return Person.objects.get(slug=self.kwargs['slug'])
 
+    @property
+    def person_projects(self):
+        return [core.ProjectPersonCombination(project, self.person)
+                for project in self.person.assigned_projects()]
+
+    @property
+    def total_budget(self):
+        return sum([project.budget for project in self.person_projects])
+
+    @property
+    def total_booked(self):
+        return sum([project.booked for project in self.person_projects])
+
+    @property
+    def total_left_to_book(self):
+        return sum([project.left_to_book for project in self.person_projects])
+
 
 class ProjectsView(BaseView):
     template_name = 'trs/projects.html'
@@ -98,6 +117,11 @@ class ProjectView(BaseView):
         return Project.objects.get(slug=self.kwargs['slug'])
 
     @property
+    def person_projects(self):
+        return [core.ProjectPersonCombination(self.project, person)
+                for person in self.project.assigned_persons()]
+
+    @property
     def lines(self):
         """Return assigned persons plus their relevant data."""
         result = []
@@ -109,6 +133,7 @@ class ProjectView(BaseView):
             line['budget'] = person.work_assignments.filter(
                 assigned_on=self.project).aggregate(
                     models.Sum('hours'))['hours__sum'] or 0
+            # TODO ^^^
             line['hourly_tariff'] = person.work_assignments.filter(
                 assigned_on=self.project).aggregate(
                     models.Sum('hourly_tariff'))['hourly_tariff__sum'] or 0
@@ -116,8 +141,10 @@ class ProjectView(BaseView):
             line['booked'] = person.bookings.filter(
                 booked_on=self.project).aggregate(
                     models.Sum('hours'))['hours__sum'] or 0
+            # TODO ^^^
             line['turnover'] = line['booked'] * line['hourly_tariff']
             line['overbooked'] = (line['booked'] > line['budget'])
+            # TODO ^^^
             if line['overbooked']:
                 left_to_turn_over = 0
             else:
@@ -176,9 +203,7 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
         if year is not None:  # (Week is also not None, then)
             return YearWeek.objects.get(year=year, week=week)
         # Default: this week's first day.
-        this_year_week = YearWeek.objects.filter(
-            first_day__lte=self.today).last()
-        return this_year_week
+        return this_year_week()
 
     @property
     def active_first_day(self):

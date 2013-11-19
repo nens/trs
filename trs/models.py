@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -13,6 +15,18 @@ from django.utils.safestring import mark_safe
 # too. 999999.99 should be possible, so that's 8 digits with 2 decimal places.
 MAX_DIGITS = 8
 DECIMAL_PLACES = 2
+
+
+def this_year_week():
+    return YearWeek.objects.filter(
+        first_day__lte=datetime.date.today()).last()
+
+
+def last_four_year_weeks():
+    result = list(YearWeek.objects.filter(
+        first_day__lte=datetime.date.today()).reverse()[1:5])
+    result.reverse()  # In-place...
+    return result
 
 
 class Person(models.Model):
@@ -54,17 +68,35 @@ class Person(models.Model):
         return mark_safe(render_to_string('trs/person-widget.html',
                                           {'person': self}))
 
-    def hours_per_week(self):
-        return self.person_changes.all().aggregate(
-            models.Sum('hours_per_week'))['hours_per_week__sum'] or 0
+    def hours_per_week(self, year_week=None):
+        if year_week is None:
+            year_week = this_year_week()
+        return self.person_changes.filter(
+            year_week__lte=year_week).aggregate(
+                models.Sum('hours_per_week'))['hours_per_week__sum'] or 0
 
-    def target(self):
-        return self.person_changes.all().aggregate(
-            models.Sum('target'))['target__sum'] or 0
+    def target(self, year_week=None):
+        if year_week is None:
+            year_week = this_year_week()
+        return self.person_changes.filter(
+            year_week__lte=year_week).aggregate(
+                models.Sum('target'))['target__sum'] or 0
 
     def assigned_projects(self):
         return Project.objects.filter(
             work_assignments__assigned_to=self).distinct()
+
+    def booking_percentage(self):
+        weeks = last_four_year_weeks()
+        hours_to_work = sum([self.hours_per_week(year_week=week)
+                         for week in weeks])
+        booked_in_weeks = self.bookings.filter(year_week__in=weeks).aggregate(
+            models.Sum('hours'))['hours__sum'] or 0
+        missing = hours_to_work - booked_in_weeks
+        if not hours_to_work:
+            # Prevent division by zero.
+            return 100
+        return round(100 * missing / hours_to_work)
 
 
 class Project(models.Model):

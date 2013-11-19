@@ -1,4 +1,6 @@
 {% load staticfiles %}
+{% load trs_formatting %}
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -68,7 +70,17 @@
         </div>
         <div class="col-md-4">
           {% block overview-column %}
-            Overview column
+            {% if view.active_person %}
+
+              <h2>Billable</h2>
+
+              <h2>Verliesuren</h2>
+
+              <h2>Target</h2>
+              <p>
+                {{ view.person.target|money }}
+              </p>
+            {% endif %}
           {% endblock %}
         </div>
       </div>

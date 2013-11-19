@@ -30,6 +30,7 @@ class PersonTestCase(TestCase):
                          'Maurits')
 
     def test_hours_per_week1(self):
+        factories.YearWeekFactory.create()  # We need one for the query.
         person = factories.PersonFactory.create()
         self.assertEqual(person.hours_per_week(), 0)
 
@@ -45,6 +46,7 @@ class PersonTestCase(TestCase):
         self.assertEqual(person.hours_per_week(), 38)
 
     def test_target1(self):
+        factories.YearWeekFactory.create()  # We need one for the query.
         person = factories.PersonFactory.create()
         self.assertEqual(person.target(), 0)
 
@@ -173,3 +175,17 @@ class BudgetAssignmentTestCase(TestCase):
     def test_smoke(self):
         budget_assignment = factories.BudgetAssignmentFactory.create()
         self.assertTrue(budget_assignment)
+
+
+class UtilsTestCase(TestCase):
+
+    def setUp(self):
+        self.test_weeks = [factories.YearWeekFactory.create()
+                           for i in range(10)]
+
+    def test_last_four_year_weeks1(self):
+        self.assertEqual(len(models.last_four_year_weeks()), 4)
+
+    def test_last_four_year_weeks2(self):
+        self.assertEqual(list(models.last_four_year_weeks())[-1],
+                         self.test_weeks[8])
