@@ -64,7 +64,7 @@ class Person(models.Model):
 
     def assigned_projects(self):
         return Project.objects.filter(
-            work_assignments__assigned_to=self)
+            work_assignments__assigned_to=self).distinct()
 
 
 class Project(models.Model):
