@@ -241,6 +241,9 @@ class PersonChange(EventBase):
         help_text="persoon waar de verandering voor is",
         related_name="person_changes")
 
+    def __str__(self):
+        return 'PersonChange on %s' % self.person
+
     class Meta:
         verbose_name = "verandering aan persoon"
         verbose_name_plural = "veranderingen aan personen"

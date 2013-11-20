@@ -12,7 +12,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
 
 class PersonChangeAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['__str__', 'year_week']
 
 
 class BookingAdmin(admin.ModelAdmin):
