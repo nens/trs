@@ -22,7 +22,7 @@ class ProjectPersonCombination(object):
                 models.Sum('hours'))['hours__sum'] or 0
 
     @property
-    def overbooked(self):
+    def is_overbooked(self):
         return (self.booked > self.budget)
 
     @property
@@ -31,10 +31,32 @@ class ProjectPersonCombination(object):
 
         You don't earn extra money by going over your hour budget.
         """
-        if self.overbooked:
+        if self.is_overbooked:
             return self.budget
         return self.booked
 
     @property
     def left_to_book(self):
         return self.budget - self.financially_booked
+
+    @property
+    def turnover(self):
+        return self.financially_booked * self.hourly_tariff
+
+    @property
+    def left_to_turn_over(self):
+        return self.left_to_book * self.hourly_tariff
+
+    @property
+    def hourly_tariff(self):
+        return self.person.work_assignments.filter(
+            assigned_on=self.project).aggregate(
+                models.Sum('hourly_tariff'))['hourly_tariff__sum'] or 0
+
+    @property
+    def is_project_leader(self):
+        return (self.person == self.project.project_leader)
+
+    @property
+    def is_project_manager(self):
+        return (self.person == self.project.project_manager)

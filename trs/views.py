@@ -122,44 +122,14 @@ class ProjectView(BaseView):
                 for person in self.project.assigned_persons()]
 
     @property
-    def lines(self):
-        """Return assigned persons plus their relevant data."""
-        result = []
-        for person in self.project.assigned_persons():
-            line = {}
-            line['person'] = person
-            line['is_project_leader'] = (person == self.project.project_leader)
-            line['is_project_manager'] = (person == self.project.project_manager)
-            line['budget'] = person.work_assignments.filter(
-                assigned_on=self.project).aggregate(
-                    models.Sum('hours'))['hours__sum'] or 0
-            # TODO ^^^
-            line['hourly_tariff'] = person.work_assignments.filter(
-                assigned_on=self.project).aggregate(
-                    models.Sum('hourly_tariff'))['hourly_tariff__sum'] or 0
-            result.append(line)
-            line['booked'] = person.bookings.filter(
-                booked_on=self.project).aggregate(
-                    models.Sum('hours'))['hours__sum'] or 0
-            # TODO ^^^
-            line['turnover'] = line['booked'] * line['hourly_tariff']
-            line['overbooked'] = (line['booked'] > line['budget'])
-            # TODO ^^^
-            if line['overbooked']:
-                left_to_turn_over = 0
-            else:
-                left_to_turn_over = ((line['budget'] - line['booked'])
-                                     * line['hourly_tariff'])
-            line['left_to_turn_over'] = left_to_turn_over
-        return result
-
-    @property
     def total_turnover(self):
-        return sum([line['turnover'] for line in self.lines])
+        return sum([person_project.turnover
+                    for person_project in self.person_projects])
 
     @property
     def total_turnover_left(self):
-        return sum([line['left_to_turn_over'] for line in self.lines])
+        return sum([person_project.left_to_turn_over
+                    for person_project in self.person_projects])
 
     @property
     def subtotal(self):

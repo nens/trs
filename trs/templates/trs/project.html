@@ -29,20 +29,20 @@
       </thead>
 
       <tbody>
-        {% for line in view.lines %}
+        {% for line in view.person_projects %}
           <tr>
             <td>
               {{ line.person.as_widget }}
               {% if line.is_project_leader %}
-                <span class="badge">PL</span>
+                <span class="label label-default">PL</span>
               {% endif %}
               {% if line.is_project_manager %}
-                <span class="badge">PM</span>
+                <span class="label label-default">PM</span>
               {% endif %}
             </td>
             <td class="text-right">{{ line.budget|hours }}</td>
             <td class="text-right
-                       {% if line.overbooked %}text-danger{% endif %}">
+                       {% if line.is_overbooked %}text-danger{% endif %}">
               {{ line.booked|hours }}
             </td>
             <td class="text-right">{{ line.hourly_tariff|money }}</td>
