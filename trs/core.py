@@ -4,10 +4,9 @@ from django.db import models
 
 class ProjectPersonCombination(object):
 
-    def __init__(self, project, person, request=None):
+    def __init__(self, project, person):
         self.project = project
         self.person = person
-        self.request = request
 
     @property
     def budget(self):
