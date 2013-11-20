@@ -72,6 +72,35 @@ class PersonTestCase(TestCase):
                                         assigned_on=project)
         self.assertEqual(person.assigned_projects()[0], project)
 
+    def test_booking_percentage1(self):
+        person = factories.PersonFactory.create()
+        self.assertEqual(person.booking_percentage(), 100)
+
+    def test_booking_percentage2(self):
+        person = factories.PersonFactory.create()
+        test_weeks = [factories.YearWeekFactory.create()
+                      for i in range(5)]
+        factories.PersonChangeFactory.create(
+            person=person,
+            hours_per_week=10,
+            year_week=test_weeks[0])
+        # Supposed to work 10 hours, didn't do a thing.
+        self.assertEqual(person.booking_percentage(), 0)
+
+    def test_booking_percentage3(self):
+        person = factories.PersonFactory.create()
+        test_weeks = [factories.YearWeekFactory.create()
+                      for i in range(5)]
+        factories.PersonChangeFactory.create(
+            person=person,
+            hours_per_week=10,
+            year_week=test_weeks[0])
+        factories.BookingFactory(
+            hours=10,
+            booked_by=person,
+            year_week=test_weeks[2])
+        # Supposed to work 4*10 hours, worked 10, so 25%.
+        self.assertEqual(person.booking_percentage(), 25)
 
 
 class ProjectTestCase(TestCase):
@@ -155,6 +184,9 @@ class PersonChangeTestCase(TestCase):
         person_change = factories.PersonChangeFactory.create()
         self.assertTrue(person_change)
 
+    def test_str(self):
+        person_change = factories.PersonChangeFactory.create()
+        self.assertTrue(str(person_change))
 
 class BookingTestCase(TestCase):
 

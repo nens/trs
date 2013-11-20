@@ -92,11 +92,11 @@ class Person(models.Model):
                          for week in weeks])
         booked_in_weeks = self.bookings.filter(year_week__in=weeks).aggregate(
             models.Sum('hours'))['hours__sum'] or 0
-        missing = hours_to_work - booked_in_weeks
         if not hours_to_work:
             # Prevent division by zero.
             return 100
-        return round(100 * missing / hours_to_work)
+        # TODO: het onderstaande klopt niet!
+        return round(100 * booked_in_weeks / hours_to_work)
 
 
 class Project(models.Model):
