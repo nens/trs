@@ -75,10 +75,21 @@
               <h2>Billable</h2>
 
               <h2>Verliesuren</h2>
-
-              <h2>Target</h2>
-              <p>
-                {{ view.person.target|money }}
+              <div>
+                <b>
+                  {{ view.person_year_info.overbooked.percentage }}%
+                </b>
+                ({{ view.person_year_info.overbooked.over|hours }} uren)
+                buiten budget geboekt.
+              </div>
+              <h2>Financieel</h2>
+              <dl>
+                <dt>Target</dt>
+                <dd>{{ view.person_year_info.target|money }}</dd>
+                <dt>Omzet</dt>
+                <dd>{{ view.person_year_info.turnover|money }}</dd>
+                <dt>Nog om te zetten</dt>
+                <dd>{{ view.person_year_info.left_to_turn_over|money }}</dd>
               </p>
             {% endif %}
           {% endblock %}
