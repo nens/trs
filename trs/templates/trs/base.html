@@ -68,12 +68,14 @@
             Main column
           {% endblock %}
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3 col-md-offset-1">
           {% block overview-column %}
             {% if view.active_person %}
 
-              <h2>Billable</h2>
-
+              <h2>Intern/extern</h2>
+              <div>
+                {{ view.person_year_info.billable_percentage }}%
+              </div>
               <h2>Verliesuren</h2>
               <div>
                 <b>
