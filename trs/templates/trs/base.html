@@ -74,7 +74,8 @@
 
               <h2>Intern/extern</h2>
               <div>
-                {{ view.person_year_info.billable_percentage }}%
+                <b>{{ view.person_year_info.billable_percentage }}%</b>
+                op externe projecten geboekt.
               </div>
               <h2>Verliesuren</h2>
               <div>
@@ -85,14 +86,13 @@
                 buiten budget geboekt.
               </div>
               <h2>Financieel</h2>
-              <dl>
-                <dt>Target</dt>
-                <dd>{{ view.person_year_info.target|money }}</dd>
-                <dt>Omzet</dt>
-                <dd>{{ view.person_year_info.turnover|money }}</dd>
-                <dt>Nog om te zetten</dt>
-                <dd>{{ view.person_year_info.left_to_turn_over|money }}</dd>
-              </p>
+              <div>
+                Je hebt
+                <b>{{ view.person_year_info.target_percentage }}%</b>
+                van je target ({{ view.person_year_info.target|money }})
+                gehaald. Nog om te zetten:
+                {{ view.person_year_info.left_to_turn_over|money }}.
+              </div>
             {% endif %}
           {% endblock %}
         </div>

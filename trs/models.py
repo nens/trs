@@ -112,6 +112,9 @@ class Project(models.Model):
     added = models.DateTimeField(
         auto_now_add=True,
         verbose_name="toegevoegd op")
+    internal = models.BooleanField(
+        verbose_name="intern project",
+        default=False)
     principal = models.CharField(
         verbose_name="opdrachtgever",
         blank=True,

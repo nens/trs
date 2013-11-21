@@ -24,7 +24,7 @@ class ProjectPersonCombination(object):
     @cached_property
     def booking_table(self):
         phase1 = self.person.bookings.filter(booked_on=self.project).values(
-            'year_week__year', 'year_week__week').annotate(
+            'year_week__year', 'year_week__week', 'booked_on__internal').annotate(
                 hours=models.Sum('hours'))
         hours_left = self.budget
         result = []
@@ -32,6 +32,7 @@ class ProjectPersonCombination(object):
             year = week_result['year_week__year']
             week = week_result['year_week__week']
             hours = week_result['hours']
+            internal = week_result['booked_on__internal']
             if hours > hours_left:
                 booked = hours_left
                 overbooked = hours - hours_left
@@ -42,7 +43,8 @@ class ProjectPersonCombination(object):
             result.append(dict(year=year,
                                week=week,
                                booked=booked,
-                               overbooked=overbooked))
+                               overbooked=overbooked,
+                               internal=internal))
         return result
 
     @cached_property
@@ -123,10 +125,16 @@ class PersonYearCombination(object):
         for ppc in self.ppcs:
             booked_billable = sum(
                 [info['booked'] for info in ppc.booking_table
-                 if info['year'] == self.year])
+                 if info['year'] == self.year and not info['internal']])
             # TODO: filter on billable projects.
             result += booked_billable * ppc.hourly_tariff
         return result
+
+    @cached_property
+    def target_percentage(self):
+        if not self.target:  # Division by zero.
+            return 100
+        return round(self.turnover / self.target * 100)
 
     @cached_property
     def left_to_turn_over(self):
@@ -147,3 +155,18 @@ class PersonYearCombination(object):
             result['percentage'] = round(
                 well_booked / (well_booked + result['over']) * 100)
         return result
+
+    @cached_property
+    def billable_percentage(self):
+        billable = 0
+        unbillable = 0
+        for ppc in self.ppcs:
+            billable += sum(
+                [info['overbooked'] for info in ppc.booking_table
+                 if info['year'] == self.year and not info['internal']])
+            unbillable += sum(
+                [info['booked'] for info in ppc.booking_table
+                 if info['year'] == self.year and info['internal']])
+        if not (billable + unbillable):  # Division by zero
+            return 0
+        return round(billable / (billable + unbillable) * 100)
