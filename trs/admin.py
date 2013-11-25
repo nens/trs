@@ -4,11 +4,10 @@ from trs import models
 
 
 class PersonAdmin(admin.ModelAdmin):
-    prepopulated_fields = {'slug': ('login_name',)}
+    pass
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    prepopulated_fields = {'slug': ('code',)}
     list_display = ['code', 'internal', 'description']
 
 

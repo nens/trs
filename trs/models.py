@@ -44,8 +44,6 @@ class Person(models.Model):
         verbose_name="inlognaam bij N&S",
         max_length=255,
         help_text="Dit is dus het eerste deel van het emailadres.")
-    slug = models.SlugField(
-        verbose_name="ID voor in de URL")
     description = models.CharField(
         verbose_name="omschrijving",
         blank=True,
@@ -62,7 +60,7 @@ class Person(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('trs.person', kwargs={'slug': self.slug})
+        return reverse('trs.person', kwargs={'id': self.id})
 
     def as_widget(self):
         return mark_safe(render_to_string('trs/person-widget.html',
@@ -103,8 +101,6 @@ class Project(models.Model):
     code = models.CharField(
         verbose_name="projectcode",
         max_length=255)
-    slug = models.SlugField(
-        verbose_name="ID voor in de URL")
     description = models.CharField(
         verbose_name="omschrijving",
         blank=True,
@@ -155,7 +151,7 @@ class Project(models.Model):
         return self.code
 
     def get_absolute_url(self):
-        return reverse('trs.project', kwargs={'slug': self.slug})
+        return reverse('trs.project', kwargs={'id': self.id})
 
     def as_widget(self):
         return mark_safe(render_to_string('trs/project-widget.html',

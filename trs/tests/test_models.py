@@ -12,15 +12,15 @@ class PersonTestCase(TestCase):
         self.assertTrue(person)
 
     def test_representation(self):
-        person = factories.PersonFactory.build(name='Pietje')
+        person = factories.PersonFactory.create(name='Pietje')
         self.assertEqual(str(person), 'Pietje')
 
     def test_get_absolute_url(self):
-        person = factories.PersonFactory.build(slug='reinout')
-        self.assertEqual(person.get_absolute_url(), '/persons/reinout/')
+        person = factories.PersonFactory.create()
+        self.assertTrue(person.get_absolute_url())
 
     def test_as_widget(self):
-        person = factories.PersonFactory.build()
+        person = factories.PersonFactory.create()
         self.assertTrue(person.as_widget())
 
     def test_sorting(self):
@@ -110,15 +110,15 @@ class ProjectTestCase(TestCase):
         self.assertTrue(project)
 
     def test_representation(self):
-        project = factories.ProjectFactory.build(code='P1234')
+        project = factories.ProjectFactory.create(code='P1234')
         self.assertEqual(str(project), 'P1234')
 
     def test_get_absolute_url(self):
-        project = factories.ProjectFactory.build(slug='p1234')
-        self.assertEqual(project.get_absolute_url(), '/projects/p1234/')
+        project = factories.ProjectFactory.create()
+        self.assertTrue(project.get_absolute_url())
 
     def test_as_widget(self):
-        project = factories.ProjectFactory.build()
+        project = factories.ProjectFactory.create()
         self.assertTrue(project.as_widget())
 
     def test_sorting1(self):
