@@ -14,7 +14,7 @@ from django.utils.functional import cached_property
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
 from django.views.generic.edit import UpdateView
-#from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView
 
 from trs import core
 from trs.models import Person
@@ -276,5 +276,10 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
 
 
 class ProjectEditView(UpdateView, BaseMixin):
+    template_name = 'trs/edit.html'
+    model = Project
+
+
+class ProjectCreateView(CreateView, BaseMixin):
     template_name = 'trs/edit.html'
     model = Project
