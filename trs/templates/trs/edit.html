@@ -1,8 +1,13 @@
 {% extends "trs/base.html" %}
+{% load trs_formatting %}
 
 {% block main-column %}
+  <h1>{{ view.title }}</h1>
 
-  <form action="." method="post" role="form">
+  <form action="."
+        method="post"
+        role="form"
+        class="form-horizontal">
     {% for error in form.non_field_errors %}
       <div class="alert alert-danger">{{ error }}</div>
     {% endfor %}
@@ -11,22 +16,27 @@
 
       {% for field in form %}
         <div class="form-group">
-          <label>{{ field.label }}</label><br>
-          {% if field.help_text %}
-            <p>{{ field.help_text }}</p>
-          {% endif %}
-          {% for error in field.errors %}
-            <div class="alert alert-danger">{{ error }}</div>
-          {% endfor %}
-          {{ field }}
+          <label class="col-sm-3">{{ field.label }}</label>
+          <div class="col-sm-5">
+            {% for error in field.errors %}
+              <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+
+            {{ field|tabindex:forloop.counter }}
+            {% if field.help_text %}
+              <div class="text-muted">{{ field.help_text }}</div>
+            {% endif %}
+          </div>
         </div>
       {% endfor %}
 
       <div class="form-group">
-        <input type="submit"
-               class="btn"
-               tabindex="{{  view.tabindex_submit_button }}"
-               value="Submit" />
+        <div class="col-sm-offset-3">
+          <input type="submit"
+                 class="btn btn-primary"
+                 tabindex="{{  view.tabindex_submit_button }}"
+                 value="Submit" />
+        </div>
       </div>
 
     </fieldset>

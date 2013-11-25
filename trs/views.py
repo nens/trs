@@ -278,8 +278,10 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
 class ProjectEditView(UpdateView, BaseMixin):
     template_name = 'trs/edit.html'
     model = Project
+    title = "Project aanpassen"
 
 
 class ProjectCreateView(CreateView, BaseMixin):
     template_name = 'trs/edit.html'
     model = Project
+    title = "Nieuw project"

@@ -149,7 +149,7 @@ class Project(models.Model):
     class Meta:
         verbose_name = "project"
         verbose_name_plural = "projecten"
-        ordering = ('-internal', 'code')
+        ordering = ('internal', 'code')
 
     def __str__(self):
         return self.code
