@@ -121,11 +121,22 @@ class ProjectTestCase(TestCase):
         project = factories.ProjectFactory.build()
         self.assertTrue(project.as_widget())
 
-    def test_sorting(self):
+    def test_sorting1(self):
         factories.ProjectFactory.create(code='P1234')
         factories.ProjectFactory.create(code='P0123')
         self.assertEqual(models.Project.objects.all()[0].code,
                          'P0123')
+
+    def test_sorting2(self):
+        # External comes before internal.
+        factories.ProjectFactory.create(code='P1234',
+                                        internal=False)
+        factories.ProjectFactory.create(code='P0123',
+                                        internal=True)
+        factories.ProjectFactory.create(code='P0001',
+                                        internal=False)
+        codes = [project.code for project in models.Project.objects.all()]
+        self.assertEqual(codes, ['P0001', 'P1234', 'P0123'])
 
     def test_assigned_persons1(self):
         project = factories.ProjectFactory.create()

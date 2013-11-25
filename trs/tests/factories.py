@@ -25,6 +25,11 @@ class ProjectFactory(factory.django.DjangoModelFactory):
 
     code = 'P1234'
     slug = 'p1234'
+    description = ''
+    internal = False
+    principal = ''
+    project_leader = None
+    project_manager = None
 
 
 class YearWeekFactory(factory.django.DjangoModelFactory):

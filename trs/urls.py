@@ -24,6 +24,9 @@ urlpatterns = patterns(
     url(r'^projects/(?P<slug>\w+)/$',
         views.ProjectView.as_view(),
         name='trs.project'),
+    url(r'^projects/(?P<slug>\w+)/edit/$',
+        views.ProjectEditView.as_view(),
+        name='trs.project.edit'),
 
     url(r'^booking/$',
         views.BookingView.as_view(),

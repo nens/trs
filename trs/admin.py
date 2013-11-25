@@ -9,6 +9,7 @@ class PersonAdmin(admin.ModelAdmin):
 
 class ProjectAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('code',)}
+    list_display = ['code', 'internal', 'description']
 
 
 class PersonChangeAdmin(admin.ModelAdmin):

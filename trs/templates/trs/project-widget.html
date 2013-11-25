@@ -1,3 +1,4 @@
-<a href="{{ project.get_absolute_url }}">
+<a href="{{ project.get_absolute_url }}"
+  {% if not project.internal %}class="external-project"{% endif %}>
   {{ project.code }}
 </a>

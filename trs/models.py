@@ -136,18 +136,20 @@ class Project(models.Model):
         blank=True,
         null=True,
         verbose_name="projectleider",
+        help_text="verantwoordelijke voor de uren op het project",
         related_name="projects_i_lead")
     project_manager = models.ForeignKey(
         Person,
         blank=True,
         null=True,
         verbose_name="projectmanager",
+        help_text="verantwoordelijke voor het budget van het project",
         related_name="projects_i_manage")
 
     class Meta:
         verbose_name = "project"
         verbose_name_plural = "projecten"
-        ordering = ['code']
+        ordering = ('-internal', 'code')
 
     def __str__(self):
         return self.code

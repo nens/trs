@@ -1,0 +1,39 @@
+{% extends "trs/base.html" %}
+
+{% block main-column %}
+
+  <form action="." method="post" role="form">
+    {% for error in form.non_field_errors %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endfor %}
+    <fieldset>
+      {% csrf_token %}
+
+      {% for field in form %}
+        <div class="form-group">
+          <label>{{ field.label }}</label><br>
+          {% if field.help_text %}
+            <p>{{ field.help_text }}</p>
+          {% endif %}
+          {% for error in field.errors %}
+            <div class="alert alert-danger">{{ error }}</div>
+          {% endfor %}
+          {{ field }}
+        </div>
+      {% endfor %}
+
+      <div class="form-group">
+        <input type="submit"
+               class="btn"
+               tabindex="{{  view.tabindex_submit_button }}"
+               value="Submit" />
+      </div>
+
+    </fieldset>
+  </form>
+
+{% endblock %}
+
+{% block overview-column %}
+
+{% endblock %}

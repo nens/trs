@@ -14,3 +14,7 @@ a.navbar-brand {
     padding-bottom: 0;
     line-height: 50px;
 }
+
+.external-project {
+    font-weight: bold;
+}

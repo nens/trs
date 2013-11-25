@@ -13,6 +13,8 @@ from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
+from django.views.generic.edit import UpdateView
+#from django.views.generic.edit import CreateView
 
 from trs import core
 from trs.models import Person
@@ -271,3 +273,8 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
             line['field'] = fields[project_index]
             result.append(line)
         return result
+
+
+class ProjectEditView(UpdateView, BaseMixin):
+    template_name = 'trs/edit.html'
+    model = Project
