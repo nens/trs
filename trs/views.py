@@ -90,7 +90,7 @@ class PersonView(BaseView):
 
     @cached_property
     def person(self):
-        return Person.objects.get(id=self.kwargs['id'])
+        return Person.objects.get(pk=self.kwargs['pk'])
 
     @cached_property
     def person_projects(self):
@@ -123,7 +123,7 @@ class ProjectView(BaseView):
 
     @cached_property
     def project(self):
-        return Project.objects.get(id=self.kwargs['id'])
+        return Project.objects.get(pk=self.kwargs['pk'])
 
     @cached_property
     def person_projects(self):

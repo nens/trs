@@ -62,7 +62,7 @@ class PersonViewTestCase(TestCase):
         self.person = factories.PersonFactory.create()
 
     def test_smoke(self):
-        view = views.PersonView(kwargs={'id': self.person.id})
+        view = views.PersonView(kwargs={'pk': self.person.pk})
         self.assertEqual(view.person, self.person)
 
 
@@ -83,7 +83,7 @@ class ProjectViewTestCase(TestCase):
         self.project = factories.ProjectFactory.create()
 
     def test_smoke(self):
-        view = views.ProjectView(kwargs={'id': self.project.id})
+        view = views.ProjectView(kwargs={'pk': self.project.pk})
         self.assertEqual(view.project, self.project)
 
 

@@ -15,6 +15,13 @@
     <dd>{{ view.project.end.friendly }}</dd>
   </dl>
 
+  <p>
+    <a href="{% url 'trs.project.edit' pk=view.project.pk %}"
+       class="btn btn-default">
+      Project bewerken
+    </a>
+  </p>
+
   <h2>Wie werkt hierop?</h2>
   <div class="table-responsive">
     <table class="table">

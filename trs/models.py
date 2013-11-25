@@ -60,7 +60,7 @@ class Person(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('trs.person', kwargs={'id': self.id})
+        return reverse('trs.person', kwargs={'pk': self.pk})
 
     def as_widget(self):
         return mark_safe(render_to_string('trs/person-widget.html',
@@ -151,7 +151,7 @@ class Project(models.Model):
         return self.code
 
     def get_absolute_url(self):
-        return reverse('trs.project', kwargs={'id': self.id})
+        return reverse('trs.project', kwargs={'pk': self.pk})
 
     def as_widget(self):
         return mark_safe(render_to_string('trs/project-widget.html',
