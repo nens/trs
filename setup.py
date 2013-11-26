@@ -13,6 +13,7 @@ install_requires = [
     'Django >= 1.6b4',
     'Werkzeug',
     'django-extensions',
+    'django-tls',
     'setuptools',
     'south',
     ],
