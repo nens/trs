@@ -251,17 +251,17 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
         form = self.get_form(self.get_form_class())
         fields = list(form)  # A form's __iter__ returns 'bound fields'.
         for project_index, project in enumerate(self.active_projects):
-            line = {'project': project}
-            # import pdb;pdb.set_trace()
-            line['available'] = WorkAssignment.objects.filter(
-                assigned_to=self.active_person,
-                assigned_on=project).aggregate(
-                    models.Sum('hours'))['hours__sum']
-            line['already_booked'] = Booking.objects.filter(
-                    booked_by=self.active_person,
-                    booked_on=project).aggregate(
-                        models.Sum('hours'))['hours__sum']
-            line['overbooked'] = (line['already_booked'] > line['available'])
+            line = {'ppc': core.ProjectPersonCombination(project,
+                                                         self.active_person)}
+            # line['available'] = WorkAssignment.objects.filter(
+            #     assigned_to=self.active_person,
+            #     assigned_on=project).aggregate(
+            #         models.Sum('hours'))['hours__sum']
+            # line['already_booked'] = Booking.objects.filter(
+            #         booked_by=self.active_person,
+            #         booked_on=project).aggregate(
+            #             models.Sum('hours'))['hours__sum']
+            # line['overbooked'] = (line['already_booked'] > line['available'])
             for index, year_week in enumerate(self.year_weeks_to_display):
                 booked = Booking.objects.filter(
                     year_week=year_week,

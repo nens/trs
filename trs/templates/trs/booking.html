@@ -14,6 +14,7 @@
           <th>Omschrijving</th>
           <th>Beschikbaar</th>
           <th>Geboekt</th>
+          <th></th>
           {% for year_week in view.year_weeks_to_display %}
             <th>{{ year_week.as_widget }}</th>
             <!-- TODO: give feedback in widget if you need to book in that week -->
@@ -25,12 +26,13 @@
       <tbody>
         {% for line in view.lines %}
           <tr>
-            <td>{{ line.project.as_widget }}</td>
-            <td>{{ line.project.description }}</td>
-            <td>{{ line.available|hours }}</td>
-            <td {% if line.overbooked %}class="text-danger"{% endif %}>
-              {{ line.already_booked|hours }}
+            <td>{{ line.ppc.project.as_widget }}</td>
+            <td>{{ line.ppc.project.description }}</td>
+            <td>{{ line.ppc.budget|hours }}</td>
+            <td {% if line.ppc.is_overbooked %}class="text-danger"{% endif %}>
+              {{ line.ppc.booked|hours }}
             </td>
+            <td>&nbsp;&nbsp;&nbsp;</td>
             <td>{{ line.hours0|hours }}</td>
             <td>{{ line.hours1|hours }}</td>
             <td>
@@ -45,6 +47,7 @@
       </tbody>
       <tfoot>
         <tr>
+          <th></th>
           <th></th>
           <th></th>
           <th></th>
