@@ -29,7 +29,7 @@ from trs.templatetags.trs_formatting import hours as format_as_hours
 from trs.templatetags.trs_formatting import money as format_as_money
 
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class LoginRequiredMixin(object):

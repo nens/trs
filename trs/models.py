@@ -1,10 +1,12 @@
 import datetime
+import logging
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from tls import request as tls_request
 
 # TODO: add setting TRS_ADMIN_USER_CAN_DELETE_PERSONS_AND_PROJECTS
 # TODO: add django-appconf
@@ -15,6 +17,8 @@ from django.utils.safestring import mark_safe
 # too. 999999.99 should be possible, so that's 8 digits with 2 decimal places.
 MAX_DIGITS = 8
 DECIMAL_PLACES = 2
+
+logger = logging.getLogger(__name__)
 
 
 def this_year_week():
@@ -218,6 +222,13 @@ class EventBase(models.Model):
     class Meta:
         abstract = True
         ordering = ['year_and_week', 'added']
+
+    def save(self, *args, **kwargs):
+        if not self.year_week:
+            self.year_week = this_year_week()
+        if not self.added_by:
+            self.added_by = tls_request.user
+        return super(EventBase, self).save(*args, **kwargs)
 
 
 class PersonChange(EventBase):
