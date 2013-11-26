@@ -19,9 +19,17 @@
           <tr>
             <td>{{ line.ppc.person.as_widget }}</td>
             <td>
+              {% for error in line.hours.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
               {{ line.hours }}
             </td>
-            <td>{{ line.hourly_tariff }}</td>
+            <td>
+              {% for error in line.hourly_tariff.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
+              {{ line.hourly_tariff }}
+            </td>
           </tr>
         {% endfor %}
       </tbody>

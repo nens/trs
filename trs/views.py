@@ -2,6 +2,7 @@ import datetime
 import logging
 
 from django import forms
+from django.contrib import messages
 from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
@@ -12,9 +13,9 @@ from django.utils.datastructures import SortedDict
 from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
 from django.views.generic.base import TemplateView
+from django.views.generic.edit import CreateView
 from django.views.generic.edit import FormView
 from django.views.generic.edit import UpdateView
-from django.views.generic.edit import CreateView
 
 from trs import core
 from trs.models import Person
@@ -224,9 +225,13 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
         return result
 
     def form_valid(self, form):
+        total_difference = 0
+        absolute_difference = 0
         for project_code, new_hours in form.cleaned_data.items():
             old_hours = self.initial[project_code]
             difference = new_hours - old_hours
+            total_difference += difference
+            absolute_difference += abs(difference)
             if difference:
                 project = [project for project in self.active_projects
                            if project.code == project_code][0]
@@ -236,6 +241,17 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
                                   year_week=self.active_year_week)
                 booking.save()
                 logger.info("Added booking %s", booking)
+        if absolute_difference:
+            if total_difference < 0:
+                indicator = total_difference
+            elif total_difference > 0:
+                indicator = '+%s' % total_difference
+            else:  # 0
+                indicator = "alleen verschoven"
+            messages.success(self.request, "Uren aangepast (%s)." % indicator)
+        else:
+            messages.info(self.request, "Niets aan de uren gewijzigd.")
+
         return super(BookingView, self).form_valid(form)
 
     @cached_property
@@ -273,11 +289,19 @@ class ProjectEditView(UpdateView, BaseMixin):
     model = Project
     title = "Project aanpassen"
 
+    def form_valid(self, form):
+        messages.success(self.request, "Project aangepast")
+        return super(ProjectEditView, self).form_valid(form)
+
 
 class ProjectCreateView(CreateView, BaseMixin):
     template_name = 'trs/edit.html'
     model = Project
     title = "Nieuw project"
+
+    def form_valid(self, form):
+        messages.success(self.request, "Project aangemaakt")
+        return super(ProjectCreateView, self).form_valid(form)
 
 
 class TeamEditView(LoginRequiredMixin, FormView, BaseMixin):
@@ -343,7 +367,7 @@ class TeamEditView(LoginRequiredMixin, FormView, BaseMixin):
             # New team member field
             name = 'new_team_member'
             choices = list(Person.objects.all().values_list('pk', 'name'))
-            choices.insert(0, (' ', '---'))
+            choices.insert(0, ('', '---'))
             # TODO: ^^^ filter out inactive users.
             field_type = forms.ChoiceField(
                 required=False,
@@ -383,3 +407,48 @@ class TeamEditView(LoginRequiredMixin, FormView, BaseMixin):
     def new_team_member_field(self):
         if self.can_add_team_member:
             return self.bound_form_fields[-1]
+
+    def form_valid(self, form):
+        num_changes = 0
+        for person in self.project.assigned_persons():
+            ppc = core.ProjectPersonCombination(self.project, person)
+            hours = 0
+            hourly_tariff = 0
+            if self.can_edit_hours:
+                current = ppc.budget
+                new = form.cleaned_data.get(self.hours_fieldname(person))
+                hours = new - current
+            if self.can_edit_hourly_tariff:
+                current = ppc.hourly_tariff
+                new = form.cleaned_data.get(
+                    self.hourly_tariff_fieldname(person))
+                hourly_tariff = new - current
+            if hours or hourly_tariff:
+                num_changes += 1
+                work_assignment = WorkAssignment(
+                    hours=hours,
+                    hourly_tariff=hourly_tariff,
+                    assigned_on=self.project,
+                    assigned_to=person)
+                work_assignment.save()
+                logger.info("Added work assignment")
+        if num_changes:
+            messages.success(self.request, "Teamleden: %s gewijzigd" % num_changes)
+
+        if self.can_add_team_member:
+            new_team_member_id = form.cleaned_data.get('new_team_member')
+            if new_team_member_id:
+                person = Person.objects.get(id=new_team_member_id)
+                work_assignment = WorkAssignment(
+                    assigned_on=self.project,
+                    assigned_to=person)
+                work_assignment.save()
+                msg = "Added %s to team" % person.name
+                logger.info(msg)
+                messages.success(self.request, msg)
+
+        return super(TeamEditView, self).form_valid(form)
+
+    @cached_property
+    def success_url(self):
+        return self.project.get_absolute_url()
