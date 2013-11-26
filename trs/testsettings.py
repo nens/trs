@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_nose',
     'django.contrib.humanize',
+    'django.contrib.messages',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -37,7 +38,7 @@ STATICFILES_DIRS = [
 ]
 STATIC_URL = '/static/'
 
-Logging = {
+LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
     'formatters': {
@@ -65,19 +66,19 @@ Logging = {
             'filename': os.path.join(BUILDOUT_DIR,
                                      'var', 'log', 'django.log'),
         },
-         'loggers': {
-             '': {
-                 'handlers': ['console', 'logfile'],
-                 'propagate': True,
-                 'level': 'DEBUG',
-             },
-             'django.db.backends': {
-                 'handlers': ['null'],  # Quiet by default!
-                 'propagate': False,
-                 'level': 'DEBUG',
-             },
-         }
-     }
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console', 'logfile'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+        'django.db.backends': {
+            'handlers': ['null'],  # Quiet by default!
+            'propagate': False,
+            'level': 'DEBUG',
+        },
+    }
 }
 # Start and end year are used for creating YearWeek objects for those years
 # with the ``bin/django update_weeks`` command.
