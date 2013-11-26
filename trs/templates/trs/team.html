@@ -39,7 +39,7 @@
           <th></th>
           <th colspan="2">
             <input type="submit"
-                   class="btn"
+                   class="btn btn-primary"
                    tabindex="{{ view.tabindex_submit_button }}"
                    value="Submit" /></th>
         </tr>
@@ -51,5 +51,30 @@
 {% endblock %}
 
 {% block overview-column %}
-  Overview column
+  <h2>Uitleg</h2>
+  <p>
+    <b>Projectleiders</b> gaan over de uren en de projectmedewerkers, maar
+    niet over het geld.
+  </p>
+  <p>
+    <b>Projectmanagers</b> mogen het uurtarief wijzigen, maar de
+    teamsamenstelling en urenverdeling is voor de projectleider.
+  </p>
+  <p>
+    Als de PM het project goedkeurt staat de urenverdeling in principe vast.
+    Via het secretariaat kan er nog wel wat gewijzigd worden. Ook kunnen er
+    nieuwe teamleden toegevoegd worden (zodat ze kunnen boeken), maar die
+    hebben dan geen uren en werken voor nultarief.
+  </p>
+  <p>
+    Dus, PL, de bedoeling is dat er in het begin een <b>deugdelijke
+    ureninschatting</b> is! Omdat de projectmedewerkers er deels op afgerekend
+    worden als ze over de ingeschatte uren heengaan moeten zij het ook met die
+    inschattingen eens zijn.
+  </p>
+  <p>
+    Richting PM betekent dit dat de <b>offerte moet kloppen</b> met de
+    ureninschatting, omdat de projectmedewerkers anders voor een lager tarief
+    moeten gaan werken.
+  </p>
 {% endblock %}
