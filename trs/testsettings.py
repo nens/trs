@@ -27,6 +27,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     #'django.contrib.sites',
     ]
+MIDDLEWARE_CLASSES = (
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    # Defaults above, extra one below.
+    'tls.TLSRequestMiddleware',
+    )
+
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
