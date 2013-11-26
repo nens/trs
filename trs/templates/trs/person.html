@@ -23,7 +23,15 @@
     <tbody>
       {% for project in view.person_projects %}
         <tr>
-          <td>{{ project.project.as_widget }}</td>
+          <td>
+            {{ project.project.as_widget }}
+            {% if project.is_project_leader %}
+              <span class="label label-default">PL</span>
+            {% endif %}
+            {% if project.is_project_manager %}
+              <span class="label label-default">PM</span>
+            {% endif %}
+          </td>
           <td>{{ project.budget|hours }}</td>
           <td>{{ project.booked|hours }}</td>
         </tr>
