@@ -23,6 +23,8 @@ from trs.models import Booking
 from trs.models import YearWeek
 from trs.models import WorkAssignment
 from trs.models import this_year_week
+from trs.templatetags.trs_formatting import hours as format_as_hours
+from trs.templatetags.trs_formatting import money as format_as_money
 
 
 logger = logging.getLogger()
@@ -253,15 +255,6 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
         for project_index, project in enumerate(self.active_projects):
             line = {'ppc': core.ProjectPersonCombination(project,
                                                          self.active_person)}
-            # line['available'] = WorkAssignment.objects.filter(
-            #     assigned_to=self.active_person,
-            #     assigned_on=project).aggregate(
-            #         models.Sum('hours'))['hours__sum']
-            # line['already_booked'] = Booking.objects.filter(
-            #         booked_by=self.active_person,
-            #         booked_on=project).aggregate(
-            #             models.Sum('hours'))['hours__sum']
-            # line['overbooked'] = (line['already_booked'] > line['available'])
             for index, year_week in enumerate(self.year_weeks_to_display):
                 booked = Booking.objects.filter(
                     year_week=year_week,
@@ -285,3 +278,108 @@ class ProjectCreateView(CreateView, BaseMixin):
     template_name = 'trs/edit.html'
     model = Project
     title = "Nieuw project"
+
+
+class TeamEditView(LoginRequiredMixin, FormView, BaseMixin):
+    template_name = 'trs/team.html'
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def ppc(self):
+        return core.ProjectPersonCombination(self.project, self.active_person)
+
+    @cached_property
+    def title(self):
+        return "Projectteam voor %s bewerken" % self.project.code
+
+    @cached_property
+    def can_edit_hours(self):
+        # TODO: can_edit_role (also PL territory)
+        #return self.ppc.is_project_leader
+        return True
+
+    @cached_property
+    def can_add_team_member(self):
+        #return self.ppc.is_project_leader
+        return True
+
+    @cached_property
+    def can_edit_hourly_tariff(self):
+        #return self.ppc.is_project_manager
+        return True
+
+    def hours_fieldname(self, person):
+        return 'hours-%s' % person.id
+
+    def hourly_tariff_fieldname(self, person):
+        return 'hourly_tariff-%s' % person.id
+
+    def get_form_class(self):
+        """Return dynamically generated form class."""
+        fields = SortedDict()
+        tabindex = 1
+        for index, person in enumerate(self.project.assigned_persons()):
+            ppc = core.ProjectPersonCombination(self.project, person)
+            if self.can_edit_hours:
+                field_type = forms.IntegerField(
+                    min_value=0,
+                    initial=round(ppc.budget),
+                    widget=forms.TextInput(attrs={'size': 4,
+                                                  'tabindex': tabindex}))
+                fields[self.hours_fieldname(person)] = field_type
+                tabindex += 1
+            if self.can_edit_hourly_tariff:
+                field_type = forms.IntegerField(
+                    min_value=0,
+                    initial=round(ppc.hourly_tariff),
+                    widget=forms.TextInput(attrs={'size': 4,
+                                                  'tabindex': tabindex}))
+                fields[self.hourly_tariff_fieldname(person)] = field_type
+                tabindex += 1
+        if self.can_add_team_member:
+            # New team member field
+            name = 'new_team_member'
+            choices = list(Person.objects.all().values_list('pk', 'name'))
+            choices.insert(0, (' ', '---'))
+            # TODO: ^^^ filter out inactive users.
+            field_type = forms.ChoiceField(
+                required=False,
+                choices=choices,
+                widget=forms.Select(attrs={'tabindex': tabindex}))
+            fields[name] = field_type
+            tabindex += 1
+        return type("GeneratedTeamEditForm", (forms.Form,), fields)
+
+    @cached_property
+    def bound_form_fields(self):
+        form = self.get_form(self.get_form_class())
+        return list(form)
+
+    @cached_property
+    def lines(self):
+        result = []
+        fields = self.bound_form_fields
+        field_index = 0
+        for person in self.project.assigned_persons():
+            ppc = core.ProjectPersonCombination(self.project, person)
+            line = {'ppc': ppc}
+            if self.can_edit_hours:
+                line['hours'] = fields[field_index]
+                field_index += 1
+            else:
+                line['hours'] = format_as_hours(ppc.budget)
+            if self.can_edit_hourly_tariff:
+                line['hourly_tariff'] = fields[field_index]
+                field_index += 1
+            else:
+                line['hourly_tariff'] = format_as_money(ppc.hourly_tariff)
+            result.append(line)
+        return result
+
+    @cached_property
+    def new_team_member_field(self):
+        if self.can_add_team_member:
+            return self.bound_form_fields[-1]
