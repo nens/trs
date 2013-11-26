@@ -33,6 +33,9 @@ urlpatterns = patterns(
     url(r'^projects/(?P<pk>\d+)/team/$',
         views.TeamEditView.as_view(),
         name='trs.project.team'),
+    url(r'^projects/(?P<pk>\d+)/add_budget/$',
+        views.BudgetAddView.as_view(),
+        name='trs.project.add_budget'),
 
     url(r'^booking/$',
         views.BookingView.as_view(),

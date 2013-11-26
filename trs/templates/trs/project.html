@@ -128,5 +128,11 @@
       </tfoot>
     </table>
   </div>
+  <div>
+    <a href="{% url 'trs.project.add_budget' pk=view.project.pk %}"
+       class="btn btn-default">
+      Voeg budgetwijziging toe
+    </a>
+  </div>
 
 {% endblock %}

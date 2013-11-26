@@ -23,6 +23,7 @@ from trs.models import Project
 from trs.models import Booking
 from trs.models import YearWeek
 from trs.models import WorkAssignment
+from trs.models import BudgetAssignment
 from trs.models import this_year_week
 from trs.templatetags.trs_formatting import hours as format_as_hours
 from trs.templatetags.trs_formatting import money as format_as_money
@@ -452,3 +453,27 @@ class TeamEditView(LoginRequiredMixin, FormView, BaseMixin):
     @cached_property
     def success_url(self):
         return self.project.get_absolute_url()
+
+
+class BudgetAddView(CreateView, BaseMixin):
+    template_name = 'trs/edit.html'
+    model = BudgetAssignment
+    fields = ['budget', 'description']
+    hidden_fields = ['assigned_to']
+
+    @property
+    def title(self):
+        return "Nieuwe budgetaanpassing voor %s" % self.project.code
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def success_url(self):
+        return self.project.get_absolute_url()
+
+    def form_valid(self, form):
+        form.instance.assigned_to = self.project
+        messages.success(self.request, "Budget aangepast")
+        return super(BudgetAddView, self).form_valid(form)

@@ -314,7 +314,7 @@ class BudgetAssignment(EventBase):
         decimal_places=DECIMAL_PLACES,
         blank=True,
         null=True,
-        verbose_name="budget")
+        verbose_name="bedrag")
     description = models.CharField(
         verbose_name="omschrijving",
         blank=True,
