@@ -46,8 +46,12 @@ This is still quite a list... How do you get these roles?
 - You are a project leader or project manager if office management has set you
   as such on a project's edit form.
 
-- You are office management or management if office management (or the admin)
-  set you up as such in your person edit form.
+- You are management if office management (or the admin) set you up as such in
+  your person edit form.
+
+- You are office management if the admin set you up that way in the django
+  admin. This is the easiest way to prevent office management from locking
+  themselves out with their own forms.
 
 Ok, this is much simpler.
 

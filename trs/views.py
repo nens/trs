@@ -315,7 +315,7 @@ class PersonEditView(UpdateView, BaseMixin):
     template_name = 'trs/edit.html'
     model = Person
     title = "Medewerker aanpassen"
-    fields = ['name', 'user', ]  # login_name, description
+    fields = ['name', 'user', 'is_management']
 
     def form_valid(self, form):
         messages.success(self.request, "Medewerker aangepast")
@@ -326,7 +326,7 @@ class PersonCreateView(CreateView, BaseMixin):
     template_name = 'trs/edit.html'
     model = Person
     title = "Nieuwe medewerker"
-    fields = ['name', 'user', ]  # login_name, description
+    fields = ['name', 'user', 'is_management']
 
     def form_valid(self, form):
         messages.success(self.request, "Medewerker aangemaakt")
