@@ -314,22 +314,22 @@ class ProjectCreateView(CreateView, BaseMixin):
 class PersonEditView(UpdateView, BaseMixin):
     template_name = 'trs/edit.html'
     model = Person
-    title = "Persoon aanpassen"
+    title = "Medewerker aanpassen"
     fields = ['name', 'user', ]  # login_name, description
 
     def form_valid(self, form):
-        messages.success(self.request, "Persoon aangepast")
+        messages.success(self.request, "Medewerker aangepast")
         return super(PersonEditView, self).form_valid(form)
 
 
 class PersonCreateView(CreateView, BaseMixin):
     template_name = 'trs/edit.html'
     model = Person
-    title = "Nieuw persoon"
+    title = "Nieuwe medewerker"
     fields = ['name', 'user', ]  # login_name, description
 
     def form_valid(self, form):
-        messages.success(self.request, "Persoon aangemaakt")
+        messages.success(self.request, "Medewerker aangemaakt")
         return super(PersonCreateView, self).form_valid(form)
 
 
