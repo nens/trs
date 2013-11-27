@@ -15,12 +15,14 @@
     <dd>{{ view.project.end.friendly }}</dd>
   </dl>
 
-  <p>
-    <a href="{% url 'trs.project.edit' pk=view.project.pk %}"
-       class="btn btn-default">
-      Project bewerken
-    </a>
-  </p>
+  {% if view.can_edit_project %}
+    <p>
+      <a href="{% url 'trs.project.edit' pk=view.project.pk %}"
+         class="btn btn-default">
+        Project bewerken
+      </a>
+    </p>
+  {% endif %}
 
   <h2>Projectteam</h2>
   <div class="table-responsive">
@@ -30,8 +32,10 @@
           <th>Wie</th>
           <th class="text-right">Uren</th>
           <th class="text-right">Geboekt</th>
-          <th class="text-right">Tarief</th>
-          <th class="text-right">Omgezet</th>
+          {% if view.can_see_financials %}
+            <th class="text-right">Tarief</th>
+            <th class="text-right">Omgezet</th>
+          {% endif %}
         </tr>
       </thead>
 
@@ -52,87 +56,99 @@
                        {% if line.is_overbooked %}text-danger{% endif %}">
               {{ line.booked|hours }}
             </td>
-            <td class="text-right">{{ line.hourly_tariff|money }}</td>
-            <td class="text-right">{{ line.turnover|money }}</td>
+            {% if view.can_see_financials %}
+              <td class="text-right">{{ line.hourly_tariff|money }}</td>
+              <td class="text-right">{{ line.turnover|money }}</td>
+            {% endif %}
           </tr>
         {% endfor %}
       </tbody>
 
-      <tfoot>
-        <tr>
-          <th>Totaal omgezet</th>
-          <td class="text-right"></td>
-          <td class="text-right"></td>
-          <td class="text-right"></td>
-          <th class="text-right">{{ view.total_turnover|money }}</th>
-        </tr>
-        <tr>
-          <th>Resterende omzet</th>
-          <td class="text-right"></td>
-          <td class="text-right"></td>
-          <td class="text-right"></td>
-          <th class="text-right">{{ view.total_turnover_left|money }}</th>
-        </tr>
-      </tfoot>
-    </table>
-    <div>
-      <a href="{% url 'trs.project.team' pk=view.project.pk %}"
-         class="btn btn-default">
-        Pas team aan
-      </a>
-    </div>
-  </div>
-
-  <h2>Financi&euml;n</h2>
-  <div class="table-responsive">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Beschrijving</th>
-          <th>Wanneer</th>
-          <th class="text-right">Bedrag</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for budget_assignment in view.project.budget_assignments.all %}
+      {% if view.can_see_financials %}
+        <tfoot>
           <tr>
-            <td>{{ budget_assignment.description }}</td>
-            <td>{{ budget_assignment.year_week.friendly }}</td>
-            <td class="text-right">{{ budget_assignment.budget|money }}</td>
+            <th>Totaal omgezet</th>
+            <td class="text-right"></td>
+            <td class="text-right"></td>
+            <td class="text-right"></td>
+            <th class="text-right">{{ view.total_turnover|money }}</th>
           </tr>
-        {% endfor %}
-      </tbody>
-      <tbody>
-        <tr>
-          <th>Subtotaal</th>
-          <th></th>
-          <th class="text-right">{{ view.subtotal|money }}</th>
-        </tr>
-        <tr>
-          <td>Af: totaal omgezet</td>
-          <td></td>
-          <td class="text-right">-{{ view.total_turnover|money }}</td>
-        </tr>
-        <tr>
-          <td>Af: resterende te boeken omzet</td>
-          <td></td>
-          <td class="text-right">-{{ view.total_turnover_left|money }}</td>
-        </tr>
-      </tbody>
-      <tfoot>
-        <tr>
-          <th>Nog niet verdeeld</th>
-          <th></th>
-          <th class="text-right">{{ view.amount_left|money }}</th>
-        </tr>
-      </tfoot>
+          <tr>
+            <th>Resterende omzet</th>
+            <td class="text-right"></td>
+            <td class="text-right"></td>
+            <td class="text-right"></td>
+            <th class="text-right">{{ view.total_turnover_left|money }}</th>
+          </tr>
+        </tfoot>
+      {% endif %}
     </table>
+
+    {% if view.can_edit_team %}
+      <div>
+        <a href="{% url 'trs.project.team' pk=view.project.pk %}"
+           class="btn btn-default">
+          Pas team aan
+        </a>
+      </div>
+    {% endif %}
   </div>
-  <div>
-    <a href="{% url 'trs.project.add_budget' pk=view.project.pk %}"
-       class="btn btn-default">
-      Voeg budgetwijziging toe
-    </a>
-  </div>
+
+  {% if view.can_see_project_financials %}
+    <h2>Financi&euml;n</h2>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Beschrijving</th>
+            <th>Wanneer</th>
+            <th class="text-right">Bedrag</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for budget_assignment in view.project.budget_assignments.all %}
+            <tr>
+              <td>{{ budget_assignment.description }}</td>
+              <td>{{ budget_assignment.year_week.friendly }}</td>
+              <td class="text-right">{{ budget_assignment.budget|money }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tbody>
+          <tr>
+            <th>Subtotaal</th>
+            <th></th>
+            <th class="text-right">{{ view.subtotal|money }}</th>
+          </tr>
+          <tr>
+            <td>Af: totaal omgezet</td>
+            <td></td>
+            <td class="text-right">-{{ view.total_turnover|money }}</td>
+          </tr>
+          <tr>
+            <td>Af: resterende te boeken omzet</td>
+            <td></td>
+            <td class="text-right">-{{ view.total_turnover_left|money }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>Nog niet verdeeld</th>
+            <th></th>
+            <th class="text-right">{{ view.amount_left|money }}</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    {% if view.can_edit_financials %}
+      <div>
+        <a href="{% url 'trs.project.add_budget' pk=view.project.pk %}"
+           class="btn btn-default">
+          Voeg budgetwijziging toe
+        </a>
+      </div>
+    {% endif %}
+  {% endif %}
 
 {% endblock %}

@@ -186,6 +186,31 @@ class ProjectView(BaseView):
         return Project.objects.get(pk=self.kwargs['pk'])
 
     @cached_property
+    def can_edit_project(self):
+        # TODO
+        return True
+
+    @cached_property
+    def can_edit_financials(self):
+        # TODO
+        return True
+
+    @cached_property
+    def can_edit_team(self):
+        # TODO
+        return True
+
+    @cached_property
+    def can_see_financials(self):
+        # TODO
+        return True
+
+    @cached_property
+    def can_see_project_financials(self):
+        # TODO
+        return True
+
+    @cached_property
     def person_projects(self):
         return [core.ProjectPersonCombination(self.project, person)
                 for person in self.project.assigned_persons()]
