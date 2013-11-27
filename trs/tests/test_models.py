@@ -1,5 +1,6 @@
 # import unittest  # Note: this is 3.3's unittest2!
 from django.test import TestCase
+import mock
 
 from trs import models
 from trs.tests import factories
@@ -159,6 +160,17 @@ class ProjectTestCase(TestCase):
             budget=1000,
             assigned_to=project)
         self.assertEqual(project.budget(), 1000)
+
+
+class EventBaseTestCase(TestCase):
+
+    def test_added_by(self):
+        # We use person_change as the subclass to test the abstract EventBase.
+        request = mock.Mock()
+        request.user = factories.UserFactory.create()
+        with mock.patch('trs.models.tls_request', request):
+            person_change = factories.PersonChangeFactory.create()
+            self.assertEqual(person_change.added_by, request.user)
 
 
 class YearWeekTestCase(TestCase):
