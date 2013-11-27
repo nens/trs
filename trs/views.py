@@ -86,6 +86,11 @@ class PersonsView(BaseView):
     template_name = 'trs/persons.html'
 
     @cached_property
+    def can_add_person(self):
+        # TODO
+        return True
+
+    @cached_property
     def persons(self):
         return Person.objects.all()
 
@@ -98,13 +103,39 @@ class PersonView(BaseView):
         return Person.objects.get(pk=self.kwargs['pk'])
 
     @cached_property
-    def ppcs(self):
+    def can_see_internal_projects(self):
+        # TODO
+        return True
+
+    @cached_property
+    def can_edit_person(self):
+        # TODO
+        return False
+
+    @cached_property
+    def can_see_financials(self):
+        # TODO
+        return True
+
+    @cached_property
+    def all_ppcs(self):
         return [core.ProjectPersonCombination(project, self.person)
                 for project in self.person.assigned_projects()]
 
     @cached_property
+    def ppcs(self):
+        if self.can_see_internal_projects:
+            return self.all_ppcs
+        return [ppc for ppc in self.all_ppcs if not ppc.project.internal]
+
+    @cached_property
     def total_budget(self):
         return sum([ppc.budget for ppc in self.ppcs])
+
+    @cached_property
+    def total_external_turnover(self):
+        return sum([ppc.turnover for ppc in self.ppcs
+                    if not ppc.project.internal])
 
     @cached_property
     def total_booked(self):
@@ -117,9 +148,9 @@ class PersonView(BaseView):
     @cached_property
     def extra_roles(self):
         num_project_leader_roles = sum([ppc.is_project_leader
-                                         for ppc in self.ppcs])
+                                         for ppc in self.all_ppcs])
         num_project_manager_roles = sum([ppc.is_project_manager
-                                         for ppc in self.ppcs])
+                                         for ppc in self.all_ppcs])
         roles = []
         if num_project_leader_roles:
             roles.append("%s keer projectleider" % num_project_leader_roles)
@@ -136,6 +167,11 @@ class PersonView(BaseView):
 
 class ProjectsView(BaseView):
     template_name = 'trs/projects.html'
+
+    @cached_property
+    def can_add_project(self):
+        # TODO
+        return True
 
     @cached_property
     def projects(self):
