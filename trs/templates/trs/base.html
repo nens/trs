@@ -1,4 +1,6 @@
 {% load staticfiles %}
+{% load trs_formatting %}
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -62,13 +64,46 @@
       <div class="row">
         <!-- Rows on desktop and horizontal ipads; stacked otherwise. -->
         <div class="col-md-8">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissable">
+              <button type="button"
+                      class="close"
+                      data-dismiss="alert"
+                      aria-hidden="true">&times;</button>
+              {{ message }}
+            </div>
+          {% endfor %}
+
           {% block main-column %}
             Main column
           {% endblock %}
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3 col-md-offset-1">
           {% block overview-column %}
-            Overview column
+            {% if view.active_person %}
+
+              <h2>Intern/extern</h2>
+              <div>
+                <b>{{ view.person_year_info.billable_percentage }}%</b>
+                op externe projecten geboekt.
+              </div>
+              <h2>Verliesuren</h2>
+              <div>
+                <b>
+                  {{ view.person_year_info.overbooked.percentage }}%
+                </b>
+                ({{ view.person_year_info.overbooked.over|hours }} uren)
+                buiten budget geboekt.
+              </div>
+              <h2>Financieel</h2>
+              <div>
+                Je hebt
+                <b>{{ view.person_year_info.target_percentage }}%</b>
+                van je target ({{ view.person_year_info.target|money }})
+                gehaald. Nog om te zetten:
+                {{ view.person_year_info.left_to_turn_over|money }}.
+              </div>
+            {% endif %}
           {% endblock %}
         </div>
       </div>

@@ -7,4 +7,9 @@
       <li>{{ person.as_widget }}</li>
     {% endfor %}
   </ul>
+  <p>
+    <a href="{% url 'trs.person.new' %}" class="btn btn-default">
+      Voeg nieuwe medewerker toe
+    </a>
+  </p>
 {% endblock %}

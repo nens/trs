@@ -17,14 +17,17 @@ class PersonFactory(factory.django.DjangoModelFactory):
     name = 'Reinout'
     user = factory.SubFactory(UserFactory)
     login_name = 'reinout.vanrees'
-    slug = 'reinoutvanrees'
 
 
 class ProjectFactory(factory.django.DjangoModelFactory):
     FACTORY_FOR = models.Project
 
     code = 'P1234'
-    slug = 'p1234'
+    description = ''
+    internal = False
+    principal = ''
+    project_leader = None
+    project_manager = None
 
 
 class YearWeekFactory(factory.django.DjangoModelFactory):
@@ -43,6 +46,7 @@ class PersonChangeFactory(factory.django.DjangoModelFactory):
 
     hours_per_week = 0
     target = 0
+    year_week = factory.SubFactory(YearWeekFactory)
 
 
 class BookingFactory(factory.django.DjangoModelFactory):

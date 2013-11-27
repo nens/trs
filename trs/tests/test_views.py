@@ -48,8 +48,8 @@ class BaseMixinTestCase(TestCase):
 class PersonsViewTestCase(TestCase):
 
     def setUp(self):
-        self.person1 = factories.PersonFactory.create(slug='person1')
-        self.person2 = factories.PersonFactory.create(slug='person2')
+        self.person1 = factories.PersonFactory.create()
+        self.person2 = factories.PersonFactory.create()
 
     def test_smoke(self):
         view = views.PersonsView()
@@ -62,15 +62,15 @@ class PersonViewTestCase(TestCase):
         self.person = factories.PersonFactory.create()
 
     def test_smoke(self):
-        view = views.PersonView(kwargs={'slug': self.person.slug})
+        view = views.PersonView(kwargs={'pk': self.person.pk})
         self.assertEqual(view.person, self.person)
 
 
 class ProjectsViewTestCase(TestCase):
 
     def setUp(self):
-        self.project1 = factories.ProjectFactory.create(slug='project1')
-        self.project2 = factories.ProjectFactory.create(slug='project2')
+        self.project1 = factories.ProjectFactory.create()
+        self.project2 = factories.ProjectFactory.create()
 
     def test_smoke(self):
         view = views.ProjectsView()
@@ -83,7 +83,7 @@ class ProjectViewTestCase(TestCase):
         self.project = factories.ProjectFactory.create()
 
     def test_smoke(self):
-        view = views.ProjectView(kwargs={'slug': self.project.slug})
+        view = views.ProjectView(kwargs={'pk': self.project.pk})
         self.assertEqual(view.project, self.project)
 
 

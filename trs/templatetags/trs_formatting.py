@@ -27,3 +27,14 @@ def hours(value):
     except:  # Yes, a bare except: filters should not raise exceptions
         return value
     return intcomma(rounded)
+
+
+@register.filter
+def tabindex(value, index):
+    """
+    Add a tabindex attribute to the widget for a bound field.
+
+    See http://stackoverflow.com/a/9250304/27401
+    """
+    value.field.widget.attrs['tabindex'] = index
+    return value

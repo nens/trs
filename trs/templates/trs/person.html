@@ -4,15 +4,67 @@
 {% block main-column %}
   <h1>{{ view.person.name }}</h1>
   <dl>
-    <dt>Target</dt>
-    <dd>{{ view.person.target|money }}</dd>
-    <dt>Uren per week</dt>
+    <dt>Werkweek</dt>
     <dd>{{ view.person.hours_per_week|hours }}</dd>
+    <dt>Werkvoorraad</dt>
+    <dd>{{ view.total_left_to_book|hours }}</dd>
+    <dt>Bij qua boeken</dt>
+    <dd>{{ view.person.booking_percentage }}%</dd>
   </dl>
-  <h2>Waar werk ik aan?</h2>
-  <ul>
-    {% for project in view.person.assigned_projects %}
-      <li>{{ project.as_widget }}</li>
-    {% endfor %}
-  </ul>
+  <div>
+    <a href="{% url 'trs.person.edit' pk=view.person.pk %}"
+       class="btn btn-default">
+      Wijzig
+    </a>
+    &nbsp;
+    <a href="{% url 'trs.person.target' pk=view.person.pk %}"
+       class="btn btn-default">
+      Wijzig target en/of werkweek
+    </a>
+  </div>
+
+  <h2>Externe projecten</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th>Budget</th>
+        <th>Geboekt</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for project in view.person_projects %}
+        <tr>
+          <td>
+            {{ project.project.as_widget }}
+            {% if project.is_project_leader %}
+              <span class="label label-default">PL</span>
+            {% endif %}
+            {% if project.is_project_manager %}
+              <span class="label label-default">PM</span>
+            {% endif %}
+          </td>
+          <td>{{ project.budget|hours }}</td>
+          <td>{{ project.booked|hours }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th>Totaal extern</th>
+        <th>{{ view.total_budget|hours }}</th>
+        <th>{{ view.total_booked|hours }}</th>
+      </tr>
+      <tr>
+        <th>Werkvoorraad</th>
+        <th></th>
+        <th>{{ view.total_left_to_book|hours }}</th>
+      </tr>
+    </tfoot>
+  </table>
+{% endblock %}
+
+{% block overview-column %}
+  {# No personal sidebar here, it would be too confusing next #}
+  {# to someone else's data. #}
 {% endblock %}

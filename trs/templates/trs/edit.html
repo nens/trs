@@ -1,0 +1,49 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>{{ view.title }}</h1>
+
+  <form action="."
+        method="post"
+        role="form"
+        class="form-horizontal">
+    {% for error in form.non_field_errors %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endfor %}
+    <fieldset>
+      {% csrf_token %}
+
+      {% for field in form %}
+        <div class="form-group">
+          <label class="col-sm-3">{{ field.label }}</label>
+          <div class="col-sm-5">
+            {% for error in field.errors %}
+              <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+
+            {{ field|tabindex:forloop.counter }}
+            {% if field.help_text %}
+              <p class="text-muted">{{ field.help_text }}</p>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+
+      <div class="form-group">
+        <div class="col-sm-offset-3">
+          <input type="submit"
+                 class="btn btn-primary"
+                 tabindex="{{  view.tabindex_submit_button }}"
+                 value="Submit" />
+        </div>
+      </div>
+
+    </fieldset>
+  </form>
+
+{% endblock %}
+
+{% block overview-column %}
+
+{% endblock %}

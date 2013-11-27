@@ -1,8 +1,8 @@
 import datetime
 import logging
 
-from django.utils.decorators import method_decorator
 from django import forms
+from django.contrib import messages
 from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
@@ -10,17 +10,27 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.shortcuts import redirect
 from django.utils.datastructures import SortedDict
+from django.utils.decorators import method_decorator
+from django.utils.functional import cached_property
 from django.views.generic.base import TemplateView
+from django.views.generic.edit import CreateView
 from django.views.generic.edit import FormView
+from django.views.generic.edit import UpdateView
 
+from trs import core
 from trs.models import Person
 from trs.models import Project
 from trs.models import Booking
 from trs.models import YearWeek
 from trs.models import WorkAssignment
+from trs.models import PersonChange
+from trs.models import BudgetAssignment
+from trs.models import this_year_week
+from trs.templatetags.trs_formatting import hours as format_as_hours
+from trs.templatetags.trs_formatting import money as format_as_money
 
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class LoginRequiredMixin(object):
@@ -35,11 +45,11 @@ class BaseMixin(object):
     template_name = 'trs/base.html'
     title = "TRS tijdregistratiesysteem"
 
-    @property
+    @cached_property
     def today(self):
         return datetime.date.today()
 
-    @property
+    @cached_property
     def active_person(self):
         if self.request.user.is_anonymous():
             logger.debug("Anonymous user")
@@ -50,12 +60,18 @@ class BaseMixin(object):
             logger.debug("Found active person: %s", person)
             return person
 
-    @property
+    @cached_property
     def active_projects(self):
         # TODO: extra filtering for projects that are past their date.
         if not self.active_person:
             return []
         return self.active_person.assigned_projects()
+
+    @cached_property
+    def person_year_info(self):
+        if not self.active_person:
+            return
+        return core.PersonYearCombination(person=self.active_person)
 
 
 class BaseView(LoginRequiredMixin, TemplateView, BaseMixin):
@@ -69,7 +85,7 @@ class HomeView(BaseView):
 class PersonsView(BaseView):
     template_name = 'trs/persons.html'
 
-    @property
+    @cached_property
     def persons(self):
         return Person.objects.all()
 
@@ -77,15 +93,32 @@ class PersonsView(BaseView):
 class PersonView(BaseView):
     template_name = 'trs/person.html'
 
-    @property
+    @cached_property
     def person(self):
-        return Person.objects.get(slug=self.kwargs['slug'])
+        return Person.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def person_projects(self):
+        return [core.ProjectPersonCombination(project, self.person)
+                for project in self.person.assigned_projects()]
+
+    @cached_property
+    def total_budget(self):
+        return sum([project.budget for project in self.person_projects])
+
+    @cached_property
+    def total_booked(self):
+        return sum([project.booked for project in self.person_projects])
+
+    @cached_property
+    def total_left_to_book(self):
+        return sum([project.left_to_book for project in self.person_projects])
 
 
 class ProjectsView(BaseView):
     template_name = 'trs/projects.html'
 
-    @property
+    @cached_property
     def projects(self):
         return Project.objects.all()
 
@@ -93,53 +126,31 @@ class ProjectsView(BaseView):
 class ProjectView(BaseView):
     template_name = 'trs/project.html'
 
-    @property
+    @cached_property
     def project(self):
-        return Project.objects.get(slug=self.kwargs['slug'])
+        return Project.objects.get(pk=self.kwargs['pk'])
 
-    @property
-    def lines(self):
-        """Return assigned persons plus their relevant data."""
-        result = []
-        for person in self.project.assigned_persons():
-            line = {}
-            line['person'] = person
-            line['is_project_leader'] = (person == self.project.project_leader)
-            line['is_project_manager'] = (person == self.project.project_manager)
-            line['budget'] = person.work_assignments.filter(
-                assigned_on=self.project).aggregate(
-                    models.Sum('hours'))['hours__sum'] or 0
-            line['hourly_tariff'] = person.work_assignments.filter(
-                assigned_on=self.project).aggregate(
-                    models.Sum('hourly_tariff'))['hourly_tariff__sum'] or 0
-            result.append(line)
-            line['booked'] = person.bookings.filter(
-                booked_on=self.project).aggregate(
-                    models.Sum('hours'))['hours__sum'] or 0
-            line['turnover'] = line['booked'] * line['hourly_tariff']
-            line['overbooked'] = (line['booked'] > line['budget'])
-            if line['overbooked']:
-                left_to_turn_over = 0
-            else:
-                left_to_turn_over = ((line['budget'] - line['booked'])
-                                     * line['hourly_tariff'])
-            line['left_to_turn_over'] = left_to_turn_over
-        return result
+    @cached_property
+    def person_projects(self):
+        return [core.ProjectPersonCombination(self.project, person)
+                for person in self.project.assigned_persons()]
 
-    @property
+    @cached_property
     def total_turnover(self):
-        return sum([line['turnover'] for line in self.lines])
+        return sum([person_project.turnover
+                    for person_project in self.person_projects])
 
-    @property
+    @cached_property
     def total_turnover_left(self):
-        return sum([line['left_to_turn_over'] for line in self.lines])
+        return sum([person_project.left_to_turn_over
+                    for person_project in self.person_projects])
 
-    @property
+    @cached_property
     def subtotal(self):
         return self.project.budget_assignments.all().aggregate(
             models.Sum('budget'))['budget__sum'] or 0
 
-    @property
+    @cached_property
     def amount_left(self):
         return self.subtotal - self.total_turnover - self.total_turnover_left
 
@@ -148,7 +159,7 @@ class LoginView(FormView, BaseMixin):
     template_name = 'trs/login.html'
     form_class = AuthenticationForm
 
-    @property
+    @cached_property
     def success_url(self):
         return reverse('trs.booking')
 
@@ -169,22 +180,20 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
     # TODO: also allow /booking/yyyy-ww/ format.
     template_name = 'trs/booking.html'
 
-    @property
+    @cached_property
     def active_year_week(self):
         year = self.kwargs.get('year')
         week = self.kwargs.get('week')
         if year is not None:  # (Week is also not None, then)
             return YearWeek.objects.get(year=year, week=week)
         # Default: this week's first day.
-        this_year_week = YearWeek.objects.filter(
-            first_day__lte=self.today).last()
-        return this_year_week
+        return this_year_week()
 
-    @property
+    @cached_property
     def active_first_day(self):
         return self.active_year_week.first_day
 
-    @property
+    @cached_property
     def year_weeks_to_display(self):
         """Return the active YearWeek, the two previous ones and the next."""
         end = self.active_first_day + datetime.timedelta(days=7)
@@ -204,7 +213,7 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
             fields[project.code] = field_type
         return type("GeneratedBookingForm", (forms.Form,), fields)
 
-    @property
+    @cached_property
     def initial(self):
         """Return initial form values. Turn the decimals into integers already."""
         result = {}
@@ -218,9 +227,13 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
         return result
 
     def form_valid(self, form):
+        total_difference = 0
+        absolute_difference = 0
         for project_code, new_hours in form.cleaned_data.items():
             old_hours = self.initial[project_code]
             difference = new_hours - old_hours
+            total_difference += difference
+            absolute_difference += abs(difference)
             if difference:
                 project = [project for project in self.active_projects
                            if project.code == project_code][0]
@@ -230,34 +243,37 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
                                   year_week=self.active_year_week)
                 booking.save()
                 logger.info("Added booking %s", booking)
+
+        if absolute_difference:
+            if total_difference < 0:
+                indicator = total_difference
+            elif total_difference > 0:
+                indicator = '+%s' % total_difference
+            else:  # 0
+                indicator = "alleen verschoven"
+            messages.success(self.request, "Uren aangepast (%s)." % indicator)
+        else:
+            messages.info(self.request, "Niets aan de uren gewijzigd.")
+
         return super(BookingView, self).form_valid(form)
 
-    @property
+    @cached_property
     def tabindex_submit_button(self):
         return len(self.active_projects) + 1
 
-    @property
+    @cached_property
     def success_url(self):
         return self.active_year_week.get_absolute_url()
 
-    @property
+    @cached_property
     def lines(self):
         """Return project plus a set of four hours."""
         result = []
         form = self.get_form(self.get_form_class())
         fields = list(form)  # A form's __iter__ returns 'bound fields'.
         for project_index, project in enumerate(self.active_projects):
-            line = {'project': project}
-            # import pdb;pdb.set_trace()
-            line['available'] = WorkAssignment.objects.filter(
-                assigned_to=self.active_person,
-                assigned_on=project).aggregate(
-                    models.Sum('hours'))['hours__sum']
-            line['already_booked'] = Booking.objects.filter(
-                    booked_by=self.active_person,
-                    booked_on=project).aggregate(
-                        models.Sum('hours'))['hours__sum']
-            line['overbooked'] = (line['already_booked'] > line['available'])
+            line = {'ppc': core.ProjectPersonCombination(project,
+                                                         self.active_person)}
             for index, year_week in enumerate(self.year_weeks_to_display):
                 booked = Booking.objects.filter(
                     year_week=year_week,
@@ -269,3 +285,271 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
             line['field'] = fields[project_index]
             result.append(line)
         return result
+
+
+class ProjectEditView(UpdateView, BaseMixin):
+    template_name = 'trs/edit.html'
+    model = Project
+    title = "Project aanpassen"
+    fields = ['code', 'description', 'internal', 'principal',
+              'start', 'end', 'project_leader', 'project_manager']
+
+    def form_valid(self, form):
+        messages.success(self.request, "Project aangepast")
+        return super(ProjectEditView, self).form_valid(form)
+
+
+class ProjectCreateView(CreateView, BaseMixin):
+    template_name = 'trs/edit.html'
+    model = Project
+    title = "Nieuw project"
+    fields = ['code', 'description', 'internal', 'principal',
+              'start', 'end', 'project_leader', 'project_manager']
+
+    def form_valid(self, form):
+        messages.success(self.request, "Project aangemaakt")
+        return super(ProjectCreateView, self).form_valid(form)
+
+
+class PersonEditView(UpdateView, BaseMixin):
+    template_name = 'trs/edit.html'
+    model = Person
+    title = "Medewerker aanpassen"
+    fields = ['name', 'user', ]  # login_name, description
+
+    def form_valid(self, form):
+        messages.success(self.request, "Medewerker aangepast")
+        return super(PersonEditView, self).form_valid(form)
+
+
+class PersonCreateView(CreateView, BaseMixin):
+    template_name = 'trs/edit.html'
+    model = Person
+    title = "Nieuwe medewerker"
+    fields = ['name', 'user', ]  # login_name, description
+
+    def form_valid(self, form):
+        messages.success(self.request, "Medewerker aangemaakt")
+        return super(PersonCreateView, self).form_valid(form)
+
+
+class TeamEditView(LoginRequiredMixin, FormView, BaseMixin):
+    template_name = 'trs/team.html'
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def ppc(self):
+        return core.ProjectPersonCombination(self.project, self.active_person)
+
+    @cached_property
+    def title(self):
+        return "Projectteam voor %s bewerken" % self.project.code
+
+    @cached_property
+    def can_edit_hours(self):
+        # TODO: can_edit_role (also PL territory)
+        #return self.ppc.is_project_leader
+        return True
+
+    @cached_property
+    def can_add_team_member(self):
+        #return self.ppc.is_project_leader
+        return True
+
+    @cached_property
+    def can_edit_hourly_tariff(self):
+        #return self.ppc.is_project_manager
+        return True
+
+    def hours_fieldname(self, person):
+        return 'hours-%s' % person.id
+
+    def hourly_tariff_fieldname(self, person):
+        return 'hourly_tariff-%s' % person.id
+
+    def get_form_class(self):
+        """Return dynamically generated form class."""
+        fields = SortedDict()
+        tabindex = 1
+        for index, person in enumerate(self.project.assigned_persons()):
+            ppc = core.ProjectPersonCombination(self.project, person)
+            if self.can_edit_hours:
+                field_type = forms.IntegerField(
+                    min_value=0,
+                    initial=round(ppc.budget),
+                    widget=forms.TextInput(attrs={'size': 4,
+                                                  'tabindex': tabindex}))
+                fields[self.hours_fieldname(person)] = field_type
+                tabindex += 1
+            if self.can_edit_hourly_tariff:
+                field_type = forms.IntegerField(
+                    min_value=0,
+                    initial=round(ppc.hourly_tariff),
+                    widget=forms.TextInput(attrs={'size': 4,
+                                                  'tabindex': tabindex}))
+                fields[self.hourly_tariff_fieldname(person)] = field_type
+                tabindex += 1
+        if self.can_add_team_member:
+            # New team member field
+            name = 'new_team_member'
+            choices = list(Person.objects.all().values_list('pk', 'name'))
+            choices.insert(0, ('', '---'))
+            # TODO: ^^^ filter out inactive users.
+            field_type = forms.ChoiceField(
+                required=False,
+                choices=choices,
+                widget=forms.Select(attrs={'tabindex': tabindex}))
+            fields[name] = field_type
+            tabindex += 1
+        return type("GeneratedTeamEditForm", (forms.Form,), fields)
+
+    @cached_property
+    def bound_form_fields(self):
+        form = self.get_form(self.get_form_class())
+        return list(form)
+
+    @cached_property
+    def lines(self):
+        result = []
+        fields = self.bound_form_fields
+        field_index = 0
+        for person in self.project.assigned_persons():
+            ppc = core.ProjectPersonCombination(self.project, person)
+            line = {'ppc': ppc}
+            if self.can_edit_hours:
+                line['hours'] = fields[field_index]
+                field_index += 1
+            else:
+                line['hours'] = format_as_hours(ppc.budget)
+            if self.can_edit_hourly_tariff:
+                line['hourly_tariff'] = fields[field_index]
+                field_index += 1
+            else:
+                line['hourly_tariff'] = format_as_money(ppc.hourly_tariff)
+            result.append(line)
+        return result
+
+    @cached_property
+    def new_team_member_field(self):
+        if self.can_add_team_member:
+            return self.bound_form_fields[-1]
+
+    def form_valid(self, form):
+        num_changes = 0
+        for person in self.project.assigned_persons():
+            ppc = core.ProjectPersonCombination(self.project, person)
+            hours = 0
+            hourly_tariff = 0
+            if self.can_edit_hours:
+                current = ppc.budget
+                new = form.cleaned_data.get(self.hours_fieldname(person))
+                hours = new - current
+            if self.can_edit_hourly_tariff:
+                current = ppc.hourly_tariff
+                new = form.cleaned_data.get(
+                    self.hourly_tariff_fieldname(person))
+                hourly_tariff = new - current
+            if hours or hourly_tariff:
+                num_changes += 1
+                work_assignment = WorkAssignment(
+                    hours=hours,
+                    hourly_tariff=hourly_tariff,
+                    assigned_on=self.project,
+                    assigned_to=person)
+                work_assignment.save()
+                logger.info("Added work assignment")
+        if num_changes:
+            messages.success(self.request, "Teamleden: %s gewijzigd" % num_changes)
+
+        if self.can_add_team_member:
+            new_team_member_id = form.cleaned_data.get('new_team_member')
+            if new_team_member_id:
+                person = Person.objects.get(id=new_team_member_id)
+                work_assignment = WorkAssignment(
+                    assigned_on=self.project,
+                    assigned_to=person)
+                work_assignment.save()
+                msg = "Added %s to team" % person.name
+                logger.info(msg)
+                messages.success(self.request, msg)
+
+        return super(TeamEditView, self).form_valid(form)
+
+    @cached_property
+    def success_url(self):
+        return self.project.get_absolute_url()
+
+
+class BudgetAddView(CreateView, BaseMixin):
+    template_name = 'trs/edit.html'
+    model = BudgetAssignment
+    fields = ['budget', 'description']
+
+    @property
+    def title(self):
+        return "Nieuwe budgetaanpassing voor %s" % self.project.code
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def success_url(self):
+        return self.project.get_absolute_url()
+
+    def form_valid(self, form):
+        form.instance.assigned_to = self.project
+        messages.success(self.request, "Budget aangepast")
+        return super(BudgetAddView, self).form_valid(form)
+
+
+class PersonChangeView(CreateView, BaseMixin):
+    template_name = 'trs/edit.html'
+    model = PersonChange
+    fields = ['hours_per_week', 'target', 'year_week']
+
+    @cached_property
+    def person(self):
+        return Person.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def title(self):
+        return "Wijzig werkweek en target voor %s" % self.person.name
+
+    @cached_property
+    def success_url(self):
+        return self.person.get_absolute_url()
+
+    @cached_property
+    def initial(self):
+        """Return initial form values. Turn the decimals into integers already."""
+        return {'hours_per_week': int(self.person.hours_per_week()),
+                'target': int(self.person.target()),
+                'year_week': this_year_week()}
+
+    def form_valid(self, form):
+        form.instance.person = self.person
+        # We let the form machinery set the values, but they need to be
+        # re-calculated for the initial values: they're used as culumative
+        # values.
+        hours_per_week = form.instance.hours_per_week or 0  # Adjust for None
+        target = form.instance.target or 0  # Adjust for None
+        form.instance.hours_per_week = (
+            hours_per_week - self.initial['hours_per_week'])
+        form.instance.target = target - self.initial['target']
+
+        adjusted = []
+        if form.instance.hours_per_week:
+            adjusted.append("werkweek")
+        if form.instance.target:
+            adjusted.append("target")
+        if adjusted:
+            msg = ' en '.join(adjusted)
+            msg = "%s aangepast" % msg.capitalize()
+            messages.success(self.request, msg)
+        else:
+            messages.info(self.request, "Niets aan te passen")
+        return super(PersonChangeView, self).form_valid(form)

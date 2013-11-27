@@ -15,7 +15,14 @@
     <dd>{{ view.project.end.friendly }}</dd>
   </dl>
 
-  <h2>Wie werkt hierop?</h2>
+  <p>
+    <a href="{% url 'trs.project.edit' pk=view.project.pk %}"
+       class="btn btn-default">
+      Project bewerken
+    </a>
+  </p>
+
+  <h2>Projectteam</h2>
   <div class="table-responsive">
     <table class="table">
       <thead>
@@ -29,20 +36,20 @@
       </thead>
 
       <tbody>
-        {% for line in view.lines %}
+        {% for line in view.person_projects %}
           <tr>
             <td>
               {{ line.person.as_widget }}
               {% if line.is_project_leader %}
-                <span class="badge">PL</span>
+                <span class="label label-default">PL</span>
               {% endif %}
               {% if line.is_project_manager %}
-                <span class="badge">PM</span>
+                <span class="label label-default">PM</span>
               {% endif %}
             </td>
             <td class="text-right">{{ line.budget|hours }}</td>
             <td class="text-right
-                       {% if line.overbooked %}text-danger{% endif %}">
+                       {% if line.is_overbooked %}text-danger{% endif %}">
               {{ line.booked|hours }}
             </td>
             <td class="text-right">{{ line.hourly_tariff|money }}</td>
@@ -68,6 +75,12 @@
         </tr>
       </tfoot>
     </table>
+    <div>
+      <a href="{% url 'trs.project.team' pk=view.project.pk %}"
+         class="btn btn-default">
+        Pas team aan
+      </a>
+    </div>
   </div>
 
   <h2>Financi&euml;n</h2>
@@ -114,6 +127,12 @@
         </tr>
       </tfoot>
     </table>
+  </div>
+  <div>
+    <a href="{% url 'trs.project.add_budget' pk=view.project.pk %}"
+       class="btn btn-default">
+      Voeg budgetwijziging toe
+    </a>
   </div>
 
 {% endblock %}

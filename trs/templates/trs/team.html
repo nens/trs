@@ -1,0 +1,88 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>{{ view.title }}</h1>
+
+  <form action="." method="post">
+    {% csrf_token %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Persoon</th>
+          <th>Uren</th>
+          <th>Uurtarief</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in view.lines %}
+          <tr>
+            <td>{{ line.ppc.person.as_widget }}</td>
+            <td>
+              {% for error in line.hours.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
+              {{ line.hours }}
+            </td>
+            <td>
+              {% for error in line.hourly_tariff.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
+              {{ line.hourly_tariff }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      {% if view.can_add_team_member %}
+        <tbody>
+          <tr>
+            <td>Nieuw teamlid:</td>
+            <td colspan="2">{{ view.new_team_member_field }}</td>
+          </tr>
+        </tbody>
+      {% endif %}
+      <tfoot>
+        <tr>
+          <th></th>
+          <th></th>
+          <th colspan="2">
+            <input type="submit"
+                   class="btn btn-primary"
+                   tabindex="{{ view.tabindex_submit_button }}"
+                   value="Submit" /></th>
+        </tr>
+      </tfoot>
+    </table>
+  </form>
+
+
+{% endblock %}
+
+{% block overview-column %}
+  <h2>Uitleg</h2>
+  <p>
+    <b>Projectleiders</b> gaan over de uren en de projectmedewerkers, maar
+    niet over het geld.
+  </p>
+  <p>
+    <b>Projectmanagers</b> mogen het uurtarief wijzigen, maar de
+    teamsamenstelling en urenverdeling is voor de projectleider.
+  </p>
+  <p>
+    Als de PM het project goedkeurt staat de urenverdeling in principe vast.
+    Via het secretariaat kan er nog wel wat gewijzigd worden. Ook kunnen er
+    nieuwe teamleden toegevoegd worden (zodat ze kunnen boeken), maar die
+    hebben dan geen uren en werken voor nultarief.
+  </p>
+  <p>
+    Dus, PL, de bedoeling is dat er in het begin een <b>deugdelijke
+    ureninschatting</b> is! Omdat de projectmedewerkers er deels op afgerekend
+    worden als ze over de ingeschatte uren heengaan moeten zij het ook met die
+    inschattingen eens zijn.
+  </p>
+  <p>
+    Richting PM betekent dit dat de <b>offerte moet kloppen</b> met de
+    ureninschatting, omdat de projectmedewerkers anders voor een lager tarief
+    moeten gaan werken.
+  </p>
+{% endblock %}

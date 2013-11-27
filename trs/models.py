@@ -1,8 +1,12 @@
+import datetime
+import logging
+
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from tls import request as tls_request
 
 # TODO: add setting TRS_ADMIN_USER_CAN_DELETE_PERSONS_AND_PROJECTS
 # TODO: add django-appconf
@@ -14,6 +18,20 @@ from django.utils.safestring import mark_safe
 MAX_DIGITS = 8
 DECIMAL_PLACES = 2
 
+logger = logging.getLogger(__name__)
+
+
+def this_year_week():
+    return YearWeek.objects.filter(
+        first_day__lte=datetime.date.today()).last()
+
+
+def last_four_year_weeks():
+    result = list(YearWeek.objects.filter(
+        first_day__lte=datetime.date.today()).reverse()[1:5])
+    result.reverse()  # In-place...
+    return result
+
 
 class Person(models.Model):
     name = models.CharField(
@@ -24,14 +42,12 @@ class Person(models.Model):
         blank=True,
         null=True,
         verbose_name="gebruiker",
-        # TODO: make unique.
+        unique=True,
         help_text="De interne (django) gebruiker die deze persoon is.")
     login_name = models.CharField(
         verbose_name="inlognaam bij N&S",
         max_length=255,
         help_text="Dit is dus het eerste deel van het emailadres.")
-    slug = models.SlugField(
-        verbose_name="ID voor in de URL")
     description = models.CharField(
         verbose_name="omschrijving",
         blank=True,
@@ -48,31 +64,47 @@ class Person(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('trs.person', kwargs={'slug': self.slug})
+        return reverse('trs.person', kwargs={'pk': self.pk})
 
     def as_widget(self):
         return mark_safe(render_to_string('trs/person-widget.html',
                                           {'person': self}))
 
-    def hours_per_week(self):
-        return self.person_changes.all().aggregate(
-            models.Sum('hours_per_week'))['hours_per_week__sum'] or 0
+    def hours_per_week(self, year_week=None):
+        if year_week is None:
+            year_week = this_year_week()
+        return self.person_changes.filter(
+            year_week__lte=year_week).aggregate(
+                models.Sum('hours_per_week'))['hours_per_week__sum'] or 0
 
-    def target(self):
-        return self.person_changes.all().aggregate(
-            models.Sum('target'))['target__sum'] or 0
+    def target(self, year_week=None):
+        if year_week is None:
+            year_week = this_year_week()
+        return self.person_changes.filter(
+            year_week__lte=year_week).aggregate(
+                models.Sum('target'))['target__sum'] or 0
 
     def assigned_projects(self):
         return Project.objects.filter(
-            work_assignments__assigned_to=self)
+            work_assignments__assigned_to=self).distinct()
+
+    def booking_percentage(self):
+        weeks = last_four_year_weeks()
+        hours_to_work = sum([self.hours_per_week(year_week=week)
+                         for week in weeks])
+        booked_in_weeks = self.bookings.filter(year_week__in=weeks).aggregate(
+            models.Sum('hours'))['hours__sum'] or 0
+        if not hours_to_work:
+            # Prevent division by zero.
+            return 100
+        # TODO: het onderstaande klopt niet!
+        return round(100 * booked_in_weeks / hours_to_work)
 
 
 class Project(models.Model):
     code = models.CharField(
         verbose_name="projectcode",
         max_length=255)
-    slug = models.SlugField(
-        verbose_name="ID voor in de URL")
     description = models.CharField(
         verbose_name="omschrijving",
         blank=True,
@@ -80,6 +112,9 @@ class Project(models.Model):
     added = models.DateTimeField(
         auto_now_add=True,
         verbose_name="toegevoegd op")
+    internal = models.BooleanField(
+        verbose_name="intern project",
+        default=False)
     principal = models.CharField(
         verbose_name="opdrachtgever",
         blank=True,
@@ -101,24 +136,26 @@ class Project(models.Model):
         blank=True,
         null=True,
         verbose_name="projectleider",
+        help_text="verantwoordelijke voor de uren op het project",
         related_name="projects_i_lead")
     project_manager = models.ForeignKey(
         Person,
         blank=True,
         null=True,
         verbose_name="projectmanager",
+        help_text="verantwoordelijke voor het budget van het project",
         related_name="projects_i_manage")
 
     class Meta:
         verbose_name = "project"
         verbose_name_plural = "projecten"
-        ordering = ['code']
+        ordering = ('internal', 'code')
 
     def __str__(self):
         return self.code
 
     def get_absolute_url(self):
-        return reverse('trs.project', kwargs={'slug': self.slug})
+        return reverse('trs.project', kwargs={'pk': self.pk})
 
     def as_widget(self):
         return mark_safe(render_to_string('trs/project-widget.html',
@@ -186,6 +223,16 @@ class EventBase(models.Model):
         abstract = True
         ordering = ['year_and_week', 'added']
 
+    def save(self, *args, **kwargs):
+        if not self.year_week:
+            self.year_week = this_year_week()
+        if not self.added_by:
+            if tls_request:
+                # If tls_request doesn't exist we're running tests. Adding
+                # this 'if' is handier than mocking it the whole time :-)
+                self.added_by = tls_request.user
+        return super(EventBase, self).save(*args, **kwargs)
+
 
 class PersonChange(EventBase):
     hours_per_week = models.DecimalField(
@@ -208,6 +255,9 @@ class PersonChange(EventBase):
         verbose_name="persoon",
         help_text="persoon waar de verandering voor is",
         related_name="person_changes")
+
+    def __str__(self):
+        return 'PersonChange on %s' % self.person
 
     class Meta:
         verbose_name = "verandering aan persoon"
@@ -278,7 +328,7 @@ class BudgetAssignment(EventBase):
         decimal_places=DECIMAL_PLACES,
         blank=True,
         null=True,
-        verbose_name="budget")
+        verbose_name="bedrag")
     description = models.CharField(
         verbose_name="omschrijving",
         blank=True,

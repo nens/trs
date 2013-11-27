@@ -1,3 +1,14 @@
 <a href="{{ person.get_absolute_url }}">
   {{ person.name }}
 </a>
+{% if person.booking_percentage <= 90 %}
+  <span
+    {% if person.booking_percentage <= 60 %}
+      class="label label-danger"
+    {% else %}
+      class="label label-default"
+    {% endif %}
+    title="Boekingspercentage laatste weken">
+    {{ person.booking_percentage }}%
+  </span>
+{% endif %}

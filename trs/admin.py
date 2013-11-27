@@ -4,15 +4,15 @@ from trs import models
 
 
 class PersonAdmin(admin.ModelAdmin):
-    prepopulated_fields = {'slug': ('login_name',)}
+    pass
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    prepopulated_fields = {'slug': ('code',)}
+    list_display = ['code', 'internal', 'description']
 
 
 class PersonChangeAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['__str__', 'year_week']
 
 
 class BookingAdmin(admin.ModelAdmin):
