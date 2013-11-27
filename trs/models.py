@@ -227,7 +227,10 @@ class EventBase(models.Model):
         if not self.year_week:
             self.year_week = this_year_week()
         if not self.added_by:
-            self.added_by = tls_request.user
+            if tls_request:
+                # If tls_request doesn't exist we're running tests. Adding
+                # this 'if' is handier than mocking it the whole time :-)
+                self.added_by = tls_request.user
         return super(EventBase, self).save(*args, **kwargs)
 
 
