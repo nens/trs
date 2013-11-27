@@ -23,6 +23,7 @@ from trs.models import Project
 from trs.models import Booking
 from trs.models import YearWeek
 from trs.models import WorkAssignment
+from trs.models import PersonChange
 from trs.models import BudgetAssignment
 from trs.models import this_year_week
 from trs.templatetags.trs_formatting import hours as format_as_hours
@@ -242,6 +243,7 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
                                   year_week=self.active_year_week)
                 booking.save()
                 logger.info("Added booking %s", booking)
+
         if absolute_difference:
             if total_difference < 0:
                 indicator = total_difference
@@ -289,6 +291,8 @@ class ProjectEditView(UpdateView, BaseMixin):
     template_name = 'trs/edit.html'
     model = Project
     title = "Project aanpassen"
+    fields = ['code', 'description', 'internal', 'principal',
+              'start', 'end', 'project_leader', 'project_manager']
 
     def form_valid(self, form):
         messages.success(self.request, "Project aangepast")
@@ -299,10 +303,34 @@ class ProjectCreateView(CreateView, BaseMixin):
     template_name = 'trs/edit.html'
     model = Project
     title = "Nieuw project"
+    fields = ['code', 'description', 'internal', 'principal',
+              'start', 'end', 'project_leader', 'project_manager']
 
     def form_valid(self, form):
         messages.success(self.request, "Project aangemaakt")
         return super(ProjectCreateView, self).form_valid(form)
+
+
+class PersonEditView(UpdateView, BaseMixin):
+    template_name = 'trs/edit.html'
+    model = Person
+    title = "Persoon aanpassen"
+    fields = ['name', 'user', ]  # login_name, description
+
+    def form_valid(self, form):
+        messages.success(self.request, "Persoon aangepast")
+        return super(PersonEditView, self).form_valid(form)
+
+
+class PersonCreateView(CreateView, BaseMixin):
+    template_name = 'trs/edit.html'
+    model = Person
+    title = "Nieuw persoon"
+    fields = ['name', 'user', ]  # login_name, description
+
+    def form_valid(self, form):
+        messages.success(self.request, "Persoon aangemaakt")
+        return super(PersonCreateView, self).form_valid(form)
 
 
 class TeamEditView(LoginRequiredMixin, FormView, BaseMixin):
@@ -459,7 +487,6 @@ class BudgetAddView(CreateView, BaseMixin):
     template_name = 'trs/edit.html'
     model = BudgetAssignment
     fields = ['budget', 'description']
-    hidden_fields = ['assigned_to']
 
     @property
     def title(self):
@@ -477,3 +504,52 @@ class BudgetAddView(CreateView, BaseMixin):
         form.instance.assigned_to = self.project
         messages.success(self.request, "Budget aangepast")
         return super(BudgetAddView, self).form_valid(form)
+
+
+class PersonChangeView(CreateView, BaseMixin):
+    template_name = 'trs/edit.html'
+    model = PersonChange
+    fields = ['hours_per_week', 'target', 'year_week']
+
+    @cached_property
+    def person(self):
+        return Person.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def title(self):
+        return "Wijzig werkweek en target voor %s" % self.person.name
+
+    @cached_property
+    def success_url(self):
+        return self.person.get_absolute_url()
+
+    @cached_property
+    def initial(self):
+        """Return initial form values. Turn the decimals into integers already."""
+        return {'hours_per_week': int(self.person.hours_per_week()),
+                'target': int(self.person.target()),
+                'year_week': this_year_week()}
+
+    def form_valid(self, form):
+        form.instance.person = self.person
+        # We let the form machinery set the values, but they need to be
+        # re-calculated for the initial values: they're used as culumative
+        # values.
+        hours_per_week = form.instance.hours_per_week or 0  # Adjust for None
+        target = form.instance.target or 0  # Adjust for None
+        form.instance.hours_per_week = (
+            hours_per_week - self.initial['hours_per_week'])
+        form.instance.target = target - self.initial['target']
+
+        adjusted = []
+        if form.instance.hours_per_week:
+            adjusted.append("werkweek")
+        if form.instance.target:
+            adjusted.append("target")
+        if adjusted:
+            msg = ' en '.join(adjusted)
+            msg = "%s aangepast" % msg.capitalize()
+            messages.success(self.request, msg)
+        else:
+            messages.info(self.request, "Niets aan te passen")
+        return super(PersonChangeView, self).form_valid(form)

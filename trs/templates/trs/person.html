@@ -11,6 +11,18 @@
     <dt>Bij qua boeken</dt>
     <dd>{{ view.person.booking_percentage }}%</dd>
   </dl>
+  <div>
+    <a href="{% url 'trs.person.edit' pk=view.person.pk %}"
+       class="btn btn-default">
+      Wijzig
+    </a>
+    &nbsp;
+    <a href="{% url 'trs.person.target' pk=view.person.pk %}"
+       class="btn btn-default">
+      Wijzig target en/of werkweek
+    </a>
+  </div>
+
   <h2>Externe projecten</h2>
   <table class="table">
     <thead>
