@@ -49,6 +49,15 @@
             <li class="hidden-xs hidden-sm">
               <p class="navbar-text">{{ view.today }}</p>
             </li>
+            {% if view.admin_override_active %}
+              <li>
+                <p class="navbar-text">
+                  <a href=".?notall">
+                    ADMIN OVERRIDE
+                  </a>
+                </p>
+              </li>
+            {% endif %}
             {% if view.active_person %}
               <li><p class="navbar-text">{{ view.active_person.as_widget }}</p></li>
             {% endif %}

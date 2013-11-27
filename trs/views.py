@@ -57,7 +57,6 @@ class BaseMixin(object):
         persons = Person.objects.filter(user=self.request.user)
         if persons:
             person = persons[0]
-            logger.debug("Found active person: %s", person)
             return person
 
     @cached_property
@@ -73,6 +72,31 @@ class BaseMixin(object):
             return
         return core.PersonYearCombination(person=self.active_person)
 
+    @cached_property
+    def admin_override_active(self):
+        # Allow an admin to see everything for debug purposes.
+        if self.request.user.is_superuser:
+            if 'all' in self.request.GET:
+                self.request.session['admin_override_active'] = True
+            if 'notall' in self.request.GET:
+                self.request.session['admin_override_active'] = False
+            if self.request.session['admin_override_active']:
+                return True
+
+    @cached_property
+    def can_edit_and_see_everything(self):
+        if self.admin_override_active:
+            return True
+        if self.active_person.is_office_management:
+            return True
+
+    @cached_property
+    def can_see_everything(self):
+        if self.can_edit_and_see_everything:
+            return True
+        if self.active_person.is_management:
+            return True
+
 
 class BaseView(LoginRequiredMixin, TemplateView, BaseMixin):
     pass
@@ -87,8 +111,8 @@ class PersonsView(BaseView):
 
     @cached_property
     def can_add_person(self):
-        # TODO
-        return True
+        if self.can_edit_and_see_everything:
+            return True
 
     @cached_property
     def persons(self):
@@ -104,18 +128,22 @@ class PersonView(BaseView):
 
     @cached_property
     def can_see_internal_projects(self):
-        # TODO
-        return True
+        if self.can_see_everything:
+            return True
+        if self.active_person == self.person:
+            return True
 
     @cached_property
     def can_edit_person(self):
-        # TODO
-        return False
+        if self.can_edit_and_see_everything:
+            return True
 
     @cached_property
     def can_see_financials(self):
-        # TODO
-        return True
+        if self.can_see_everything:
+            return True
+        if self.active_person == self.person:
+            return True
 
     @cached_property
     def all_ppcs(self):
@@ -170,8 +198,8 @@ class ProjectsView(BaseView):
 
     @cached_property
     def can_add_project(self):
-        # TODO
-        return True
+        if self.can_edit_and_see_everything:
+            return True
 
     @cached_property
     def projects(self):
@@ -187,28 +215,42 @@ class ProjectView(BaseView):
 
     @cached_property
     def can_edit_project(self):
-        # TODO
-        return True
+        if self.can_edit_and_see_everything:
+            return True
 
     @cached_property
     def can_edit_financials(self):
-        # TODO
-        return True
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_manager == self.active_person:
+            return True
 
     @cached_property
     def can_edit_team(self):
-        # TODO
-        return True
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
 
     @cached_property
     def can_see_financials(self):
-        # TODO
-        return True
+        if self.can_edit_and_see_everything:
+            return True
+        if self.active_person in self.project.assigned_persons():
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
+        if self.project.project_manager == self.active_person:
+            return True
 
     @cached_property
     def can_see_project_financials(self):
-        # TODO
-        return True
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
+        if self.project.project_manager == self.active_person:
+            return True
 
     @cached_property
     def person_projects(self):
@@ -430,19 +472,25 @@ class TeamEditView(LoginRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def can_edit_hours(self):
-        # TODO: can_edit_role (also PL territory)
-        #return self.ppc.is_project_leader
-        return True
+        # TODO: add docstring with meaning.
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
 
     @cached_property
     def can_add_team_member(self):
-        #return self.ppc.is_project_leader
-        return True
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
 
     @cached_property
     def can_edit_hourly_tariff(self):
-        #return self.ppc.is_project_manager
-        return True
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_manager == self.active_person:
+            return True
 
     def hours_fieldname(self, person):
         return 'hours-%s' % person.id
