@@ -98,21 +98,40 @@ class PersonView(BaseView):
         return Person.objects.get(pk=self.kwargs['pk'])
 
     @cached_property
-    def person_projects(self):
+    def ppcs(self):
         return [core.ProjectPersonCombination(project, self.person)
                 for project in self.person.assigned_projects()]
 
     @cached_property
     def total_budget(self):
-        return sum([project.budget for project in self.person_projects])
+        return sum([ppc.budget for ppc in self.ppcs])
 
     @cached_property
     def total_booked(self):
-        return sum([project.booked for project in self.person_projects])
+        return sum([ppc.booked for ppc in self.ppcs])
 
     @cached_property
     def total_left_to_book(self):
-        return sum([project.left_to_book for project in self.person_projects])
+        return sum([ppc.left_to_book for ppc in self.ppcs])
+
+    @cached_property
+    def extra_roles(self):
+        num_project_leader_roles = sum([ppc.is_project_leader
+                                         for ppc in self.ppcs])
+        num_project_manager_roles = sum([ppc.is_project_manager
+                                         for ppc in self.ppcs])
+        roles = []
+        if num_project_leader_roles:
+            roles.append("%s keer projectleider" % num_project_leader_roles)
+        if num_project_manager_roles:
+            roles.append("%s keer projectmanager" % num_project_manager_roles)
+        if self.person.is_management:
+            roles.append("in management")
+        if self.person.is_office_management:
+            roles.append("in office management")
+        if not roles:
+            return 'Geen'
+        return ', '.join(roles)
 
 
 class ProjectsView(BaseView):

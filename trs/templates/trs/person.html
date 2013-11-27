@@ -10,6 +10,8 @@
     <dd>{{ view.total_left_to_book|hours }}</dd>
     <dt>Bij qua boeken</dt>
     <dd>{{ view.person.booking_percentage }}%</dd>
+    <dt>Extra rollen</dt>
+    <dd>{{ view.extra_roles }}</dd>
   </dl>
   <div>
     <a href="{% url 'trs.person.edit' pk=view.person.pk %}"
@@ -33,7 +35,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for project in view.person_projects %}
+      {% for project in view.ppcs %}
         <tr>
           <td>
             {{ project.project.as_widget }}
