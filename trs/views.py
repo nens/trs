@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.shortcuts import redirect
@@ -18,13 +19,13 @@ from django.views.generic.edit import FormView
 from django.views.generic.edit import UpdateView
 
 from trs import core
-from trs.models import Person
-from trs.models import Project
 from trs.models import Booking
-from trs.models import YearWeek
-from trs.models import WorkAssignment
-from trs.models import PersonChange
 from trs.models import BudgetAssignment
+from trs.models import Person
+from trs.models import PersonChange
+from trs.models import Project
+from trs.models import WorkAssignment
+from trs.models import YearWeek
 from trs.models import this_year_week
 from trs.templatetags.trs_formatting import hours as format_as_hours
 from trs.templatetags.trs_formatting import money as format_as_money
@@ -33,12 +34,21 @@ from trs.templatetags.trs_formatting import money as format_as_money
 logger = logging.getLogger(__name__)
 
 
-class LoginRequiredMixin(object):
+class LoginAndPermissionsRequiredMixin(object):
     """See http://stackoverflow.com/a/10304880/27401"""
+
+    def has_form_permissions(self):
+        """Especially for forms, return whether we have the necessary perms.
+
+        Overwrite this in subclasses.
+        """
+        return True
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
-        return super(LoginRequiredMixin, self).dispatch(*args, **kwargs)
+        if not self.has_form_permissions():
+            raise PermissionDenied
+        return super(LoginAndPermissionsRequiredMixin, self).dispatch(*args, **kwargs)
 
 
 class BaseMixin(object):
@@ -57,7 +67,6 @@ class BaseMixin(object):
         persons = Person.objects.filter(user=self.request.user)
         if persons:
             person = persons[0]
-            logger.debug("Found active person: %s", person)
             return person
 
     @cached_property
@@ -73,8 +82,33 @@ class BaseMixin(object):
             return
         return core.PersonYearCombination(person=self.active_person)
 
+    @cached_property
+    def admin_override_active(self):
+        # Allow an admin to see everything for debug purposes.
+        if self.request.user.is_superuser:
+            if 'all' in self.request.GET:
+                self.request.session['admin_override_active'] = True
+            if 'notall' in self.request.GET:
+                self.request.session['admin_override_active'] = False
+            if self.request.session['admin_override_active']:
+                return True
 
-class BaseView(LoginRequiredMixin, TemplateView, BaseMixin):
+    @cached_property
+    def can_edit_and_see_everything(self):
+        if self.admin_override_active:
+            return True
+        if self.active_person.is_office_management:
+            return True
+
+    @cached_property
+    def can_see_everything(self):
+        if self.can_edit_and_see_everything:
+            return True
+        if self.active_person.is_management:
+            return True
+
+
+class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
     pass
 
 
@@ -84,6 +118,11 @@ class HomeView(BaseView):
 
 class PersonsView(BaseView):
     template_name = 'trs/persons.html'
+
+    @cached_property
+    def can_add_person(self):
+        if self.can_edit_and_see_everything:
+            return True
 
     @cached_property
     def persons(self):
@@ -98,25 +137,79 @@ class PersonView(BaseView):
         return Person.objects.get(pk=self.kwargs['pk'])
 
     @cached_property
-    def person_projects(self):
+    def can_see_internal_projects(self):
+        if self.can_see_everything:
+            return True
+        if self.active_person == self.person:
+            return True
+
+    @cached_property
+    def can_edit_person(self):
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def can_see_financials(self):
+        if self.can_see_everything:
+            return True
+        if self.active_person == self.person:
+            return True
+
+    @cached_property
+    def all_ppcs(self):
         return [core.ProjectPersonCombination(project, self.person)
                 for project in self.person.assigned_projects()]
 
     @cached_property
+    def ppcs(self):
+        if self.can_see_internal_projects:
+            return self.all_ppcs
+        return [ppc for ppc in self.all_ppcs if not ppc.project.internal]
+
+    @cached_property
     def total_budget(self):
-        return sum([project.budget for project in self.person_projects])
+        return sum([ppc.budget for ppc in self.ppcs])
+
+    @cached_property
+    def total_external_turnover(self):
+        return sum([ppc.turnover for ppc in self.ppcs
+                    if not ppc.project.internal])
 
     @cached_property
     def total_booked(self):
-        return sum([project.booked for project in self.person_projects])
+        return sum([ppc.booked for ppc in self.ppcs])
 
     @cached_property
     def total_left_to_book(self):
-        return sum([project.left_to_book for project in self.person_projects])
+        return sum([ppc.left_to_book for ppc in self.ppcs])
+
+    @cached_property
+    def extra_roles(self):
+        num_project_leader_roles = sum([ppc.is_project_leader
+                                         for ppc in self.all_ppcs])
+        num_project_manager_roles = sum([ppc.is_project_manager
+                                         for ppc in self.all_ppcs])
+        roles = []
+        if num_project_leader_roles:
+            roles.append("%s keer projectleider" % num_project_leader_roles)
+        if num_project_manager_roles:
+            roles.append("%s keer projectmanager" % num_project_manager_roles)
+        if self.person.is_management:
+            roles.append("in management")
+        if self.person.is_office_management:
+            roles.append("in office management")
+        if not roles:
+            return 'Geen'
+        return ', '.join(roles)
 
 
 class ProjectsView(BaseView):
     template_name = 'trs/projects.html'
+
+    @cached_property
+    def can_add_project(self):
+        if self.can_edit_and_see_everything:
+            return True
 
     @cached_property
     def projects(self):
@@ -129,6 +222,45 @@ class ProjectView(BaseView):
     @cached_property
     def project(self):
         return Project.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def can_edit_project(self):
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def can_edit_financials(self):
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_manager == self.active_person:
+            return True
+
+    @cached_property
+    def can_edit_team(self):
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
+
+    @cached_property
+    def can_see_financials(self):
+        if self.can_edit_and_see_everything:
+            return True
+        if self.active_person in self.project.assigned_persons():
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
+        if self.project.project_manager == self.active_person:
+            return True
+
+    @cached_property
+    def can_see_project_financials(self):
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
+        if self.project.project_manager == self.active_person:
+            return True
 
     @cached_property
     def person_projects(self):
@@ -176,9 +308,17 @@ def logout_view(request):
     return redirect('trs.home')
 
 
-class BookingView(LoginRequiredMixin, FormView, BaseMixin):
-    # TODO: also allow /booking/yyyy-ww/ format.
+class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     template_name = 'trs/booking.html'
+
+    def has_form_permissions(self):
+        """Per definition, return True.
+
+        No permission checks needed. What you get and what you edit are the
+        active_person's hours. And you are yourself! This might change later
+        on when office management gets the option to change someone's hours.
+        """
+        return True
 
     @cached_property
     def active_year_week(self):
@@ -287,54 +427,84 @@ class BookingView(LoginRequiredMixin, FormView, BaseMixin):
         return result
 
 
-class ProjectEditView(UpdateView, BaseMixin):
+class ProjectEditView(LoginAndPermissionsRequiredMixin,
+                      UpdateView,
+                      BaseMixin):
     template_name = 'trs/edit.html'
     model = Project
     title = "Project aanpassen"
     fields = ['code', 'description', 'internal', 'principal',
               'start', 'end', 'project_leader', 'project_manager']
 
+    def has_form_permissions(self):
+        if self.can_edit_and_see_everything:
+            return True
+
     def form_valid(self, form):
         messages.success(self.request, "Project aangepast")
         return super(ProjectEditView, self).form_valid(form)
 
 
-class ProjectCreateView(CreateView, BaseMixin):
+class ProjectCreateView(LoginAndPermissionsRequiredMixin,
+                        CreateView,
+                        BaseMixin):
     template_name = 'trs/edit.html'
     model = Project
     title = "Nieuw project"
     fields = ['code', 'description', 'internal', 'principal',
               'start', 'end', 'project_leader', 'project_manager']
 
+    def has_form_permissions(self):
+        if self.can_edit_and_see_everything:
+            return True
+
     def form_valid(self, form):
         messages.success(self.request, "Project aangemaakt")
         return super(ProjectCreateView, self).form_valid(form)
 
 
-class PersonEditView(UpdateView, BaseMixin):
+class PersonEditView(LoginAndPermissionsRequiredMixin,
+                     UpdateView,
+                     BaseMixin):
     template_name = 'trs/edit.html'
     model = Person
     title = "Medewerker aanpassen"
-    fields = ['name', 'user', ]  # login_name, description
+    fields = ['name', 'user', 'is_management']
+
+    def has_form_permissions(self):
+        if self.can_edit_and_see_everything:
+            return True
 
     def form_valid(self, form):
         messages.success(self.request, "Medewerker aangepast")
         return super(PersonEditView, self).form_valid(form)
 
 
-class PersonCreateView(CreateView, BaseMixin):
+class PersonCreateView(LoginAndPermissionsRequiredMixin,
+                       CreateView,
+                       BaseMixin):
     template_name = 'trs/edit.html'
     model = Person
     title = "Nieuwe medewerker"
-    fields = ['name', 'user', ]  # login_name, description
+    fields = ['name', 'user', 'is_management']
+
+    def has_form_permissions(self):
+        if self.can_edit_and_see_everything:
+            return True
 
     def form_valid(self, form):
         messages.success(self.request, "Medewerker aangemaakt")
         return super(PersonCreateView, self).form_valid(form)
 
 
-class TeamEditView(LoginRequiredMixin, FormView, BaseMixin):
+class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     template_name = 'trs/team.html'
+
+    def has_form_permissions(self):
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
 
     @cached_property
     def project(self):
@@ -350,19 +520,25 @@ class TeamEditView(LoginRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def can_edit_hours(self):
-        # TODO: can_edit_role (also PL territory)
-        #return self.ppc.is_project_leader
-        return True
+        # TODO: add docstring with meaning.
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
 
     @cached_property
     def can_add_team_member(self):
-        #return self.ppc.is_project_leader
-        return True
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
 
     @cached_property
     def can_edit_hourly_tariff(self):
-        #return self.ppc.is_project_manager
-        return True
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_manager == self.active_person:
+            return True
 
     def hours_fieldname(self, person):
         return 'hours-%s' % person.id
@@ -483,10 +659,18 @@ class TeamEditView(LoginRequiredMixin, FormView, BaseMixin):
         return self.project.get_absolute_url()
 
 
-class BudgetAddView(CreateView, BaseMixin):
+class BudgetAddView(LoginAndPermissionsRequiredMixin,
+                    CreateView,
+                    BaseMixin):
     template_name = 'trs/edit.html'
     model = BudgetAssignment
     fields = ['budget', 'description']
+
+    def has_form_permissions(self):
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_manager == self.active_person:
+            return True
 
     @property
     def title(self):
@@ -506,10 +690,16 @@ class BudgetAddView(CreateView, BaseMixin):
         return super(BudgetAddView, self).form_valid(form)
 
 
-class PersonChangeView(CreateView, BaseMixin):
+class PersonChangeView(LoginAndPermissionsRequiredMixin,
+                       CreateView,
+                       BaseMixin):
     template_name = 'trs/edit.html'
     model = PersonChange
     fields = ['hours_per_week', 'target', 'year_week']
+
+    def has_form_permissions(self):
+        if self.can_edit_and_see_everything:
+            return True
 
     @cached_property
     def person(self):

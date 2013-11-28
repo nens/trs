@@ -7,6 +7,7 @@ TODO: Short one-paragraph intro.
    :maxdepth: 2
 
    code
+   security
    project
 
 

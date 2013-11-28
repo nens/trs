@@ -54,6 +54,15 @@ class Person(models.Model):
         max_length=255)
     # Description on persons is useful for noting that someone doesn't work
     # for us anymore, for instance. And other corner cases.
+    is_office_management = models.BooleanField(
+        verbose_name="office management",
+        help_text="Office management can edit and add everything",
+        default=False)
+    is_management = models.BooleanField(
+        verbose_name="management",
+        help_text=("Management can see everything, but doesn't get extra " +
+                   "edit rights"),
+        default=False)
 
     class Meta:
         verbose_name = "persoon"
