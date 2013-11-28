@@ -45,10 +45,10 @@
             <td>
               {{ line.person.as_widget }}
               {% if line.is_project_leader %}
-                <span class="label label-default">PL</span>
+                &nbsp;<span class="label label-default">PL</span>
               {% endif %}
               {% if line.is_project_manager %}
-                <span class="label label-default">PM</span>
+                &nbsp;<span class="label label-default">PM</span>
               {% endif %}
             </td>
             <td class="text-right">{{ line.budget|hours }}</td>

@@ -50,10 +50,10 @@
           <td>
             {{ ppc.project.as_widget }}
             {% if ppc.is_project_leader %}
-              <span class="label label-default">PL</span>
+              &nbsp;<span class="label label-default">PL</span>
             {% endif %}
             {% if ppc.is_project_manager %}
-              <span class="label label-default">PM</span>
+              &nbsp;<span class="label label-default">PM</span>
             {% endif %}
           </td>
           <td class="text-right">{{ ppc.budget|hours }}</td>
