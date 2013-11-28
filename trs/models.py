@@ -86,6 +86,14 @@ class Person(models.Model):
             year_week__lte=year_week).aggregate(
                 models.Sum('hours_per_week'))['hours_per_week__sum'] or 0
 
+    def standard_hourly_tariff(self, year_week=None):
+        if year_week is None:
+            year_week = this_year_week()
+        return self.person_changes.filter(
+            year_week__lte=year_week).aggregate(
+                models.Sum('standard_hourly_tariff'))[
+                    'standard_hourly_tariff__sum'] or 0
+
     def target(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
@@ -226,7 +234,8 @@ class EventBase(models.Model):
         YearWeek,
         blank=True,
         null=True,
-        verbose_name="jaar en week")
+        verbose_name="jaar en week",
+        help_text="Ingangsdatum van de wijziging (of datum van de boeking)")
 
     class Meta:
         abstract = True
@@ -256,6 +265,12 @@ class PersonChange(EventBase):
         blank=True,
         null=True,
         verbose_name="target")
+    standard_hourly_tariff = models.DecimalField(
+        max_digits=MAX_DIGITS,
+        decimal_places=DECIMAL_PLACES,
+        blank=True,
+        null=True,
+        verbose_name="standaard uurtarief")
 
     person = models.ForeignKey(
         Person,

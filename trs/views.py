@@ -711,7 +711,8 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
                        BaseMixin):
     template_name = 'trs/edit.html'
     model = PersonChange
-    fields = ['hours_per_week', 'target', 'year_week']
+    fields = ['hours_per_week', 'target', 'standard_hourly_tariff',
+              'year_week']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -733,6 +734,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
     def initial(self):
         """Return initial form values. Turn the decimals into integers already."""
         return {'hours_per_week': int(self.person.hours_per_week()),
+                'standard_hourly_tariff': int(self.person.standard_hourly_tariff()),
                 'target': int(self.person.target()),
                 'year_week': this_year_week()}
 
@@ -742,14 +744,19 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         # re-calculated for the initial values: they're used as culumative
         # values.
         hours_per_week = form.instance.hours_per_week or 0  # Adjust for None
+        standard_hourly_tariff = form.instance.standard_hourly_tariff or 0
         target = form.instance.target or 0  # Adjust for None
         form.instance.hours_per_week = (
             hours_per_week - self.initial['hours_per_week'])
+        form.instance.standard_hourly_tariff = (
+            standard_hourly_tariff - self.initial['standard_hourly_tariff'])
         form.instance.target = target - self.initial['target']
 
         adjusted = []
         if form.instance.hours_per_week:
             adjusted.append("werkweek")
+        if form.instance.standard_hourly_tariff:
+            adjusted.append("standaard uurtarief")
         if form.instance.target:
             adjusted.append("target")
         if adjusted:
