@@ -96,20 +96,29 @@
           {% block overview-column %}
             {% if view.active_person %}
 
-              <h2>Intern/extern</h2>
+              <h2>Binnen budget?</h2>
               <div>
-                <b>{{ view.person_year_info.billable_percentage }}%</b>
-                op externe projecten geboekt.
-              </div>
-              <h2>Verliesuren</h2>
-              <div>
+                Je hebt
                 <b>
                   {{ view.person_year_info.overbooked.percentage }}%
                 </b>
                 ({{ view.person_year_info.overbooked.over|hours }} uren)
                 buiten budget geboekt.
               </div>
-              <h2>Financieel</h2>
+              <div class="text-muted">
+                Bij dit percentage wordt alleen gekeken naar de <i>externe</i>
+                projecten. Het is de bedoeling dat deze projecten netjes in
+                samenspraak worden opgezet, inclusief deugdelijke
+                ureninschatting.
+              </div>
+              <h2>Intern/extern?</h2>
+              <div>
+                Je hebt
+                <b>{{ view.person_year_info.billable_percentage }}%</b>
+                op externe projecten geboekt. (TODO: goed/niet goed wel/niet
+                meer dan je gewenste percentage)
+              </div>
+              <h2>Financieel?</h2>
               <div>
                 Je hebt
                 <b>{{ view.person_year_info.target_percentage }}%</b>
@@ -117,6 +126,7 @@
                 gehaald. Nog om te zetten:
                 {{ view.person_year_info.left_to_turn_over|money }}.
               </div>
+
             {% endif %}
           {% endblock %}
         </div>
