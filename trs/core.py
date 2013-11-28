@@ -126,7 +126,6 @@ class PersonYearCombination(object):
             booked_billable = sum(
                 [info['booked'] for info in ppc.booking_table
                  if info['year'] == self.year and not info['internal']])
-            # TODO: filter on billable projects.
             result += booked_billable * ppc.hourly_tariff
         return result
 
@@ -147,13 +146,13 @@ class PersonYearCombination(object):
         for ppc in self.ppcs:
             result['over'] += sum(
                 [info['overbooked'] for info in ppc.booking_table
-                 if info['year'] == self.year])
+                 if info['year'] == self.year and not info['internal']])
             well_booked += sum(
                 [info['booked'] for info in ppc.booking_table
-                 if info['year'] == self.year])
+                 if info['year'] == self.year and not info['internal']])
         if (well_booked + result['over']):
             result['percentage'] = round(
-                well_booked / (well_booked + result['over']) * 100)
+                result['over'] / (well_booked + result['over']) * 100)
         return result
 
     @cached_property
