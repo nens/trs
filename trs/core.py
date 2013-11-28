@@ -76,6 +76,12 @@ class ProjectPersonCombination(object):
         return self.financially_booked * self.hourly_tariff
 
     @cached_property
+    def loss(self):
+        if not self.is_overbooked:
+            return 0
+        return self.hourly_tariff * (self.booked - self.budget)
+
+    @cached_property
     def left_to_turn_over(self):
         return self.left_to_book * self.hourly_tariff
 

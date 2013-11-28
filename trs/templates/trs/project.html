@@ -10,9 +10,9 @@
     <dt>Opdrachtgever</dt>
     <dd>{{ view.project.principal }}</dd>
     <dt>Startweek</dt>
-    <dd>{{ view.project.start.friendly }}</dd>
+    <dd>{{ view.project.start.friendly|default:"Niet ingevuld" }}</dd>
     <dt>Laatste week</dt>
-    <dd>{{ view.project.end.friendly }}</dd>
+    <dd>{{ view.project.end.friendly|default:"Niet ingevuld" }}</dd>
   </dl>
 
   {% if view.can_edit_project %}
@@ -34,7 +34,8 @@
           <th class="text-right">Geboekt</th>
           {% if view.can_see_financials %}
             <th class="text-right">Tarief</th>
-            <th class="text-right">Omgezet</th>
+            <th class="text-right">Omzet</th>
+            <th class="text-right">Verlies</th>
           {% endif %}
         </tr>
       </thead>
@@ -59,6 +60,7 @@
             {% if view.can_see_financials %}
               <td class="text-right">{{ line.hourly_tariff|money }}</td>
               <td class="text-right">{{ line.turnover|money }}</td>
+              <td class="text-right">{{ line.loss|money }}</td>
             {% endif %}
           </tr>
         {% endfor %}
@@ -67,22 +69,25 @@
       {% if view.can_see_financials %}
         <tfoot>
           <tr>
-            <th>Totaal omgezet</th>
+            <th>Totaal</th>
             <td class="text-right"></td>
             <td class="text-right"></td>
             <td class="text-right"></td>
             <th class="text-right">{{ view.total_turnover|money }}</th>
-          </tr>
-          <tr>
-            <th>Resterende omzet</th>
-            <td class="text-right"></td>
-            <td class="text-right"></td>
-            <td class="text-right"></td>
-            <th class="text-right">{{ view.total_turnover_left|money }}</th>
+            <th class="text-right">{{ view.total_loss|money }}</th>
           </tr>
         </tfoot>
       {% endif %}
     </table>
+
+    {% if view.can_see_project_financials %}
+      <p class="text-muted">
+        Totaal beschikbaar (zie hieronder) is {{ view.subtotal|money }}.
+        Huidige omzet is {{ view.total_turnover|money }},
+        nog-te-boeken is {{ view.total_turnover_left|money }}.
+        Dus er is nog <b>{{ view.amount_left|money }}</b> dat niet verdeeld is.
+      </p>
+    {% endif %}
 
     {% if view.can_edit_team %}
       <div>
@@ -116,26 +121,9 @@
         </tbody>
         <tbody>
           <tr>
-            <th>Subtotaal</th>
+            <th>Totaal</th>
             <th></th>
             <th class="text-right">{{ view.subtotal|money }}</th>
-          </tr>
-          <tr>
-            <td>Af: totaal omgezet</td>
-            <td></td>
-            <td class="text-right">-{{ view.total_turnover|money }}</td>
-          </tr>
-          <tr>
-            <td>Af: resterende te boeken omzet</td>
-            <td></td>
-            <td class="text-right">-{{ view.total_turnover_left|money }}</td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <th>Nog niet verdeeld</th>
-            <th></th>
-            <th class="text-right">{{ view.amount_left|money }}</th>
           </tr>
         </tfoot>
       </table>
@@ -149,6 +137,7 @@
         </a>
       </div>
     {% endif %}
+
   {% endif %}
 
 {% endblock %}

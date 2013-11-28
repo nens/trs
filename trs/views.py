@@ -282,6 +282,11 @@ class ProjectView(BaseView):
                     for person_project in self.person_projects])
 
     @cached_property
+    def total_loss(self):
+        return sum([person_project.loss
+                    for person_project in self.person_projects])
+
+    @cached_property
     def total_turnover_left(self):
         return sum([person_project.left_to_turn_over
                     for person_project in self.person_projects])
