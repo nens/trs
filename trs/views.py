@@ -13,6 +13,7 @@ from django.shortcuts import redirect
 from django.utils.datastructures import SortedDict
 from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
+from django.utils.safestring import mark_safe
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic.edit import FormView
@@ -657,6 +658,13 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     @cached_property
     def success_url(self):
         return reverse('trs.project.team', kwargs={'pk': self.project.pk})
+
+    @cached_property
+    def back_url(self):
+        template = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
+        url = self.project.get_absolute_url()
+        text = "Terug naar het project"
+        return mark_safe(template.format(url=url, text=text))
 
 
 class BudgetAddView(LoginAndPermissionsRequiredMixin,

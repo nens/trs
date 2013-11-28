@@ -3,6 +3,7 @@
 
 {% block main-column %}
   <h1>{{ view.title }}</h1>
+  {{ view.back_url }}
 
   <form action="." method="post">
     {% csrf_token %}
