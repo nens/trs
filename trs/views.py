@@ -680,7 +680,7 @@ class BudgetAddView(LoginAndPermissionsRequiredMixin,
                     BaseMixin):
     template_name = 'trs/edit.html'
     model = BudgetAssignment
-    fields = ['budget', 'description']
+    fields = ['description', 'budget']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
