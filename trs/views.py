@@ -656,7 +656,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def success_url(self):
-        return self.project.get_absolute_url()
+        return reverse('trs.project.team', kwargs={'pk': self.project.pk})
 
 
 class BudgetAddView(LoginAndPermissionsRequiredMixin,
