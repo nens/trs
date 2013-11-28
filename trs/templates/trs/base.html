@@ -35,15 +35,20 @@
         <!-- Start of collapsible part -->
         <div class="collapse navbar-collapse navbar-ex1-collapse">
           <ul class="nav navbar-nav">
-            <li class="active">
+            <li {% if view.selected_tab = 'booking' %}class="active"{% endif %}>
               <a href="{% url 'trs.booking' %}">
                 Boeken
-                <span class="badge" title="2 weken niet geboekt">2</span>
               </a>
             </li>
-            <li><a href="{% url 'trs.projects' %}">Projecten</a></li>
-            <li><a href="{% url 'trs.persons' %}">Wij</a></li>
-            <li><a href="#">Overzichten</a></li>
+            <li {% if view.selected_tab = 'projects' %}class="active"{% endif %}>
+              <a href="{% url 'trs.projects' %}">Projecten</a>
+            </li>
+            <li {% if view.selected_tab = 'persons' %}class="active"{% endif %}>
+              <a href="{% url 'trs.persons' %}">Wij</a>
+            </li>
+            <li {% if view.selected_tab = 'overviews' %}class="active"{% endif %}>
+              <a href="#">Overzichten</a>
+            </li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li class="hidden-xs hidden-sm">

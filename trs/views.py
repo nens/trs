@@ -84,6 +84,14 @@ class BaseMixin(object):
         return core.PersonYearCombination(person=self.active_person)
 
     @cached_property
+    def selected_tab(self):
+        recognized = ['booking', 'projects', 'persons', 'overviews']
+        for path_element in recognized:
+            path_start = '/%s/' % path_element
+            if self.request.path.startswith(path_start):
+                return path_element
+
+    @cached_property
     def admin_override_active(self):
         # Allow an admin to see everything for debug purposes.
         if self.request.user.is_superuser:
