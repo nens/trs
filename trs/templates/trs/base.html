@@ -134,8 +134,16 @@
                 Je hebt
                 <b>{{ view.person_year_info.target_percentage }}%</b>
                 van je target ({{ view.person_year_info.target|money }})
-                gehaald. Nog om te zetten:
-                {{ view.person_year_info.left_to_turn_over|money }}.
+                gehaald.
+                {% if view.person_year_info.left_to_turn_over %}
+                  Nog om te zetten:
+                  {{ view.person_year_info.left_to_turn_over|money }}.
+                {% endif %}
+              </div>
+              <div class="text-muted">
+                Het target is een combinatie van indicatoren. Heb je voldoende
+                extern gewerkt? Zijn de ureninschattingen van je projecten
+                goed? Kloppen je uurtarieven?
               </div>
 
             {% endif %}
