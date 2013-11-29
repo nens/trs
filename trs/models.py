@@ -3,6 +3,8 @@ import logging
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.core.validators import MaxValueValidator
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
@@ -94,6 +96,14 @@ class Person(models.Model):
                 models.Sum('standard_hourly_tariff'))[
                     'standard_hourly_tariff__sum'] or 0
 
+    def external_percentage(self, year_week=None):
+        if year_week is None:
+            year_week = this_year_week()
+        return self.person_changes.filter(
+            year_week__lte=year_week).aggregate(
+                models.Sum('external_percentage'))[
+                    'external_percentage__sum'] or 0
+
     def target(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
@@ -116,6 +126,10 @@ class Person(models.Model):
             return 100
         # TODO: het onderstaande klopt niet!
         return round(100 * booked_in_weeks / hours_to_work)
+
+    def external_internal_ratio(self):
+        internal = 100 - self.external_percentage()
+        return "%s/%s" % (self.external_percentage(), internal)
 
 
 class Project(models.Model):
@@ -324,6 +338,12 @@ class PersonChange(EventBase):
         blank=True,
         null=True,
         verbose_name="standaard uurtarief")
+    external_percentage = models.IntegerField(
+        validators=[MinValueValidator(0),
+                    MaxValueValidator(100)],
+        blank=True,
+        null=True,
+        verbose_name="percentage extern")
 
     person = models.ForeignKey(
         Person,

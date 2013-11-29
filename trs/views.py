@@ -805,7 +805,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = PersonChange
     fields = ['hours_per_week', 'target', 'standard_hourly_tariff',
-              'year_week']
+              'external_percentage', 'year_week']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -838,11 +838,14 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         # values.
         hours_per_week = form.instance.hours_per_week or 0  # Adjust for None
         standard_hourly_tariff = form.instance.standard_hourly_tariff or 0
+        external_percentage = form.instance.external_percentage or 0
         target = form.instance.target or 0  # Adjust for None
         form.instance.hours_per_week = (
             hours_per_week - self.initial['hours_per_week'])
         form.instance.standard_hourly_tariff = (
             standard_hourly_tariff - self.initial['standard_hourly_tariff'])
+        form.instance.external_percentage = (
+            external_percentage - self.initial['external_percentage'])
         form.instance.target = target - self.initial['target']
 
         adjusted = []
@@ -850,6 +853,8 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
             adjusted.append("werkweek")
         if form.instance.standard_hourly_tariff:
             adjusted.append("standaard uurtarief")
+        if form.instance.external_percentage:
+            adjusted.append("percentage extern")
         if form.instance.target:
             adjusted.append("target")
         if adjusted:

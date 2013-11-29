@@ -163,14 +163,18 @@ class PersonYearCombination(object):
 
     @cached_property
     def billable_percentage(self):
+        # Count both booked and overbooked hours.
+        # TODO: filter out holidays?
         billable = 0
         unbillable = 0
         for ppc in self.ppcs:
             billable += sum(
-                [info['overbooked'] for info in ppc.booking_table
+                [info['booked'] + info['overbooked']
+                 for info in ppc.booking_table
                  if info['year'] == self.year and not info['internal']])
             unbillable += sum(
-                [info['booked'] for info in ppc.booking_table
+                [info['booked'] + info['overbooked']
+                 for info in ppc.booking_table
                  if info['year'] == self.year and info['internal']])
         if not (billable + unbillable):  # Division by zero
             return 0
