@@ -134,8 +134,24 @@ class PersonsView(BaseView):
             return True
 
     @cached_property
-    def persons(self):
-        return Person.objects.all()
+    def lines(self):
+        result = []
+        for person in Person.objects.all():
+            line = {}
+            line['person'] = person
+            if person.booking_percentage() > 90:
+                klass = 'success'
+            elif person.booking_percentage() < 60:
+                klass = 'danger'
+            else:
+                klass = 'warning'
+            line['klass'] = klass
+            ppcs = [core.ProjectPersonCombination(project, person)
+                    for project in person.assigned_projects()]
+            line['total_left_to_book'] = sum([ppc.left_to_book
+                                              for ppc in ppcs])
+            result.append(line)
+        return result
 
 
 class PersonView(BaseView):
