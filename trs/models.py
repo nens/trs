@@ -229,6 +229,10 @@ class Invoice(models.Model):
     def __str__(self):
         return self.number
 
+    def get_absolute_url(self):
+        return reverse('trs.invoice.edit', kwargs={'pk': self.pk,
+                                                   'project_pk': self.project.pk})
+
     @property
     def amount_inclusive(self):
         return self.amount_exclusive + self.vat

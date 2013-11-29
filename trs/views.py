@@ -22,6 +22,7 @@ from django.views.generic.edit import UpdateView
 from trs import core
 from trs.models import Booking
 from trs.models import BudgetAssignment
+from trs.models import Invoice
 from trs.models import Person
 from trs.models import PersonChange
 from trs.models import Project
@@ -496,6 +497,62 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
     def form_valid(self, form):
         messages.success(self.request, "Project aangemaakt")
         return super(ProjectCreateView, self).form_valid(form)
+
+
+class InvoiceCreateView(LoginAndPermissionsRequiredMixin,
+                        CreateView,
+                        BaseMixin):
+    template_name = 'trs/edit.html'
+    model = Invoice
+    title = "Nieuwe factuur"
+    fields = ['date', 'number', 'description',
+              'amount_exclusive', 'vat', 'payed']
+
+    def has_form_permissions(self):
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['project_pk'])
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
+
+    def form_valid(self, form):
+        form.instance.project = self.project
+        messages.success(self.request, "Factuur toegevoegd")
+        return super(InvoiceCreateView, self).form_valid(form)
+
+
+class InvoiceEditView(LoginAndPermissionsRequiredMixin,
+                        UpdateView,
+                        BaseMixin):
+    template_name = 'trs/edit.html'
+    model = Invoice
+    fields = ['date', 'number', 'description',
+              'amount_exclusive', 'vat', 'payed']
+
+    @property
+    def title(self):
+        return "Aanpassen factuur voor %s" % self.project.code
+
+    def has_form_permissions(self):
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['project_pk'])
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
+
+    def form_valid(self, form):
+        messages.success(self.request, "Factuur aangepast")
+        return super(InvoiceEditView, self).form_valid(form)
 
 
 class PersonEditView(LoginAndPermissionsRequiredMixin,

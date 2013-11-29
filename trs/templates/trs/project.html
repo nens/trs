@@ -130,7 +130,7 @@
             </tr>
           {% endfor %}
         </tbody>
-        <tbody>
+        <tfoot>
           <tr>
             <th>Totaal</th>
             <th></th>
@@ -145,6 +145,49 @@
         <a href="{% url 'trs.project.add_budget' pk=view.project.pk %}"
            class="btn btn-default">
           Voeg budgetwijziging toe
+        </a>
+      </div>
+    {% endif %}
+
+    <h2>Facturen</h2>
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Factuurnummer</th>
+            <th>Omschrijving</th>
+            <th class="text-right">Exclusief</th>
+            <th class="text-right">BTW</th>
+            <th class="text-right">Inclusief</th>
+            <th>Betaald</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for invoice in view.project.invoices.all %}
+            <tr>
+              <td>{{ invoice.date }}</td>
+              <td>
+                <a href="{% url 'trs.invoice.edit' project_pk=view.project.pk pk=invoice.pk %}">
+                  {{ invoice.number }}
+                </a>
+              </td>
+              <td>{{ invoice.description }}</td>
+              <td class="text-right">{{ invoice.amount_exclusive|money }}</td>
+              <td class="text-right">{{ invoice.vat|money }}</td>
+              <td class="text-right">{{ invoice.amount_inclusive|money }}</td>
+              <td>{{ invoice.payed|default:'Nee' }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if view.can_edit_financials %}
+      <div>
+        <a href="{% url 'trs.invoice.add' project_pk=view.project.pk %}"
+           class="btn btn-default">
+          Voeg factuur toe
         </a>
       </div>
     {% endif %}
