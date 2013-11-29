@@ -320,6 +320,16 @@ class ProjectView(BaseView):
     def amount_left(self):
         return self.subtotal - self.total_turnover - self.total_turnover_left
 
+    @cached_property
+    def total_invoice_exclusive(self):
+        return sum([invoice.amount_exclusive
+                    for invoice in self.project.invoices.all()])
+
+    @cached_property
+    def total_invoice_inclusive(self):
+        return sum([invoice.amount_inclusive
+                    for invoice in self.project.invoices.all()])
+
 
 class LoginView(FormView, BaseMixin):
     template_name = 'trs/login.html'

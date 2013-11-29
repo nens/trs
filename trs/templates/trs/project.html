@@ -180,6 +180,17 @@
             </tr>
           {% endfor %}
         </tbody>
+        <tfoot>
+          <tr>
+            <th>Totaal</th>
+            <th></th>
+            <th></th>
+            <th class="text-right">{{ view.total_invoice_exclusive|money }}</th>
+            <th></th>
+            <th class="text-right">{{ view.total_invoice_inclusive|money }}</th>
+            <th></th>
+          </tr>
+        </tfoot>
       </table>
     </div>
 

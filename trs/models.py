@@ -197,8 +197,9 @@ class Invoice(models.Model):
         Project,
         related_name="invoices",
         verbose_name="project")
-    date = models.DateTimeField(
-        verbose_name="factuurdatum")
+    date = models.DateField(
+        verbose_name="factuurdatum",
+        help_text="Formaat: 1972-12-25, jjjj-mm-dd")
     number = models.CharField(
         verbose_name="factuurnummer",
         max_length=255)
@@ -216,10 +217,11 @@ class Invoice(models.Model):
         decimal_places=DECIMAL_PLACES,
         default=0,
         verbose_name="btw")
-    payed = models.DateTimeField(
+    payed = models.DateField(
         blank=True,
         null=True,
-        verbose_name="betaald op")
+        verbose_name="betaald op",
+        help_text="Formaat: 1972-12-25, jjjj-mm-dd")
 
     class Meta:
         verbose_name = "factuur"
