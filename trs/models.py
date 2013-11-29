@@ -192,6 +192,48 @@ class Project(models.Model):
             models.Sum('budget'))['budget__sum'] or 0
 
 
+class Invoice(models.Model):
+    project = models.ForeignKey(
+        Project,
+        related_name="invoices",
+        verbose_name="project")
+    date = models.DateTimeField(
+        verbose_name="factuurdatum")
+    number = models.CharField(
+        verbose_name="factuurnummer",
+        max_length=255)
+    description = models.CharField(
+        verbose_name="omschrijving",
+        blank=True,
+        max_length=255)
+    amount_exclusive = models.DecimalField(
+        max_digits=12,  # We don't mind a metric ton of hard cash.
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="bedrag exclusief")
+    vat = models.DecimalField(
+        max_digits=12,
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="btw")
+    payed = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="betaald op")
+
+    class Meta:
+        verbose_name = "factuur"
+        verbose_name_plural = "facturen"
+        ordering = ('number',)
+
+    def __str__(self):
+        return self.number
+
+    @property
+    def amount_inclusive(self):
+        return self.amount_exclusive + self.vat
+
+
 class YearWeek(models.Model):
     # This ought to be automatically generated.
     year = models.IntegerField(
