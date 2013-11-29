@@ -238,9 +238,29 @@ class ProjectsView(BaseView):
             return True
 
     @cached_property
-    def projects(self):
-        return Project.objects.all()
-
+    def lines(self):
+        result = []
+        for project in Project.objects.all():
+            line = {}
+            line['project'] = project
+            ppcs = [core.ProjectPersonCombination(project, person)
+                    for person in project.assigned_persons()]
+            booked = sum([ppc.booked for ppc in ppcs])
+            overbooked = sum([max(0, (ppc.booked - ppc.budget))
+                              for ppc in ppcs])
+            left_to_book = sum([ppc.left_to_book for ppc in ppcs])
+            if overbooked > 0.5 * float(booked):
+                klass = 'danger'
+            elif overbooked:
+                klass = 'warning'
+            else:
+                klass = 'success'
+            line['klass'] = klass
+            line['booked'] = booked
+            line['overbooked'] = overbooked
+            line['left_to_book'] = left_to_book
+            result.append(line)
+        return result
 
 class ProjectView(BaseView):
     template_name = 'trs/project.html'
