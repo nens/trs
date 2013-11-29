@@ -162,6 +162,11 @@ class Project(models.Model):
         verbose_name="projectmanager",
         help_text="verantwoordelijke voor het budget van het project",
         related_name="projects_i_manage")
+    is_accepted = models.BooleanField(
+        verbose_name="goedgekeurd",
+        help_text=("Project is goedgekeurd door PM en PL en kan qua team " +
+                   "en budgetverdeling niet meer gewijzigd worden."),
+        default=False)
 
     class Meta:
         verbose_name = "project"

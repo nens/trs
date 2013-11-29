@@ -13,6 +13,17 @@
     <dd>{{ view.project.start.friendly|default:"Niet ingevuld" }}</dd>
     <dt>Laatste week</dt>
     <dd>{{ view.project.end.friendly|default:"Niet ingevuld" }}</dd>
+    <dt>Goedgekeurd</dt>
+    <dd>
+      {% if view.project.is_accepted %}
+        Het project is goedgekeurd door PL en PM. In principe wordt er nu
+        niets meer veranderd aan teamsamenstelling, uurtarief en
+        urenverdeling.
+      {% else %}
+        Het project is nog niet afgekaart door PL en PM. Urenverdeling,
+        uurtarief en teamsamenstelling kunnen allemaal nog veranderd worden.
+      {% endif %}
+    </dd>
   </dl>
 
   {% if view.can_edit_project %}
@@ -26,7 +37,7 @@
 
   <h2>Projectteam</h2>
   <div class="table-responsive">
-    <table class="table">
+    <table class="table table-hover">
       <thead>
         <tr>
           <th>Wie</th>
@@ -102,7 +113,7 @@
   {% if view.can_see_project_financials %}
     <h2>Financi&euml;n</h2>
     <div class="table-responsive">
-      <table class="table">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th>Beschrijving</th>

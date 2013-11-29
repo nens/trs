@@ -264,6 +264,9 @@ class ProjectView(BaseView):
     def can_edit_team(self):
         if self.can_edit_and_see_everything:
             return True
+        if self.project.is_accepted:
+            # Not editable anymore
+            return False
         if self.project.project_leader == self.active_person:
             return True
 
@@ -464,7 +467,9 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
     model = Project
     title = "Project aanpassen"
     fields = ['code', 'description', 'internal', 'principal',
-              'start', 'end', 'project_leader', 'project_manager']
+              'start', 'end', 'project_leader', 'project_manager',
+              'is_accepted',  # Note: is_accepted only on edit view!
+          ]
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
