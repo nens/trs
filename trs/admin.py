@@ -12,7 +12,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
 
 class InvoiceAdmin(admin.ModelAdmin):
-    list_display = ['project', 'number', 'date', 'description']
+    list_display = ['number', 'project', 'date', 'description']
 
 
 class PersonChangeAdmin(admin.ModelAdmin):
