@@ -35,15 +35,20 @@
         <!-- Start of collapsible part -->
         <div class="collapse navbar-collapse navbar-ex1-collapse">
           <ul class="nav navbar-nav">
-            <li class="active">
+            <li {% if view.selected_tab = 'booking' %}class="active"{% endif %}>
               <a href="{% url 'trs.booking' %}">
                 Boeken
-                <span class="badge" title="2 weken niet geboekt">2</span>
               </a>
             </li>
-            <li><a href="{% url 'trs.projects' %}">Projecten</a></li>
-            <li><a href="{% url 'trs.persons' %}">Wij</a></li>
-            <li><a href="#">Overzichten</a></li>
+            <li {% if view.selected_tab = 'projects' %}class="active"{% endif %}>
+              <a href="{% url 'trs.projects' %}">Projecten</a>
+            </li>
+            <li {% if view.selected_tab = 'persons' %}class="active"{% endif %}>
+              <a href="{% url 'trs.persons' %}">Medewerkers</a>
+            </li>
+            <li {% if view.selected_tab = 'overviews' %}class="active"{% endif %}>
+              <a href="#">Overzichten</a>
+            </li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li class="hidden-xs hidden-sm">
@@ -91,29 +96,72 @@
           {% block overview-column %}
             {% if view.active_person %}
 
-              <h2>Intern/extern</h2>
+              <h2>Binnen budget?</h2>
               <div>
-                <b>{{ view.person_year_info.billable_percentage }}%</b>
-                op externe projecten geboekt.
-              </div>
-              <h2>Verliesuren</h2>
-              <div>
+                Je hebt
                 <b>
                   {{ view.person_year_info.overbooked.percentage }}%
                 </b>
                 ({{ view.person_year_info.overbooked.over|hours }} uren)
                 buiten budget geboekt.
               </div>
-              <h2>Financieel</h2>
+              <div class="text-muted">
+                Bij dit percentage wordt alleen gekeken naar de <i>externe</i>
+                projecten. Het is de bedoeling dat deze projecten netjes in
+                samenspraak worden opgezet, inclusief deugdelijke
+                ureninschatting.
+              </div>
+              <h2>Extern/intern?</h2>
+              <div>
+                Je hebt
+                <b>{{ view.person_year_info.billable_percentage }}%</b>
+                op externe projecten geboekt.
+                {% if view.person_year_info.billable_percentage >= view.active_person.external_percentage %}
+                  Prima.
+                {% else %}
+                  Dit moet nog omhoog, voor jou moet de verhouding
+                  {{ view.active_person.external_internal_ratio }}
+                  zijn.
+                {% endif %}
+              </div>
+              <div class="text-muted">
+                Bij deze verhouding wordt gewoon het aantal geboekte uren van
+                dit jaar op externe/interne projecten gebruikt. Of je over
+                budget heen bent gegaan wordt hier niet meegenomen.
+              </div>
+              <h2>Financieel?</h2>
               <div>
                 Je hebt
                 <b>{{ view.person_year_info.target_percentage }}%</b>
                 van je target ({{ view.person_year_info.target|money }})
-                gehaald. Nog om te zetten:
-                {{ view.person_year_info.left_to_turn_over|money }}.
+                gehaald.
+                {% if view.person_year_info.left_to_turn_over %}
+                  Nog om te zetten:
+                  {{ view.person_year_info.left_to_turn_over|money }}.
+                {% endif %}
               </div>
+              <div class="text-muted">
+                Het target is een combinatie van indicatoren. Heb je voldoende
+                extern gewerkt? Zijn de ureninschattingen van je projecten
+                goed? Kloppen je uurtarieven?
+              </div>
+
             {% endif %}
           {% endblock %}
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-3 col-md-offset-9 text-muted">
+          <hr>
+          De TRS code staat <a href="https://github.com/nens/trs">op
+            github</a>.<br>
+
+          Hier kan je <a href="https://github.com/nens/trs/issues">bugs
+            melden</a>.<br>
+
+          Bugs en vragen kan je ook mailen naar
+          <a href="mailto:reinout.vanrees@nelen-schuurmans.nl">Reinout</a>.
         </div>
       </div>
 

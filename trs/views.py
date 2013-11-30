@@ -13,6 +13,7 @@ from django.shortcuts import redirect
 from django.utils.datastructures import SortedDict
 from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
+from django.utils.safestring import mark_safe
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic.edit import FormView
@@ -21,6 +22,7 @@ from django.views.generic.edit import UpdateView
 from trs import core
 from trs.models import Booking
 from trs.models import BudgetAssignment
+from trs.models import Invoice
 from trs.models import Person
 from trs.models import PersonChange
 from trs.models import Project
@@ -83,6 +85,14 @@ class BaseMixin(object):
         return core.PersonYearCombination(person=self.active_person)
 
     @cached_property
+    def selected_tab(self):
+        recognized = ['booking', 'projects', 'persons', 'overviews']
+        for path_element in recognized:
+            path_start = '/%s/' % path_element
+            if self.request.path.startswith(path_start):
+                return path_element
+
+    @cached_property
     def admin_override_active(self):
         # Allow an admin to see everything for debug purposes.
         if self.request.user.is_superuser:
@@ -125,8 +135,24 @@ class PersonsView(BaseView):
             return True
 
     @cached_property
-    def persons(self):
-        return Person.objects.all()
+    def lines(self):
+        result = []
+        for person in Person.objects.all():
+            line = {}
+            line['person'] = person
+            if person.booking_percentage() > 90:
+                klass = 'success'
+            elif person.booking_percentage() < 60:
+                klass = 'danger'
+            else:
+                klass = 'warning'
+            line['klass'] = klass
+            ppcs = [core.ProjectPersonCombination(project, person)
+                    for project in person.assigned_projects()]
+            line['total_left_to_book'] = sum([ppc.left_to_book
+                                              for ppc in ppcs])
+            result.append(line)
+        return result
 
 
 class PersonView(BaseView):
@@ -212,9 +238,29 @@ class ProjectsView(BaseView):
             return True
 
     @cached_property
-    def projects(self):
-        return Project.objects.all()
-
+    def lines(self):
+        result = []
+        for project in Project.objects.all():
+            line = {}
+            line['project'] = project
+            ppcs = [core.ProjectPersonCombination(project, person)
+                    for person in project.assigned_persons()]
+            booked = sum([ppc.booked for ppc in ppcs])
+            overbooked = sum([max(0, (ppc.booked - ppc.budget))
+                              for ppc in ppcs])
+            left_to_book = sum([ppc.left_to_book for ppc in ppcs])
+            if overbooked > 0.5 * float(booked):
+                klass = 'danger'
+            elif overbooked:
+                klass = 'warning'
+            else:
+                klass = 'success'
+            line['klass'] = klass
+            line['booked'] = booked
+            line['overbooked'] = overbooked
+            line['left_to_book'] = left_to_book
+            result.append(line)
+        return result
 
 class ProjectView(BaseView):
     template_name = 'trs/project.html'
@@ -239,6 +285,9 @@ class ProjectView(BaseView):
     def can_edit_team(self):
         if self.can_edit_and_see_everything:
             return True
+        if self.project.is_accepted:
+            # Not editable anymore
+            return False
         if self.project.project_leader == self.active_person:
             return True
 
@@ -273,6 +322,11 @@ class ProjectView(BaseView):
                     for person_project in self.person_projects])
 
     @cached_property
+    def total_loss(self):
+        return sum([person_project.loss
+                    for person_project in self.person_projects])
+
+    @cached_property
     def total_turnover_left(self):
         return sum([person_project.left_to_turn_over
                     for person_project in self.person_projects])
@@ -285,6 +339,16 @@ class ProjectView(BaseView):
     @cached_property
     def amount_left(self):
         return self.subtotal - self.total_turnover - self.total_turnover_left
+
+    @cached_property
+    def total_invoice_exclusive(self):
+        return sum([invoice.amount_exclusive
+                    for invoice in self.project.invoices.all()])
+
+    @cached_property
+    def total_invoice_inclusive(self):
+        return sum([invoice.amount_inclusive
+                    for invoice in self.project.invoices.all()])
 
 
 class LoginView(FormView, BaseMixin):
@@ -434,7 +498,9 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
     model = Project
     title = "Project aanpassen"
     fields = ['code', 'description', 'internal', 'principal',
-              'start', 'end', 'project_leader', 'project_manager']
+              'start', 'end', 'project_leader', 'project_manager',
+              'is_accepted',  # Note: is_accepted only on edit view!
+          ]
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -461,6 +527,62 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
     def form_valid(self, form):
         messages.success(self.request, "Project aangemaakt")
         return super(ProjectCreateView, self).form_valid(form)
+
+
+class InvoiceCreateView(LoginAndPermissionsRequiredMixin,
+                        CreateView,
+                        BaseMixin):
+    template_name = 'trs/edit.html'
+    model = Invoice
+    title = "Nieuwe factuur"
+    fields = ['date', 'number', 'description',
+              'amount_exclusive', 'vat', 'payed']
+
+    def has_form_permissions(self):
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['project_pk'])
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
+
+    def form_valid(self, form):
+        form.instance.project = self.project
+        messages.success(self.request, "Factuur toegevoegd")
+        return super(InvoiceCreateView, self).form_valid(form)
+
+
+class InvoiceEditView(LoginAndPermissionsRequiredMixin,
+                        UpdateView,
+                        BaseMixin):
+    template_name = 'trs/edit.html'
+    model = Invoice
+    fields = ['date', 'number', 'description',
+              'amount_exclusive', 'vat', 'payed']
+
+    @property
+    def title(self):
+        return "Aanpassen factuur voor %s" % self.project.code
+
+    def has_form_permissions(self):
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['project_pk'])
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
+
+    def form_valid(self, form):
+        messages.success(self.request, "Factuur aangepast")
+        return super(InvoiceEditView, self).form_valid(form)
 
 
 class PersonEditView(LoginAndPermissionsRequiredMixin,
@@ -656,7 +778,14 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def success_url(self):
-        return self.project.get_absolute_url()
+        return reverse('trs.project.team', kwargs={'pk': self.project.pk})
+
+    @cached_property
+    def back_url(self):
+        template = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
+        url = self.project.get_absolute_url()
+        text = "Terug naar het project"
+        return mark_safe(template.format(url=url, text=text))
 
 
 class BudgetAddView(LoginAndPermissionsRequiredMixin,
@@ -664,7 +793,7 @@ class BudgetAddView(LoginAndPermissionsRequiredMixin,
                     BaseMixin):
     template_name = 'trs/edit.html'
     model = BudgetAssignment
-    fields = ['budget', 'description']
+    fields = ['description', 'budget']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -695,7 +824,8 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
                        BaseMixin):
     template_name = 'trs/edit.html'
     model = PersonChange
-    fields = ['hours_per_week', 'target', 'year_week']
+    fields = ['hours_per_week', 'target', 'standard_hourly_tariff',
+              'external_percentage', 'year_week']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -717,6 +847,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
     def initial(self):
         """Return initial form values. Turn the decimals into integers already."""
         return {'hours_per_week': int(self.person.hours_per_week()),
+                'standard_hourly_tariff': int(self.person.standard_hourly_tariff()),
                 'target': int(self.person.target()),
                 'year_week': this_year_week()}
 
@@ -726,14 +857,24 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         # re-calculated for the initial values: they're used as culumative
         # values.
         hours_per_week = form.instance.hours_per_week or 0  # Adjust for None
+        standard_hourly_tariff = form.instance.standard_hourly_tariff or 0
+        external_percentage = form.instance.external_percentage or 0
         target = form.instance.target or 0  # Adjust for None
         form.instance.hours_per_week = (
             hours_per_week - self.initial['hours_per_week'])
+        form.instance.standard_hourly_tariff = (
+            standard_hourly_tariff - self.initial['standard_hourly_tariff'])
+        form.instance.external_percentage = (
+            external_percentage - self.initial['external_percentage'])
         form.instance.target = target - self.initial['target']
 
         adjusted = []
         if form.instance.hours_per_week:
             adjusted.append("werkweek")
+        if form.instance.standard_hourly_tariff:
+            adjusted.append("standaard uurtarief")
+        if form.instance.external_percentage:
+            adjusted.append("percentage extern")
         if form.instance.target:
             adjusted.append("target")
         if adjusted:

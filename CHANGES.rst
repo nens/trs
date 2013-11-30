@@ -5,6 +5,10 @@ Changelog of trs
 0.1 (unreleased)
 ----------------
 
+- Added permission checks all over the place.
+
+- Added all directly necessary forms.
+
 - Fixed formatting of hours and money. Note: money is in a fixed width font
   now.
 

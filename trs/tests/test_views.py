@@ -53,7 +53,7 @@ class PersonsViewTestCase(TestCase):
 
     def test_smoke(self):
         view = views.PersonsView()
-        self.assertEqual(list(view.persons), [self.person1, self.person2])
+        self.assertEqual(view.lines[1]['person'], self.person2)
 
 
 class PersonViewTestCase(TestCase):
@@ -74,7 +74,7 @@ class ProjectsViewTestCase(TestCase):
 
     def test_smoke(self):
         view = views.ProjectsView()
-        self.assertEqual(list(view.projects), [self.project1, self.project2])
+        self.assertEqual(view.lines[1]['project'], self.project2)
 
 
 class ProjectViewTestCase(TestCase):

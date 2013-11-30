@@ -1,12 +1,35 @@
 {% extends "trs/base.html" %}
+{% load trs_formatting %}
 
 {% block main-column %}
-  <h1>Wij</h1>
-  <ul>
-    {% for person in view.persons %}
-      <li>{{ person.as_widget }}</li>
-    {% endfor %}
-  </ul>
+  <h1>Medewerkers</h1>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Naam</th>
+        <th>Bij met boeken?</th>
+        <th>Werkvoorraad</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in view.lines %}
+        <tr>
+          <td>
+            <a href="{{ line.person.get_absolute_url }}">
+              {{ line.person.name }}
+            </a>
+          </td>
+          <td class="{{ line.klass }}">
+            {{ line.person.booking_percentage }}%
+          </td>
+          <td>
+            {{ line.total_left_to_book|hours }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
   {% if view.can_add_person %}
     <hr>
     <p>

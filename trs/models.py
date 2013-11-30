@@ -3,6 +3,8 @@ import logging
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.core.validators import MaxValueValidator
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
@@ -86,6 +88,22 @@ class Person(models.Model):
             year_week__lte=year_week).aggregate(
                 models.Sum('hours_per_week'))['hours_per_week__sum'] or 0
 
+    def standard_hourly_tariff(self, year_week=None):
+        if year_week is None:
+            year_week = this_year_week()
+        return self.person_changes.filter(
+            year_week__lte=year_week).aggregate(
+                models.Sum('standard_hourly_tariff'))[
+                    'standard_hourly_tariff__sum'] or 0
+
+    def external_percentage(self, year_week=None):
+        if year_week is None:
+            year_week = this_year_week()
+        return self.person_changes.filter(
+            year_week__lte=year_week).aggregate(
+                models.Sum('external_percentage'))[
+                    'external_percentage__sum'] or 0
+
     def target(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
@@ -108,6 +126,10 @@ class Person(models.Model):
             return 100
         # TODO: het onderstaande klopt niet!
         return round(100 * booked_in_weeks / hours_to_work)
+
+    def external_internal_ratio(self):
+        internal = 100 - self.external_percentage()
+        return "%s/%s" % (self.external_percentage(), internal)
 
 
 class Project(models.Model):
@@ -154,6 +176,11 @@ class Project(models.Model):
         verbose_name="projectmanager",
         help_text="verantwoordelijke voor het budget van het project",
         related_name="projects_i_manage")
+    is_accepted = models.BooleanField(
+        verbose_name="goedgekeurd",
+        help_text=("Project is goedgekeurd door PM en PL en kan qua team " +
+                   "en budgetverdeling niet meer gewijzigd worden."),
+        default=False)
 
     class Meta:
         verbose_name = "project"
@@ -177,6 +204,54 @@ class Project(models.Model):
     def budget(self):
         return self.budget_assignments.all().aggregate(
             models.Sum('budget'))['budget__sum'] or 0
+
+
+class Invoice(models.Model):
+    project = models.ForeignKey(
+        Project,
+        related_name="invoices",
+        verbose_name="project")
+    date = models.DateField(
+        verbose_name="factuurdatum",
+        help_text="Formaat: 1972-12-25, jjjj-mm-dd")
+    number = models.CharField(
+        verbose_name="factuurnummer",
+        max_length=255)
+    description = models.CharField(
+        verbose_name="omschrijving",
+        blank=True,
+        max_length=255)
+    amount_exclusive = models.DecimalField(
+        max_digits=12,  # We don't mind a metric ton of hard cash.
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="bedrag exclusief")
+    vat = models.DecimalField(
+        max_digits=12,
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="btw")
+    payed = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="betaald op",
+        help_text="Formaat: 1972-12-25, jjjj-mm-dd")
+
+    class Meta:
+        verbose_name = "factuur"
+        verbose_name_plural = "facturen"
+        ordering = ('number',)
+
+    def __str__(self):
+        return self.number
+
+    def get_absolute_url(self):
+        return reverse('trs.invoice.edit', kwargs={'pk': self.pk,
+                                                   'project_pk': self.project.pk})
+
+    @property
+    def amount_inclusive(self):
+        return self.amount_exclusive + self.vat
 
 
 class YearWeek(models.Model):
@@ -226,7 +301,8 @@ class EventBase(models.Model):
         YearWeek,
         blank=True,
         null=True,
-        verbose_name="jaar en week")
+        verbose_name="jaar en week",
+        help_text="Ingangsdatum van de wijziging (of datum van de boeking)")
 
     class Meta:
         abstract = True
@@ -256,6 +332,18 @@ class PersonChange(EventBase):
         blank=True,
         null=True,
         verbose_name="target")
+    standard_hourly_tariff = models.DecimalField(
+        max_digits=MAX_DIGITS,
+        decimal_places=DECIMAL_PLACES,
+        blank=True,
+        null=True,
+        verbose_name="standaard uurtarief")
+    external_percentage = models.IntegerField(
+        validators=[MinValueValidator(0),
+                    MaxValueValidator(100)],
+        blank=True,
+        null=True,
+        verbose_name="percentage extern")
 
     person = models.ForeignKey(
         Person,

@@ -1,10 +1,39 @@
 {% extends "trs/base.html" %}
+{% load trs_formatting %}
 
 {% block main-column %}
   <h1>Projecten</h1>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th>Omschrijving</th>
+        <th class="text-right">Geboekt</th>
+        <th class="text-right">Verliesuren</th>
+        <th class="text-right">Werkvoorraad</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in view.lines %}
+        <tr>
+          <td>{{ line.project.as_widget }}</td>
+          <td>{{ line.project.description }}</td>
+          <td class="text-right">
+            {{ line.booked|hours }}
+          </td>
+          <td class="text-right {{ line.klass }}">
+            {{ line.overbooked|hours }}%
+          </td>
+          <td class="text-right">
+            {{ line.left_to_book|hours }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
   <ul>
     {% for project in view.projects %}
-      <li>{{ project.as_widget }}</li>
+      <li></li>
     {% endfor %}
   </ul>
   {% if view.can_add_project %}

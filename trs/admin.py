@@ -11,6 +11,10 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ['code', 'internal', 'description']
 
 
+class InvoiceAdmin(admin.ModelAdmin):
+    list_display = ['number', 'project', 'date', 'description']
+
+
 class PersonChangeAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'year_week']
 
@@ -35,6 +39,7 @@ class YearWeekAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Person, PersonAdmin)
 admin.site.register(models.Project, ProjectAdmin)
+admin.site.register(models.Invoice, InvoiceAdmin)
 admin.site.register(models.PersonChange, PersonChangeAdmin)
 admin.site.register(models.Booking, BookingAdmin)
 admin.site.register(models.WorkAssignment, WorkAssignmentAdmin)
