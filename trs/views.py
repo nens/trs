@@ -262,6 +262,7 @@ class ProjectsView(BaseView):
             result.append(line)
         return result
 
+
 class ProjectView(BaseView):
     template_name = 'trs/project.html'
 
@@ -312,24 +313,21 @@ class ProjectView(BaseView):
             return True
 
     @cached_property
-    def person_projects(self):
+    def ppcs(self):
         return [core.ProjectPersonCombination(self.project, person)
                 for person in self.project.assigned_persons()]
 
     @cached_property
     def total_turnover(self):
-        return sum([person_project.turnover
-                    for person_project in self.person_projects])
+        return sum([ppc.turnover for ppc in self.ppcs])
 
     @cached_property
     def total_loss(self):
-        return sum([person_project.loss
-                    for person_project in self.person_projects])
+        return sum([ppc.loss for ppc in self.ppcs])
 
     @cached_property
     def total_turnover_left(self):
-        return sum([person_project.left_to_turn_over
-                    for person_project in self.person_projects])
+        return sum([ppc.left_to_turn_over for ppc in self.ppcs])
 
     @cached_property
     def subtotal(self):
