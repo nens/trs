@@ -61,6 +61,8 @@
             {% if ppc.is_project_manager %}
               &nbsp;<span class="label label-default">PM</span>
             {% endif %}
+            <br>
+            <span class="text-muted">{{ ppc.project.description }}</span>
           </td>
           <td class="text-right">{{ ppc.budget|hours }}</td>
           <td class="text-right
