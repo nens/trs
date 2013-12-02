@@ -41,3 +41,30 @@
     </p>
   {% endif %}
 {% endblock %}
+
+{% block overview-column %}
+  <h2>Overzicht</h2>
+  <p>
+    Op deze pagina krijg je naast de lijst met medewerkers ook de voor sociale
+    controle en voor het zoeken van projectleden noodzakelijke gegevens.
+  </p>
+  <ul>
+    <li>
+      De effectiviteit van het TRS staat of valt met hoe goed we allemaal
+      boeken. Het hoeft niet op het uur nauwkeurig: het percentage geeft aan
+      of iemand in totaal de afgelopen vier weken goed geboekt heeft.
+    </li>
+    <li>
+      De werkvoorraad in de diverse <i>externe</i>projecten. Hiermee kan je
+      zien hoe druk iemand het heeft, hou hier rekening mee als je mensen
+      zoekt voor je project.
+    </li>
+  </ul>
+  <p>
+    Boeken door de medewerkers is het ene verhaal, de netheid van de projecten
+    is het andere. Hetzelfde soort overzicht ter sociale controle
+    <a href="{% url 'trs.projects' %}">van de projecten</a> is er natuurlijk
+    ook.
+  </p>
+
+{% endblock %}
