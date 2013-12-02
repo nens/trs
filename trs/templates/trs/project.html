@@ -52,7 +52,7 @@
       </thead>
 
       <tbody>
-        {% for line in view.person_projects %}
+        {% for line in view.ppcs %}
           <tr>
             <td>
               {{ line.person.as_widget }}
@@ -69,7 +69,16 @@
               {{ line.booked|hours }}
             </td>
             {% if view.can_see_financials %}
-              <td class="text-right">{{ line.hourly_tariff|money }}</td>
+              <td class="text-right">
+                {% if line.hourly_tariff >= line.desired_hourly_tariff %}
+                  {{ line.hourly_tariff|money }}
+                {% else %}
+                  <span class="text-danger"
+                        title="Gewenst: {{ line.desired_hourly_tariff }}.">
+                    {{ line.hourly_tariff|money }}
+                  </span>
+                {% endif %}
+              </td>
               <td class="text-right">{{ line.turnover|money }}</td>
               <td class="text-right">{{ line.loss|money }}</td>
             {% endif %}
