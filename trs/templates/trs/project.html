@@ -30,6 +30,7 @@
     <p>
       <a href="{% url 'trs.project.edit' pk=view.project.pk %}"
          class="btn btn-default">
+        <span class="glyphicon glyphicon-pencil"></span>
         Project bewerken
       </a>
     </p>
@@ -113,6 +114,7 @@
       <div>
         <a href="{% url 'trs.project.team' pk=view.project.pk %}"
            class="btn btn-default">
+          <span class="glyphicon glyphicon-pencil"></span>
           Pas team aan
         </a>
       </div>
@@ -153,6 +155,7 @@
       <div>
         <a href="{% url 'trs.project.add_budget' pk=view.project.pk %}"
            class="btn btn-default">
+          <span class="glyphicon glyphicon-plus"></span>
           Voeg budgetwijziging toe
         </a>
       </div>
@@ -207,6 +210,7 @@
       <div>
         <a href="{% url 'trs.invoice.add' project_pk=view.project.pk %}"
            class="btn btn-default">
+          <span class="glyphicon glyphicon-plus"></span>
           Voeg factuur toe
         </a>
       </div>
