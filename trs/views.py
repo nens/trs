@@ -259,6 +259,24 @@ class ProjectsView(BaseView):
             line['booked'] = booked
             line['overbooked'] = overbooked
             line['left_to_book'] = left_to_book
+            total_real_hourly_tariffs = sum([ppc.hourly_tariff
+                                             for ppc in ppcs])
+            total_desired_hourly_tariffs = sum([ppc.desired_hourly_tariff
+                                                for ppc in ppcs])
+            if not total_desired_hourly_tariffs:  # division by 0
+                tariffs_ok_percentage = 100
+            else:
+                tariffs_ok_percentage = round(
+                    total_real_hourly_tariffs / total_desired_hourly_tariffs
+                    * 100)
+            if tariffs_ok_percentage >= 95:
+                tariffs_klass = 'success'
+            elif tariffs_ok_percentage >= 70:
+                tariffs_klass = 'warning'
+            else:
+                tariffs_klass = 'danger'
+            line['tariffs_ok_percentage'] = tariffs_ok_percentage
+            line['tariffs_klass'] = tariffs_klass
             result.append(line)
         return result
 
@@ -495,7 +513,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Project
     title = "Project aanpassen"
-    fields = ['code', 'description', 'internal', 'principal',
+    fields = ['code', 'description', 'internal', 'is_subsidized', 'principal',
               'start', 'end', 'project_leader', 'project_manager',
               'is_accepted',  # Note: is_accepted only on edit view!
           ]
@@ -515,7 +533,7 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Project
     title = "Nieuw project"
-    fields = ['code', 'description', 'internal', 'principal',
+    fields = ['code', 'description', 'internal', 'is_subsidized', 'principal',
               'start', 'end', 'project_leader', 'project_manager']
 
     def has_form_permissions(self):

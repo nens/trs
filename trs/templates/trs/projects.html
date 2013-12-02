@@ -7,25 +7,30 @@
     <thead>
       <tr>
         <th>Project</th>
-        <th>Omschrijving</th>
         <th class="text-right">Geboekt</th>
-        <th class="text-right">Verliesuren</th>
         <th class="text-right">Werkvoorraad</th>
+        <th class="text-right">Verliesuren</th>
+        <th class="text-right">Kloppende tarieven</th>
       </tr>
     </thead>
     <tbody>
       {% for line in view.lines %}
         <tr>
-          <td>{{ line.project.as_widget }}</td>
-          <td>{{ line.project.description }}</td>
+          <td>
+            {{ line.project.as_widget }}<br>
+            <span class="text-muted">{{ line.project.description }}</span>
+          </td>
           <td class="text-right">
             {{ line.booked|hours }}
           </td>
-          <td class="text-right {{ line.klass }}">
-            {{ line.overbooked|hours }}%
-          </td>
           <td class="text-right">
             {{ line.left_to_book|hours }}
+          </td>
+          <td class="text-right {{ line.klass }}">
+            {{ line.overbooked|hours }}
+          </td>
+          <td class="text-right {{ line.tariffs_klass }}">
+            {{ line.tariffs_ok_percentage }}%
           </td>
         </tr>
       {% endfor %}

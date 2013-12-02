@@ -181,6 +181,11 @@ class Project(models.Model):
         help_text=("Project is goedgekeurd door PM en PL en kan qua team " +
                    "en budgetverdeling niet meer gewijzigd worden."),
         default=False)
+    is_subsidized = models.BooleanField(
+        verbose_name="subsidieproject",
+        help_text=("Dit project zit in een subsidietraject. " +
+                   "Dit veld wordt gebruikt voor filtering."),
+        default=False)
 
     class Meta:
         verbose_name = "project"
@@ -204,6 +209,25 @@ class Project(models.Model):
     def budget(self):
         return self.budget_assignments.all().aggregate(
             models.Sum('budget'))['budget__sum'] or 0
+
+    def overbooked_percentage(self):
+        """Return quick estimate of percentage overbooked hours.
+
+        'Quick' as it lumps everything together and doesn't take into account
+        that one person might yet have hours left to book and one other is
+        already heavily over budget. Good for a quick indication, though. Used
+        in the widget.
+        """
+        bookable = self.work_assignments.all().aggregate(
+            models.Sum('hours'))['hours__sum'] or 0
+        booked = self.bookings.all().aggregate(
+            models.Sum('hours'))['hours__sum'] or 0
+        overbooked = max(0, (booked - bookable))
+        if not overbooked:
+            return 0
+        if not bookable:  # Division by zero
+            return 100
+        return round(overbooked / bookable * 100)
 
 
 class Invoice(models.Model):

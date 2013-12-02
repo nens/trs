@@ -2,3 +2,22 @@
   {% if not project.internal %}class="external-project"{% endif %}>
   {{ project.code }}
 </a>
+{% if project.is_accepted %}
+  <span title="Project is afgekaart"
+        class="text-muted glyphicon glyphicon-ok"></span>
+{% endif %}
+{% if project.is_subsidized %}
+  <span title="Subsidieproject"
+        class="text-muted glyphicon glyphicon-usd"></span>
+{% endif %}
+{% if project.overbooked_percentage > 5 %}
+  <span
+    {% if project.overbooked_percentage > 30 %}
+      class="label label-danger"
+    {% else %}
+      class="label label-default"
+    {% endif %}
+    title="Percentage dat over budget geboekt is">
+    {{ project.overbooked_percentage }}%
+  </span>
+{% endif %}
