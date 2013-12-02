@@ -866,6 +866,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         return {'hours_per_week': int(self.person.hours_per_week()),
                 'standard_hourly_tariff': int(self.person.standard_hourly_tariff()),
                 'target': int(self.person.target()),
+                'external_percentage': int(self.person.external_percentage()),
                 'year_week': this_year_week()}
 
     def form_valid(self, form):
