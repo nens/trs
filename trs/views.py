@@ -150,7 +150,8 @@ class PersonsView(BaseView):
             ppcs = [core.ProjectPersonCombination(project, person)
                     for project in person.assigned_projects()]
             line['total_left_to_book'] = sum([ppc.left_to_book
-                                              for ppc in ppcs])
+                                              for ppc in ppcs
+                                              if not ppc.project.internal])
             result.append(line)
         return result
 
