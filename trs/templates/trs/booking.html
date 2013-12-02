@@ -10,7 +10,6 @@
       <thead>
         <tr>
           <th>Code</th>
-          <th>Omschrijving</th>
           <th>Beschikbaar</th>
           <th>Geboekt</th>
           <th></th>
@@ -25,8 +24,10 @@
       <tbody>
         {% for line in view.lines %}
           <tr>
-            <td>{{ line.ppc.project.as_widget }}</td>
-            <td>{{ line.ppc.project.description }}</td>
+            <td>
+              {{ line.ppc.project.as_widget }}<br>
+              <span class="text-muted">{{ line.ppc.project.description }}</span>
+            </td>
             <td>{{ line.ppc.budget|hours }}</td>
             <td {% if line.ppc.is_overbooked %}class="text-danger"{% endif %}>
               {{ line.ppc.booked|hours }}
@@ -46,7 +47,6 @@
       </tbody>
       <tfoot>
         <tr>
-          <th></th>
           <th></th>
           <th></th>
           <th></th>
