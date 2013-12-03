@@ -809,7 +809,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 person = Person.objects.get(id=new_team_member_id)
                 work_assignment = WorkAssignment(
                     assigned_on=self.project,
-                    assigned_to=person)
+                    assigned_to=person,
+                    hourly_tariff=person.standard_hourly_tariff())
                 work_assignment.save()
                 msg = "Added %s to team" % person.name
                 logger.info(msg)
