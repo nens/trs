@@ -140,18 +140,42 @@ class PersonsView(BaseView):
         for person in Person.objects.all():
             line = {}
             line['person'] = person
-            if person.booking_percentage() > 90:
-                klass = 'success'
-            elif person.booking_percentage() < 60:
-                klass = 'danger'
-            else:
-                klass = 'warning'
-            line['klass'] = klass
+            # TODO: refactor, this is the same as ProjectsView.
             ppcs = [core.ProjectPersonCombination(project, person)
                     for project in person.assigned_projects()]
-            line['total_left_to_book'] = sum([ppc.left_to_book
-                                              for ppc in ppcs
-                                              if not ppc.project.internal])
+            booked = sum([ppc.booked for ppc in ppcs])
+            overbooked = sum([max(0, (ppc.booked - ppc.budget))
+                              for ppc in ppcs])
+            left_to_book = sum([ppc.left_to_book for ppc in ppcs])
+            if overbooked > 0.5 * float(booked):
+                klass = 'danger'
+            elif overbooked:
+                klass = 'warning'
+            else:
+                klass = 'success'
+            line['klass'] = klass
+            line['booked'] = booked
+            line['overbooked'] = overbooked
+            line['left_to_book'] = left_to_book
+            total_real_hourly_tariffs = sum([ppc.hourly_tariff
+                                             for ppc in ppcs])
+            total_desired_hourly_tariffs = sum([ppc.desired_hourly_tariff
+                                                for ppc in ppcs])
+            if not total_desired_hourly_tariffs:  # division by 0
+                tariffs_ok_percentage = 100
+            else:
+                tariffs_ok_percentage = round(
+                    total_real_hourly_tariffs / total_desired_hourly_tariffs
+                    * 100)
+            if tariffs_ok_percentage >= 95:
+                tariffs_klass = 'success'
+            elif tariffs_ok_percentage >= 70:
+                tariffs_klass = 'warning'
+            else:
+                tariffs_klass = 'danger'
+            line['tariffs_ok_percentage'] = tariffs_ok_percentage
+            line['tariffs_klass'] = tariffs_klass
+
             result.append(line)
         return result
 

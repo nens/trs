@@ -7,10 +7,22 @@
     <thead>
       <tr>
         <th>Naam</th>
-        <th title="Gekeken wordt naar de laatste 4 volledige weken">
+        <th class="text-right"
+            title="Nog boekbare uren op externe projecten">
+          Werkvoorraad
+        </th>
+        <th class="text-right"
+            title="Gekeken wordt naar de laatste 4 volledige weken">
           Bij met boeken?
         </th>
-        <th>Werkvoorraad</th>
+        <th class="text-right"
+            title="Uren over budget geboekt/moeten boeken">
+          Verliesuren?
+        </th>
+        <th class="text-right"
+            title="Werkt iemand op onder-kostprijs projecten?">
+          Kloppend tarief?
+        </th>
       </tr>
     </thead>
     <tbody>
@@ -21,11 +33,17 @@
               {{ line.person.name }}
             </a>
           </td>
-          <td class="{{ line.klass }}">
+          <td class="text-right">
+            {{ line.left_to_book|hours }}
+          </td>
+          <td class="{{ line.klass }} text-right">
             {{ line.person.booking_percentage }}%
           </td>
-          <td>
-            {{ line.total_left_to_book|hours }}
+          <td class="text-right {{ line.klass }}">
+            {{ line.overbooked|hours }}
+          </td>
+          <td class="text-right {{ line.tariffs_klass }}">
+            {{ line.tariffs_ok_percentage }}%
           </td>
         </tr>
       {% endfor %}
@@ -56,7 +74,7 @@
       of iemand in totaal de afgelopen vier weken goed geboekt heeft.
     </li>
     <li>
-      De werkvoorraad in de diverse <i>externe</i>projecten. Hiermee kan je
+      De werkvoorraad in de diverse <i>externe</i> projecten. Hiermee kan je
       zien hoe druk iemand het heeft, hou hier rekening mee als je mensen
       zoekt voor je project.
     </li>
