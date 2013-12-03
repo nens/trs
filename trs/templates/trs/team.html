@@ -11,25 +11,33 @@
       <thead>
         <tr>
           <th>Persoon</th>
-          <th>Uren</th>
-          <th>Uurtarief</th>
+          <th class="text-right">Uren</th>
+          <th class="text-right">(Al geboekt)</th>
+          <th class="text-right">Uurtarief</th>
+          <th class="text-right">(Gewenst)</th>
         </tr>
       </thead>
       <tbody>
         {% for line in view.lines %}
           <tr>
             <td>{{ line.ppc.person.as_widget }}</td>
-            <td>
+            <td class="text-right">
               {% for error in line.hours.errors %}
                 <div class="alert alert-danger">{{ error }}</div>
               {% endfor %}
               {{ line.hours }}
             </td>
-            <td>
+            <td class="text-right">{{ line.ppc.booked|hours }}</td>
+            <td class="text-right">
               {% for error in line.hourly_tariff.errors %}
                 <div class="alert alert-danger">{{ error }}</div>
               {% endfor %}
               {{ line.hourly_tariff }}
+            </td>
+            <td class="text-right">
+              <span title="Minimum: {{ line.person.minimum_hourly_tariff }}">
+                {{ line.person.standard_hourly_tariff|money }}
+              </span>
             </td>
           </tr>
         {% endfor %}
@@ -38,7 +46,9 @@
         <tbody>
           <tr>
             <td>Nieuw teamlid:</td>
-            <td colspan="2">{{ view.new_team_member_field }}</td>
+            <td colspan="4"  class="text-right">
+              {{ view.new_team_member_field }}
+            </td>
           </tr>
         </tbody>
       {% endif %}
@@ -46,7 +56,7 @@
         <tr>
           <th></th>
           <th></th>
-          <th colspan="2">
+          <th colspan="4" class="text-right">
             <input type="submit"
                    class="btn btn-primary"
                    tabindex="{{ view.tabindex_submit_button|default:99 }}"

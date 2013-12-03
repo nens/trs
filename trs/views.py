@@ -674,10 +674,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         return Project.objects.get(pk=self.kwargs['pk'])
 
     @cached_property
-    def ppc(self):
-        return core.ProjectPersonCombination(self.project, self.active_person)
-
-    @cached_property
     def title(self):
         return "Projectteam voor %s bewerken" % self.project.code
 
@@ -757,7 +753,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         field_index = 0
         for person in self.project.assigned_persons():
             ppc = core.ProjectPersonCombination(self.project, person)
-            line = {'ppc': ppc}
+            line = {'ppc': ppc,
+                    'person': person}
             if self.can_edit_hours:
                 line['hours'] = fields[field_index]
                 field_index += 1
