@@ -12,6 +12,9 @@ urlpatterns = patterns(
     url(r'^$',
         views.HomeView.as_view(),
         name='trs.home'),
+
+    url(r'', include('lizard_auth_client.urls')),
+
     url(r'^persons/$',
         views.PersonsView.as_view(),
         name='trs.persons'),
@@ -66,7 +69,7 @@ urlpatterns = patterns(
         views.BookingView.as_view(),
         name='trs.booking'),
 
-    url(r'^login/$',
+    url(r'^locallogin/$',
         views.LoginView.as_view(),
         name='trs.login'),
     url(r'^logout/$',

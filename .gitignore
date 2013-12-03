@@ -41,3 +41,5 @@ etc/*.logrotate
 
 # Bower
 bower_components
+
+trs/local_testsettings.py

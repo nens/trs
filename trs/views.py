@@ -100,6 +100,8 @@ class BaseMixin(object):
     def admin_override_active(self):
         # Allow an admin to see everything for debug purposes.
         if self.request.user.is_superuser:
+            if not 'admin_override_active' in self.request.session:
+                self.request.session['admin_override_active'] = False
             if 'all' in self.request.GET:
                 self.request.session['admin_override_active'] = True
             if 'notall' in self.request.GET:

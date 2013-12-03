@@ -15,6 +15,7 @@ DATABASES = {
     }
 INSTALLED_APPS = [
     'trs',
+    'lizard_auth_client',
     'south',
     'django.contrib.staticfiles',
     'django_extensions',
@@ -33,9 +34,10 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    # Defaults above, extra one below.
+    # Defaults above, extra two below.
     'tls.TLSRequestMiddleware',
-    )
+    # 'lizard_auth_client.middleware.LoginRequiredMiddleware',
+)
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
@@ -100,5 +102,26 @@ USE_L10N = True
 USE_I18N = True
 LANGUAGE_CODE = 'nl-nl'
 
-LOGIN_URL = 'trs.login'
-LOGOUT_URL = 'trs.logout'
+# LOGIN_URL = 'trs.login'
+# LOGOUT_URL = 'trs.logout'
+
+
+# SSO
+SSO_ENABLED = True
+# A key identifying this client. Can be published.
+SSO_KEY = 'trs_random_generated_key_to_identify_the_client'
+# A *secret* shared between client and server. Used to sign the messages exchanged between them.
+SSO_SECRET = 'trs_random_generated_secret_key_to_sign_exchanged_messages'
+# URL used to redirect the user to the SSO server
+# Note: needs a trailing slash
+SSO_SERVER_PUBLIC_URL = 'http://sso.lizard.net/'
+# URL used for server-to-server communication
+# Note: needs a trailing slash
+SSO_SERVER_PRIVATE_URL = 'http://somewhere:someport/'
+# Don't copy is_staff/is_superuser
+SSO_SYNCED_USER_KEYS = ['first_name', 'last_name', 'email', 'is_active']
+
+try:
+    from .local_testsettings import *
+except ImportError:
+    pass
