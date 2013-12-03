@@ -29,9 +29,7 @@
       {% for line in view.lines %}
         <tr>
           <td>
-            <a href="{{ line.person.get_absolute_url }}">
-              {{ line.person.name }}
-            </a>
+            {{ line.person.as_widget }}
           </td>
           <td class="text-right">
             {{ line.left_to_book|hours }}
