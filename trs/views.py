@@ -310,7 +310,7 @@ class ProjectsView(BaseView):
             # Progress bar chart styling
             size = min(project.hour_budget(), BIG_PROJECT_SIZE)
             size_indication = size / BIG_PROJECT_SIZE * MAX_BAR_HEIGHT  # pixels
-            height = round(max(2, size_indication))  # Minimum 2px, rounded
+            height = round(max(3, size_indication))  # Minimum 2px, rounded
             total_booked = booked + overbooked
             width_indication = total_booked / (project.hour_budget() or 1)
             if width_indication <= 1:
