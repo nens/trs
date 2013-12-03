@@ -34,7 +34,7 @@
         <div class="col-sm-offset-3">
           <input type="submit"
                  class="btn btn-primary"
-                 tabindex="{{  view.tabindex_submit_button }}"
+                 tabindex="{{  view.tabindex_submit_button|default:99 }}"
                  value="Submit" />
         </div>
       </div>
