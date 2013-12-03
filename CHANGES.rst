@@ -5,6 +5,12 @@ Changelog of trs
 0.1 (unreleased)
 ----------------
 
+- More information on the overviews.
+
+- Added progress bars for project overview.
+
+- Made labels less obtrusive.
+
 - Added permission checks all over the place.
 
 - Added all directly necessary forms.
