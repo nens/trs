@@ -96,6 +96,14 @@ class Person(models.Model):
                 models.Sum('standard_hourly_tariff'))[
                     'standard_hourly_tariff__sum'] or 0
 
+    def minimum_hourly_tariff(self, year_week=None):
+        if year_week is None:
+            year_week = this_year_week()
+        return self.person_changes.filter(
+            year_week__lte=year_week).aggregate(
+                models.Sum('minimum_hourly_tariff'))[
+                    'minimum_hourly_tariff__sum'] or 0
+
     def external_percentage(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
@@ -362,6 +370,12 @@ class PersonChange(EventBase):
         blank=True,
         null=True,
         verbose_name="standaard uurtarief")
+    minimum_hourly_tariff = models.DecimalField(
+        max_digits=MAX_DIGITS,
+        decimal_places=DECIMAL_PLACES,
+        blank=True,
+        null=True,
+        verbose_name="minimum uurtarief")
     external_percentage = models.IntegerField(
         validators=[MinValueValidator(0),
                     MaxValueValidator(100)],

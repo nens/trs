@@ -13,6 +13,8 @@
       <dd>{{ view.person.target|money }}</dd>
       <dt>Standaard uurtarief</dt>
       <dd>{{ view.person.standard_hourly_tariff|money }}</dd>
+      <dt>Minimum uurtarief</dt>
+      <dd>{{ view.person.minimum_hourly_tariff|money }}</dd>
       <dt>Verhouding extern/intern</dt>
       <dd>{{ view.person.external_internal_ratio }}</dd>
     {% endif %}
@@ -42,7 +44,7 @@
     <thead>
       <tr>
         <th>Project</th>
-        <th class="text-right">Uren</th>
+        <th class="text-right">Toegekend</th>
         <th class="text-right">Geboekt</th>
         {% if view.can_see_financials %}
           <th class="text-right">Tarief</th>

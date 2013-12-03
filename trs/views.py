@@ -866,7 +866,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = PersonChange
     fields = ['hours_per_week', 'target', 'standard_hourly_tariff',
-              'external_percentage', 'year_week']
+              'minimum_hourly_tariff', 'external_percentage', 'year_week']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -889,6 +889,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         """Return initial form values. Turn the decimals into integers already."""
         return {'hours_per_week': int(self.person.hours_per_week()),
                 'standard_hourly_tariff': int(self.person.standard_hourly_tariff()),
+                'minimum_hourly_tariff': int(self.person.minimum_hourly_tariff()),
                 'target': int(self.person.target()),
                 'external_percentage': int(self.person.external_percentage()),
                 'year_week': this_year_week()}
@@ -900,12 +901,15 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         # values.
         hours_per_week = form.instance.hours_per_week or 0  # Adjust for None
         standard_hourly_tariff = form.instance.standard_hourly_tariff or 0
+        minimum_hourly_tariff = form.instance.minimum_hourly_tariff or 0
         external_percentage = form.instance.external_percentage or 0
         target = form.instance.target or 0  # Adjust for None
         form.instance.hours_per_week = (
             hours_per_week - self.initial['hours_per_week'])
         form.instance.standard_hourly_tariff = (
             standard_hourly_tariff - self.initial['standard_hourly_tariff'])
+        form.instance.minimum_hourly_tariff = (
+            minimum_hourly_tariff - self.initial['minimum_hourly_tariff'])
         form.instance.external_percentage = (
             external_percentage - self.initial['external_percentage'])
         form.instance.target = target - self.initial['target']
@@ -915,6 +919,8 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
             adjusted.append("werkweek")
         if form.instance.standard_hourly_tariff:
             adjusted.append("standaard uurtarief")
+        if form.instance.minimum_hourly_tariff:
+            adjusted.append("minimum uurtarief")
         if form.instance.external_percentage:
             adjusted.append("percentage extern")
         if form.instance.target:
