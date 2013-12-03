@@ -35,6 +35,10 @@ from trs.templatetags.trs_formatting import money as format_as_money
 
 logger = logging.getLogger(__name__)
 
+BIG_PROJECT_SIZE = 200  # hours
+MAX_BAR_HEIGHT = 50  # px
+BAR_WIDTH = 75  # px
+
 
 class LoginAndPermissionsRequiredMixin(object):
     """See http://stackoverflow.com/a/10304880/27401"""
@@ -302,6 +306,30 @@ class ProjectsView(BaseView):
                 tariffs_klass = 'danger'
             line['tariffs_ok_percentage'] = tariffs_ok_percentage
             line['tariffs_klass'] = tariffs_klass
+
+            # Progress bar chart styling
+            size = min(project.hour_budget(), BIG_PROJECT_SIZE)
+            size_indication = size / BIG_PROJECT_SIZE * MAX_BAR_HEIGHT  # pixels
+            height = round(max(2, size_indication))  # Minimum 2px, rounded
+            total_booked = booked + overbooked
+            width_indication = total_booked / (project.hour_budget() or 1)
+            if width_indication <= 1:
+                # Bar at regular width, inner bar according to percentage.
+                width = BAR_WIDTH
+                inner_width = round(100 * width_indication)
+            else:
+                # Bar scaled to width indication, but max twice the size.
+                # Inner bar has the full width.
+                width = round(BAR_WIDTH * min(2, width_indication))
+                inner_width = 100
+            bar_style = "width: {}px; height: {}px;".format(width, height)
+
+            inner_bar_style = "width: {}%;".format(inner_width)
+            inner_bar_class = "progress-bar-%s" % klass
+            line['bar_style'] = bar_style
+            line['inner_bar_style'] = inner_bar_style
+            line['inner_bar_class'] = inner_bar_class
+
             result.append(line)
         return result
 

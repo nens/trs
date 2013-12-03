@@ -42,6 +42,7 @@
       <thead>
         <tr>
           <th>Wie</th>
+          <th></th>
           <th class="text-right">Toegekend</th>
           <th class="text-right">Geboekt</th>
           {% if view.can_see_financials %}
@@ -57,11 +58,14 @@
           <tr>
             <td>
               {{ line.person.as_widget }}
+            </td>
+            <td>
               {% if line.is_project_leader %}
-                &nbsp;<span class="label label-default">PL</span>
+                <span title="Projectleider: gaat over de uren">PL</span>
               {% endif %}
+              &nbsp;
               {% if line.is_project_manager %}
-                &nbsp;<span class="label label-default">PM</span>
+                <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
               {% endif %}
             </td>
             <td class="text-right">{{ line.budget|hours }}</td>
@@ -91,6 +95,7 @@
         <tfoot>
           <tr>
             <th>Totaal</th>
+            <td></td>
             <td class="text-right"></td>
             <td class="text-right"></td>
             <td class="text-right"></td>

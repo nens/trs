@@ -218,6 +218,10 @@ class Project(models.Model):
         return self.budget_assignments.all().aggregate(
             models.Sum('budget'))['budget__sum'] or 0
 
+    def hour_budget(self):
+        return self.work_assignments.all().aggregate(
+            models.Sum('hours'))['hours__sum'] or 0
+
     def overbooked_percentage(self):
         """Return quick estimate of percentage overbooked hours.
 

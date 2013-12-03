@@ -7,8 +7,8 @@
     <thead>
       <tr>
         <th>Project</th>
-        <th class="text-right">Geboekt</th>
-        <th class="text-right">Werkvoorraad</th>
+        <th>Voortgang</th>
+        <th class="text-right">Projectgrootte</th>
         <th class="text-right">Verliesuren</th>
         <th class="text-right">Kloppende tarieven</th>
       </tr>
@@ -20,11 +20,17 @@
             {{ line.project.as_widget }}<br>
             <span class="text-muted">{{ line.project.description }}</span>
           </td>
-          <td class="text-right">
-            {{ line.booked|hours }}
+          <td title="{{ line.booked|hours }} geboekt, werkvoorraad {{ line.left_to_book|hours }}">
+            <div class="progress"
+                 style="{{ line.bar_style }}">
+              <div class="progress-bar {{ line.inner_bar_class }}"
+                   role="progressbar"
+                   style="{{ line.inner_bar_style }}">
+              </div>
+            </div>
           </td>
           <td class="text-right">
-            {{ line.left_to_book|hours }}
+            {{ line.project.hour_budget|hours }}
           </td>
           <td class="text-right {{ line.klass }}">
             {{ line.overbooked|hours }}

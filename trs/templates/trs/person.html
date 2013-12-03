@@ -44,11 +44,12 @@
     <thead>
       <tr>
         <th>Project</th>
+        <th></th>
         <th class="text-right">Toegekend</th>
         <th class="text-right">Geboekt</th>
         {% if view.can_see_financials %}
           <th class="text-right">Tarief</th>
-          <th class="text-right">Omgezet</th>
+          <th class="text-right">Omzet</th>
         {% endif %}
       </tr>
     </thead>
@@ -57,14 +58,17 @@
         <tr>
           <td>
             {{ ppc.project.as_widget }}
-            {% if ppc.is_project_leader %}
-              &nbsp;<span class="label label-default">PL</span>
-            {% endif %}
-            {% if ppc.is_project_manager %}
-              &nbsp;<span class="label label-default">PM</span>
-            {% endif %}
             <br>
             <span class="text-muted">{{ ppc.project.description }}</span>
+          </td>
+          <td>
+            {% if ppc.is_project_leader %}
+              <span title="Projectleider: gaat over de uren">PL</span>
+            {% endif %}
+            &nbsp;
+            {% if ppc.is_project_manager %}
+              <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
+            {% endif %}
           </td>
           <td class="text-right">{{ ppc.budget|hours }}</td>
           <td class="text-right
