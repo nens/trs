@@ -14,7 +14,7 @@ install_requires = [
     'Werkzeug',
     'django-extensions',
     'django-tls',
-    'lizard-auth-client',
+    'lizard-auth-client >= 0.9',
     'setuptools',
     'south',
     ],
