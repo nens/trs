@@ -45,11 +45,16 @@ class Person(models.Model):
         null=True,
         verbose_name="gebruiker",
         unique=True,
-        help_text="De interne (django) gebruiker die deze persoon is.")
+        help_text=("De interne (django) gebruiker die deze persoon is. "+
+                   "Dit wordt normaliter automatisch gekoppeld op basis van" +
+                   "de loginnaam zodra de gebruiker voor de eerste keer "+
+                   "inlogt."))
     login_name = models.CharField(
         verbose_name="inlognaam bij N&S",
         max_length=255,
-        help_text="Dit is dus het eerste deel van het emailadres.")
+        help_text=("Dit is dus het eerste deel van het emailadres. " +
+                   "Stel dit van te voren in, dan wordt de ingelogde " +
+                   "gebruiker automatisch aan z'n account hier gekoppeld. "))
     description = models.CharField(
         verbose_name="omschrijving",
         blank=True,

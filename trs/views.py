@@ -71,6 +71,22 @@ class BaseMixin(object):
             logger.debug("Anonymous user")
             return
         persons = Person.objects.filter(user=self.request.user)
+        if not persons:
+            logger.warn("Person matching request's user %s not found.",
+                        self.request.user)
+            # Try to couple based on username. One-time action. This means you
+            # can prepare persons beforehand and have them automatically
+            # coupled the moment they sign in. A real automatic LDAP coupling
+            # would have been better, but python-ldap doesn't work with python
+            # 3 yet.
+            persons = Person.objects.filter(login_name=self.request.username)
+            if persons:
+                person = persons[0]
+                logger.info("Found not-yet-coupled person %s for user %s.",
+                            person, self.request.user)
+                person.user = self.request.user
+                person.save()
+                return person
         if persons:
             person = persons[0]
             return person
@@ -662,7 +678,7 @@ class PersonEditView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Person
     title = "Medewerker aanpassen"
-    fields = ['name', 'user', 'is_management']
+    fields = ['name', 'login_name', 'user', 'is_management']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -679,7 +695,7 @@ class PersonCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Person
     title = "Nieuwe medewerker"
-    fields = ['name', 'user', 'is_management']
+    fields = ['name', 'login_name', 'user', 'is_management']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:

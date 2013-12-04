@@ -5,6 +5,10 @@ Changelog of trs
 0.1 (unreleased)
 ----------------
 
+- Added lizard-auth-client for sso.lizard.net support. You can prepare persons
+  in TRS beforehand and they'll be coupled automatically (based on login name)
+  the moment they actually log in.
+
 - More information on the overviews.
 
 - Added progress bars for project overview.
