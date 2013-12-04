@@ -153,7 +153,26 @@ class HomeView(BaseView):
         # Optionally add GET query param for this. Default is 2 now.
         return 2
 
+    @cached_property
+    def relevant_year_weeks(self):
+        end = self.today
+        start = self.today - datetime.timedelta(days=(self.num_weeks + 1) * 7)
+        # ^^^ num_weeks + 1 to get a bit of padding halfway the week.
+        return YearWeek.objects.filter(first_day__lte=end).filter(
+            first_day__gte=start)
 
+    @cached_property
+    def person_changes(self):
+        changes = self.active_person.person_changes.filter(
+            year_week__in=self.relevant_year_weeks).aggregate(
+                models.Sum('hours_per_week'),
+                models.Sum('target'),
+                models.Sum('standard_hourly_tariff'),
+                models.Sum('minimum_hourly_tariff'),
+                models.Sum('external_percentage'))
+        # changes = {k: v for k, v in changes.items() if v}
+        changes = {k: v for k, v in changes.items()}
+        return changes
 
 
 class PersonsView(BaseView):
