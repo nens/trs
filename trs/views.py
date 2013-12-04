@@ -162,6 +162,10 @@ class HomeView(BaseView):
             first_day__gte=start)
 
     @cached_property
+    def start_week(self):
+        return self.relevant_year_weeks[0]
+
+    @cached_property
     def person_changes(self):
         changes = self.active_person.person_changes.filter(
             year_week__in=self.relevant_year_weeks).aggregate(
@@ -187,6 +191,10 @@ class HomeView(BaseView):
                 changes['project'] = project
                 result.append(changes)
         return result
+
+    @cached_property
+    def are_there_changes(self):
+        return self.person_changes or self.work_changes
 
 
 class PersonsView(BaseView):
