@@ -1,9 +1,40 @@
 {% extends "trs/base.html" %}
+{% load trs_formatting %}
 
 {% block main-column %}
-  <h1>Tijdregistratiesysteem</h1>
-  <p>
-    Mooie grafiek met een geweldig totaaloverzicht.
-  </p>
-  <img src="http://dummyimage.com/600x400/aaa/fff.png" alt="">
+  <h1>Tijdregistratiesysteem & projectoverzicht</h1>
+
+  <h2>Wijzigingen aan jou (+/-)</h2>
+  {% if view.person_changes %}
+
+    <dl>
+      {% if view.person_changes.hours_per_week__sum %}
+        <dt>Werkweek</dt>
+        <dd>{{ view.person_changes.hours_per_week__sum|hoursdiff }}</dd>
+      {% endif %}
+      {% if view.person_changes.target__sum %}
+        <dt>Target</dt>
+        <dd>{{ view.person_changes.target__sum|moneydiff }}</dd>
+      {% endif %}
+      {% if view.person_changes.standard_hourly_tariff__sum %}
+        <dt>Standaard uurtarief</dt>
+        <dd>{{ view.person_changes.standard_hourly_tariff__sum|moneydiff }}</dd>
+      {% endif %}
+      {% if view.person_changes.minimum_hourly_tariff__sum %}
+        <dt>Minimum uurtarief</dt>
+        <dd>{{ view.person_changes.minimum_hourly_tariff__sum|moneydiff }}</dd>
+      {% endif %}
+      {% if view.person_changes.external_percentage__sum %}
+        <dt>Percentage extern</dt>
+        <dd>{{ view.person_changes.external_percentage__sum|hoursdiff }}</dd>
+      {% endif %}
+    </dl>
+  {% else %}
+    <p>Geen wijzigingen</p>
+  {% endif %}
+
+  <h2>Wijzigingen aan je werk</h2>
+
+  <h2>Wijzigingen aan je projecten</h2>
+
 {% endblock %}
