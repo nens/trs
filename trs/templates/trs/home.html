@@ -4,37 +4,73 @@
 {% block main-column %}
   <h1>Tijdregistratiesysteem & projectoverzicht</h1>
 
-  <h2>Wijzigingen aan jou (+/-)</h2>
   {% if view.person_changes %}
-
-    <dl>
-      {% if view.person_changes.hours_per_week__sum %}
-        <dt>Werkweek</dt>
-        <dd>{{ view.person_changes.hours_per_week__sum|hoursdiff }}</dd>
-      {% endif %}
-      {% if view.person_changes.target__sum %}
-        <dt>Target</dt>
-        <dd>{{ view.person_changes.target__sum|moneydiff }}</dd>
-      {% endif %}
-      {% if view.person_changes.standard_hourly_tariff__sum %}
-        <dt>Standaard uurtarief</dt>
-        <dd>{{ view.person_changes.standard_hourly_tariff__sum|moneydiff }}</dd>
-      {% endif %}
-      {% if view.person_changes.minimum_hourly_tariff__sum %}
-        <dt>Minimum uurtarief</dt>
-        <dd>{{ view.person_changes.minimum_hourly_tariff__sum|moneydiff }}</dd>
-      {% endif %}
-      {% if view.person_changes.external_percentage__sum %}
-        <dt>Percentage extern</dt>
-        <dd>{{ view.person_changes.external_percentage__sum|hoursdiff }}</dd>
-      {% endif %}
-    </dl>
-  {% else %}
-    <p>Geen wijzigingen</p>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        Wijziging aan jouw instellingen
+      </div>
+      <div class="panel-body">
+        {% if view.person_changes.hours_per_week__sum %}
+          <div>
+            <b>Werkweek:</b>
+            {{ view.person_changes.hours_per_week__sum|hoursdiff }}
+          </div>
+        {% endif %}
+        {% if view.person_changes.target__sum %}
+          <div>
+            <b>Target:</b>
+            {{ view.person_changes.target__sum|moneydiff }}
+          </div>
+        {% endif %}
+        {% if view.person_changes.standard_hourly_tariff__sum %}
+          <div>
+            <b>Standaard uurtarief:</b>
+            {{ view.person_changes.standard_hourly_tariff__sum|moneydiff }}
+          </div>
+        {% endif %}
+        {% if view.person_changes.minimum_hourly_tariff__sum %}
+          <div>
+            <b>Minimum uurtarief:</b>
+            {{ view.person_changes.minimum_hourly_tariff__sum|moneydiff }}
+          </div>
+        {% endif %}
+        {% if view.person_changes.external_percentage__sum %}
+          <div>
+            <b>Percentage extern:</b>
+            {{ view.person_changes.external_percentage__sum|hoursdiff }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
   {% endif %}
 
-  <h2>Wijzigingen aan je werk</h2>
+  {% for change in view.work_changes %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        Wijziging aan je werk op
+        {{ change.project.as_widget }}
+      </div>
+      <div class="panel-body">
+        {% if change.hours__sum %}
+          <div>
+            <b>Toegekende uren:</b>
+            {{ change.hours__sum|hoursdiff }}
+          </div>
+        {% endif %}
+        {% if change.hourly_tariff__sum %}
+          <div>
+            <b>Uurtarief:</b>
+            {{ change.hourly_tariff__sum|hoursdiff }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+
 
   <h2>Wijzigingen aan je projecten</h2>
+  <p>
+    TODO: BudgetAssignments en facturen ingevoerd danwel betaald.
+  </p>
 
 {% endblock %}

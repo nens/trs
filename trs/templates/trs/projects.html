@@ -34,9 +34,23 @@
           </td>
           <td class="text-right {{ line.klass }}">
             {{ line.overbooked|hours }}
+            {% if line.klass != 'success' %}
+              <br>
+              <span class="text-muted"
+                    title="{{ line.project.project_leader|default:'geen' }}">
+                PL
+              </span>
+            {% endif %}
           </td>
           <td class="text-right {{ line.tariffs_klass }}">
             {{ line.tariffs_ok_percentage }}%
+            {% if line.tariffs_klass != 'success' %}
+              <br>
+              <span class="text-muted"
+                    title="{{ line.project.project_manager|default:'geen' }}">
+                PM
+              </span>
+            {% endif %}
           </td>
         </tr>
       {% endfor %}

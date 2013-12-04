@@ -170,9 +170,23 @@ class HomeView(BaseView):
                 models.Sum('standard_hourly_tariff'),
                 models.Sum('minimum_hourly_tariff'),
                 models.Sum('external_percentage'))
-        # changes = {k: v for k, v in changes.items() if v}
-        changes = {k: v for k, v in changes.items()}
+        changes = {k: v for k, v in changes.items() if v}
         return changes
+
+    @cached_property
+    def work_changes(self):
+        result = []
+        for project in self.active_person.assigned_projects():
+            changes = self.active_person.work_assignments.filter(
+                year_week__in=self.relevant_year_weeks,
+                assigned_on=project).aggregate(
+                    models.Sum('hours'),
+                    models.Sum('hourly_tariff'))
+            changes = {k: v for k, v in changes.items() if v}
+            if changes:
+                changes['project'] = project
+                result.append(changes)
+        return result
 
 
 class PersonsView(BaseView):
@@ -373,8 +387,9 @@ class ProjectsView(BaseView):
                 # Inner bar has the full width.
                 width = round(BAR_WIDTH * min(2, width_indication))
                 inner_width = 100
-            bar_style = "width: {}px; height: {}px;".format(width, height)
-
+            bar_style = "width: {}px;".format(width)
+            # bar_style = "width: {}px; height: {}px;".format(width, height)
+            # ^^^ simple same-height bar for now.
             inner_bar_style = "width: {}%;".format(inner_width)
             inner_bar_class = "progress-bar-%s" % klass
             line['bar_style'] = bar_style
