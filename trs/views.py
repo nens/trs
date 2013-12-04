@@ -147,6 +147,14 @@ class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
 class HomeView(BaseView):
     template_name = 'trs/home.html'
 
+    @cached_property
+    def num_weeks(self):
+        """Return number of weeks to use for the summaries."""
+        # Optionally add GET query param for this. Default is 2 now.
+        return 2
+
+
+
 
 class PersonsView(BaseView):
     template_name = 'trs/persons.html'
@@ -197,7 +205,13 @@ class PersonsView(BaseView):
                 tariffs_klass = 'danger'
             line['tariffs_ok_percentage'] = tariffs_ok_percentage
             line['tariffs_klass'] = tariffs_klass
-
+            if person.booking_percentage() < 60:
+                booking_klass = 'danger'
+            elif person.booking_percentage() < 90:
+                booking_klass = 'warning'
+            else:
+                booking_klass = 'success'
+            line['booking_klass'] = booking_klass
             result.append(line)
         return result
 
