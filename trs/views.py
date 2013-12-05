@@ -79,7 +79,7 @@ class BaseMixin(object):
             # coupled the moment they sign in. A real automatic LDAP coupling
             # would have been better, but python-ldap doesn't work with python
             # 3 yet.
-            persons = Person.objects.filter(login_name=self.request.username)
+            persons = Person.objects.filter(login_name=self.request.user.username)
             if persons:
                 person = persons[0]
                 logger.info("Found not-yet-coupled person %s for user %s.",
