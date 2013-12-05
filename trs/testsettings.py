@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     'trs',
     'lizard_auth_client',
     'south',
+    'gunicorn',
     'django.contrib.staticfiles',
     'django_extensions',
     'django_nose',
