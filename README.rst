@@ -18,3 +18,6 @@ Server installation
 
 Hey, supervisord nor fabric are currently ready for python 3. So our normal
 lizard site setup is out of the window. Time to try something new!
+
+The installation is explained in the password-protected trs-site project's
+README.
