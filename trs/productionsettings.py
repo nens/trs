@@ -4,4 +4,6 @@
 # From here, we import the secret key and so.
 from trs.testsettings import *
 
+DEBUG = False
+
 from trs_site.productionsettings import *
