@@ -64,7 +64,18 @@
               </li>
             {% endif %}
             {% if view.active_person %}
-              <li><p class="navbar-text">{{ view.active_person.as_widget }}</p></li>
+              <li>
+                <p class="navbar-text">
+                  {{ view.active_person.as_widget }}
+                </p>
+              </li>
+            {% else %}
+              <li>
+                <p class="navbar-text"
+                   title="{{ user }} is nog niet bekend i/h systeem">
+                  Nog niet gekoppeld
+                </p>
+              </li>
             {% endif %}
             {% if user.is_authenticated %}
               <li><a href="{% url 'trs.logout' %}">Log uit</a></li>
