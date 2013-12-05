@@ -11,7 +11,7 @@ DEBUG = True
 TEMPLATE_DEBUG = True
 DATABASES = {
     'default': {'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': os.path.join(BUILDOUT_DIR, 'var/db/test.db')},
+                'NAME': os.path.join(BUILDOUT_DIR, 'var/db/trs.db')},
     }
 INSTALLED_APPS = [
     'trs',
