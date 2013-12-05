@@ -92,6 +92,18 @@ class ProjectPersonCombination(object):
                 models.Sum('hourly_tariff'))['hourly_tariff__sum'] or 0
 
     @cached_property
+    def desired_hourly_tariff(self):
+        """Return hourly tariff at start of project."""
+        return self.person.standard_hourly_tariff(
+            year_week=self.project.start)
+
+    # @cached_property
+    # def desired_minimum_hourly_tariff(self):
+    #     """Return minimum hourly tariff at start of project."""
+    #     return self.person.minimum_hourly_tariff(
+    #         year_week=self.project.start)
+
+    @cached_property
     def is_project_leader(self):
         return (self.person == self.project.project_leader)
 

@@ -13,6 +13,8 @@
       <dd>{{ view.person.target|money }}</dd>
       <dt>Standaard uurtarief</dt>
       <dd>{{ view.person.standard_hourly_tariff|money }}</dd>
+      <dt>Minimum uurtarief</dt>
+      <dd>{{ view.person.minimum_hourly_tariff|money }}</dd>
       <dt>Verhouding extern/intern</dt>
       <dd>{{ view.person.external_internal_ratio }}</dd>
     {% endif %}
@@ -25,12 +27,14 @@
     <div>
       <a href="{% url 'trs.person.edit' pk=view.person.pk %}"
          class="btn btn-default">
+        <span class="glyphicon glyphicon-pencil"></span>
         Wijzig
       </a>
       &nbsp;
       <a href="{% url 'trs.person.target' pk=view.person.pk %}"
          class="btn btn-default">
-        Wijzig target/werkweek/uurtarief
+        <span class="glyphicon glyphicon-pencil"></span>
+        Wijzig target/werkweek/uurtarief/ratio
       </a>
     </div>
   {% endif %}
@@ -40,11 +44,12 @@
     <thead>
       <tr>
         <th>Project</th>
-        <th class="text-right">Uren</th>
+        <th></th>
+        <th class="text-right">Toegekend</th>
         <th class="text-right">Geboekt</th>
         {% if view.can_see_financials %}
           <th class="text-right">Tarief</th>
-          <th class="text-right">Omgezet</th>
+          <th class="text-right">Omzet</th>
         {% endif %}
       </tr>
     </thead>
@@ -53,11 +58,16 @@
         <tr>
           <td>
             {{ ppc.project.as_widget }}
+            <br>
+            <span class="text-muted">{{ ppc.project.description }}</span>
+          </td>
+          <td>
             {% if ppc.is_project_leader %}
-              &nbsp;<span class="label label-default">PL</span>
+              <span title="Projectleider: gaat over de uren">PL</span>
             {% endif %}
+            &nbsp;
             {% if ppc.is_project_manager %}
-              &nbsp;<span class="label label-default">PM</span>
+              <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
             {% endif %}
           </td>
           <td class="text-right">{{ ppc.budget|hours }}</td>

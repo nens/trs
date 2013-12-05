@@ -45,11 +45,16 @@ class Person(models.Model):
         null=True,
         verbose_name="gebruiker",
         unique=True,
-        help_text="De interne (django) gebruiker die deze persoon is.")
+        help_text=("De interne (django) gebruiker die deze persoon is. "+
+                   "Dit wordt normaliter automatisch gekoppeld op basis van" +
+                   "de loginnaam zodra de gebruiker voor de eerste keer "+
+                   "inlogt."))
     login_name = models.CharField(
         verbose_name="inlognaam bij N&S",
         max_length=255,
-        help_text="Dit is dus het eerste deel van het emailadres.")
+        help_text=("Dit is dus het eerste deel van het emailadres. " +
+                   "Stel dit van te voren in, dan wordt de ingelogde " +
+                   "gebruiker automatisch aan z'n account hier gekoppeld. "))
     description = models.CharField(
         verbose_name="omschrijving",
         blank=True,
@@ -95,6 +100,14 @@ class Person(models.Model):
             year_week__lte=year_week).aggregate(
                 models.Sum('standard_hourly_tariff'))[
                     'standard_hourly_tariff__sum'] or 0
+
+    def minimum_hourly_tariff(self, year_week=None):
+        if year_week is None:
+            year_week = this_year_week()
+        return self.person_changes.filter(
+            year_week__lte=year_week).aggregate(
+                models.Sum('minimum_hourly_tariff'))[
+                    'minimum_hourly_tariff__sum'] or 0
 
     def external_percentage(self, year_week=None):
         if year_week is None:
@@ -181,6 +194,11 @@ class Project(models.Model):
         help_text=("Project is goedgekeurd door PM en PL en kan qua team " +
                    "en budgetverdeling niet meer gewijzigd worden."),
         default=False)
+    is_subsidized = models.BooleanField(
+        verbose_name="subsidieproject",
+        help_text=("Dit project zit in een subsidietraject. " +
+                   "Dit veld wordt gebruikt voor filtering."),
+        default=False)
 
     class Meta:
         verbose_name = "project"
@@ -205,8 +223,41 @@ class Project(models.Model):
         return self.budget_assignments.all().aggregate(
             models.Sum('budget'))['budget__sum'] or 0
 
+    def hour_budget(self):
+        return self.work_assignments.all().aggregate(
+            models.Sum('hours'))['hours__sum'] or 0
+
+    def overbooked_percentage(self):
+        """Return quick estimate of percentage overbooked hours.
+
+        'Quick' as it lumps everything together and doesn't take into account
+        that one person might yet have hours left to book and one other is
+        already heavily over budget. Good for a quick indication, though. Used
+        in the widget.
+        """
+        bookable = self.work_assignments.all().aggregate(
+            models.Sum('hours'))['hours__sum'] or 0
+        booked = self.bookings.all().aggregate(
+            models.Sum('hours'))['hours__sum'] or 0
+        overbooked = max(0, (booked - bookable))
+        if not overbooked:
+            return 0
+        if not bookable:  # Division by zero
+            return 100
+        return round(overbooked / bookable * 100)
+
 
 class Invoice(models.Model):
+    added = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="toegevoegd op")
+    added_by = models.ForeignKey(
+        User,
+        blank=True,
+        null=True,
+        #editable=False,
+        verbose_name="toegevoegd door")
+    # ^^^ The two above are copied from EventBase.
     project = models.ForeignKey(
         Project,
         related_name="invoices",
@@ -241,6 +292,15 @@ class Invoice(models.Model):
         verbose_name = "factuur"
         verbose_name_plural = "facturen"
         ordering = ('number',)
+
+    def save(self, *args, **kwargs):
+        # Partially copied form EventBase.
+        if not self.added_by:
+            if tls_request:
+                # If tls_request doesn't exist we're running tests. Adding
+                # this 'if' is handier than mocking it the whole time :-)
+                self.added_by = tls_request.user
+        return super(Invoice, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.number
@@ -338,6 +398,12 @@ class PersonChange(EventBase):
         blank=True,
         null=True,
         verbose_name="standaard uurtarief")
+    minimum_hourly_tariff = models.DecimalField(
+        max_digits=MAX_DIGITS,
+        decimal_places=DECIMAL_PLACES,
+        blank=True,
+        null=True,
+        verbose_name="minimum uurtarief")
     external_percentage = models.IntegerField(
         validators=[MinValueValidator(0),
                     MaxValueValidator(100)],

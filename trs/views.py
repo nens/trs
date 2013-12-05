@@ -35,6 +35,10 @@ from trs.templatetags.trs_formatting import money as format_as_money
 
 logger = logging.getLogger(__name__)
 
+BIG_PROJECT_SIZE = 200  # hours
+MAX_BAR_HEIGHT = 50  # px
+BAR_WIDTH = 75  # px
+
 
 class LoginAndPermissionsRequiredMixin(object):
     """See http://stackoverflow.com/a/10304880/27401"""
@@ -67,6 +71,22 @@ class BaseMixin(object):
             logger.debug("Anonymous user")
             return
         persons = Person.objects.filter(user=self.request.user)
+        if not persons:
+            logger.warn("Person matching request's user %s not found.",
+                        self.request.user)
+            # Try to couple based on username. One-time action. This means you
+            # can prepare persons beforehand and have them automatically
+            # coupled the moment they sign in. A real automatic LDAP coupling
+            # would have been better, but python-ldap doesn't work with python
+            # 3 yet.
+            persons = Person.objects.filter(login_name=self.request.username)
+            if persons:
+                person = persons[0]
+                logger.info("Found not-yet-coupled person %s for user %s.",
+                            person, self.request.user)
+                person.user = self.request.user
+                person.save()
+                return person
         if persons:
             person = persons[0]
             return person
@@ -96,6 +116,8 @@ class BaseMixin(object):
     def admin_override_active(self):
         # Allow an admin to see everything for debug purposes.
         if self.request.user.is_superuser:
+            if not 'admin_override_active' in self.request.session:
+                self.request.session['admin_override_active'] = False
             if 'all' in self.request.GET:
                 self.request.session['admin_override_active'] = True
             if 'notall' in self.request.GET:
@@ -125,6 +147,86 @@ class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
 class HomeView(BaseView):
     template_name = 'trs/home.html'
 
+    @cached_property
+    def num_weeks(self):
+        """Return number of weeks to use for the summaries."""
+        # Optionally add GET query param for this. Default is 2 now.
+        return 2
+
+    @cached_property
+    def relevant_year_weeks(self):
+        end = self.today
+        start = self.today - datetime.timedelta(days=(self.num_weeks + 1) * 7)
+        # ^^^ num_weeks + 1 to get a bit of padding halfway the week.
+        return YearWeek.objects.filter(first_day__lte=end).filter(
+            first_day__gte=start)
+
+    @cached_property
+    def start_week(self):
+        return self.relevant_year_weeks[0]
+
+    @cached_property
+    def person_changes(self):
+        changes = self.active_person.person_changes.filter(
+            year_week__in=self.relevant_year_weeks).aggregate(
+                models.Sum('hours_per_week'),
+                models.Sum('target'),
+                models.Sum('standard_hourly_tariff'),
+                models.Sum('minimum_hourly_tariff'),
+                models.Sum('external_percentage'))
+        changes = {k: v for k, v in changes.items() if v}
+        return changes
+
+    @cached_property
+    def work_changes(self):
+        result = []
+        for project in self.active_person.assigned_projects():
+            changes = self.active_person.work_assignments.filter(
+                year_week__in=self.relevant_year_weeks,
+                assigned_on=project).aggregate(
+                    models.Sum('hours'),
+                    models.Sum('hourly_tariff'))
+            changes = {k: v for k, v in changes.items() if v}
+            if changes:
+                changes['project'] = project  # Inject for template.
+                result.append(changes)
+        return result
+
+    @cached_property
+    def project_budget_changes(self):
+        result = []
+        for project in (list(self.active_person.projects_i_lead.all()) +
+                        list(self.active_person.projects_i_manage.all())):
+            changes = BudgetAssignment.objects.filter(
+                year_week__in=self.relevant_year_weeks,
+                assigned_to=project).aggregate(
+                    models.Sum('budget'))
+            changes = {k: v for k, v in changes.items() if v}
+            if changes:
+                changes['project'] = project  # Inject for template.
+                result.append(changes)
+        return result
+
+    @cached_property
+    def project_invoice_changes(self):
+        result = []
+        for project in (list(self.active_person.projects_i_lead.all()) +
+                        list(self.active_person.projects_i_manage.all())):
+            start = self.start_week.first_day
+            added = project.invoices.filter(added__gt=start)
+            payed = project.invoices.filter(payed__gt=start)
+            if added or payed:
+                change = {'project': project,
+                          'added': added,
+                          'payed': payed}
+                result.append(change)
+        return result
+
+    @cached_property
+    def are_there_changes(self):
+        return (self.person_changes or self.work_changes or
+                self.project_budget_changes or self.project_invoice_changes)
+
 
 class PersonsView(BaseView):
     template_name = 'trs/persons.html'
@@ -140,17 +242,48 @@ class PersonsView(BaseView):
         for person in Person.objects.all():
             line = {}
             line['person'] = person
-            if person.booking_percentage() > 90:
-                klass = 'success'
-            elif person.booking_percentage() < 60:
-                klass = 'danger'
-            else:
-                klass = 'warning'
-            line['klass'] = klass
+            # TODO: refactor, this is the same as ProjectsView.
             ppcs = [core.ProjectPersonCombination(project, person)
                     for project in person.assigned_projects()]
-            line['total_left_to_book'] = sum([ppc.left_to_book
-                                              for ppc in ppcs])
+            booked = sum([ppc.booked for ppc in ppcs])
+            overbooked = sum([max(0, (ppc.booked - ppc.budget))
+                              for ppc in ppcs])
+            left_to_book = sum([ppc.left_to_book for ppc in ppcs])
+            if overbooked > 0.5 * float(booked):
+                klass = 'danger'
+            elif overbooked:
+                klass = 'warning'
+            else:
+                klass = 'success'
+            line['klass'] = klass
+            line['booked'] = booked
+            line['overbooked'] = overbooked
+            line['left_to_book'] = left_to_book
+            total_real_hourly_tariffs = sum([ppc.hourly_tariff
+                                             for ppc in ppcs])
+            total_desired_hourly_tariffs = sum([ppc.desired_hourly_tariff
+                                                for ppc in ppcs])
+            if not total_desired_hourly_tariffs:  # division by 0
+                tariffs_ok_percentage = 100
+            else:
+                tariffs_ok_percentage = round(
+                    total_real_hourly_tariffs / total_desired_hourly_tariffs
+                    * 100)
+            if tariffs_ok_percentage >= 95:
+                tariffs_klass = 'success'
+            elif tariffs_ok_percentage >= 70:
+                tariffs_klass = 'warning'
+            else:
+                tariffs_klass = 'danger'
+            line['tariffs_ok_percentage'] = tariffs_ok_percentage
+            line['tariffs_klass'] = tariffs_klass
+            if person.booking_percentage() < 60:
+                booking_klass = 'danger'
+            elif person.booking_percentage() < 90:
+                booking_klass = 'warning'
+            else:
+                booking_klass = 'success'
+            line['booking_klass'] = booking_klass
             result.append(line)
         return result
 
@@ -259,8 +392,52 @@ class ProjectsView(BaseView):
             line['booked'] = booked
             line['overbooked'] = overbooked
             line['left_to_book'] = left_to_book
+            total_real_hourly_tariffs = sum([ppc.hourly_tariff
+                                             for ppc in ppcs])
+            total_desired_hourly_tariffs = sum([ppc.desired_hourly_tariff
+                                                for ppc in ppcs])
+            if not total_desired_hourly_tariffs:  # division by 0
+                tariffs_ok_percentage = 100
+            else:
+                tariffs_ok_percentage = round(
+                    total_real_hourly_tariffs / total_desired_hourly_tariffs
+                    * 100)
+            if tariffs_ok_percentage >= 95:
+                tariffs_klass = 'success'
+            elif tariffs_ok_percentage >= 70:
+                tariffs_klass = 'warning'
+            else:
+                tariffs_klass = 'danger'
+            line['tariffs_ok_percentage'] = tariffs_ok_percentage
+            line['tariffs_klass'] = tariffs_klass
+
+            # Progress bar chart styling
+            size = min(project.hour_budget(), BIG_PROJECT_SIZE)
+            size_indication = size / BIG_PROJECT_SIZE * MAX_BAR_HEIGHT  # pixels
+            height = round(max(3, size_indication))  # Minimum 2px, rounded
+            total_booked = booked + overbooked
+            width_indication = total_booked / (project.hour_budget() or 1)
+            if width_indication <= 1:
+                # Bar at regular width, inner bar according to percentage.
+                width = BAR_WIDTH
+                inner_width = round(100 * width_indication)
+            else:
+                # Bar scaled to width indication, but max twice the size.
+                # Inner bar has the full width.
+                width = round(BAR_WIDTH * min(2, width_indication))
+                inner_width = 100
+            bar_style = "width: {}px;".format(width)
+            # bar_style = "width: {}px; height: {}px;".format(width, height)
+            # ^^^ simple same-height bar for now.
+            inner_bar_style = "width: {}%;".format(inner_width)
+            inner_bar_class = "progress-bar-%s" % klass
+            line['bar_style'] = bar_style
+            line['inner_bar_style'] = inner_bar_style
+            line['inner_bar_class'] = inner_bar_class
+
             result.append(line)
         return result
+
 
 class ProjectView(BaseView):
     template_name = 'trs/project.html'
@@ -312,24 +489,21 @@ class ProjectView(BaseView):
             return True
 
     @cached_property
-    def person_projects(self):
+    def ppcs(self):
         return [core.ProjectPersonCombination(self.project, person)
                 for person in self.project.assigned_persons()]
 
     @cached_property
     def total_turnover(self):
-        return sum([person_project.turnover
-                    for person_project in self.person_projects])
+        return sum([ppc.turnover for ppc in self.ppcs])
 
     @cached_property
     def total_loss(self):
-        return sum([person_project.loss
-                    for person_project in self.person_projects])
+        return sum([ppc.loss for ppc in self.ppcs])
 
     @cached_property
     def total_turnover_left(self):
-        return sum([person_project.left_to_turn_over
-                    for person_project in self.person_projects])
+        return sum([ppc.left_to_turn_over for ppc in self.ppcs])
 
     @cached_property
     def subtotal(self):
@@ -497,7 +671,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Project
     title = "Project aanpassen"
-    fields = ['code', 'description', 'internal', 'principal',
+    fields = ['code', 'description', 'internal', 'is_subsidized', 'principal',
               'start', 'end', 'project_leader', 'project_manager',
               'is_accepted',  # Note: is_accepted only on edit view!
           ]
@@ -517,7 +691,7 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Project
     title = "Nieuw project"
-    fields = ['code', 'description', 'internal', 'principal',
+    fields = ['code', 'description', 'internal', 'is_subsidized', 'principal',
               'start', 'end', 'project_leader', 'project_manager']
 
     def has_form_permissions(self):
@@ -591,7 +765,7 @@ class PersonEditView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Person
     title = "Medewerker aanpassen"
-    fields = ['name', 'user', 'is_management']
+    fields = ['name', 'login_name', 'user', 'is_management']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -608,7 +782,7 @@ class PersonCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Person
     title = "Nieuwe medewerker"
-    fields = ['name', 'user', 'is_management']
+    fields = ['name', 'login_name', 'user', 'is_management']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -631,10 +805,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     @cached_property
     def project(self):
         return Project.objects.get(pk=self.kwargs['pk'])
-
-    @cached_property
-    def ppc(self):
-        return core.ProjectPersonCombination(self.project, self.active_person)
 
     @cached_property
     def title(self):
@@ -716,7 +886,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         field_index = 0
         for person in self.project.assigned_persons():
             ppc = core.ProjectPersonCombination(self.project, person)
-            line = {'ppc': ppc}
+            line = {'ppc': ppc,
+                    'person': person}
             if self.can_edit_hours:
                 line['hours'] = fields[field_index]
                 field_index += 1
@@ -768,7 +939,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 person = Person.objects.get(id=new_team_member_id)
                 work_assignment = WorkAssignment(
                     assigned_on=self.project,
-                    assigned_to=person)
+                    assigned_to=person,
+                    hourly_tariff=person.standard_hourly_tariff())
                 work_assignment.save()
                 msg = "Added %s to team" % person.name
                 logger.info(msg)
@@ -825,7 +997,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = PersonChange
     fields = ['hours_per_week', 'target', 'standard_hourly_tariff',
-              'external_percentage', 'year_week']
+              'minimum_hourly_tariff', 'external_percentage', 'year_week']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -848,7 +1020,9 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         """Return initial form values. Turn the decimals into integers already."""
         return {'hours_per_week': int(self.person.hours_per_week()),
                 'standard_hourly_tariff': int(self.person.standard_hourly_tariff()),
+                'minimum_hourly_tariff': int(self.person.minimum_hourly_tariff()),
                 'target': int(self.person.target()),
+                'external_percentage': int(self.person.external_percentage()),
                 'year_week': this_year_week()}
 
     def form_valid(self, form):
@@ -858,12 +1032,15 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         # values.
         hours_per_week = form.instance.hours_per_week or 0  # Adjust for None
         standard_hourly_tariff = form.instance.standard_hourly_tariff or 0
+        minimum_hourly_tariff = form.instance.minimum_hourly_tariff or 0
         external_percentage = form.instance.external_percentage or 0
         target = form.instance.target or 0  # Adjust for None
         form.instance.hours_per_week = (
             hours_per_week - self.initial['hours_per_week'])
         form.instance.standard_hourly_tariff = (
             standard_hourly_tariff - self.initial['standard_hourly_tariff'])
+        form.instance.minimum_hourly_tariff = (
+            minimum_hourly_tariff - self.initial['minimum_hourly_tariff'])
         form.instance.external_percentage = (
             external_percentage - self.initial['external_percentage'])
         form.instance.target = target - self.initial['target']
@@ -873,6 +1050,8 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
             adjusted.append("werkweek")
         if form.instance.standard_hourly_tariff:
             adjusted.append("standaard uurtarief")
+        if form.instance.minimum_hourly_tariff:
+            adjusted.append("minimum uurtarief")
         if form.instance.external_percentage:
             adjusted.append("percentage extern")
         if form.instance.target:
