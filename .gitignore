@@ -43,3 +43,5 @@ etc/*.logrotate
 bower_components
 
 trs/local_testsettings.py
+
+buildout.cfg
