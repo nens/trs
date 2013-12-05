@@ -188,13 +188,44 @@ class HomeView(BaseView):
                     models.Sum('hourly_tariff'))
             changes = {k: v for k, v in changes.items() if v}
             if changes:
-                changes['project'] = project
+                changes['project'] = project  # Inject for template.
                 result.append(changes)
         return result
 
     @cached_property
+    def project_budget_changes(self):
+        result = []
+        for project in (list(self.active_person.projects_i_lead.all()) +
+                        list(self.active_person.projects_i_manage.all())):
+            changes = BudgetAssignment.objects.filter(
+                year_week__in=self.relevant_year_weeks,
+                assigned_to=project).aggregate(
+                    models.Sum('budget'))
+            changes = {k: v for k, v in changes.items() if v}
+            if changes:
+                changes['project'] = project  # Inject for template.
+                result.append(changes)
+        return result
+
+    @cached_property
+    def project_invoice_changes(self):
+        result = []
+        for project in (list(self.active_person.projects_i_lead.all()) +
+                        list(self.active_person.projects_i_manage.all())):
+            start = self.start_week.first_day
+            added = project.invoices.filter(added__gt=start)
+            payed = project.invoices.filter(payed__gt=start)
+            if added or payed:
+                change = {'project': project,
+                          'added': added,
+                          'payed': payed}
+                result.append(change)
+        return result
+
+    @cached_property
     def are_there_changes(self):
-        return self.person_changes or self.work_changes
+        return (self.person_changes or self.work_changes or
+                self.project_budget_changes or self.project_invoice_changes)
 
 
 class PersonsView(BaseView):

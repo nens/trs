@@ -248,6 +248,16 @@ class Project(models.Model):
 
 
 class Invoice(models.Model):
+    added = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="toegevoegd op")
+    added_by = models.ForeignKey(
+        User,
+        blank=True,
+        null=True,
+        #editable=False,
+        verbose_name="toegevoegd door")
+    # ^^^ The two above are copied from EventBase.
     project = models.ForeignKey(
         Project,
         related_name="invoices",
@@ -282,6 +292,15 @@ class Invoice(models.Model):
         verbose_name = "factuur"
         verbose_name_plural = "facturen"
         ordering = ('number',)
+
+    def save(self, *args, **kwargs):
+        # Partially copied form EventBase.
+        if not self.added_by:
+            if tls_request:
+                # If tls_request doesn't exist we're running tests. Adding
+                # this 'if' is handier than mocking it the whole time :-)
+                self.added_by = tls_request.user
+        return super(Invoice, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.number
