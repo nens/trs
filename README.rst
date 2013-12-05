@@ -13,13 +13,8 @@ Time registration system ("TRS")
 basically, booking our hours and managing projects.
 
 
-TODO later on
-------------------------
+Server installation
+-------------------
 
-The project is prepared to be translated with Lizard's `Transifex
-<http://translations.lizard.net/>`_ server. For details about pushing
-translation files to and fetching translation files from the Transifex server,
-see the ``nens/translations`` `documentation
-<https://github.com/nens/translations/blob/master/README.rst>`_.
-
-TODO: translate here or on transifex itself?
+Hey, supervisord nor fabric are currently ready for python 3. So our normal
+lizard site setup is out of the window. Time to try something new!
