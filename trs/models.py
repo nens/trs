@@ -77,38 +77,49 @@ class Person(models.Model):
         help_text=("Management can see everything, but doesn't get extra " +
                    "edit rights"),
         default=False)
+    cache_indicator = models.IntegerField(
+        default=0,
+        verbose_name="cache indicator")
 
     class Meta:
         verbose_name = "persoon"
         verbose_name_plural = "personen"
         ordering = ['name']
 
+    def save(self, *args, **kwargs):
+        self.cache_indicator += 1
+        return super(Person, self).save(*args, **kwargs)
+
     def __str__(self):
         return self.name
+
+    def cache_key(self, for_what, week_id=None):
+        return 'person-%s-%s-%s-%s' % (
+            self.id, self.cache_indicator, for_what, week_id)
 
     def get_absolute_url(self):
         return reverse('trs.person', kwargs={'pk': self.pk})
 
     def as_widget(self):
-        cache_key = 'person-widget-%s' % self.id
+        cache_key = self.cache_key('widget')
         cached = cache.get(cache_key)
         if cached is None:
             cached = render_to_string('trs/person-widget.html',
                                       {'person': self})
-            cache.set(cache_key, cached, 120)
+            cache.set(cache_key, cached)
         return mark_safe(cached)
 
     def hours_per_week(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        cache_key = 'hours-per-week-%s-%s' % (self.id, year_week.id)
+        cache_key = self.cache_key('hours-per-week', year_week.id)
         cached = cache.get(cache_key)
         if cached is not None:
             return cached
         result = self.person_changes.filter(
             year_week__lte=year_week).aggregate(
                 models.Sum('hours_per_week'))['hours_per_week__sum'] or 0
-        cache.set(cache_key, result, 3600)
+        cache.set(cache_key, result)
         return result
 
     def standard_hourly_tariff(self, year_week=None):
@@ -220,11 +231,18 @@ class Project(models.Model):
         help_text=("Dit project zit in een subsidietraject. " +
                    "Dit veld wordt gebruikt voor filtering."),
         default=False)
+    cache_indicator = models.IntegerField(
+        default=0,
+        verbose_name="cache indicator")
 
     class Meta:
         verbose_name = "project"
         verbose_name_plural = "projecten"
         ordering = ('internal', 'code')
+
+    def save(self, *args, **kwargs):
+        self.cache_indicator += 1
+        return super(Project, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.code
@@ -232,26 +250,39 @@ class Project(models.Model):
     def get_absolute_url(self):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
+    def cache_key(self, for_what):
+        return 'project-%s-%s-%s' % (self.id, self.cache_indicator, for_what)
+
     def as_widget(self):
-        cache_key = 'project-widget-%s' % self.id
-        cached = cache.get(cache_key)
-        if cached is None:
-            cached = render_to_string('trs/project-widget.html',
+        cache_key = self.cache_key('widget')
+        result = cache.get(cache_key)
+        if result is None:
+            result = render_to_string('trs/project-widget.html',
                                       {'project': self})
-            cache.set(cache_key, cached, 120)
-        return mark_safe(cached)
+            cache.set(cache_key, result)
+        return mark_safe(result)
 
     def assigned_persons(self):
         return Person.objects.filter(
             work_assignments__assigned_on=self).distinct()
 
     def budget(self):
-        return self.budget_assignments.all().aggregate(
-            models.Sum('budget'))['budget__sum'] or 0
+        cache_key = self.cache_key('budget')
+        result = cache.get(cache_key)
+        if result is None:
+            result = self.budget_assignments.all().aggregate(
+                models.Sum('budget'))['budget__sum'] or 0
+            cache.set(cache_key, result)
+        return result
 
     def hour_budget(self):
-        return self.work_assignments.all().aggregate(
-            models.Sum('hours'))['hours__sum'] or 0
+        cache_key = self.cache_key('hour_budget')
+        result = cache.get(cache_key)
+        if result is None:
+            result = self.work_assignments.all().aggregate(
+                models.Sum('hours'))['hours__sum'] or 0
+            cache.set(cache_key, result)
+        return result
 
     def overbooked_percentage(self):
         """Return quick estimate of percentage overbooked hours.
@@ -261,16 +292,22 @@ class Project(models.Model):
         already heavily over budget. Good for a quick indication, though. Used
         in the widget.
         """
-        bookable = self.work_assignments.all().aggregate(
-            models.Sum('hours'))['hours__sum'] or 0
-        booked = self.bookings.all().aggregate(
-            models.Sum('hours'))['hours__sum'] or 0
-        overbooked = max(0, (booked - bookable))
-        if not overbooked:
-            return 0
-        if not bookable:  # Division by zero
-            return 100
-        return round(overbooked / bookable * 100)
+        cache_key = self.cache_key('hour_budget')
+        result = cache.get(cache_key)
+        if result is None:
+            bookable = self.work_assignments.all().aggregate(
+                models.Sum('hours'))['hours__sum'] or 0
+            booked = self.bookings.all().aggregate(
+                models.Sum('hours'))['hours__sum'] or 0
+            overbooked = max(0, (booked - bookable))
+            if not overbooked:
+                result = 0
+            elif not bookable:  # Division by zero
+                result = 100
+            else:
+                result = round(overbooked / bookable * 100)
+            cache.set(cache_key, result)
+        return result
 
 
 class Invoice(models.Model):
@@ -445,6 +482,10 @@ class PersonChange(EventBase):
         help_text="persoon waar de verandering voor is",
         related_name="person_changes")
 
+    def save(self, *args, **kwargs):
+        self.person.cache_indicator += 1
+        return super(PersonChange, self).save(*args, **kwargs)
+
     def __str__(self):
         return 'PersonChange on %s' % self.person
 
@@ -478,6 +519,11 @@ class Booking(EventBase):
         verbose_name = "boeking"
         verbose_name_plural = "boekingen"
 
+    def save(self, *args, **kwargs):
+        self.booked_by.cache_indicator += 1
+        self.booked_on.cache_indicator += 1
+        return super(Booking, self).save(*args, **kwargs)
+
 
 class WorkAssignment(EventBase):
     hours = models.DecimalField(
@@ -510,6 +556,11 @@ class WorkAssignment(EventBase):
         verbose_name = "toekenning van werk"
         verbose_name_plural = "toekenningen van werk"
 
+    def save(self, *args, **kwargs):
+        self.assigned_to.cache_indicator += 1
+        self.assigned_on.cache_indicator += 1
+        return super(WorkAssignment, self).save(*args, **kwargs)
+
 
 class BudgetAssignment(EventBase):
     budget = models.DecimalField(
@@ -534,3 +585,7 @@ class BudgetAssignment(EventBase):
     class Meta:
         verbose_name = "toekenning van budget"
         verbose_name_plural = "toekenningen van budget"
+
+    def save(self, *args, **kwargs):
+        self.assigned_to.cache_indicator += 1
+        return super(BudgetAssignment, self).save(*args, **kwargs)

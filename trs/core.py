@@ -180,10 +180,11 @@ class PersonYearCombination(object):
 
 
 def get_ppc(project, person):
-    cache_key = 'ppc-%s-%s' % (project.id, person.id)
+    cache_key = 'ppc-%s-%s-%s-%s' % (project.id, project.cache_indicator,
+                                     person.id, person.cache_indicator)
     cached = cache.get(cache_key)
     if cached is not None:
         return cached
     result = ProjectPersonCombination(project, person)
-    cache.set(cache_key, result, 60)
+    cache.set(cache_key, result)
     return result
