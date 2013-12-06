@@ -159,6 +159,9 @@ class Project(models.Model):
     internal = models.BooleanField(
         verbose_name="intern project",
         default=False)
+    archived = models.BooleanField(
+        verbose_name="gearchiveerd",
+        default=False)
     principal = models.CharField(
         verbose_name="opdrachtgever",
         blank=True,
