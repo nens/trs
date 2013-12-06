@@ -2,6 +2,7 @@ import datetime
 import logging
 
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.core.validators import MaxValueValidator
 from django.core.validators import MinValueValidator
@@ -24,8 +25,14 @@ logger = logging.getLogger(__name__)
 
 
 def this_year_week():
-    return YearWeek.objects.filter(
+    cache_key = 'this-year-week'
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+    result = YearWeek.objects.filter(
         first_day__lte=datetime.date.today()).last()
+    cache.set(cache_key, result, 3600)
+    return result
 
 
 def last_four_year_weeks():
@@ -83,15 +90,26 @@ class Person(models.Model):
         return reverse('trs.person', kwargs={'pk': self.pk})
 
     def as_widget(self):
-        return mark_safe(render_to_string('trs/person-widget.html',
-                                          {'person': self}))
+        cache_key = 'person-widget-%s' % self.id
+        cached = cache.get(cache_key)
+        if cached is None:
+            cached = render_to_string('trs/person-widget.html',
+                                      {'person': self})
+            cache.set(cache_key, cached, 120)
+        return mark_safe(cached)
 
     def hours_per_week(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return self.person_changes.filter(
+        cache_key = 'hours-per-week-%s-%s' % (self.id, year_week.id)
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+        result = self.person_changes.filter(
             year_week__lte=year_week).aggregate(
                 models.Sum('hours_per_week'))['hours_per_week__sum'] or 0
+        cache.set(cache_key, result, 3600)
+        return result
 
     def standard_hourly_tariff(self, year_week=None):
         if year_week is None:
@@ -215,8 +233,13 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def as_widget(self):
-        return mark_safe(render_to_string('trs/project-widget.html',
-                                          {'project': self}))
+        cache_key = 'project-widget-%s' % self.id
+        cached = cache.get(cache_key)
+        if cached is None:
+            cached = render_to_string('trs/project-widget.html',
+                                      {'project': self})
+            cache.set(cache_key, cached, 120)
+        return mark_safe(cached)
 
     def assigned_persons(self):
         return Person.objects.filter(

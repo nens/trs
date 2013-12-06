@@ -316,7 +316,7 @@ class PersonView(BaseView):
 
     @cached_property
     def all_ppcs(self):
-        return [core.ProjectPersonCombination(project, self.person)
+        return [core.get_ppc(project, self.person)
                 for project in self.person.assigned_projects()]
 
     @cached_property

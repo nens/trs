@@ -12,10 +12,12 @@ long_description = '\n\n'.join([
 install_requires = [
     'Django >= 1.6b4',
     'Werkzeug',
+    'django-debug-toolbar',
     'django-extensions',
     'django-tls',
     'gunicorn',
     'lizard-auth-client >= 0.9',
+    'requests',
     'setuptools',
     'south',
     ],

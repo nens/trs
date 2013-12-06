@@ -3,13 +3,15 @@ import datetime
 import glob
 import itertools
 import logging
+import os
 import sys
+import tempfile
 
-from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
 from django.http import HttpRequest
 from tls import request as tls_request
-# from django.conf import settings
+import requests
 
 from trs import models
 
@@ -33,24 +35,147 @@ def import_year_week():
     return models.YearWeek.objects.get(year=2000, week=1)
 
 
-# def prepare_tls_request():
-#     # Set a special import user.
-#     import_user = User.objects.create_user('import_user',
-#                                            first_name='Automatic',
-#                                            last_name='Import')
-#     tls_request.user = import_user
+def download_everything():
+    password = input("Type Reinout's password: ")
+    s = requests.Session()
+    s.post('https://www.trsnens.nl/',
+           data={'action': 'login',
+                 'login': 'reinout.vanrees',
+                 'password': password},
+           verify=False)
+    s.get('https://www.trsnens.nl/?page=export',
+          verify=False)
+    hardcoded_userids = [101,
+                         104,
+                         105,
+                         122,
+                         123,
+                         124,
+                         125,
+                         139,
+                         143,
+                         147,
+                         148,
+                         149,
+                         152,
+                         153,
+                         155,
+                         158,
+                         165,
+                         169,
+                         180,
+                         184,
+                         186,
+                         187,
+                         188,
+                         189,
+                         192,
+                         193,
+                         196,
+                         198,
+                         204,
+                         206,
+                         211,
+                         215,
+                         217,
+                         220,
+                         223,
+                         225,
+                         226,
+                         227,
+                         231,
+                         232,
+                         233,
+                         234,
+                         235,
+                         236,
+                         237,
+                         238,
+                         239,
+                         240,
+                         241,
+                         242,
+                         243,
+                         244,
+                         245,
+                         246,
+                         247,
+                         248,
+                         249,
+                         250,
+                         251,
+                         252,
+                         253,
+                         254,
+                         255,
+                         256,
+                         257,
+                         258,
+                         259,
+                         260,
+                         261,
+                         262,
+                         263,
+                         264,
+                         265,
+                         266,
+                         267,
+                         268,
+                         269,
+                         27,
+                         270,
+                         271,
+                         272,
+                         273,
+                         31,
+                         41,
+                         42,
+                         43,
+                         46,
+                         48,
+                         49,
+                         50,
+                         51,
+                         52,
+                         53,
+                         54,
+                         55,
+                         56,
+                         6,
+                         61,
+                         62,
+                         63,
+                         68,
+                         76,
+                         81,
+                         99,
+                         ]
+    tempdir = tempfile.mkdtemp()
+    logger.info("Tempdir: %s", tempdir)
+    for hardcoded_userid in hardcoded_userids:
+        export = s.post('https://www.trsnens.nl/',
+                        params={'page': 'export_4'},
+                        data={'userId': hardcoded_userid,
+                              'beginweek': 0,
+                              'beginyear': 2000,
+                              'endnweek': 53,
+                              'endyear': 2013},
+                        verify=False)
+        parts = export.headers['content-disposition'].split('filename="')
+        filename = parts[1].rstrip('"')
+        output_filename = os.path.join(tempdir, filename)
+        open(output_filename, 'wb').write(export.content)
+        logger.info("Wrote %s", output_filename)
+    return tempdir
 
 
 class Command(BaseCommand):
-    args = "directory with .csv exports"
+    args = ""
     help = "Import the xls exports from the old TRS"
 
     def handle(self, *args, **options):
-        if not args:
-            logger.error("One argument needed: directory with .csv exports.")
-            sys.exit(1)
+        basedir = download_everything()
         # prepare_tls_request()
-        basedir = args[0].rstrip('/')
         pattern = basedir + '/Totalen * per project per week *.csv'
         found = glob.glob(pattern)
         dialect = csv.Sniffer().sniff(open(found[0]).read())
@@ -60,7 +185,7 @@ class Command(BaseCommand):
 
 def import_from_csv(filename, dialect):
     logger.info("Opening %s", filename)
-    lines = list(csv.reader(open(filename), dialect))
+    lines = list(csv.reader(open(filename, encoding='cp1252'), dialect))
     person_name = lines[NAME_LINE][1]
     person = get_person(person_name)
     logger.debug("Person's name: %s", person_name)
@@ -70,7 +195,8 @@ def import_from_csv(filename, dialect):
         username='import_user',
         first_name='Automatic',
         last_name='Import')
-    models.Booking.objects.filter(added_by=import_user).delete()
+    models.Booking.objects.filter(added_by=import_user,
+                                  booked_by=person).delete()
     for line in lines[WEEKS_LINE + 1:]:
         if not line:
             break
@@ -124,7 +250,7 @@ def get_work_assignment(project, person):
 def get_person(name):
     person, created = models.Person.objects.get_or_create(name=name)
     if created:
-        logger.info("Created new person %s")
+        logger.info("Created new person %s", person)
     return person
 
 

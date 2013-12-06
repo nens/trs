@@ -1,10 +1,14 @@
 # Calculation core around the models.
 import datetime
+import logging
 
+from django.core.cache import cache
 from django.db import models
 from django.utils.functional import cached_property
 
 from trs.models import YearWeek
+
+logger = logging.getLogger(__name__)
 
 ALL = 'ALL'
 
@@ -14,15 +18,26 @@ class ProjectPersonCombination(object):
     def __init__(self, project, person):
         self.project = project
         self.person = person
+        self.just_calculate_everything()
 
-    @cached_property
-    def budget(self):
-        return self.person.work_assignments.filter(
+    def just_calculate_everything(self):
+        self.is_project_leader = (self.person == self.project.project_leader)
+        self.is_project_manager = (self.person == self.project.project_manager)
+        self.budget = self.person.work_assignments.filter(
             assigned_on=self.project).aggregate(
                 models.Sum('hours'))['hours__sum'] or 0
+        self.booking_table = self._booking_table()
+        self.booked = self.person.bookings.filter(
+            booked_on=self.project).aggregate(
+                models.Sum('hours'))['hours__sum'] or 0
+        self.hourly_tariff = self.person.work_assignments.filter(
+            assigned_on=self.project).aggregate(
+                models.Sum('hourly_tariff'))['hourly_tariff__sum'] or 0
+        self.desired_hourly_tariff = self.person.standard_hourly_tariff(
+            year_week=self.project.start)
 
-    @cached_property
-    def booking_table(self):
+    def _booking_table(self):
+        logger.info("Starting creating booking table for %s", self.project)
         phase1 = self.person.bookings.filter(booked_on=self.project).values(
             'year_week__year', 'year_week__week', 'booked_on__internal').annotate(
                 hours=models.Sum('hours'))
@@ -45,13 +60,8 @@ class ProjectPersonCombination(object):
                                booked=booked,
                                overbooked=overbooked,
                                internal=internal))
+        logger.info("Finished creating booking table for %s", self.project)
         return result
-
-    @cached_property
-    def booked(self):
-        return self.person.bookings.filter(
-            booked_on=self.project).aggregate(
-                models.Sum('hours'))['hours__sum'] or 0
 
     @cached_property
     def is_overbooked(self):
@@ -85,32 +95,6 @@ class ProjectPersonCombination(object):
     def left_to_turn_over(self):
         return self.left_to_book * self.hourly_tariff
 
-    @cached_property
-    def hourly_tariff(self):
-        return self.person.work_assignments.filter(
-            assigned_on=self.project).aggregate(
-                models.Sum('hourly_tariff'))['hourly_tariff__sum'] or 0
-
-    @cached_property
-    def desired_hourly_tariff(self):
-        """Return hourly tariff at start of project."""
-        return self.person.standard_hourly_tariff(
-            year_week=self.project.start)
-
-    # @cached_property
-    # def desired_minimum_hourly_tariff(self):
-    #     """Return minimum hourly tariff at start of project."""
-    #     return self.person.minimum_hourly_tariff(
-    #         year_week=self.project.start)
-
-    @cached_property
-    def is_project_leader(self):
-        return (self.person == self.project.project_leader)
-
-    @cached_property
-    def is_project_manager(self):
-        return (self.person == self.project.project_manager)
-
 
 class PersonYearCombination(object):
 
@@ -134,7 +118,9 @@ class PersonYearCombination(object):
 
     @cached_property
     def ppcs(self):
-        return [ProjectPersonCombination(project, self.person)
+        # return [ProjectPersonCombination(project, self.person)
+        #         for project in self.person.assigned_projects()]
+        return [get_ppc(project, self.person)
                 for project in self.person.assigned_projects()]
 
     @cached_property
@@ -191,3 +177,13 @@ class PersonYearCombination(object):
         if not (billable + unbillable):  # Division by zero
             return 0
         return round(billable / (billable + unbillable) * 100)
+
+
+def get_ppc(project, person):
+    cache_key = 'ppc-%s-%s' % (project.id, person.id)
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+    result = ProjectPersonCombination(project, person)
+    cache.set(cache_key, result, 60)
+    return result

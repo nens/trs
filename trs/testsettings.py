@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'lizard_auth_client',
     'south',
     'gunicorn',
+    'debug_toolbar',
     'django.contrib.staticfiles',
     'django_extensions',
     'django_nose',
@@ -31,6 +32,8 @@ INSTALLED_APPS = [
     #'django.contrib.sites',
     ]
 MIDDLEWARE_CLASSES = (
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # Default stuff below.
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -107,6 +110,8 @@ LANGUAGE_CODE = 'nl-nl'
 # LOGIN_URL = 'trs.login'
 # LOGOUT_URL = 'trs.logout'
 
+
+INTERNAL_IPS = ['localhost', '127.0.0.1']
 
 # SSO
 SSO_ENABLED = True
