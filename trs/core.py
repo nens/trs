@@ -103,18 +103,15 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
+        self.just_calculate_everything()
 
-    @cached_property
-    def first_year_week(self):
-        return YearWeek.objects.filter(year=self.year)[0]
-
-    @cached_property
-    def last_year_week(self):
-        return YearWeek.objects.filter(year=self.year).last()
-
-    @cached_property
-    def target(self):
-        return self.person.target(year_week=self.last_year_week)
+    def just_calculate_everything(self):
+        self.first_year_week = YearWeek.objects.filter(year=self.year)[0]
+        self.last_year_week = YearWeek.objects.filter(year=self.year).last()
+        self.target = self.person.target(year_week=self.last_year_week)
+        self.turnover = self._turnover()
+        self.overbooked = self._overbooked()
+        self.billable_percentage = self._billable_percentage()
 
     @cached_property
     def ppcs(self):
@@ -123,8 +120,7 @@ class PersonYearCombination(object):
         return [get_ppc(project, self.person)
                 for project in self.person.assigned_projects()]
 
-    @cached_property
-    def turnover(self):
+    def _turnover(self):
         result = 0
         for ppc in self.ppcs:
             booked_billable = sum(
@@ -143,8 +139,7 @@ class PersonYearCombination(object):
     def left_to_turn_over(self):
         return max((self.target - self.turnover), 0)
 
-    @cached_property
-    def overbooked(self):
+    def _overbooked(self):
         result = {'over': 0, 'percentage': 0}
         well_booked = 0
         for ppc in self.ppcs:
@@ -159,8 +154,7 @@ class PersonYearCombination(object):
                 result['over'] / (well_booked + result['over']) * 100)
         return result
 
-    @cached_property
-    def billable_percentage(self):
+    def _billable_percentage(self):
         # Count both booked and overbooked hours.
         # TODO: filter out holidays?
         billable = 0
@@ -186,5 +180,15 @@ def get_ppc(project, person):
     if cached is not None:
         return cached
     result = ProjectPersonCombination(project, person)
+    cache.set(cache_key, result)
+    return result
+
+
+def get_pyc(person, year=None):
+    cache_key = 'pyc-%s-%s-%s' % (person.id, person.cache_indicator, year)
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+    result = PersonYearCombination(person, year)
     cache.set(cache_key, result)
     return result

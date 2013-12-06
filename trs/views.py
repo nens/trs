@@ -102,7 +102,7 @@ class BaseMixin(object):
     def person_year_info(self):
         if not self.active_person:
             return
-        return core.PersonYearCombination(person=self.active_person)
+        return core.get_pyc(person=self.active_person)
 
     @cached_property
     def selected_tab(self):
