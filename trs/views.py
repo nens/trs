@@ -243,7 +243,7 @@ class PersonsView(BaseView):
             line = {}
             line['person'] = person
             # TODO: refactor, this is the same as ProjectsView.
-            ppcs = [core.ProjectPersonCombination(project, person)
+            ppcs = [core.get_ppc(project, person)
                     for project in person.assigned_projects()]
             booked = sum([ppc.booked for ppc in ppcs])
             overbooked = sum([max(0, (ppc.booked - ppc.budget))
@@ -373,10 +373,10 @@ class ProjectsView(BaseView):
     @cached_property
     def lines(self):
         result = []
-        for project in Project.objects.all():
+        for project in Project.objects.filter(archived=False):
             line = {}
             line['project'] = project
-            ppcs = [core.ProjectPersonCombination(project, person)
+            ppcs = [core.get_ppc(project, person)
                     for person in project.assigned_persons()]
             booked = sum([ppc.booked for ppc in ppcs])
             overbooked = sum([max(0, (ppc.booked - ppc.budget))
@@ -490,7 +490,7 @@ class ProjectView(BaseView):
 
     @cached_property
     def ppcs(self):
-        return [core.ProjectPersonCombination(self.project, person)
+        return [core.get_ppc(self.project, person)
                 for person in self.project.assigned_persons()]
 
     @cached_property
@@ -650,8 +650,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         form = self.get_form(self.get_form_class())
         fields = list(form)  # A form's __iter__ returns 'bound fields'.
         for project_index, project in enumerate(self.active_projects):
-            line = {'ppc': core.ProjectPersonCombination(project,
-                                                         self.active_person)}
+            line = {'ppc': core.get_ppc(project, self.active_person)}
             for index, year_week in enumerate(self.year_weeks_to_display):
                 booked = Booking.objects.filter(
                     year_week=year_week,
@@ -846,7 +845,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         fields = SortedDict()
         tabindex = 1
         for index, person in enumerate(self.project.assigned_persons()):
-            ppc = core.ProjectPersonCombination(self.project, person)
+            ppc = core.get_ppc(self.project, person)
             if self.can_edit_hours:
                 field_type = forms.IntegerField(
                     min_value=0,
@@ -888,7 +887,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         fields = self.bound_form_fields
         field_index = 0
         for person in self.project.assigned_persons():
-            ppc = core.ProjectPersonCombination(self.project, person)
+            ppc = core.get_ppc(self.project, person)
             line = {'ppc': ppc,
                     'person': person}
             if self.can_edit_hours:
@@ -912,7 +911,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     def form_valid(self, form):
         num_changes = 0
         for person in self.project.assigned_persons():
-            ppc = core.ProjectPersonCombination(self.project, person)
+            ppc = core.get_ppc(self.project, person)
             hours = 0
             hourly_tariff = 0
             if self.can_edit_hours:
