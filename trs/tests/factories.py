@@ -25,6 +25,7 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     code = 'P1234'
     description = ''
     internal = False
+    archived = False
     principal = ''
     project_leader = None
     project_manager = None

@@ -671,7 +671,9 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Project
     title = "Project aanpassen"
-    fields = ['code', 'description', 'internal', 'is_subsidized', 'principal',
+    fields = ['code', 'description', 'internal',
+              'archived',  # Note: archived only on edit view :-)
+              'is_subsidized', 'principal',
               'start', 'end', 'project_leader', 'project_manager',
               'is_accepted',  # Note: is_accepted only on edit view!
           ]
@@ -691,7 +693,8 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Project
     title = "Nieuw project"
-    fields = ['code', 'description', 'internal', 'is_subsidized', 'principal',
+    fields = ['code', 'description', 'internal',
+              'is_subsidized', 'principal',
               'start', 'end', 'project_leader', 'project_manager']
 
     def has_form_permissions(self):
