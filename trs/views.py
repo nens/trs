@@ -112,7 +112,8 @@ class BaseMixin(object):
         # TODO: extra filtering for projects that are past their date.
         if not self.active_person:
             return []
-        return self.active_person.assigned_projects().filter(archived=False)
+        return [project for project in self.active_person.assigned_projects()
+                if not project.archived]
 
     @cached_property
     def person_year_info(self):
@@ -334,7 +335,8 @@ class PersonView(BaseView):
     @cached_property
     def all_ppcs(self):
         return [core.get_ppc(project, self.person)
-                for project in self.person.assigned_projects()]
+                for project in self.person.assigned_projects()
+                if not project.archived]
 
     @cached_property
     def ppcs(self):
