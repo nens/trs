@@ -5,5 +5,14 @@
 from trs.testsettings import *
 
 DEBUG = False
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BUILDOUT_DIR, 'var/cache'),
+        'TIMEOUT': 60 * 60 * 24 * 4,  # 4 days
+        'OPTIONS': {'MAX_ENTRIES': 50000,
+                },
+    }
+}
 
 from trs_site.productionsettings import *

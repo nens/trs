@@ -129,16 +129,6 @@ SSO_SERVER_PRIVATE_URL = 'http://somewhere:someport/'
 SSO_SYNCED_USER_KEYS = ['first_name', 'last_name', 'email', 'is_active']
 
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(BUILDOUT_DIR, 'var/cache'),
-        'TIMEOUT': 60 * 60 * 24 * 4,  # 4 days
-        'OPTIONS': {'MAX_ENTRIES': 50000,
-                },
-    }
-}
-
 try:
     from .local_testsettings import *
 except ImportError:
