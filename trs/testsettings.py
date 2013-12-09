@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'lizard_auth_client',
     'south',
     'gunicorn',
+    'debug_toolbar',
     'django.contrib.staticfiles',
     'django_extensions',
     'django_nose',
@@ -31,6 +32,8 @@ INSTALLED_APPS = [
     #'django.contrib.sites',
     ]
 MIDDLEWARE_CLASSES = (
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # Default stuff below.
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -108,6 +111,8 @@ LANGUAGE_CODE = 'nl-nl'
 # LOGOUT_URL = 'trs.logout'
 
 
+INTERNAL_IPS = ['localhost', '127.0.0.1']
+
 # SSO
 SSO_ENABLED = True
 # A key identifying this client. Can be published.
@@ -122,6 +127,7 @@ SSO_SERVER_PUBLIC_URL = 'http://sso.lizard.net/'
 SSO_SERVER_PRIVATE_URL = 'http://somewhere:someport/'
 # Don't copy is_staff/is_superuser
 SSO_SYNCED_USER_KEYS = ['first_name', 'last_name', 'email', 'is_active']
+
 
 try:
     from .local_testsettings import *

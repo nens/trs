@@ -1,6 +1,10 @@
 <a href="{{ person.get_absolute_url }}">
   {{ person.name }}
 </a>
+{% if person.archived %}
+  <span title="Werkt hier niet meer"
+        class="text-muted glyphicon glyphicon-lock"></span>
+{% endif %}
 {% if person.booking_percentage <= 90 %}
   <span
     {% if person.booking_percentage <= 60 %}

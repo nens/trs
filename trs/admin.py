@@ -4,11 +4,13 @@ from trs import models
 
 
 class PersonAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['name', 'archived', 'user', 'is_office_management',
+                    'is_management']
+    list_editable = ['archived', 'is_office_management']
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ['code', 'internal', 'description']
+    list_display = ['code', 'internal', 'archived', 'description']
 
 
 class InvoiceAdmin(admin.ModelAdmin):

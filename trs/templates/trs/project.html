@@ -4,6 +4,18 @@
 {% block main-column %}
   <h1>
     {{ view.project.code }}
+    {% if view.project.archived %}
+      <span title="Project is gearchiveerd"
+            class="text-muted glyphicon glyphicon-lock"></span>
+    {% endif %}
+    {% if project.is_accepted %}
+      <span title="Project is afgekaart"
+            class="text-muted glyphicon glyphicon-ok"></span>
+    {% endif %}
+    {% if project.is_subsidized %}
+      <span title="Subsidieproject"
+            class="text-muted glyphicon glyphicon-usd"></span>
+    {% endif %}
     <small>{{ view.project.description }}</small>
   </h1>
   <dl>
