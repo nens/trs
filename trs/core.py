@@ -14,13 +14,28 @@ ALL = 'ALL'
 
 
 class ProjectPersonCombination(object):
+    PPC_KEYS = ['is_project_leader',
+                'is_project_manager',
+                'budget',
+                'booking_table',
+                'booked',
+                'hourly_tariff',
+                'desired_hourly_tariff',
+                ]
 
     def __init__(self, project, person):
         self.project = project
         self.person = person
-        self.just_calculate_everything()
+        self.cache_key = 'ppcdata-%s-REV%s-%s-REV%s' % (
+            self.project.id, self.project.cache_indicator,
+            self.person.id, self.person.cache_indicator)
+        has_cached_data = self.get_cache()
+        if not has_cached_data:
+            self.just_calculate_everything()
+            self.set_cache()
 
     def just_calculate_everything(self):
+        # logger.debug("Calculating everything")
         self.is_project_leader = (self.person == self.project.project_leader)
         self.is_project_manager = (self.person == self.project.project_manager)
         self.budget = self.person.work_assignments.filter(
@@ -36,8 +51,23 @@ class ProjectPersonCombination(object):
         self.desired_hourly_tariff = self.person.standard_hourly_tariff(
             year_week=self.project.start)
 
+    def set_cache(self):
+        result = {key: getattr(self, key) for key in self.PPC_KEYS}
+        cache.set(self.cache_key, result)
+        logger.debug("Cached NEW ppc data for %s & %s, %s",
+                     self.project, self.person, self.cache_key)
+
+    def get_cache(self):
+        result = cache.get(self.cache_key)
+        if not result:
+            return False
+        for key in self.PPC_KEYS:
+            setattr(self, key, result[key])
+        return True
+
     def _booking_table(self):
-        logger.info("Starting creating booking table for %s", self.project)
+        logger.info("Starting creating booking table for %s & %s",
+                    self.project, self.person)
         phase1 = self.person.bookings.filter(booked_on=self.project).values(
             'year_week__year', 'year_week__week', 'booked_on__internal').annotate(
                 hours=models.Sum('hours'))
@@ -97,13 +127,25 @@ class ProjectPersonCombination(object):
 
 
 class PersonYearCombination(object):
+    PYC_KEYS = [
+        'first_year_week',
+        'last_year_week',
+        'target',
+        'turnover',
+        'overbooked'
+        'billable_percentage',
+        ]
 
     def __init__(self, person, year=None):
         self.person = person
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        self.just_calculate_everything()
+        self.cache_key = 'pycdata-%s-%s-%s' % (person.id, person.cache_indicator, year)
+        has_cached_data = self.get_cache()
+        if not has_cached_data:
+            self.just_calculate_everything()
+            self.set_cache()
 
     def just_calculate_everything(self):
         self.first_year_week = YearWeek.objects.filter(year=self.year)[0]
@@ -112,6 +154,20 @@ class PersonYearCombination(object):
         self.turnover = self._turnover()
         self.overbooked = self._overbooked()
         self.billable_percentage = self._billable_percentage()
+
+    def set_cache(self):
+        result = {key: getattr(self, key) for key in self.PYC_KEYS}
+        cache.set(self.cache_key, result)
+        logger.debug("Cached NEW pyc data for %s , %s",
+                     self.person, self.year, self.cache_key)
+
+    def get_cache(self):
+        result = cache.get(self.cache_key)
+        if not result:
+            return False
+        for key in self.PYC_KEYS:
+            setattr(self, key, result[key])
+        return True
 
     @cached_property
     def ppcs(self):
@@ -174,14 +230,7 @@ class PersonYearCombination(object):
 
 
 def get_ppc(project, person):
-    cache_key = 'ppc-%s-%s-%s-%s' % (project.id, project.cache_indicator,
-                                     person.id, person.cache_indicator)
-    cached = cache.get(cache_key)
-    if cached is not None:
-        return cached
-    result = ProjectPersonCombination(project, person)
-    cache.set(cache_key, result)
-    return result
+    return ProjectPersonCombination(project, person)
 
 
 def get_pyc(person, year=None):

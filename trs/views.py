@@ -57,6 +57,23 @@ class LoginAndPermissionsRequiredMixin(object):
         return super(LoginAndPermissionsRequiredMixin, self).dispatch(*args, **kwargs)
 
 
+def try_and_find_matching_person(user):
+    full_name = user.first_name + ' ' + user.last_name
+    full_name = full_name.lower()
+    full_name = full_name.replace(',', ' ')
+    full_name = full_name.replace('-', ' ')
+    parts = full_name.split(' ')
+    names = Person.objects.all().values_list('name', flat=True)
+    for part in parts:
+        names = [name for name in names if part in name.lower()]
+    if len(names) > 1:
+        logger.warn("Tried matching %s, but found more than one match: %s",
+                    full_name, names)
+        return
+    if len(names) == 1:
+        return Person.objects.get(name=names[0])
+
+
 class BaseMixin(object):
     template_name = 'trs/base.html'
     title = "TRS tijdregistratiesysteem"
@@ -79,9 +96,8 @@ class BaseMixin(object):
             # coupled the moment they sign in. A real automatic LDAP coupling
             # would have been better, but python-ldap doesn't work with python
             # 3 yet.
-            persons = Person.objects.filter(login_name=self.request.user.username)
-            if persons:
-                person = persons[0]
+            person = try_and_find_matching_person(self.request.user)
+            if person:
                 logger.info("Found not-yet-coupled person %s for user %s.",
                             person, self.request.user)
                 person.user = self.request.user
@@ -96,7 +112,7 @@ class BaseMixin(object):
         # TODO: extra filtering for projects that are past their date.
         if not self.active_person:
             return []
-        return self.active_person.assigned_projects()
+        return self.active_person.assigned_projects().filter(archived=False)
 
     @cached_property
     def person_year_info(self):
@@ -239,7 +255,8 @@ class PersonsView(BaseView):
     @cached_property
     def lines(self):
         result = []
-        for person in Person.objects.all():
+        #xxx
+        for person in Person.objects.filter(archived=False):
             line = {}
             line['person'] = person
             # TODO: refactor, this is the same as ProjectsView.
@@ -767,7 +784,7 @@ class PersonEditView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Person
     title = "Medewerker aanpassen"
-    fields = ['name', 'login_name', 'user', 'is_management']
+    fields = ['name', 'login_name', 'user', 'is_management', 'archived']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:

@@ -77,6 +77,9 @@ class Person(models.Model):
         help_text=("Management can see everything, but doesn't get extra " +
                    "edit rights"),
         default=False)
+    archived = models.BooleanField(
+        verbose_name="gearchiveerd",
+        default=False)
     cache_indicator = models.IntegerField(
         default=0,
         verbose_name="cache indicator")
@@ -84,7 +87,7 @@ class Person(models.Model):
     class Meta:
         verbose_name = "persoon"
         verbose_name_plural = "personen"
-        ordering = ['name']
+        ordering = ['-archived', 'name']
 
     def save(self, *args, **kwargs):
         self.cache_indicator += 1

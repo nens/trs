@@ -4,7 +4,9 @@ from trs import models
 
 
 class PersonAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['name', 'archived', 'user', 'is_office_management',
+                    'is_management']
+    list_editable = ['archived', 'is_office_management']
 
 
 class ProjectAdmin(admin.ModelAdmin):
