@@ -112,7 +112,7 @@ class BaseMixin(object):
         # TODO: extra filtering for projects that are past their date.
         if not self.active_person:
             return []
-        return [project for project in self.active_person.assigned_projects()
+        return [project for project in self.active_person.filtered_assigned_projects()
                 if not project.archived]
 
     @cached_property
@@ -197,7 +197,7 @@ class HomeView(BaseView):
     @cached_property
     def work_changes(self):
         result = []
-        for project in self.active_person.assigned_projects():
+        for project in self.active_person.filtered_assigned_projects():
             changes = self.active_person.work_assignments.filter(
                 year_week__in=self.relevant_year_weeks,
                 assigned_on=project).aggregate(
@@ -262,7 +262,7 @@ class PersonsView(BaseView):
             line['person'] = person
             # TODO: refactor, this is the same as ProjectsView.
             ppcs = [core.get_ppc(project, person)
-                    for project in person.assigned_projects()]
+                    for project in person.filtered_assigned_projects()]
             booked = sum([ppc.booked for ppc in ppcs])
             overbooked = sum([max(0, (ppc.booked - ppc.budget))
                               for ppc in ppcs])
@@ -335,7 +335,7 @@ class PersonView(BaseView):
     @cached_property
     def all_ppcs(self):
         return [core.get_ppc(project, self.person)
-                for project in self.person.assigned_projects()
+                for project in self.person.filtered_assigned_projects()
                 if not project.archived]
 
     @cached_property

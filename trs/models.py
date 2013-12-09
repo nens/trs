@@ -174,6 +174,13 @@ class Person(models.Model):
                 models.Sum('target'))['target__sum'] or 0
 
     @cache_on_model
+    def filtered_assigned_projects(self):
+        return Project.objects.filter(
+            work_assignments__assigned_to=self,
+            archived=False,
+            end__gte=this_year_week()).distinct()
+
+    @cache_on_model
     def assigned_projects(self):
         return Project.objects.filter(
             work_assignments__assigned_to=self).distinct()
