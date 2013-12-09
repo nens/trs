@@ -19,3 +19,8 @@ class Command(BaseCommand):
             for person in project.assigned_persons():
                 core.get_ppc(project, person)
             logger.info("%s out of %s done", index + 1, num_projects)
+        num_persons = models.Person.objects.all().count()
+        logger.info("%s persons in total.", num_persons)
+        for index, person in enumerate(models.Person.objects.all()):
+            core.get_pyc(person)
+            logger.info("%s out of %s done", index + 1, num_persons)
