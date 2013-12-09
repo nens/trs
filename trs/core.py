@@ -158,7 +158,7 @@ class PersonYearCombination(object):
     def set_cache(self):
         result = {key: getattr(self, key) for key in self.PYC_KEYS}
         cache.set(self.cache_key, result)
-        logger.debug("Cached NEW pyc data for %s , %s",
+        logger.debug("Cached NEW pyc data for %s (%s) , %s",
                      self.person, self.year, self.cache_key)
 
     def get_cache(self):
