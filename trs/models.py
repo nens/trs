@@ -42,6 +42,27 @@ def last_four_year_weeks():
     return result
 
 
+def cache_per_week(callable):
+    def inner(self, year_week=None):
+        cache_key = self.cache_key(callable.__name__, year_week)
+        result = cache.get(cache_key)
+        if result is None:
+            result = callable(self, year_week)
+            cache.set(cache_key, result)
+        return result
+    return inner
+
+def cache_on_model(callable):
+    def inner(self):
+        cache_key = self.cache_key(callable.__name__)
+        result = cache.get(cache_key)
+        if result is None:
+            result = callable(self)
+            cache.set(cache_key, result)
+        return result
+    return inner
+
+
 class Person(models.Model):
     name = models.CharField(
         verbose_name="naam",
@@ -96,35 +117,28 @@ class Person(models.Model):
     def __str__(self):
         return self.name
 
-    def cache_key(self, for_what, week_id=None):
+    def cache_key(self, for_what, year_week=None):
+        week_id = year_week and year_week.id or ''
         return 'person-%s-%s-%s-%s' % (
             self.id, self.cache_indicator, for_what, week_id)
 
     def get_absolute_url(self):
         return reverse('trs.person', kwargs={'pk': self.pk})
 
+    @cache_on_model
     def as_widget(self):
-        cache_key = self.cache_key('widget')
-        cached = cache.get(cache_key)
-        if cached is None:
-            cached = render_to_string('trs/person-widget.html',
-                                      {'person': self})
-            cache.set(cache_key, cached)
-        return mark_safe(cached)
+        return mark_safe(render_to_string('trs/person-widget.html',
+                                          {'person': self}))
 
+    @cache_per_week
     def hours_per_week(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        cache_key = self.cache_key('hours-per-week', year_week.id)
-        cached = cache.get(cache_key)
-        if cached is not None:
-            return cached
-        result = self.person_changes.filter(
+        return self.person_changes.filter(
             year_week__lte=year_week).aggregate(
                 models.Sum('hours_per_week'))['hours_per_week__sum'] or 0
-        cache.set(cache_key, result)
-        return result
 
+    @cache_per_week
     def standard_hourly_tariff(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
@@ -133,6 +147,7 @@ class Person(models.Model):
                 models.Sum('standard_hourly_tariff'))[
                     'standard_hourly_tariff__sum'] or 0
 
+    @cache_per_week
     def minimum_hourly_tariff(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
@@ -141,6 +156,7 @@ class Person(models.Model):
                 models.Sum('minimum_hourly_tariff'))[
                     'minimum_hourly_tariff__sum'] or 0
 
+    @cache_per_week
     def external_percentage(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
@@ -149,6 +165,7 @@ class Person(models.Model):
                 models.Sum('external_percentage'))[
                     'external_percentage__sum'] or 0
 
+    @cache_per_week
     def target(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
@@ -156,10 +173,12 @@ class Person(models.Model):
             year_week__lte=year_week).aggregate(
                 models.Sum('target'))['target__sum'] or 0
 
+    @cache_on_model
     def assigned_projects(self):
         return Project.objects.filter(
             work_assignments__assigned_to=self).distinct()
 
+    @cache_on_model
     def booking_percentage(self):
         weeks = last_four_year_weeks()
         hours_to_work = sum([self.hours_per_week(year_week=week)
@@ -172,6 +191,7 @@ class Person(models.Model):
         # TODO: het onderstaande klopt niet!
         return round(100 * booked_in_weeks / hours_to_work)
 
+    @cache_on_model
     def external_internal_ratio(self):
         internal = 100 - self.external_percentage()
         return "%s/%s" % (self.external_percentage(), internal)
@@ -256,6 +276,7 @@ class Project(models.Model):
     def cache_key(self, for_what):
         return 'project-%s-%s-%s' % (self.id, self.cache_indicator, for_what)
 
+    @cache_on_model
     def as_widget(self):
         cache_key = self.cache_key('widget')
         result = cache.get(cache_key)
@@ -265,28 +286,22 @@ class Project(models.Model):
             cache.set(cache_key, result)
         return mark_safe(result)
 
+    @cache_on_model
     def assigned_persons(self):
         return Person.objects.filter(
             work_assignments__assigned_on=self).distinct()
 
+    @cache_on_model
     def budget(self):
-        cache_key = self.cache_key('budget')
-        result = cache.get(cache_key)
-        if result is None:
-            result = self.budget_assignments.all().aggregate(
-                models.Sum('budget'))['budget__sum'] or 0
-            cache.set(cache_key, result)
-        return result
+        return self.budget_assignments.all().aggregate(
+            models.Sum('budget'))['budget__sum'] or 0
 
+    @cache_on_model
     def hour_budget(self):
-        cache_key = self.cache_key('hour_budget')
-        result = cache.get(cache_key)
-        if result is None:
-            result = self.work_assignments.all().aggregate(
-                models.Sum('hours'))['hours__sum'] or 0
-            cache.set(cache_key, result)
-        return result
+        return self.work_assignments.all().aggregate(
+            models.Sum('hours'))['hours__sum'] or 0
 
+    @cache_on_model
     def overbooked_percentage(self):
         """Return quick estimate of percentage overbooked hours.
 
