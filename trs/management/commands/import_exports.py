@@ -157,8 +157,8 @@ def download_everything():
                         params={'page': 'export_4'},
                         data={'userId': hardcoded_userid,
                               'beginweek': 0,
-                              'beginyear': 2013,
-                              'endnweek': 53,
+                              'beginyear': 2000,
+                              'endweek': 53,
                               'endyear': 2013},
                         verify=False)
         parts = export.headers['content-disposition'].split('filename="')
