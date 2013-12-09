@@ -132,7 +132,7 @@ class PersonYearCombination(object):
         'last_year_week',
         'target',
         'turnover',
-        'overbooked'
+        'overbooked',
         'billable_percentage',
         ]
 
