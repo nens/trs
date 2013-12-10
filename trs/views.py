@@ -101,6 +101,7 @@ class BaseMixin(object):
                 logger.info("Found not-yet-coupled person %s for user %s.",
                             person, self.request.user)
                 person.user = self.request.user
+                person.cache_indicator += -1  # Don't trigger a re-calc
                 person.save()
                 return person
         if persons:
