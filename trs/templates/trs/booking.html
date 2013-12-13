@@ -13,6 +13,7 @@
           <th>Omschrijving</th>
           <th class="text-right">Budget</th>
           <th class="text-right">Geboekt</th>
+          <th class="text-right">Over</th>
           <th>&nbsp;</th>
           {% for year_week in view.year_weeks_to_display %}
             <th class="text-right">{{ year_week.as_widget }}</th>
@@ -43,6 +44,7 @@
             <td  class="text-right {% if line.ppc.is_overbooked %}danger{% endif %}">
               {{ line.ppc.booked|hours }}
             </td>
+            <td class="text-right">{{ line.ppc.left_to_book|hours }}</td>
             <td style="border-left: 1px solid rgb(221, 221, 221);">&nbsp;&nbsp;&nbsp;</td>
             <td class="text-right">{{ line.hours0|hours }}</td>
             <td class="text-right">{{ line.hours1|hours }}</td>
