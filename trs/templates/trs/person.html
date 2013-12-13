@@ -3,26 +3,44 @@
 
 {% block main-column %}
   <h1>{{ view.person.name }}</h1>
-  <dl>
-    <dt>Werkweek</dt>
-    <dd>{{ view.person.hours_per_week|hours }}</dd>
-    <dt>Werkvoorraad</dt>
-    <dd>{{ view.total_left_to_book|hours }}</dd>
-    {% if view.can_see_financials %}
-      <dt>Target</dt>
-      <dd>{{ view.person.target|money }}</dd>
-      <dt>Standaard uurtarief</dt>
-      <dd>{{ view.person.standard_hourly_tariff|money }}</dd>
-      <dt>Minimum uurtarief</dt>
-      <dd>{{ view.person.minimum_hourly_tariff|money }}</dd>
-      <dt>Verhouding extern/intern</dt>
-      <dd>{{ view.person.external_internal_ratio }}</dd>
+  <table class="table borderless-table">
+    <tbody>
+      <tr>
+        <th>Werkweek</th>
+        <td>{{ view.person.hours_per_week|hours }}</td>
+      </tr>
+      <tr>
+        <th>Werkvoorraad</th>
+        <td>{{ view.total_left_to_book|hours }}</td>
+      </tr>
+      {% if view.can_see_financials %}
+        <tr>
+          <th>Target</th>
+          <td>{{ view.person.target|money }}</td>
+        </tr>
+        <tr>
+          <th>Standaard uurtarief</th>
+          <td>{{ view.person.standard_hourly_tariff|money }}</td>
+        </tr>
+        <tr>
+          <th>Minimum uurtarief</th>
+          <td>{{ view.person.minimum_hourly_tariff|money }}</td>
+        </tr>
+        <tr>
+          <th>Verhouding extern/intern</th>
+          <td>{{ view.person.external_internal_ratio }}</td>
+        </tr>
     {% endif %}
-    <dt>Bij qua boeken</dt>
-    <dd>{{ view.person.booking_percentage }}%</dd>
-    <dt>Extra rollen</dt>
-    <dd>{{ view.extra_roles }}</dd>
-  </dl>
+      <tr>
+        <th>Bij qua boeken</th>
+        <td>{{ view.person.booking_percentage }}%</td>
+      </tr>
+      <tr>
+        <th>Extra rollen</th>
+        <td>{{ view.extra_roles }}</td>
+      </tr>
+    </tbody>
+  </table>
   {% if view.can_edit_person %}
     <div>
       <a href="{% url 'trs.person.edit' pk=view.person.pk %}"
