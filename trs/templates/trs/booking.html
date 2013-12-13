@@ -10,11 +10,12 @@
       <thead>
         <tr>
           <th>Code</th>
-          <th>Beschikbaar</th>
-          <th>Geboekt</th>
-          <th></th>
+          <th>Omschrijving</th>
+          <th class="text-right">Beschikbaar</th>
+          <th class="text-right">Geboekt</th>
+          <th>&nbsp;</th>
           {% for year_week in view.year_weeks_to_display %}
-            <th>{{ year_week.as_widget }}</th>
+            <th class="text-right">{{ year_week.as_widget }}</th>
             <!-- TODO: give feedback in widget if you need to book in that week -->
           {% endfor %}
           <!-- TODO: add nice week widget including hover for starting date
@@ -25,34 +26,39 @@
         {% for line in view.lines %}
           <tr>
             <td>
-              {{ line.ppc.project.as_widget }}
-              &nbsp;
+              <a href="{{ line.ppc.project.get_absolute_url }}"
+                 {% if not line.ppc.project.internal %}class="external-project"{% endif %}>
+                {{ line.ppc.project.code }}
+              </a>
+            </td>
+            <td>
               <span class="text-muted"
-                    {% if line.ppc.project.description|length > 36 %}
+                    {% if line.ppc.project.description|length > 30 %}
                       title="{{ line.ppc.project.description }}"
                     {% endif %}>
-                {{ line.ppc.project.description|truncatechars:36 }}
+                {{ line.ppc.project.description|truncatechars:30 }}
               </span>
             </td>
-            <td>{{ line.ppc.budget|hours }}</td>
-            <td {% if line.ppc.is_overbooked %}class="text-danger"{% endif %}>
+            <td class="text-right">{{ line.ppc.budget|hours }}</td>
+            <td  class="text-right {% if line.ppc.is_overbooked %}danger{% endif %}">
               {{ line.ppc.booked|hours }}
             </td>
-            <td>&nbsp;&nbsp;&nbsp;</td>
-            <td>{{ line.hours0|hours }}</td>
-            <td>{{ line.hours1|hours }}</td>
-            <td>
+            <td style="border-left: 1px solid rgb(221, 221, 221);">&nbsp;&nbsp;&nbsp;</td>
+            <td class="text-right">{{ line.hours0|hours }}</td>
+            <td class="text-right">{{ line.hours1|hours }}</td>
+            <td class="text-right">
               {{ line.field }}
               {% for error in line.field.errors %}
                 <div class="alert alert-danger">{{ error }}</div>
               {% endfor %}
             </td>
-            <td>{{ line.hours3|hours }}</td>
+            <td class="text-right">{{ line.hours3|hours }}</td>
           </tr>
         {% endfor %}
       </tbody>
       <tfoot>
         <tr>
+          <th></th>
           <th></th>
           <th></th>
           <th></th>
