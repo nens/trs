@@ -1,14 +1,8 @@
-{% if project.internal %}
-  {% if view.can_see_everything %}
-    <a href="{{ project.get_absolute_url }}">
-      {{ project.code }}
-    </a>
-  {% else %}
-    {{ project.code }}
-  {% endif %}
+{% if project.hidden and not view.can_see_everything %}
+  {{ project.code }}
 {% else %}
   <a href="{{ project.get_absolute_url }}"
-    class="external-project">
+     {% if not project.internal %}class="external-project"{% endif %}>
     {{ project.code }}
   </a>
 {% endif %}
