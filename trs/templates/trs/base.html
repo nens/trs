@@ -116,22 +116,11 @@
                 ({{ view.person_year_info.overbooked.over|hours }} uren)
                 buiten budget geboekt.
               </div>
-              <div class="text-muted">
-                Bij dit percentage wordt alleen gekeken naar de <i>externe</i>
-                projecten. Het is de bedoeling dat deze projecten netjes in
-                samenspraak worden opgezet, inclusief deugdelijke
-                ureninschatting.
-              </div>
               <h2>Extern/intern?</h2>
               <div>
                 Je hebt
                 <b>{{ view.person_year_info.billable_percentage }}%</b>
                 op externe projecten geboekt.
-              </div>
-              <div class="text-muted">
-                Bij deze verhouding wordt gewoon het aantal geboekte uren van
-                dit jaar op externe/interne projecten gebruikt. Of je over
-                budget heen bent gegaan wordt hier niet meegenomen.
               </div>
               <h2>Financieel?</h2>
               <div>
@@ -143,11 +132,6 @@
                   Nog om te zetten:
                   {{ view.person_year_info.left_to_turn_over|money }}.
                 {% endif %}
-              </div>
-              <div class="text-muted">
-                Het target is een combinatie van indicatoren. Heb je voldoende
-                extern gewerkt? Zijn de ureninschattingen van je projecten
-                goed? Kloppen je uurtarieven?
               </div>
 
             {% endif %}
