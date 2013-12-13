@@ -27,10 +27,7 @@
         {% for line in view.lines %}
           <tr>
             <td>
-              <a href="{{ line.ppc.project.get_absolute_url }}"
-                 {% if not line.ppc.project.internal %}class="external-project"{% endif %}>
-                {{ line.ppc.project.code }}
-              </a>
+              {{ line.ppc.project.as_widget }}
             </td>
             <td>
               <span class="text-muted"
@@ -60,6 +57,7 @@
       </tbody>
       <tfoot>
         <tr>
+          <th></th>
           <th></th>
           <th></th>
           <th></th>
