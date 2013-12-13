@@ -1,7 +1,18 @@
-<a href="{{ project.get_absolute_url }}"
-  {% if not project.internal %}class="external-project"{% endif %}>
-  {{ project.code }}
-</a>
+{% if project.internal %}
+  {% if view.can_see_everything %}
+    <a href="{{ project.get_absolute_url }}">
+      {{ project.code }}
+    </a>
+  {% else %}
+    {{ project.code }}
+  {% endif %}
+{% else %}
+  <a href="{{ project.get_absolute_url }}"
+    class="external-project">
+    {{ project.code }}
+  </a>
+{% endif %}
+
 {% if project.archived %}
   <span title="Project is gearchiveerd"
         class="text-muted glyphicon glyphicon-lock"></span>
