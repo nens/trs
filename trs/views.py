@@ -264,7 +264,7 @@ class PersonsView(BaseView):
 
     @cached_property
     def persons(self):
-        return Person.objects.filter(archived=False)
+        return Person.objects.filter(archived=False)[:5]
 
     @cached_property
     def lines(self):
@@ -492,6 +492,20 @@ class ProjectView(BaseView):
     def project(self):
         return Project.objects.get(pk=self.kwargs['pk'])
 
+    def has_form_permissions(self):
+        # A little bit of abuse regarding naming, but this is the only
+        # protected regular view, so that's OK.
+        if not self.project.hidden:
+            # Regular project, everyone may see it.
+            return True
+        # Hidden projects can only be seen by those managing it.
+        if self.can_see_everything:
+            return True
+        if self.project.project_manager == self.active_person:
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
+
     @cached_property
     def can_edit_project(self):
         if self.can_edit_and_see_everything:
@@ -716,7 +730,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Project
     title = "Project aanpassen"
-    fields = ['code', 'description', 'internal',
+    fields = ['code', 'description', 'internal', 'hidden',
               'archived',  # Note: archived only on edit view :-)
               'is_subsidized', 'principal',
               'contract_amount',
@@ -740,7 +754,7 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Project
     title = "Nieuw project"
-    fields = ['code', 'description', 'internal',
+    fields = ['code', 'description', 'internal', 'hidden',
               'is_subsidized', 'principal',
               'contract_amount',
               'start', 'end', 'project_leader', 'project_manager',

@@ -203,6 +203,12 @@ class Project(models.Model):
     internal = models.BooleanField(
         verbose_name="intern project",
         default=False)
+    hidden = models.BooleanField(
+        verbose_name="afgeschermd project",
+        help_text=("Te gebruiken voor bijvoorbeeld vakantiedagen " +
+                   "of ziekte-projecten. Deze zijn alleen voor management " +
+                   "zichtbaar."),
+        default=False)
     archived = models.BooleanField(
         verbose_name="gearchiveerd",
         default=False)
