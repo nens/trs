@@ -246,7 +246,16 @@ class HomeView(BaseView):
 
 
 class PersonsView(BaseView):
-    template_name = 'trs/persons.html'
+    @property
+    def template_name(self):
+        if self.can_view_elaborate_version:
+            return 'trs/persons.html'
+        return 'trs/persons-simple.html'
+
+    @cached_property
+    def can_view_elaborate_version(self):
+        if self.can_edit_and_see_everything:
+            return True
 
     @cached_property
     def can_add_person(self):
@@ -254,10 +263,14 @@ class PersonsView(BaseView):
             return True
 
     @cached_property
+    def persons(self):
+        return Person.objects.filter(archived=False)
+
+    @cached_property
     def lines(self):
         result = []
         #xxx
-        for person in Person.objects.filter(archived=False):
+        for person in self.persons:
             line = {}
             line['person'] = person
             # TODO: refactor, this is the same as ProjectsView.

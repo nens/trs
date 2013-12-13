@@ -26,46 +26,5 @@
       {% endfor %}
     </tbody>
   </table>
-  {% if view.can_add_project %}
-    <hr>
-    <p>
-      <a href="{% url 'trs.project.new' %}" class="btn btn-default">
-        <span class="glyphicon glyphicon-plus"></span>
-        Voeg nieuw project toe
-      </a>
-    </p>
-  {% endif %}
-{% endblock %}
-
-{% block overview-column %}
-  <h2>Projectoverzicht</h2>
-  <p>
-    Op deze pagina krijg je naast een lijstje projecten ook gelijk een
-    overzicht over de gezondheid van de projecten.
-  </p>
-  <ul>
-    <li>
-      Geboekt en werkvoorraad geven aan hoeveel er al gewerkt is en hoeveel
-      werk er nog verzet moet/kan worden.
-    </li>
-    <li>
-      Het aantal verliesuren is het aantal uren dat teamleden in totaal meer
-      hebben geboekt dan hun urenbudget was. Dit is niet de bedoeling. Is er
-      wel een goede begroting gemaakt van te voren? En als het netjes op 0
-      staat is het geweldig, natuurlijk.
-    </li>
-    <li>
-      Voor tarieven wordt gekeken naar ieders standaard uurtarief aan het
-      begin van het project. In hoeverre is daarvan afgeweken? Of kloppen de
-      tarieven? Wat zegt dit over de projectbegroting?
-    </li>
-  </ul>
-  <p>
-    Bij Nelen & Schuurmans moeten projecten netjes opgestart worden. De
-    teamleden zetten bij wijze van spreken hun handtekening onder de
-    ureninschatting. De opdrachtsom moet voldoende zijn voor de
-    ureninschatting maal de standaard uurtarieven. In hoeverre krijgen we dit
-    als bedrijf voor elkaar? Dat zie je op deze pagina.
-  </p>
 
 {% endblock %}
