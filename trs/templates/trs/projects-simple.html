@@ -8,8 +8,7 @@
       <tr>
         <th>Project</th>
         <th>Omschrijving</th>
-        <th class="text-right"
-            title="Aantal toegewezen uren">Projectgrootte</th>
+        <th class="text-right">Opdrachtsom</th>
       </tr>
     </thead>
     <tbody>
@@ -20,7 +19,7 @@
             <span class="text-muted">{{ project.description }}</span>
           </td>
           <td class="text-right">
-            {{ project.hour_budget|hours }}
+            {{ project.contract_amount|money }}
           </td>
         </tr>
       {% endfor %}
