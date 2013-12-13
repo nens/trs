@@ -418,68 +418,26 @@ class ProjectsView(BaseView):
 
     @cached_property
     def lines(self):
+        # Used for the elaborate view (projects.html)
         result = []
         for project in self.projects:
             line = {}
             line['project'] = project
-            ppcs = [core.get_ppc(project, person)
-                    for person in project.assigned_persons()]
-            booked = sum([ppc.booked for ppc in ppcs])
-            overbooked = sum([max(0, (ppc.booked - ppc.budget))
-                              for ppc in ppcs])
-            left_to_book = sum([ppc.left_to_book for ppc in ppcs])
-            if overbooked > 0.5 * float(booked):
+            if project.overbooked_percentage() > 50:
                 klass = 'danger'
-            elif overbooked:
+            elif project.overbooked_percentage():
                 klass = 'warning'
             else:
                 klass = 'success'
             line['klass'] = klass
-            line['booked'] = booked
-            line['overbooked'] = overbooked
-            line['left_to_book'] = left_to_book
-            total_real_hourly_tariffs = sum([ppc.hourly_tariff
-                                             for ppc in ppcs])
-            total_desired_hourly_tariffs = sum([ppc.desired_hourly_tariff
-                                                for ppc in ppcs])
-            if not total_desired_hourly_tariffs:  # division by 0
-                tariffs_ok_percentage = 100
-            else:
-                tariffs_ok_percentage = round(
-                    total_real_hourly_tariffs / total_desired_hourly_tariffs
-                    * 100)
-            if tariffs_ok_percentage >= 95:
-                tariffs_klass = 'success'
-            elif tariffs_ok_percentage >= 70:
-                tariffs_klass = 'warning'
-            else:
-                tariffs_klass = 'danger'
-            line['tariffs_ok_percentage'] = tariffs_ok_percentage
-            line['tariffs_klass'] = tariffs_klass
 
             # Progress bar chart styling
-            size = min(project.hour_budget(), BIG_PROJECT_SIZE)
-            size_indication = size / BIG_PROJECT_SIZE * MAX_BAR_HEIGHT  # pixels
-            height = round(max(3, size_indication))  # Minimum 2px, rounded
-            total_booked = booked + overbooked
-            width_indication = total_booked / (project.hour_budget() or 1)
-            if width_indication <= 1:
-                # Bar at regular width, inner bar according to percentage.
-                width = BAR_WIDTH
-                inner_width = round(100 * width_indication)
-            else:
-                # Bar scaled to width indication, but max twice the size.
-                # Inner bar has the full width.
-                width = round(BAR_WIDTH * min(2, width_indication))
-                inner_width = 100
-            bar_style = "width: {}px;".format(width)
-            # bar_style = "width: {}px; height: {}px;".format(width, height)
-            # ^^^ simple same-height bar for now.
+            width_indication = project.booked() / (project.hour_budget() or 1)
+            inner_width = min(100, round(100 * width_indication))
             inner_bar_style = "width: {}%;".format(inner_width)
-            inner_bar_class = "progress-bar-%s" % klass
-            line['bar_style'] = bar_style
             line['inner_bar_style'] = inner_bar_style
-            line['inner_bar_class'] = inner_bar_class
+            line['progress_explanation'] = "Budget: %s, geboekt: %s" % (
+                round(project.hour_budget()), round(project.booked()))
 
             result.append(line)
         return result

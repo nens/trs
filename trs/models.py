@@ -303,6 +303,16 @@ class Project(models.Model):
             models.Sum('hours'))['hours__sum'] or 0
 
     @cache_on_model
+    def booked(self):
+        return self.bookings.all().aggregate(
+            models.Sum('hours'))['hours__sum'] or 0
+
+    def overbooked(self):
+        return max(0, (self.booked() - self.hour_budget()))
+
+    def left_to_book(self):
+        return max(0, (self.hour_budget() - self.booked()))
+
     def overbooked_percentage(self):
         """Return quick estimate of percentage overbooked hours.
 
@@ -311,22 +321,11 @@ class Project(models.Model):
         already heavily over budget. Good for a quick indication, though. Used
         in the widget.
         """
-        cache_key = self.cache_key('hour_budget')
-        result = cache.get(cache_key)
-        if result is None:
-            bookable = self.work_assignments.all().aggregate(
-                models.Sum('hours'))['hours__sum'] or 0
-            booked = self.bookings.all().aggregate(
-                models.Sum('hours'))['hours__sum'] or 0
-            overbooked = max(0, (booked - bookable))
-            if not overbooked:
-                result = 0
-            elif not bookable:  # Division by zero
-                result = 100
-            else:
-                result = round(overbooked / bookable * 100)
-            cache.set(cache_key, result)
-        return result
+        if not self.overbooked():
+            return 0
+        if not self.hour_budget():  # Division by zero
+            return 100
+        return round(self.overbooked() / self.hour_budget() * 100)
 
 
 class Invoice(models.Model):

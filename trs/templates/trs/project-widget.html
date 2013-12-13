@@ -1,4 +1,4 @@
-{% if project.hidden and not view.can_see_everything %}
+{% if project.hidden %}
   {{ project.code }}
 {% else %}
   <a href="{{ project.get_absolute_url }}"
