@@ -5,14 +5,16 @@
   <span title="Werkt hier niet meer"
         class="text-muted glyphicon glyphicon-lock"></span>
 {% endif %}
-{% if person.booking_percentage <= 90 %}
-  <span
-    {% if person.booking_percentage <= 60 %}
-      class="text-danger"
-    {% else %}
-      class="text-warning"
-    {% endif %}>
-    <span title="{{ person.name }} heeft de laatste weken maar {{ person.booking_percentage }}% geboekt"
-          class="glyphicon glyphicon-warning-sign"></span>
-  </span>
+{% if view.can_see_everything %}
+  {% if person.booking_percentage <= 90 %}
+    <span
+      {% if person.booking_percentage <= 60 %}
+        class="text-danger"
+      {% else %}
+        class="text-warning"
+      {% endif %}>
+      <span title="{{ person.name }} heeft de laatste weken maar {{ person.booking_percentage }}% geboekt"
+            class="glyphicon glyphicon-warning-sign"></span>
+    </span>
+  {% endif %}
 {% endif %}

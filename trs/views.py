@@ -382,7 +382,12 @@ class PersonView(BaseView):
 
 
 class ProjectsView(BaseView):
-    template_name = 'trs/projects.html'
+
+    @property
+    def template_name(self):
+        if self.can_view_elaborate_version:
+            return 'trs/projects.html'
+        return 'trs/projects-simple.html'
 
     @cached_property
     def can_add_project(self):
@@ -390,9 +395,18 @@ class ProjectsView(BaseView):
             return True
 
     @cached_property
+    def can_view_elaborate_version(self):
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def projects(self):
+        return Project.objects.filter(archived=False)[:5]
+
+    @cached_property
     def lines(self):
         result = []
-        for project in Project.objects.filter(archived=False)[:5]:
+        for project in self.projects:
             line = {}
             line['project'] = project
             ppcs = [core.get_ppc(project, person)

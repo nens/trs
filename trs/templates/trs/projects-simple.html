@@ -7,60 +7,25 @@
     <thead>
       <tr>
         <th>Project</th>
-        <th>Voortgang</th>
-        <th class="text-right">Projectgrootte</th>
-        <th class="text-right">Verliesuren</th>
-        <th class="text-right">Kloppende tarieven</th>
+        <th>Omschrijving</th>
+        <th class="text-right"
+            title="Aantal toegewezen uren">Projectgrootte</th>
       </tr>
     </thead>
     <tbody>
-      {% for line in view.lines %}
+      {% for project in view.projects %}
         <tr>
+          <td>{{ project.as_widget }}</td>
           <td>
-            {{ line.project.as_widget }}<br>
-            <span class="text-muted">{{ line.project.description }}</span>
-          </td>
-          <td title="{{ line.booked|hours }} geboekt, werkvoorraad {{ line.left_to_book|hours }}">
-            <div class="progress"
-                 style="{{ line.bar_style }}">
-              <div class="progress-bar {{ line.inner_bar_class }}"
-                   role="progressbar"
-                   style="{{ line.inner_bar_style }}">
-              </div>
-            </div>
+            <span class="text-muted">{{ project.description }}</span>
           </td>
           <td class="text-right">
-            {{ line.project.hour_budget|hours }}
-          </td>
-          <td class="text-right {{ line.klass }}">
-            {{ line.overbooked|hours }}
-            {% if line.klass != 'success' %}
-              <br>
-              <span class="text-muted"
-                    title="{{ line.project.project_leader|default:'geen' }}">
-                PL
-              </span>
-            {% endif %}
-          </td>
-          <td class="text-right {{ line.tariffs_klass }}">
-            {{ line.tariffs_ok_percentage }}%
-            {% if line.tariffs_klass != 'success' %}
-              <br>
-              <span class="text-muted"
-                    title="{{ line.project.project_manager|default:'geen' }}">
-                PM
-              </span>
-            {% endif %}
+            {{ project.hour_budget|hours }}
           </td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
-  <ul>
-    {% for project in view.projects %}
-      <li></li>
-    {% endfor %}
-  </ul>
   {% if view.can_add_project %}
     <hr>
     <p>
