@@ -6,7 +6,7 @@
 
   <form action="." method="post">
     {% csrf_token %}
-    <table class="table table-hover">
+    <table class="table table-hover table-condensed">
       <thead>
         <tr>
           <th>Code</th>
@@ -25,8 +25,14 @@
         {% for line in view.lines %}
           <tr>
             <td>
-              {{ line.ppc.project.as_widget }}<br>
-              <span class="text-muted">{{ line.ppc.project.description }}</span>
+              {{ line.ppc.project.as_widget }}
+              &nbsp;
+              <span class="text-muted"
+                    {% if line.ppc.project.description|length > 36 %}
+                      title="{{ line.ppc.project.description }}"
+                    {% endif %}>
+                {{ line.ppc.project.description|truncatechars:36 }}
+              </span>
             </td>
             <td>{{ line.ppc.budget|hours }}</td>
             <td {% if line.ppc.is_overbooked %}class="text-danger"{% endif %}>
