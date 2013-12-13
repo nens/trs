@@ -127,13 +127,6 @@
                 Je hebt
                 <b>{{ view.person_year_info.billable_percentage }}%</b>
                 op externe projecten geboekt.
-                {% if view.person_year_info.billable_percentage >= view.active_person.external_percentage %}
-                  Prima.
-                {% else %}
-                  Dit moet nog omhoog, voor jou moet de verhouding
-                  {{ view.active_person.external_internal_ratio }}
-                  zijn.
-                {% endif %}
               </div>
               <div class="text-muted">
                 Bij deze verhouding wordt gewoon het aantal geboekte uren van

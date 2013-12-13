@@ -44,12 +44,6 @@
                   {{ view.person_changes.minimum_hourly_tariff__sum|moneydiff }}
                 </div>
               {% endif %}
-              {% if view.person_changes.external_percentage__sum %}
-                <div>
-                  <b>Percentage extern:</b>
-                  {{ view.person_changes.external_percentage__sum|hoursdiff }}
-                </div>
-              {% endif %}
             </div>
           </div>
         {% endif %}

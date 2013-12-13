@@ -1074,7 +1074,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
             adjusted.append("standaard uurtarief")
         if form.instance.minimum_hourly_tariff:
             adjusted.append("minimum uurtarief")
-        if form.instance.target:
+s        if form.instance.target:
             adjusted.append("target")
         if adjusted:
             msg = ' en '.join(adjusted)

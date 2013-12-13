@@ -26,10 +26,6 @@
           <th>Minimum uurtarief</th>
           <td>{{ view.person.minimum_hourly_tariff|money }}</td>
         </tr>
-        <tr>
-          <th>Verhouding extern/intern</th>
-          <td>{{ view.person.external_internal_ratio }}</td>
-        </tr>
     {% endif %}
       <tr>
         <th>Bij qua boeken</th>
@@ -52,7 +48,7 @@
       <a href="{% url 'trs.person.target' pk=view.person.pk %}"
          class="btn btn-default">
         <span class="glyphicon glyphicon-pencil"></span>
-        Wijzig target/werkweek/uurtarief/ratio
+        Wijzig target/werkweek/uurtarief
       </a>
     </div>
   {% endif %}
