@@ -102,20 +102,21 @@
             </td>
             <td class="text-right">{{ line.budget|hours }}</td>
             <td class="text-right
-                       {% if line.is_overbooked %}text-danger{% endif %}">
+                       {% if line.is_overbooked %}danger{% endif %}">
               {{ line.booked|hours }}
             </td>
             {% if view.can_see_financials %}
-              <td class="text-right">
-                {% if line.hourly_tariff >= line.desired_hourly_tariff %}
+              {% if line.hourly_tariff >= line.desired_hourly_tariff %}
+                <td class="text-right">
                   {{ line.hourly_tariff|money }}
-                {% else %}
-                  <span class="text-danger"
-                        title="Gewenst: {{ line.desired_hourly_tariff }}.">
+                </td>
+              {% else %}
+                <td class="text-right danger">
+                  <span title="Gewenst: {{ line.desired_hourly_tariff }}.">
                     {{ line.hourly_tariff|money }}
                   </span>
-                {% endif %}
-              </td>
+                </td>
+              {% endif %}
               <td class="text-right">{{ line.turnover|money }}</td>
               <td class="text-right">{{ line.loss|money }}</td>
             {% endif %}
