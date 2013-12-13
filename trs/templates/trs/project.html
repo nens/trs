@@ -18,25 +18,43 @@
     {% endif %}
     <small>{{ view.project.description }}</small>
   </h1>
-  <dl>
-    <dt>Opdrachtgever</dt>
-    <dd>{{ view.project.principal }}</dd>
-    <dt>Startweek</dt>
-    <dd>{{ view.project.start.friendly|default:"Niet ingevuld" }}</dd>
-    <dt>Laatste week</dt>
-    <dd>{{ view.project.end.friendly|default:"Niet ingevuld" }}</dd>
-    <dt>Goedgekeurd</dt>
-    <dd>
-      {% if view.project.is_accepted %}
-        Het project is goedgekeurd door PL en PM. In principe wordt er nu
-        niets meer veranderd aan teamsamenstelling, uurtarief en
-        urenverdeling.
-      {% else %}
-        Het project is nog niet afgekaart door PL en PM. Urenverdeling,
-        uurtarief en teamsamenstelling kunnen allemaal nog veranderd worden.
-      {% endif %}
-    </dd>
-  </dl>
+  <table class="table">
+    <tr>
+      <th>Opdrachtgever</th>
+      <td>{{ view.project.principal }}</td>
+    </tr>
+    <tr>
+      <th>Opdrachtsom</th>
+      <td>{{ view.project.contract_amount|money }}</td>
+    </tr>
+    <tr>
+      <th>Startweek</th>
+      <td>{{ view.project.start.friendly|default:"Niet ingevuld" }}</td>
+    </tr>
+    <tr>
+      <th>Laatste week</th>
+      <td>{{ view.project.end.friendly|default:"Niet ingevuld" }}</td>
+    </tr>
+    <tr>
+      <th>Goedgekeurd</th>
+      <td>
+        {% if view.project.is_accepted %}
+          Het project is goedgekeurd door PL en PM. In principe worth er nu
+          niets meer veranderd aan teamsamenstelling, uurtarief en
+          urenverdeling.
+        {% else %}
+          Het project is nog niet afgekaart door PL en PM. Urenverdeling,
+          uurtarief en teamsamenstelling kunnen allemaal nog veranderd worden.
+        {% endif %}
+      </td>
+    </tr>
+    {% if view.project.remark %}
+      <tr>
+        <th>Opmerkingen</th>
+        <td>{{ view.project.remark|linebreaksbr }}</td>
+      </tr>
+    {% endif %}
+  </table>
 
   {% if view.can_edit_project %}
     <p>
@@ -139,7 +157,7 @@
   </div>
 
   {% if view.can_see_project_financials %}
-    <h2>Financi&euml;n</h2>
+    <h2>Begroting</h2>
     <div class="table-responsive">
       <table class="table table-hover">
         <thead>

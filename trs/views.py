@@ -263,7 +263,7 @@ class PersonsView(BaseView):
             line['person'] = person
             # TODO: refactor, this is the same as ProjectsView.
             ppcs = [core.get_ppc(project, person)
-                    for project in person.filtered_assigned_projects()]
+                    for project in person.filtered_assigned_projects()[:5]]
             booked = sum([ppc.booked for ppc in ppcs])
             overbooked = sum([max(0, (ppc.booked - ppc.budget))
                               for ppc in ppcs])
@@ -393,7 +393,7 @@ class ProjectsView(BaseView):
     @cached_property
     def lines(self):
         result = []
-        for project in Project.objects.filter(archived=False):
+        for project in Project.objects.filter(archived=False)[:5]:
             line = {}
             line['project'] = project
             ppcs = [core.get_ppc(project, person)
@@ -693,8 +693,10 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
     fields = ['code', 'description', 'internal',
               'archived',  # Note: archived only on edit view :-)
               'is_subsidized', 'principal',
+              'contract_amount',
               'start', 'end', 'project_leader', 'project_manager',
               'is_accepted',  # Note: is_accepted only on edit view!
+              'remark',
           ]
 
     def has_form_permissions(self):
@@ -714,7 +716,10 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
     title = "Nieuw project"
     fields = ['code', 'description', 'internal',
               'is_subsidized', 'principal',
-              'start', 'end', 'project_leader', 'project_manager']
+              'contract_amount',
+              'start', 'end', 'project_leader', 'project_manager',
+              'remark',
+          ]
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:

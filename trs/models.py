@@ -225,6 +225,11 @@ class Project(models.Model):
         verbose_name="opdrachtgever",
         blank=True,
         max_length=255)
+    contract_amount = models.DecimalField(
+        max_digits=12,  # We don't mind a metric ton of hard cash.
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="opdrachtsom")
     start = models.ForeignKey(
         'YearWeek',
         blank=True,
@@ -261,6 +266,10 @@ class Project(models.Model):
         help_text=("Dit project zit in een subsidietraject. " +
                    "Dit veld wordt gebruikt voor filtering."),
         default=False)
+    remark = models.TextField(
+        verbose_name="opmerkingen",
+        blank=True,
+        null=True)
     cache_indicator = models.IntegerField(
         default=0,
         verbose_name="cache indicator")
