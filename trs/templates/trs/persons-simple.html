@@ -1,0 +1,87 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>Medewerkers</h1>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Naam</th>
+        <th class="text-right"
+            title="Nog boekbare uren op externe projecten">
+          Werkvoorraad
+        </th>
+        <th class="text-right"
+            title="Gekeken wordt naar de laatste 4 volledige weken">
+          Bij met boeken?
+        </th>
+        <th class="text-right"
+            title="Uren over budget geboekt/moeten boeken">
+          Verliesuren?
+        </th>
+        <th class="text-right"
+            title="Werkt iemand op onder-kostprijs projecten?">
+          Kloppend tarief?
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in view.lines %}
+        <tr>
+          <td>
+            {{ line.person.as_widget }}
+          </td>
+          <td class="text-right">
+            {{ line.left_to_book|hours }}
+          </td>
+          <td class="{{ line.booking_klass }} text-right">
+            {{ line.person.booking_percentage }}%
+          </td>
+          <td class="text-right {{ line.klass }}">
+            {{ line.overbooked|hours }}
+          </td>
+          <td class="text-right {{ line.tariffs_klass }}">
+            {{ line.tariffs_ok_percentage }}%
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if view.can_add_person %}
+    <hr>
+    <p>
+      <a href="{% url 'trs.person.new' %}" class="btn btn-default">
+        <span class="glyphicon glyphicon-plus"></span>
+        Voeg nieuwe medewerker toe
+      </a>
+    </p>
+  {% endif %}
+{% endblock %}
+
+{% block overview-column %}
+  <h2>Overzicht</h2>
+  <p>
+    Op deze pagina krijg je naast de lijst met medewerkers ook de voor sociale
+    controle en voor het zoeken van projectleden noodzakelijke gegevens.
+  </p>
+  <ul>
+    <li>
+      De effectiviteit van het TRS staat of valt met hoe goed we allemaal
+      boeken. Het hoeft niet op het uur nauwkeurig: het percentage geeft aan
+      of iemand in totaal de afgelopen vier weken goed geboekt heeft.
+    </li>
+    <li>
+      De werkvoorraad in de diverse <i>externe</i> projecten. Hiermee kan je
+      zien hoe druk iemand het heeft, hou hier rekening mee als je mensen
+      zoekt voor je project.
+    </li>
+  </ul>
+  <p>
+    Boeken door de medewerkers is het ene verhaal, de netheid van de projecten
+    is het andere. Hetzelfde soort overzicht ter sociale controle
+    <a href="{% url 'trs.projects' %}">van de projecten</a> is er natuurlijk
+    ook.
+  </p>
+
+{% endblock %}
