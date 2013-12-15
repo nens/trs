@@ -269,11 +269,9 @@ class PersonsView(BaseView):
     @cached_property
     def lines(self):
         result = []
-        #xxx
         for person in self.persons:
             line = {}
             line['person'] = person
-            # TODO: refactor, this is the same as ProjectsView.
             ppcs = [core.get_ppc(project, person)
                     for project in person.filtered_assigned_projects()[:5]]
             booked = sum([ppc.booked for ppc in ppcs])
@@ -290,24 +288,6 @@ class PersonsView(BaseView):
             line['booked'] = booked
             line['overbooked'] = overbooked
             line['left_to_book'] = left_to_book
-            total_real_hourly_tariffs = sum([ppc.hourly_tariff
-                                             for ppc in ppcs])
-            total_desired_hourly_tariffs = sum([ppc.desired_hourly_tariff
-                                                for ppc in ppcs])
-            if not total_desired_hourly_tariffs:  # division by 0
-                tariffs_ok_percentage = 100
-            else:
-                tariffs_ok_percentage = round(
-                    total_real_hourly_tariffs / total_desired_hourly_tariffs
-                    * 100)
-            if tariffs_ok_percentage >= 95:
-                tariffs_klass = 'success'
-            elif tariffs_ok_percentage >= 70:
-                tariffs_klass = 'warning'
-            else:
-                tariffs_klass = 'danger'
-            line['tariffs_ok_percentage'] = tariffs_ok_percentage
-            line['tariffs_klass'] = tariffs_klass
             if person.booking_percentage() < 60:
                 booking_klass = 'danger'
             elif person.booking_percentage() < 90:
@@ -414,7 +394,7 @@ class ProjectsView(BaseView):
 
     @cached_property
     def projects(self):
-        return Project.objects.filter(archived=False)[:5]
+        return Project.objects.filter(archived=False)
 
     @cached_property
     def lines(self):
@@ -428,7 +408,7 @@ class ProjectsView(BaseView):
             elif project.overbooked_percentage():
                 klass = 'warning'
             else:
-                klass = 'success'
+                klass = 'default'
             line['klass'] = klass
 
             # Progress bar chart styling
