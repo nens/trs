@@ -268,26 +268,23 @@ class PersonsView(BaseView):
 
     @cached_property
     def lines(self):
+        # This is the elaborate view for management.
         result = []
         for person in self.persons:
             line = {}
             line['person'] = person
-            ppcs = [core.get_ppc(project, person)
-                    for project in person.filtered_assigned_projects()[:5]]
-            booked = sum([ppc.booked for ppc in ppcs])
-            overbooked = sum([max(0, (ppc.booked - ppc.budget))
-                              for ppc in ppcs])
-            left_to_book = sum([ppc.left_to_book for ppc in ppcs])
-            if overbooked > 0.5 * float(booked):
-                klass = 'danger'
-            elif overbooked:
-                klass = 'warning'
-            else:
-                klass = 'success'
-            line['klass'] = klass
-            line['booked'] = booked
-            line['overbooked'] = overbooked
-            line['left_to_book'] = left_to_book
+            pyc = core.get_pyc(person)
+            line['pyc'] = pyc
+            # if overbooked > 0.5 * float(booked):
+            #     klass = 'danger'
+            # elif overbooked:
+            #     klass = 'warning'
+            # else:
+            #     klass = 'success'
+            # line['klass'] = klass
+            # line['booked'] = booked
+            # line['overbooked'] = overbooked
+            # line['left_to_book'] = left_to_book
             if person.booking_percentage() < 60:
                 booking_klass = 'danger'
             elif person.booking_percentage() < 90:

@@ -177,6 +177,7 @@ class Person(models.Model):
 
     @cache_on_model
     def booking_percentage(self):
+        # Key performance indicator
         weeks = last_four_year_weeks()
         hours_to_work = sum([self.hours_per_week(year_week=week)
                          for week in weeks])
