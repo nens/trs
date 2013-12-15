@@ -10,9 +10,27 @@
         <td>{{ view.person.hours_per_week|hours }}</td>
       </tr>
       <tr>
-        <th>Werkvoorraad</th>
-        <td>{{ view.total_left_to_book|hours }}</td>
+        <th>Werkvoorraad op externe projecten</th>
+        <td>{{ view.pyc.left_to_book|hours }}</td>
       </tr>
+      <tr>
+        <th>Bij qua boeken</th>
+        <td>{{ view.person.booking_percentage }}%</td>
+      </tr>
+      {% if view.can_see_everything %}
+        <tr>
+          <th>Uren over budget geboekt (extern)</th>
+          <td>{{ view.pyc.overbooked|hours }}</td>
+        </tr>
+        <tr>
+          <th>Percentage extern</th>
+          <td>{{ view.pyc.billable_percentage }}%</td>
+        </tr>
+        <tr>
+          <th>Percentage target</th>
+          <td>{{ view.pyc.target_percentage }}%</td>
+        </tr>
+      {% endif %}
       {% if view.can_see_financials %}
         <tr>
           <th>Target</th>
@@ -26,11 +44,7 @@
           <th>Minimum uurtarief</th>
           <td>{{ view.person.minimum_hourly_tariff|money }}</td>
         </tr>
-    {% endif %}
-      <tr>
-        <th>Bij qua boeken</th>
-        <td>{{ view.person.booking_percentage }}%</td>
-      </tr>
+      {% endif %}
       <tr>
         <th>Extra rollen</th>
         <td>{{ view.extra_roles }}</td>
@@ -99,6 +113,7 @@
     <tfoot>
       <tr>
         <th>Totaal</th>
+        <td class="text-right"></td>
         <td class="text-right"></td>
         <th class="text-right">{{ view.total_booked|hours }}</th>
         {% if view.can_see_financials %}

@@ -14,14 +14,13 @@
       </tr>
     </thead>
     <tbody>
-      {% for person in view.persons %}
+      {% for line in view.lines %}
         <tr>
           <td>
-            {{ person.as_widget }}
+            {{ line.person.as_widget }}
           </td>
           <td class="text-right">
-            {{ person.left_to_book|hours }}
-            TODO
+            {{ line.pyc.left_to_book|hours }}
           </td>
         </tr>
       {% endfor %}

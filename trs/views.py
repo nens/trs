@@ -264,7 +264,7 @@ class PersonsView(BaseView):
 
     @cached_property
     def persons(self):
-        return Person.objects.filter(archived=False)[:5]
+        return Person.objects.filter(archived=False)
 
     @cached_property
     def lines(self):
@@ -329,14 +329,14 @@ class PersonView(BaseView):
                 if not project.archived]
 
     @cached_property
+    def pyc(self):
+        return core.get_pyc(self.person)
+
+    @cached_property
     def ppcs(self):
         if self.can_see_internal_projects:
             return self.all_ppcs
         return [ppc for ppc in self.all_ppcs if not ppc.project.internal]
-
-    @cached_property
-    def total_budget(self):
-        return sum([ppc.budget for ppc in self.ppcs])
 
     @cached_property
     def total_external_turnover(self):
