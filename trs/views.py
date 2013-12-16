@@ -590,13 +590,14 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     def initial(self):
         """Return initial form values. Turn the decimals into integers already."""
         result = {}
-        for project in self.active_projects:
-            booked = Booking.objects.filter(
-                year_week=self.active_year_week,
-                booked_by=self.active_person,
-                booked_on=project).aggregate(
-                    models.Sum('hours'))['hours__sum'] or 0
-            result[project.code] = int(booked)
+        bookings = Booking.objects.filter(
+            year_week=self.active_year_week,
+            booked_by=self.active_person,
+            booked_on__in=self.active_projects).values(
+                'booked_on__code').annotate(
+                    models.Sum('hours'))
+        result = {item['booked_on__code']: round(item['hours__sum']) or 0
+                  for item in bookings}
         return result
 
     def form_valid(self, form):
