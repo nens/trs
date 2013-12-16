@@ -268,6 +268,8 @@ def get_project(project_code,
         first_day__lte=end_date).last()
     project.archived = (status == 'Archief')
     project.internal = (project_code.lower().startswith('intern'))
+    if project.internal:
+        project.hidden = True
     project.save()
     return project
 
