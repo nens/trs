@@ -107,6 +107,14 @@
           {% block overview-column %}
             {% if view.active_person %}
 
+              <h2>Bij met boeken?</h2>
+              <div>
+                Je hebt de laatste weken
+                <b>
+                  {{ view.active_person.booking_percentage }}%
+                </b>
+                van je tijd geboekt.
+              </div>
               <h2>Binnen budget?</h2>
               <div>
                 Je hebt
