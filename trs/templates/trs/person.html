@@ -100,7 +100,7 @@
           </td>
           <td class="text-right">{{ line.budget|hours }}</td>
           <td class="text-right
-                     {% if line.is_overbooked %}text-danger{% endif %}">
+                     {% if line.is_overbooked %}danger{% endif %}">
             {{ line.booked|hours }}
           </td>
           {% if view.can_see_financials %}
