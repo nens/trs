@@ -323,20 +323,60 @@ class PersonView(BaseView):
             return True
 
     @cached_property
-    def all_ppcs(self):
-        return [core.get_ppc(project, self.person)
-                for project in self.person.filtered_assigned_projects()
-                if not project.archived]
-
-    @cached_property
     def pyc(self):
         return core.get_pyc(self.person)
 
     @cached_property
-    def ppcs(self):
+    def all_projects(self):
+        return self.person.filtered_assigned_projects()
+
+    @cached_property
+    def projects(self):
         if self.can_see_internal_projects:
-            return self.all_ppcs
-        return [ppc for ppc in self.all_ppcs if not ppc.project.internal]
+            return self.all_projects
+        return [project for project in self.all_projects
+                if not project.internal]
+
+    @cached_property
+    def lines(self):
+        """Return project info per line"""
+        # TODO: somewhat similar to BookingView.
+        result = []
+        # Budget query.
+        budget_per_project = WorkAssignment.objects.filter(
+            assigned_to=self.person,
+            assigned_on__in=self.projects).values(
+                'assigned_on').annotate(
+                    models.Sum('hours'),
+                    models.Sum('hourly_tariff'))
+        budgets = {
+            item['assigned_on']: round(item['hours__sum'])
+            for item in budget_per_project}
+        hourly_tariffs = {
+            item['assigned_on']: round(item['hourly_tariff__sum'])
+            for item in budget_per_project}
+        # Hours worked query.
+        booked_per_project = Booking.objects.filter(
+            booked_by=self.person,
+            booked_on__in=self.projects).values(
+                'booked_on').annotate(
+                    models.Sum('hours'))
+        booked = {item['booked_on']: round(item['hours__sum'])
+                  for item in booked_per_project}
+
+        for project in self.projects:
+            line = {'project': project}
+            line['budget'] = budgets.get(project.id, 0)
+            line['booked'] = booked.get(project.id, 0)
+            line['is_overbooked'] = line['booked'] > line['budget']
+            line['left_to_book'] = max(0, line['budget'] - line['booked'])
+            line['is_project_leader'] = (project.project_leader_id == self.person.id)
+            line['is_project_manager'] = (project.project_manager_id == self.person.id)
+            line['hourly_tariff'] = hourly_tariffs.get(project.id, 0)
+            line['turnover'] = (
+                min(line['budget'], line['booked']) * line['hourly_tariff'])
+            result.append(line)
+        return result
 
     @cached_property
     def total_external_turnover(self):
@@ -353,10 +393,12 @@ class PersonView(BaseView):
 
     @cached_property
     def extra_roles(self):
-        num_project_leader_roles = sum([ppc.is_project_leader
-                                         for ppc in self.all_ppcs])
-        num_project_manager_roles = sum([ppc.is_project_manager
-                                         for ppc in self.all_ppcs])
+        num_project_leader_roles = sum(
+            [project.project_leader_id == self.person.id
+             for project in self.all_projects])
+        num_project_manager_roles = sum(
+            [project.project_manager_id == self.person.id
+             for project in self.all_projects])
         roles = []
         if num_project_leader_roles:
             roles.append("%s keer projectleider" % num_project_leader_roles)

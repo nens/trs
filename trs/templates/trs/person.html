@@ -67,7 +67,7 @@
     </div>
   {% endif %}
 
-  <h2>Projecten</h2>
+  <h2>Actieve projecten</h2>
   <table class="table table-hover">
     <thead>
       <tr>
@@ -82,49 +82,34 @@
       </tr>
     </thead>
     <tbody>
-      {% for ppc in view.ppcs %}
+      {% for line in view.lines %}
         <tr>
           <td>
-            {{ ppc.project.as_widget }}
+            {{ line.project.as_widget }}
             <br>
-            <span class="text-muted">{{ ppc.project.description }}</span>
+            <span class="text-muted">{{ line.project.description }}</span>
           </td>
           <td>
-            {% if ppc.is_project_leader %}
+            {% if line.is_project_leader %}
               <span title="Projectleider: gaat over de uren">PL</span>
             {% endif %}
             &nbsp;
-            {% if ppc.is_project_manager %}
+            {% if line.is_project_manager %}
               <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
             {% endif %}
           </td>
-          <td class="text-right">{{ ppc.budget|hours }}</td>
+          <td class="text-right">{{ line.budget|hours }}</td>
           <td class="text-right
-                     {% if ppc.is_overbooked %}text-danger{% endif %}">
-            {{ ppc.booked|hours }}
+                     {% if line.is_overbooked %}text-danger{% endif %}">
+            {{ line.booked|hours }}
           </td>
           {% if view.can_see_financials %}
-            <td class="text-right">{{ ppc.hourly_tariff|money }}</td>
-            <td class="text-right">{{ ppc.turnover|money }}</td>
+            <td class="text-right">{{ line.hourly_tariff|money }}</td>
+            <td class="text-right">{{ line.turnover|money }}</td>
           {% endif %}
         </tr>
       {% endfor %}
     </tbody>
-    <tfoot>
-      <tr>
-        <th>Totaal</th>
-        <td class="text-right"></td>
-        <td class="text-right"></td>
-        <th class="text-right">{{ view.total_booked|hours }}</th>
-        {% if view.can_see_financials %}
-          <td class="text-right"></td>
-          <th class="text-right">
-            {{ view.total_external_turnover|money }}<br>
-            <small>(extern)</small>
-          </th>
-        {% endif %}
-      </tr>
-    </tfoot>
   </table>
 {% endblock %}
 
