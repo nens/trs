@@ -29,7 +29,7 @@
             {{ line.project.overbooked|hours }}
           </td>
           <td title="{{ line.progress_explanation }}">
-            <div class="progress">
+            <div class="progress" style="height: 30px;">
               <div class="progress-bar progress-bar-{{ line.klass }}"
                    role="progressbar"
                    style="{{ line.inner_bar_style }}">

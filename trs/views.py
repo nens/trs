@@ -644,8 +644,17 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         """Return the active YearWeek, the two previous ones and the next."""
         end = self.active_first_day + datetime.timedelta(days=7)
         start = self.active_first_day - datetime.timedelta(days=2 * 7)
-        return YearWeek.objects.filter(first_day__lte=end).filter(
-            first_day__gte=start)
+        return list(YearWeek.objects.filter(first_day__lte=end).filter(
+            first_day__gte=start))
+
+    @cached_property
+    def highlight_column(self):
+        """Return column number (1-based) of the current week's column."""
+        try:
+            column_index = self.year_weeks_to_display.index(this_year_week())
+        except ValueError:
+            return 0
+        return column_index + 1
 
     def get_form_class(self):
         """Return dynamically generated form class."""
