@@ -937,16 +937,32 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     def hourly_tariff_fieldname(self, person):
         return 'hourly_tariff-%s' % person.id
 
+    @cached_property
+    def budgets_and_tariffs(self):
+        budget_per_person = WorkAssignment.objects.filter(
+            assigned_on=self.project).values(
+                'assigned_to').annotate(
+                    models.Sum('hours'),
+                    models.Sum('hourly_tariff'))
+        budgets = {
+            item['assigned_to']: round(item['hours__sum'])
+            for item in budget_per_person}
+        hourly_tariffs = {
+            item['assigned_to']: round(item['hourly_tariff__sum'])
+            for item in budget_per_person}
+        return budgets, hourly_tariffs
+
     def get_form_class(self):
         """Return dynamically generated form class."""
         fields = SortedDict()
         tabindex = 1
+        budgets, hourly_tariffs = self.budgets_and_tariffs
+
         for index, person in enumerate(self.project.assigned_persons()):
-            ppc = core.get_ppc(self.project, person)
             if self.can_edit_hours:
                 field_type = forms.IntegerField(
                     min_value=0,
-                    initial=round(ppc.budget),
+                    initial=round(budgets.get(person.id, 0)),
                     widget=forms.TextInput(attrs={'size': 4,
                                                   'tabindex': tabindex}))
                 fields[self.hours_fieldname(person)] = field_type
@@ -954,7 +970,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             if self.can_edit_hourly_tariff:
                 field_type = forms.IntegerField(
                     min_value=0,
-                    initial=round(ppc.hourly_tariff),
+                    initial=round(hourly_tariffs.get(person.id, 0)),
                     widget=forms.TextInput(attrs={'size': 4,
                                                   'tabindex': tabindex}))
                 fields[self.hourly_tariff_fieldname(person)] = field_type
@@ -983,20 +999,27 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         result = []
         fields = self.bound_form_fields
         field_index = 0
+        budgets, hourly_tariffs = self.budgets_and_tariffs
+        booked_per_person = Booking.objects.filter(
+            booked_on=self.project).values(
+                'booked_by').annotate(
+                    models.Sum('hours'))
+        booked = {item['booked_by']: round(item['hours__sum'])
+                  for item in booked_per_person}
         for person in self.project.assigned_persons():
-            ppc = core.get_ppc(self.project, person)
-            line = {'ppc': ppc,
-                    'person': person}
+            line = {'person': person}
             if self.can_edit_hours:
                 line['hours'] = fields[field_index]
                 field_index += 1
             else:
-                line['hours'] = format_as_hours(ppc.budget)
+                line['hours'] = format_as_hours(budgets.get(person.id, 0))
             if self.can_edit_hourly_tariff:
                 line['hourly_tariff'] = fields[field_index]
                 field_index += 1
             else:
-                line['hourly_tariff'] = format_as_money(ppc.hourly_tariff)
+                line['hourly_tariff'] = format_as_money(
+                    hourly_tariffs.get(person.id, 0))
+            line['booked'] = format_as_hours(booked.get(person.id, 0))
             result.append(line)
         return result
 
