@@ -596,9 +596,10 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             booked_on__in=self.active_projects).values(
                 'booked_on__code').annotate(
                     models.Sum('hours'))
-        result = {item['booked_on__code']: round(item['hours__sum']) or 0
+        result = {item['booked_on__code']: round(item['hours__sum'])
                   for item in bookings}
-        return result
+        return {project.code: result.get(project.code, 0)
+                for project in self.active_projects}
 
     def form_valid(self, form):
         total_difference = 0
