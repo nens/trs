@@ -27,14 +27,14 @@
         {% for line in view.lines %}
           <tr>
             <td>
-              {{ line.ppc.project.as_widget }}
+              {{ line.project.as_widget }}
             </td>
             <td>
               <span class="text-muted"
-                    {% if line.ppc.project.description|length > 30 %}
-                      title="{{ line.ppc.project.description }}"
+                    {% if line.project.description|length > 30 %}
+                      title="{{ line.project.description }}"
                     {% endif %}>
-                {{ line.ppc.project.description|truncatechars:30 }}
+                {{ line.project.description|truncatechars:30 }}
               </span>
             </td>
             <td class="text-right">{{ line.ppc.budget|hours }}</td>

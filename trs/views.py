@@ -645,14 +645,18 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         result = []
         form = self.get_form(self.get_form_class())
         fields = list(form)  # A form's __iter__ returns 'bound fields'.
+        booking_table = Booking.objects.filter(
+            year_week__in=self.year_weeks_to_display,
+            booked_by=self.active_person).values(
+                'booked_on', 'year_week').annotate(
+                    models.Sum('hours'))
+        bookings = {(item['booked_on'], item['year_week']): item['hours__sum']
+                    for item in booking_table}
+
         for project_index, project in enumerate(self.active_projects):
-            line = {'ppc': core.get_ppc(project, self.active_person)}
+            line = {'project': project}
             for index, year_week in enumerate(self.year_weeks_to_display):
-                booked = Booking.objects.filter(
-                    year_week=year_week,
-                    booked_by=self.active_person,
-                    booked_on=project).aggregate(
-                        models.Sum('hours'))['hours__sum'] or 0
+                booked = bookings.get((project.id, year_week.id), 0)
                 key = 'hours%s' % index
                 line[key] = booked
             line['field'] = fields[project_index]
