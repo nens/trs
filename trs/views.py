@@ -1030,16 +1030,16 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     def form_valid(self, form):
         num_changes = 0
+        budgets, hourly_tariffs = self.budgets_and_tariffs
         for person in self.project.assigned_persons():
-            ppc = core.get_ppc(self.project, person)
             hours = 0
             hourly_tariff = 0
             if self.can_edit_hours:
-                current = ppc.budget
+                current = round(budgets.get(person.id, 0))
                 new = form.cleaned_data.get(self.hours_fieldname(person))
                 hours = new - current
             if self.can_edit_hourly_tariff:
-                current = ppc.hourly_tariff
+                current = round(hourly_tariffs.get(person.id, 0))
                 new = form.cleaned_data.get(
                     self.hourly_tariff_fieldname(person))
                 hourly_tariff = new - current
