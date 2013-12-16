@@ -129,4 +129,4 @@ class BookingViewTestCase(TestCase):
         view = views.BookingView(kwargs={'year': current_year_week.year,
                                          'week': current_year_week.week})
         self.assertEqual(list(view.year_weeks_to_display),
-                              [year_week2, year_week3, year_week4, year_week5])
+                         [year_week2, year_week3, year_week4, year_week5])

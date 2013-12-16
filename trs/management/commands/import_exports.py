@@ -4,13 +4,10 @@ import glob
 import itertools
 import logging
 import os
-import sys
 import tempfile
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
-from django.http import HttpRequest
-from tls import request as tls_request
 import requests
 
 from trs import models

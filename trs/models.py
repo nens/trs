@@ -4,8 +4,6 @@ import logging
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
-from django.core.validators import MaxValueValidator
-from django.core.validators import MinValueValidator
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
@@ -52,6 +50,7 @@ def cache_per_week(callable):
         return result
     return inner
 
+
 def cache_on_model(callable):
     def inner(self):
         cache_key = self.cache_key(callable.__name__)
@@ -73,9 +72,9 @@ class Person(models.Model):
         null=True,
         verbose_name="gebruiker",
         unique=True,
-        help_text=("De interne (django) gebruiker die deze persoon is. "+
+        help_text=("De interne (django) gebruiker die deze persoon is. " +
                    "Dit wordt normaliter automatisch gekoppeld op basis van" +
-                   "de loginnaam zodra de gebruiker voor de eerste keer "+
+                   "de loginnaam zodra de gebruiker voor de eerste keer " +
                    "inlogt."))
     login_name = models.CharField(
         verbose_name="inlognaam bij N&S",
@@ -180,7 +179,7 @@ class Person(models.Model):
         # Key performance indicator
         weeks = last_four_year_weeks()
         hours_to_work = sum([self.hours_per_week(year_week=week)
-                         for week in weeks])
+                             for week in weeks])
         booked_in_weeks = self.bookings.filter(year_week__in=weeks).aggregate(
             models.Sum('hours'))['hours__sum'] or 0
         if not hours_to_work:
@@ -205,9 +204,8 @@ class Project(models.Model):
         default=False)
     hidden = models.BooleanField(
         verbose_name="afgeschermd project",
-        help_text=("Te gebruiken voor bijvoorbeeld vakantiedagen " +
-                   "of ziekte-projecten. Deze zijn alleen voor management " +
-                   "zichtbaar."),
+        help_text=("Zet dit standaard aan voor interne projecten, tenzij " +
+                   "het een 'echt' project is waar uren voor staan."),
         default=False)
     archived = models.BooleanField(
         verbose_name="gearchiveerd",
@@ -387,8 +385,9 @@ class Invoice(models.Model):
         return self.number
 
     def get_absolute_url(self):
-        return reverse('trs.invoice.edit', kwargs={'pk': self.pk,
-                                                   'project_pk': self.project.pk})
+        return reverse('trs.invoice.edit', kwargs={
+            'pk': self.pk,
+            'project_pk': self.project.pk})
 
     @property
     def amount_inclusive(self):

@@ -62,7 +62,8 @@ class Command(BaseCommand):
                 if week[0]:
                     days.append(datetime.date(year, month_number, week[0]))
         first_of_january = datetime.date(year, 1, 1)
-        third_of_january = datetime.date(year, 1, 3)  # Allow for sat+sun before.
+        third_of_january = datetime.date(year, 1, 3)
+        # ^^ Allow for sat+sun before.
         if days[0] > third_of_january:
             # Prepend 1 january.
             days[0:0] = [first_of_january]

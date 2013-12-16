@@ -54,7 +54,8 @@ class LoginAndPermissionsRequiredMixin(object):
     def dispatch(self, *args, **kwargs):
         if not self.has_form_permissions():
             raise PermissionDenied
-        return super(LoginAndPermissionsRequiredMixin, self).dispatch(*args, **kwargs)
+        return super(LoginAndPermissionsRequiredMixin,
+                     self).dispatch(*args, **kwargs)
 
 
 def try_and_find_matching_person(user):
@@ -113,7 +114,8 @@ class BaseMixin(object):
         # TODO: extra filtering for projects that are past their date.
         if not self.active_person:
             return []
-        return [project for project in self.active_person.filtered_assigned_projects()
+        return [project for project in
+                self.active_person.filtered_assigned_projects()
                 if not project.archived]
 
     @cached_property
@@ -370,8 +372,10 @@ class PersonView(BaseView):
             line['booked'] = booked.get(project.id, 0)
             line['is_overbooked'] = line['booked'] > line['budget']
             line['left_to_book'] = max(0, line['budget'] - line['booked'])
-            line['is_project_leader'] = (project.project_leader_id == self.person.id)
-            line['is_project_manager'] = (project.project_manager_id == self.person.id)
+            line['is_project_leader'] = (
+                project.project_leader_id == self.person.id)
+            line['is_project_manager'] = (
+                project.project_manager_id == self.person.id)
             line['hourly_tariff'] = hourly_tariffs.get(project.id, 0)
             line['turnover'] = (
                 min(line['budget'], line['booked']) * line['hourly_tariff'])
@@ -543,8 +547,10 @@ class ProjectView(BaseView):
             line['booked'] = booked.get(person.id, 0)
             line['is_overbooked'] = line['booked'] > line['budget']
             line['left_to_book'] = max(0, line['budget'] - line['booked'])
-            line['is_project_leader'] = (self.project.project_leader_id == person.id)
-            line['is_project_manager'] = (self.project.project_manager_id == person.id)
+            line['is_project_leader'] = (
+                self.project.project_leader_id == person.id)
+            line['is_project_manager'] = (
+                self.project.project_manager_id == person.id)
             line['hourly_tariff'] = hourly_tariffs.get(person.id, 0)
             line['turnover'] = (
                 min(line['budget'], line['booked']) * line['hourly_tariff'])
@@ -781,7 +787,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
               'start', 'end', 'project_leader', 'project_manager',
               'is_accepted',  # Note: is_accepted only on edit view!
               'remark',
-          ]
+    ]
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -803,7 +809,7 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
               'contract_amount',
               'start', 'end', 'project_leader', 'project_manager',
               'remark',
-          ]
+    ]
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -842,8 +848,8 @@ class InvoiceCreateView(LoginAndPermissionsRequiredMixin,
 
 
 class InvoiceEditView(LoginAndPermissionsRequiredMixin,
-                        UpdateView,
-                        BaseMixin):
+                      UpdateView,
+                      BaseMixin):
     template_name = 'trs/edit.html'
     model = Invoice
     fields = ['date', 'number', 'description',
