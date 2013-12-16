@@ -4,8 +4,6 @@ import logging
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
-from django.core.validators import MaxValueValidator
-from django.core.validators import MinValueValidator
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
@@ -52,6 +50,7 @@ def cache_per_week(callable):
         return result
     return inner
 
+
 def cache_on_model(callable):
     def inner(self):
         cache_key = self.cache_key(callable.__name__)
@@ -73,9 +72,9 @@ class Person(models.Model):
         null=True,
         verbose_name="gebruiker",
         unique=True,
-        help_text=("De interne (django) gebruiker die deze persoon is. "+
+        help_text=("De interne (django) gebruiker die deze persoon is. " +
                    "Dit wordt normaliter automatisch gekoppeld op basis van" +
-                   "de loginnaam zodra de gebruiker voor de eerste keer "+
+                   "de loginnaam zodra de gebruiker voor de eerste keer " +
                    "inlogt."))
     login_name = models.CharField(
         verbose_name="inlognaam bij N&S",
@@ -125,7 +124,6 @@ class Person(models.Model):
     def get_absolute_url(self):
         return reverse('trs.person', kwargs={'pk': self.pk})
 
-    @cache_on_model
     def as_widget(self):
         return mark_safe(render_to_string('trs/person-widget.html',
                                           {'person': self}))
@@ -157,15 +155,6 @@ class Person(models.Model):
                     'minimum_hourly_tariff__sum'] or 0
 
     @cache_per_week
-    def external_percentage(self, year_week=None):
-        if year_week is None:
-            year_week = this_year_week()
-        return self.person_changes.filter(
-            year_week__lte=year_week).aggregate(
-                models.Sum('external_percentage'))[
-                    'external_percentage__sum'] or 0
-
-    @cache_per_week
     def target(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
@@ -187,21 +176,16 @@ class Person(models.Model):
 
     @cache_on_model
     def booking_percentage(self):
+        # Key performance indicator
         weeks = last_four_year_weeks()
         hours_to_work = sum([self.hours_per_week(year_week=week)
-                         for week in weeks])
+                             for week in weeks])
         booked_in_weeks = self.bookings.filter(year_week__in=weeks).aggregate(
             models.Sum('hours'))['hours__sum'] or 0
         if not hours_to_work:
             # Prevent division by zero.
             return 100
-        # TODO: het onderstaande klopt niet!
-        return round(100 * booked_in_weeks / hours_to_work)
-
-    @cache_on_model
-    def external_internal_ratio(self):
-        internal = 100 - self.external_percentage()
-        return "%s/%s" % (self.external_percentage(), internal)
+        return min(100, round(100 * booked_in_weeks / hours_to_work))
 
 
 class Project(models.Model):
@@ -218,6 +202,11 @@ class Project(models.Model):
     internal = models.BooleanField(
         verbose_name="intern project",
         default=False)
+    hidden = models.BooleanField(
+        verbose_name="afgeschermd project",
+        help_text=("Zet dit standaard aan voor interne projecten, tenzij " +
+                   "het een 'echt' project is waar uren voor staan."),
+        default=False)
     archived = models.BooleanField(
         verbose_name="gearchiveerd",
         default=False)
@@ -225,6 +214,11 @@ class Project(models.Model):
         verbose_name="opdrachtgever",
         blank=True,
         max_length=255)
+    contract_amount = models.DecimalField(
+        max_digits=12,  # We don't mind a metric ton of hard cash.
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="opdrachtsom")
     start = models.ForeignKey(
         'YearWeek',
         blank=True,
@@ -261,6 +255,10 @@ class Project(models.Model):
         help_text=("Dit project zit in een subsidietraject. " +
                    "Dit veld wordt gebruikt voor filtering."),
         default=False)
+    remark = models.TextField(
+        verbose_name="opmerkingen",
+        blank=True,
+        null=True)
     cache_indicator = models.IntegerField(
         default=0,
         verbose_name="cache indicator")
@@ -283,15 +281,9 @@ class Project(models.Model):
     def cache_key(self, for_what):
         return 'project-%s-%s-%s' % (self.id, self.cache_indicator, for_what)
 
-    @cache_on_model
     def as_widget(self):
-        cache_key = self.cache_key('widget')
-        result = cache.get(cache_key)
-        if result is None:
-            result = render_to_string('trs/project-widget.html',
-                                      {'project': self})
-            cache.set(cache_key, result)
-        return mark_safe(result)
+        return mark_safe(render_to_string('trs/project-widget.html',
+                                          {'project': self}))
 
     @cache_on_model
     def assigned_persons(self):
@@ -309,6 +301,16 @@ class Project(models.Model):
             models.Sum('hours'))['hours__sum'] or 0
 
     @cache_on_model
+    def booked(self):
+        return self.bookings.all().aggregate(
+            models.Sum('hours'))['hours__sum'] or 0
+
+    def overbooked(self):
+        return max(0, (self.booked() - self.hour_budget()))
+
+    def left_to_book(self):
+        return max(0, (self.hour_budget() - self.booked()))
+
     def overbooked_percentage(self):
         """Return quick estimate of percentage overbooked hours.
 
@@ -317,22 +319,11 @@ class Project(models.Model):
         already heavily over budget. Good for a quick indication, though. Used
         in the widget.
         """
-        cache_key = self.cache_key('hour_budget')
-        result = cache.get(cache_key)
-        if result is None:
-            bookable = self.work_assignments.all().aggregate(
-                models.Sum('hours'))['hours__sum'] or 0
-            booked = self.bookings.all().aggregate(
-                models.Sum('hours'))['hours__sum'] or 0
-            overbooked = max(0, (booked - bookable))
-            if not overbooked:
-                result = 0
-            elif not bookable:  # Division by zero
-                result = 100
-            else:
-                result = round(overbooked / bookable * 100)
-            cache.set(cache_key, result)
-        return result
+        if not self.overbooked():
+            return 0
+        if not self.hour_budget():  # Division by zero
+            return 100
+        return round(self.overbooked() / self.hour_budget() * 100)
 
 
 class Invoice(models.Model):
@@ -394,8 +385,9 @@ class Invoice(models.Model):
         return self.number
 
     def get_absolute_url(self):
-        return reverse('trs.invoice.edit', kwargs={'pk': self.pk,
-                                                   'project_pk': self.project.pk})
+        return reverse('trs.invoice.edit', kwargs={
+            'pk': self.pk,
+            'project_pk': self.project.pk})
 
     @property
     def amount_inclusive(self):
@@ -492,12 +484,6 @@ class PersonChange(EventBase):
         blank=True,
         null=True,
         verbose_name="minimum uurtarief")
-    external_percentage = models.IntegerField(
-        validators=[MinValueValidator(0),
-                    MaxValueValidator(100)],
-        blank=True,
-        null=True,
-        verbose_name="percentage extern")
 
     person = models.ForeignKey(
         Person,
@@ -508,7 +494,7 @@ class PersonChange(EventBase):
         related_name="person_changes")
 
     def save(self, *args, **kwargs):
-        self.person.cache_indicator += 1
+        self.person.save()  # Increments cache indicator.
         return super(PersonChange, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -545,8 +531,8 @@ class Booking(EventBase):
         verbose_name_plural = "boekingen"
 
     def save(self, *args, **kwargs):
-        self.booked_by.cache_indicator += 1
-        self.booked_on.cache_indicator += 1
+        self.booked_by.save()  # Increments cache indicator.
+        self.booked_on.save()  # Increments cache indicator.
         return super(Booking, self).save(*args, **kwargs)
 
 
@@ -582,8 +568,8 @@ class WorkAssignment(EventBase):
         verbose_name_plural = "toekenningen van werk"
 
     def save(self, *args, **kwargs):
-        self.assigned_to.cache_indicator += 1
-        self.assigned_on.cache_indicator += 1
+        self.assigned_to.save()  # Increments cache indicatorc.
+        self.assigned_on.save()  # Increments cache indicator.
         return super(WorkAssignment, self).save(*args, **kwargs)
 
 
@@ -612,5 +598,5 @@ class BudgetAssignment(EventBase):
         verbose_name_plural = "toekenningen van budget"
 
     def save(self, *args, **kwargs):
-        self.assigned_to.cache_indicator += 1
+        self.assigned_to.save()  # Increments cache indicator.
         return super(BudgetAssignment, self).save(*args, **kwargs)

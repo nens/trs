@@ -20,14 +20,14 @@
       <tbody>
         {% for line in view.lines %}
           <tr>
-            <td>{{ line.ppc.person.as_widget }}</td>
+            <td>{{ line.person.as_widget }}</td>
             <td class="text-right">
               {% for error in line.hours.errors %}
                 <div class="alert alert-danger">{{ error }}</div>
               {% endfor %}
               {{ line.hours }}
             </td>
-            <td class="text-right">{{ line.ppc.booked|hours }}</td>
+            <td class="text-right">{{ line.booked|hours }}</td>
             <td class="text-right">
               {% for error in line.hourly_tariff.errors %}
                 <div class="alert alert-danger">{{ error }}</div>

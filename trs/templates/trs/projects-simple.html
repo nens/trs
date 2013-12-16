@@ -1,0 +1,29 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>Projecten</h1>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th>Omschrijving</th>
+        <th class="text-right">Opdrachtsom</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for project in view.projects %}
+        <tr>
+          <td>{{ project.as_widget }}</td>
+          <td>
+            <span class="text-muted">{{ project.description }}</span>
+          </td>
+          <td class="text-right">
+            {{ project.contract_amount|money }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

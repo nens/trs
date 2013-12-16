@@ -1,0 +1,30 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>Medewerkers</h1>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Naam</th>
+        <th class="text-right"
+            title="Nog boekbare uren op externe projecten">
+          Werkvoorraad
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in view.lines %}
+        <tr>
+          <td>
+            {{ line.person.as_widget }}
+          </td>
+          <td class="text-right">
+            {{ line.pyc.left_to_book|hours }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

@@ -22,3 +22,8 @@ a.navbar-brand {
 *[title] {
     cursor: help;
 }
+
+table.borderless-table td,
+table.borderless-table th {
+    border-top: 0 ! important;
+}

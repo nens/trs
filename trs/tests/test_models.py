@@ -211,6 +211,7 @@ class PersonChangeTestCase(TestCase):
         person_change = factories.PersonChangeFactory.create()
         self.assertTrue(str(person_change))
 
+
 class BookingTestCase(TestCase):
 
     def test_smoke(self):

@@ -18,25 +18,45 @@
     {% endif %}
     <small>{{ view.project.description }}</small>
   </h1>
-  <dl>
-    <dt>Opdrachtgever</dt>
-    <dd>{{ view.project.principal }}</dd>
-    <dt>Startweek</dt>
-    <dd>{{ view.project.start.friendly|default:"Niet ingevuld" }}</dd>
-    <dt>Laatste week</dt>
-    <dd>{{ view.project.end.friendly|default:"Niet ingevuld" }}</dd>
-    <dt>Goedgekeurd</dt>
-    <dd>
-      {% if view.project.is_accepted %}
-        Het project is goedgekeurd door PL en PM. In principe wordt er nu
-        niets meer veranderd aan teamsamenstelling, uurtarief en
-        urenverdeling.
-      {% else %}
-        Het project is nog niet afgekaart door PL en PM. Urenverdeling,
-        uurtarief en teamsamenstelling kunnen allemaal nog veranderd worden.
+  <table class="table borderless-table">
+    <tbody>
+      <tr>
+        <th>Opdrachtgever</th>
+        <td>{{ view.project.principal }}</td>
+      </tr>
+      <tr>
+        <th>Opdrachtsom</th>
+        <td>{{ view.project.contract_amount|money }}</td>
+      </tr>
+      <tr>
+        <th>Startweek</th>
+        <td>{{ view.project.start.friendly|default:"Niet ingevuld" }}</td>
+      </tr>
+      <tr>
+        <th>Laatste week</th>
+        <td>{{ view.project.end.friendly|default:"Niet ingevuld" }}</td>
+      </tr>
+      <tr>
+        <th>Afgekaart</th>
+        <td>
+          {% if view.project.is_accepted %}
+            Het project is afgekaart door PL en PM. In principe worth er nu
+            niets meer veranderd aan teamsamenstelling, uurtarief en
+            urenverdeling.
+          {% else %}
+            Het project is nog niet afgekaart door PL en PM. Urenverdeling,
+            uurtarief en teamsamenstelling kunnen allemaal nog veranderd worden.
+          {% endif %}
+        </td>
+      </tr>
+      {% if view.project.remark %}
+        <tr>
+          <th>Opmerkingen</th>
+          <td>{{ view.project.remark|linebreaksbr }}</td>
+        </tr>
       {% endif %}
-    </dd>
-  </dl>
+    </tbody>
+  </table>
 
   {% if view.can_edit_project %}
     <p>
@@ -66,7 +86,7 @@
       </thead>
 
       <tbody>
-        {% for line in view.ppcs %}
+        {% for line in view.lines %}
           <tr>
             <td>
               {{ line.person.as_widget }}
@@ -82,20 +102,21 @@
             </td>
             <td class="text-right">{{ line.budget|hours }}</td>
             <td class="text-right
-                       {% if line.is_overbooked %}text-danger{% endif %}">
+                       {% if line.is_overbooked %}danger{% endif %}">
               {{ line.booked|hours }}
             </td>
             {% if view.can_see_financials %}
-              <td class="text-right">
-                {% if line.hourly_tariff >= line.desired_hourly_tariff %}
+              {% if line.hourly_tariff >= line.desired_hourly_tariff %}
+                <td class="text-right">
                   {{ line.hourly_tariff|money }}
-                {% else %}
-                  <span class="text-danger"
-                        title="Gewenst: {{ line.desired_hourly_tariff }}.">
+                </td>
+              {% else %}
+                <td class="text-right danger">
+                  <span title="Gewenst: {{ line.desired_hourly_tariff }}.">
                     {{ line.hourly_tariff|money }}
                   </span>
-                {% endif %}
-              </td>
+                </td>
+              {% endif %}
               <td class="text-right">{{ line.turnover|money }}</td>
               <td class="text-right">{{ line.loss|money }}</td>
             {% endif %}
@@ -139,7 +160,7 @@
   </div>
 
   {% if view.can_see_project_financials %}
-    <h2>Financi&euml;n</h2>
+    <h2>Begroting</h2>
     <div class="table-responsive">
       <table class="table table-hover">
         <thead>

@@ -3,26 +3,54 @@
 
 {% block main-column %}
   <h1>{{ view.person.name }}</h1>
-  <dl>
-    <dt>Werkweek</dt>
-    <dd>{{ view.person.hours_per_week|hours }}</dd>
-    <dt>Werkvoorraad</dt>
-    <dd>{{ view.total_left_to_book|hours }}</dd>
-    {% if view.can_see_financials %}
-      <dt>Target</dt>
-      <dd>{{ view.person.target|money }}</dd>
-      <dt>Standaard uurtarief</dt>
-      <dd>{{ view.person.standard_hourly_tariff|money }}</dd>
-      <dt>Minimum uurtarief</dt>
-      <dd>{{ view.person.minimum_hourly_tariff|money }}</dd>
-      <dt>Verhouding extern/intern</dt>
-      <dd>{{ view.person.external_internal_ratio }}</dd>
-    {% endif %}
-    <dt>Bij qua boeken</dt>
-    <dd>{{ view.person.booking_percentage }}%</dd>
-    <dt>Extra rollen</dt>
-    <dd>{{ view.extra_roles }}</dd>
-  </dl>
+  <table class="table borderless-table">
+    <tbody>
+      <tr>
+        <th>Werkweek</th>
+        <td>{{ view.person.hours_per_week|hours }}</td>
+      </tr>
+      <tr>
+        <th>Werkvoorraad op externe projecten</th>
+        <td>{{ view.pyc.left_to_book|hours }}</td>
+      </tr>
+      <tr>
+        <th>Bij qua boeken</th>
+        <td>{{ view.person.booking_percentage }}%</td>
+      </tr>
+      {% if view.can_see_everything %}
+        <tr>
+          <th>Uren over budget geboekt (extern)</th>
+          <td>{{ view.pyc.overbooked|hours }}</td>
+        </tr>
+        <tr>
+          <th>Percentage extern</th>
+          <td>{{ view.pyc.billable_percentage }}%</td>
+        </tr>
+        <tr>
+          <th>Percentage target</th>
+          <td>{{ view.pyc.target_percentage }}%</td>
+        </tr>
+      {% endif %}
+      {% if view.can_see_financials %}
+        <tr>
+          <th>Target</th>
+          <td>{{ view.person.target|money }}</td>
+        </tr>
+        <tr>
+          <th>Standaard uurtarief</th>
+          <td>{{ view.person.standard_hourly_tariff|money }}</td>
+        </tr>
+        <tr>
+          <th>Minimum uurtarief</th>
+          <td>{{ view.person.minimum_hourly_tariff|money }}</td>
+        </tr>
+      {% endif %}
+      <tr>
+        <th>Extra rollen</th>
+        <td>{{ view.extra_roles }}</td>
+      </tr>
+    </tbody>
+  </table>
   {% if view.can_edit_person %}
     <div>
       <a href="{% url 'trs.person.edit' pk=view.person.pk %}"
@@ -34,12 +62,12 @@
       <a href="{% url 'trs.person.target' pk=view.person.pk %}"
          class="btn btn-default">
         <span class="glyphicon glyphicon-pencil"></span>
-        Wijzig target/werkweek/uurtarief/ratio
+        Wijzig target/werkweek/uurtarief
       </a>
     </div>
   {% endif %}
 
-  <h2>Projecten</h2>
+  <h2>Actieve projecten</h2>
   <table class="table table-hover">
     <thead>
       <tr>
@@ -54,48 +82,34 @@
       </tr>
     </thead>
     <tbody>
-      {% for ppc in view.ppcs %}
+      {% for line in view.lines %}
         <tr>
           <td>
-            {{ ppc.project.as_widget }}
+            {{ line.project.as_widget }}
             <br>
-            <span class="text-muted">{{ ppc.project.description }}</span>
+            <span class="text-muted">{{ line.project.description }}</span>
           </td>
           <td>
-            {% if ppc.is_project_leader %}
+            {% if line.is_project_leader %}
               <span title="Projectleider: gaat over de uren">PL</span>
             {% endif %}
             &nbsp;
-            {% if ppc.is_project_manager %}
+            {% if line.is_project_manager %}
               <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
             {% endif %}
           </td>
-          <td class="text-right">{{ ppc.budget|hours }}</td>
+          <td class="text-right">{{ line.budget|hours }}</td>
           <td class="text-right
-                     {% if ppc.is_overbooked %}text-danger{% endif %}">
-            {{ ppc.booked|hours }}
+                     {% if line.is_overbooked %}danger{% endif %}">
+            {{ line.booked|hours }}
           </td>
           {% if view.can_see_financials %}
-            <td class="text-right">{{ ppc.hourly_tariff|money }}</td>
-            <td class="text-right">{{ ppc.turnover|money }}</td>
+            <td class="text-right">{{ line.hourly_tariff|money }}</td>
+            <td class="text-right">{{ line.turnover|money }}</td>
           {% endif %}
         </tr>
       {% endfor %}
     </tbody>
-    <tfoot>
-      <tr>
-        <th>Totaal</th>
-        <td class="text-right"></td>
-        <th class="text-right">{{ view.total_booked|hours }}</th>
-        {% if view.can_see_financials %}
-          <td class="text-right"></td>
-          <th class="text-right">
-            {{ view.total_external_turnover|money }}<br>
-            <small>(extern)</small>
-          </th>
-        {% endif %}
-      </tr>
-    </tfoot>
   </table>
 {% endblock %}
 

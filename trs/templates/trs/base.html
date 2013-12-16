@@ -107,54 +107,44 @@
           {% block overview-column %}
             {% if view.active_person %}
 
-              <h2>Binnen budget?</h2>
-              <div>
-                Je hebt
-                <b>
-                  {{ view.person_year_info.overbooked.percentage }}%
-                </b>
-                ({{ view.person_year_info.overbooked.over|hours }} uren)
-                buiten budget geboekt.
+              <h2>Voortgang</h2>
+
+              <div><b>Bij met boeken?</b></div>
+              <div class="progress"
+                   title="{{ view.active_person.booking_percentage }}% geboekt de laatste weken">
+                <div class="progress-bar"
+                     style="width: {{ view.active_person.booking_percentage }}%;">
+                </div>
               </div>
-              <div class="text-muted">
-                Bij dit percentage wordt alleen gekeken naar de <i>externe</i>
-                projecten. Het is de bedoeling dat deze projecten netjes in
-                samenspraak worden opgezet, inclusief deugdelijke
-                ureninschatting.
+
+              <div><b>Binnen budget?</b></div>
+              <div class="progress"
+                   title="{{ view.person_year_info.overbooked_percentage }}% buiten budget geboekt">
+                <div class="progress-bar progress-bar-success"
+                     style="width: {{ view.person_year_info.well_booked_percentage }}%;">
+                </div>
+                <div class="progress-bar progress-bar-danger"
+                     style="width: {{ view.person_year_info.overbooked_percentage }}%;">
+                </div>
               </div>
-              <h2>Extern/intern?</h2>
-              <div>
-                Je hebt
-                <b>{{ view.person_year_info.billable_percentage }}%</b>
-                op externe projecten geboekt.
-                {% if view.person_year_info.billable_percentage >= view.active_person.external_percentage %}
-                  Prima.
-                {% else %}
-                  Dit moet nog omhoog, voor jou moet de verhouding
-                  {{ view.active_person.external_internal_ratio }}
-                  zijn.
-                {% endif %}
+
+              <div><b>Extern/intern?</b></div>
+              <div class="progress"
+                   title="{{ view.person_year_info.billable_percentage }}% op externe projecten geboekt.">
+                <div class="progress-bar progress-bar-success"
+                     style="width: {{ view.person_year_info.billable_percentage }}%;">
+                </div>
+                <div class="progress-bar progress-bar-danger"
+                     style="width: {{ view.person_year_info.unbillable_percentage }}%;">
+                </div>
               </div>
-              <div class="text-muted">
-                Bij deze verhouding wordt gewoon het aantal geboekte uren van
-                dit jaar op externe/interne projecten gebruikt. Of je over
-                budget heen bent gegaan wordt hier niet meegenomen.
-              </div>
-              <h2>Financieel?</h2>
-              <div>
-                Je hebt
-                <b>{{ view.person_year_info.target_percentage }}%</b>
-                van je target ({{ view.person_year_info.target|money }})
-                gehaald.
-                {% if view.person_year_info.left_to_turn_over %}
-                  Nog om te zetten:
-                  {{ view.person_year_info.left_to_turn_over|money }}.
-                {% endif %}
-              </div>
-              <div class="text-muted">
-                Het target is een combinatie van indicatoren. Heb je voldoende
-                extern gewerkt? Zijn de ureninschattingen van je projecten
-                goed? Kloppen je uurtarieven?
+
+              <div><b>Target?</b></div>
+              <div class="progress"
+                   title="{{ view.person_year_info.target_percentage }}% van je target gehaald">
+                <div class="progress-bar"
+                     style="width: {{ view.person_year_info.target_percentage }}%;">
+                </div>
               </div>
 
             {% endif %}

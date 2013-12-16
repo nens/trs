@@ -3,64 +3,43 @@
 
 {% block main-column %}
   <h1>Projecten</h1>
-  <table class="table table-hover">
+  <table class="table table-hover table-condensed">
     <thead>
       <tr>
         <th>Project</th>
-        <th>Voortgang</th>
-        <th class="text-right">Projectgrootte</th>
+        <th>Omschrijving</th>
+        <th class="text-right">Opdrachtsom</th>
         <th class="text-right">Verliesuren</th>
-        <th class="text-right">Kloppende tarieven</th>
+        <th>Voortgang</th>
       </tr>
     </thead>
     <tbody>
       {% for line in view.lines %}
         <tr>
           <td>
-            {{ line.project.as_widget }}<br>
+            {{ line.project.as_widget }}
+          </td>
+          <td>
             <span class="text-muted">{{ line.project.description }}</span>
           </td>
-          <td title="{{ line.booked|hours }} geboekt, werkvoorraad {{ line.left_to_book|hours }}">
-            <div class="progress"
-                 style="{{ line.bar_style }}">
-              <div class="progress-bar {{ line.inner_bar_class }}"
+          <td class="text-right">
+            {{ line.project.contract_amount|money }}
+          </td>
+          <td class="text-right">
+            {{ line.project.overbooked|hours }}
+          </td>
+          <td title="{{ line.progress_explanation }}">
+            <div class="progress" style="height: 30px;">
+              <div class="progress-bar progress-bar-{{ line.klass }}"
                    role="progressbar"
                    style="{{ line.inner_bar_style }}">
               </div>
             </div>
           </td>
-          <td class="text-right">
-            {{ line.project.hour_budget|hours }}
-          </td>
-          <td class="text-right {{ line.klass }}">
-            {{ line.overbooked|hours }}
-            {% if line.klass != 'success' %}
-              <br>
-              <span class="text-muted"
-                    title="{{ line.project.project_leader|default:'geen' }}">
-                PL
-              </span>
-            {% endif %}
-          </td>
-          <td class="text-right {{ line.tariffs_klass }}">
-            {{ line.tariffs_ok_percentage }}%
-            {% if line.tariffs_klass != 'success' %}
-              <br>
-              <span class="text-muted"
-                    title="{{ line.project.project_manager|default:'geen' }}">
-                PM
-              </span>
-            {% endif %}
-          </td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
-  <ul>
-    {% for project in view.projects %}
-      <li></li>
-    {% endfor %}
-  </ul>
   {% if view.can_add_project %}
     <hr>
     <p>
@@ -70,37 +49,4 @@
       </a>
     </p>
   {% endif %}
-{% endblock %}
-
-{% block overview-column %}
-  <h2>Projectoverzicht</h2>
-  <p>
-    Op deze pagina krijg je naast een lijstje projecten ook gelijk een
-    overzicht over de gezondheid van de projecten.
-  </p>
-  <ul>
-    <li>
-      Geboekt en werkvoorraad geven aan hoeveel er al gewerkt is en hoeveel
-      werk er nog verzet moet/kan worden.
-    </li>
-    <li>
-      Het aantal verliesuren is het aantal uren dat teamleden in totaal meer
-      hebben geboekt dan hun urenbudget was. Dit is niet de bedoeling. Is er
-      wel een goede begroting gemaakt van te voren? En als het netjes op 0
-      staat is het geweldig, natuurlijk.
-    </li>
-    <li>
-      Voor tarieven wordt gekeken naar ieders standaard uurtarief aan het
-      begin van het project. In hoeverre is daarvan afgeweken? Of kloppen de
-      tarieven? Wat zegt dit over de projectbegroting?
-    </li>
-  </ul>
-  <p>
-    Bij Nelen & Schuurmans moeten projecten netjes opgestart worden. De
-    teamleden zetten bij wijze van spreken hun handtekening onder de
-    ureninschatting. De opdrachtsom moet voldoende zijn voor de
-    ureninschatting maal de standaard uurtarieven. In hoeverre krijgen we dit
-    als bedrijf voor elkaar? Dat zie je op deze pagina.
-  </p>
-
 {% endblock %}

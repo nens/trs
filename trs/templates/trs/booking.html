@@ -3,18 +3,27 @@
 
 {% block main-column %}
   <h1>Uren boeken</h1>
-
   <form action="." method="post">
     {% csrf_token %}
-    <table class="table table-hover">
+    <table class="table table-hover table-condensed">
       <thead>
         <tr>
           <th>Code</th>
-          <th>Beschikbaar</th>
-          <th>Geboekt</th>
-          <th></th>
+          <th>Omschrijving</th>
+          <th class="text-right">Budget</th>
+          <th class="text-right">Geboekt</th>
+          <th class="text-right">Over</th>
+          <th>&nbsp;</th>
           {% for year_week in view.year_weeks_to_display %}
-            <th>{{ year_week.as_widget }}</th>
+            {% if forloop.counter == view.highlight_column %}
+              <th class="text-right">
+                <a href="{% url 'trs.booking' %}">
+                  Huidige<br>week
+                </a>
+              </th>
+            {% else %}
+              <th class="text-right">{{ year_week.as_widget }}</th>
+            {% endif %}
             <!-- TODO: give feedback in widget if you need to book in that week -->
           {% endfor %}
           <!-- TODO: add nice week widget including hover for starting date
@@ -25,28 +34,38 @@
         {% for line in view.lines %}
           <tr>
             <td>
-              {{ line.ppc.project.as_widget }}<br>
-              <span class="text-muted">{{ line.ppc.project.description }}</span>
+              {{ line.project.as_widget }}
             </td>
-            <td>{{ line.ppc.budget|hours }}</td>
-            <td {% if line.ppc.is_overbooked %}class="text-danger"{% endif %}>
-              {{ line.ppc.booked|hours }}
-            </td>
-            <td>&nbsp;&nbsp;&nbsp;</td>
-            <td>{{ line.hours0|hours }}</td>
-            <td>{{ line.hours1|hours }}</td>
             <td>
+              <span class="text-muted"
+                    {% if line.project.description|length > 30 %}
+                      title="{{ line.project.description }}"
+                    {% endif %}>
+                {{ line.project.description|truncatechars:30 }}
+              </span>
+            </td>
+            <td class="text-right">{{ line.budget|hours }}</td>
+            <td  class="text-right {% if line.is_overbooked %}danger{% endif %}">
+              {{ line.booked_total|hours }}
+            </td>
+            <td class="text-right">{{ line.left_to_book|hours }}</td>
+            <td style="border-left: 1px solid rgb(221, 221, 221);">&nbsp;&nbsp;&nbsp;</td>
+            <td class="text-right text-muted">{{ line.hours0|hours }}</td>
+            <td class="text-right text-muted">{{ line.hours1|hours }}</td>
+            <td class="text-right">
               {{ line.field }}
               {% for error in line.field.errors %}
                 <div class="alert alert-danger">{{ error }}</div>
               {% endfor %}
             </td>
-            <td>{{ line.hours3|hours }}</td>
+            <td class="text-right text-muted">{{ line.hours3|hours }}</td>
           </tr>
         {% endfor %}
       </tbody>
       <tfoot>
         <tr>
+          <th></th>
+          <th></th>
           <th></th>
           <th></th>
           <th></th>

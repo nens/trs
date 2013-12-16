@@ -5,6 +5,15 @@ Changelog of trs
 0.1 (unreleased)
 ----------------
 
+- Way quicker site due to optimized queries. It is still a bit slow in places,
+  but bearable now.
+
+- Visual feedback on your key metrics.
+
+- Simpler projects/persons view.
+
+- More elaborate persons/projects view for management including key metrics.
+
 - Added server setup. Config is through ``trs-site``, which you can include
   via mr.developer. The real readme for the server install is in there, too.
 
