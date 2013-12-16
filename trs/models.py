@@ -186,8 +186,7 @@ class Person(models.Model):
         if not hours_to_work:
             # Prevent division by zero.
             return 100
-        # TODO: het onderstaande klopt niet!
-        return round(100 * booked_in_weeks / hours_to_work)
+        return min(100, round(100 * booked_in_weeks / hours_to_work))
 
 
 class Project(models.Model):

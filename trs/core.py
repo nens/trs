@@ -136,7 +136,9 @@ class PersonYearCombination(object):
         'overbooked',
         'left_to_book',
         'overbooked_percentage',
+        'well_booked_percentage',
         'billable_percentage',
+        'unbillable_percentage',
         ]
 
     def __init__(self, person, year=None):
@@ -144,7 +146,7 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        self.cache_key = 'pycdata4-%s-%s-%s' % (person.id, person.cache_indicator, year)
+        self.cache_key = 'pycdata6-%s-%s-%s' % (person.id, person.cache_indicator, year)
         has_cached_data = self.get_cache()
         if not has_cached_data:
             self.just_calculate_everything()
@@ -155,6 +157,7 @@ class PersonYearCombination(object):
         self.target = self.person.target(year_week=last_year_week)
         self.calc_target_and_overbookings()
         self.billable_percentage = self.calc_external_percentage()
+        self.unbillable_percentage = 100 - self.billable_percentage
         logger.debug("Re-calculated person/year info for %s", self.person)
 
     def set_cache(self):
@@ -222,11 +225,14 @@ class PersonYearCombination(object):
 
         if total_booked:
             overbooked_percentage = round(100 * total_overbooked / total_booked)
+            well_booked_percentage = 100 - overbooked_percentage
         else:
             overbooked_percentage = 0
+            well_booked_percentage = 0
 
         self.overbooked = total_overbooked
         self.overbooked_percentage = overbooked_percentage
+        self.well_booked_percentage = well_booked_percentage
         self.turnover = total_turnover
         self.left_to_book = total_left_to_book
 
