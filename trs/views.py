@@ -551,7 +551,10 @@ class ProjectView(BaseView):
             line['loss'] = (
                 max(0, (line['booked'] - line['budget'])) * line['hourly_tariff'])
             line['left_to_turn_over'] = line['left_to_book'] * line['hourly_tariff']
+            line['desired_hourly_tariff'] = round(person.standard_hourly_tariff(
+                year_week=self.project.start))
             result.append(line)
+            #xxx
         return result
 
     @cached_property
