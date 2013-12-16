@@ -496,7 +496,7 @@ class PersonChange(EventBase):
         related_name="person_changes")
 
     def save(self, *args, **kwargs):
-        self.person.cache_indicator += 1
+        self.person.save()  # Increments cache indicator.
         return super(PersonChange, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -533,8 +533,8 @@ class Booking(EventBase):
         verbose_name_plural = "boekingen"
 
     def save(self, *args, **kwargs):
-        self.booked_by.cache_indicator += 1
-        self.booked_on.cache_indicator += 1
+        self.booked_by.save()  # Increments cache indicator.
+        self.booked_on.save()  # Increments cache indicator.
         return super(Booking, self).save(*args, **kwargs)
 
 
@@ -570,8 +570,8 @@ class WorkAssignment(EventBase):
         verbose_name_plural = "toekenningen van werk"
 
     def save(self, *args, **kwargs):
-        self.assigned_to.cache_indicator += 1
-        self.assigned_on.cache_indicator += 1
+        self.assigned_to.save()  # Increments cache indicatorc.
+        self.assigned_on.save()  # Increments cache indicator.
         return super(WorkAssignment, self).save(*args, **kwargs)
 
 
@@ -600,5 +600,5 @@ class BudgetAssignment(EventBase):
         verbose_name_plural = "toekenningen van budget"
 
     def save(self, *args, **kwargs):
-        self.assigned_to.cache_indicator += 1
+        self.assigned_to.save()  # Increments cache indicator.
         return super(BudgetAssignment, self).save(*args, **kwargs)
