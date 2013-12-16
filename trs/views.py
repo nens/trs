@@ -646,6 +646,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         result = []
         form = self.get_form(self.get_form_class())
         fields = list(form)  # A form's __iter__ returns 'bound fields'.
+        # Prepare booking info as one query.
         booking_table = Booking.objects.filter(
             year_week__in=self.year_weeks_to_display,
             booked_by=self.active_person).values(
@@ -653,6 +654,22 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                     models.Sum('hours'))
         bookings = {(item['booked_on'], item['year_week']): item['hours__sum']
                     for item in booking_table}
+        # Idem for budget
+        budget_per_project = WorkAssignment.objects.filter(
+            assigned_to=self.active_person,
+            assigned_on__in=self.active_projects).values(
+                'assigned_on').annotate(
+                    models.Sum('hours'))
+        budgets = {item['assigned_on']: round(item['hours__sum'])
+                   for item in budget_per_project}
+        # Item for hours worked.
+        booked_per_project = Booking.objects.filter(
+            booked_by=self.active_person,
+            booked_on__in=self.active_projects).values(
+                'booked_on').annotate(
+                    models.Sum('hours'))
+        booked_total = {item['booked_on']: round(item['hours__sum'])
+                        for item in booked_per_project}
 
         for project_index, project in enumerate(self.active_projects):
             line = {'project': project}
@@ -661,6 +678,10 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 key = 'hours%s' % index
                 line[key] = booked
             line['field'] = fields[project_index]
+            line['budget'] = budgets.get(project.id, 0)
+            line['booked_total'] = booked_total.get(project.id, 0)
+            line['is_overbooked'] = line['booked_total'] > line['budget']
+            line['left_to_book'] = max(0, line['budget'] - line['booked_total'])
             result.append(line)
         return result
 

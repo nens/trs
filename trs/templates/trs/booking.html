@@ -37,11 +37,11 @@
                 {{ line.project.description|truncatechars:30 }}
               </span>
             </td>
-            <td class="text-right">{{ line.ppc.budget|hours }}</td>
-            <td  class="text-right {% if line.ppc.is_overbooked %}danger{% endif %}">
-              {{ line.ppc.booked|hours }}
+            <td class="text-right">{{ line.budget|hours }}</td>
+            <td  class="text-right {% if line.is_overbooked %}danger{% endif %}">
+              {{ line.booked_total|hours }}
             </td>
-            <td class="text-right">{{ line.ppc.left_to_book|hours }}</td>
+            <td class="text-right">{{ line.left_to_book|hours }}</td>
             <td style="border-left: 1px solid rgb(221, 221, 221);">&nbsp;&nbsp;&nbsp;</td>
             <td class="text-right">{{ line.hours0|hours }}</td>
             <td class="text-right">{{ line.hours1|hours }}</td>
