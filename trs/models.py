@@ -326,7 +326,7 @@ class Project(models.Model):
         return round(self.overbooked() / self.hour_budget() * 100)
 
 
-class Invoice(models.Model):
+class FinancialBase(models.Model):
     added = models.DateTimeField(
         auto_now_add=True,
         verbose_name="toegevoegd op")
@@ -337,6 +337,22 @@ class Invoice(models.Model):
         #editable=False,
         verbose_name="toegevoegd door")
     # ^^^ The two above are copied from EventBase.
+
+    class Meta:
+        abstract = True
+        ordering = ['project', 'added']
+
+    def save(self, *args, **kwargs):
+        # Partially copied form EventBase.
+        if not self.added_by:
+            if tls_request:
+                # If tls_request doesn't exist we're running tests. Adding
+                # this 'if' is handier than mocking it the whole time :-)
+                self.added_by = tls_request.user
+        return super(FinancialBase, self).save(*args, **kwargs)
+
+
+class Invoice(FinancialBase):
     project = models.ForeignKey(
         Project,
         related_name="invoices",
@@ -372,15 +388,6 @@ class Invoice(models.Model):
         verbose_name_plural = "facturen"
         ordering = ('number',)
 
-    def save(self, *args, **kwargs):
-        # Partially copied form EventBase.
-        if not self.added_by:
-            if tls_request:
-                # If tls_request doesn't exist we're running tests. Adding
-                # this 'if' is handier than mocking it the whole time :-)
-                self.added_by = tls_request.user
-        return super(Invoice, self).save(*args, **kwargs)
-
     def __str__(self):
         return self.number
 
@@ -392,6 +399,38 @@ class Invoice(models.Model):
     @property
     def amount_inclusive(self):
         return self.amount_exclusive + self.vat
+
+
+class BudgetItem(FinancialBase):
+    project = models.ForeignKey(
+        Project,
+        related_name="budget_items",
+        verbose_name="project")
+    description = models.CharField(
+        verbose_name="omschrijving",
+        blank=True,
+        max_length=255)
+    amount = models.DecimalField(
+        max_digits=12,  # We don't mind a metric ton of hard cash.
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="bedrag exclusief")
+    is_reservation = models.BooleanField(
+        verbose_name="reservering",
+        default=False)
+
+    class Meta:
+        verbose_name = "begrotingsitem"
+        verbose_name_plural = "begrotingsitems"
+
+    def __str__(self):
+        return self.description
+
+    def get_absolute_url(self):
+        return reverse('trs.budget_item.edit', kwargs={
+            'pk': self.pk,
+            'project_pk': self.project.pk})
+
 
 
 class YearWeek(models.Model):
