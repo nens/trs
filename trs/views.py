@@ -573,7 +573,7 @@ class ProjectView(BaseView):
     def total(self):
         budget = self.project.budget_items.all().aggregate(
             models.Sum('amount'))['amount__sum'] or 0
-        return budget + self.person_costs
+        return self.project.contract_amount + budget + self.person_costs
 
     @cached_property
     def amount_left(self):
