@@ -1,11 +1,7 @@
-{% if project.hidden %}
+<a href="{{ project.get_absolute_url }}"
+   {% if not project.internal %}class="external-project"{% endif %}>
   {{ project.code }}
-{% else %}
-  <a href="{{ project.get_absolute_url }}"
-     {% if not project.internal %}class="external-project"{% endif %}>
-    {{ project.code }}
-  </a>
-{% endif %}
+</a>
 
 {% if project.archived %}
   <span title="Project is gearchiveerd"
