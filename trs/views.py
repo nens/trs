@@ -410,7 +410,10 @@ class ProjectsView(BaseView):
 
     @cached_property
     def projects(self):
-        return Project.objects.filter(archived=False)
+        all_projects = Project.objects.filter(archived=False)
+        if self.can_view_elaborate_version:
+            return all_projects
+        return all_projects.filter(hidden=False)
 
     @cached_property
     def lines(self):
