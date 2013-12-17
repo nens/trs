@@ -21,7 +21,6 @@ from django.views.generic.edit import UpdateView
 
 from trs import core
 from trs.models import Booking
-from trs.models import BudgetAssignment
 from trs.models import Invoice
 from trs.models import Person
 from trs.models import PersonChange
@@ -211,20 +210,20 @@ class HomeView(BaseView):
                 result.append(changes)
         return result
 
-    @cached_property
-    def project_budget_changes(self):
-        result = []
-        for project in (list(self.active_person.projects_i_lead.all()) +
-                        list(self.active_person.projects_i_manage.all())):
-            changes = BudgetAssignment.objects.filter(
-                year_week__in=self.relevant_year_weeks,
-                assigned_to=project).aggregate(
-                    models.Sum('budget'))
-            changes = {k: v for k, v in changes.items() if v}
-            if changes:
-                changes['project'] = project  # Inject for template.
-                result.append(changes)
-        return result
+    # @cached_property
+    # def project_budget_changes(self):
+    #     result = []
+    #     for project in (list(self.active_person.projects_i_lead.all()) +
+    #                     list(self.active_person.projects_i_manage.all())):
+    #         changes = BudgetAssignment.objects.filter(
+    #             year_week__in=self.relevant_year_weeks,
+    #             assigned_to=project).aggregate(
+    #                 models.Sum('budget'))
+    #         changes = {k: v for k, v in changes.items() if v}
+    #         if changes:
+    #             changes['project'] = project  # Inject for template.
+    #             result.append(changes)
+    #     return result
 
     @cached_property
     def project_invoice_changes(self):
@@ -1098,37 +1097,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         url = self.project.get_absolute_url()
         text = "Terug naar het project"
         return mark_safe(template.format(url=url, text=text))
-
-
-class BudgetAddView(LoginAndPermissionsRequiredMixin,
-                    CreateView,
-                    BaseMixin):
-    template_name = 'trs/edit.html'
-    model = BudgetAssignment
-    fields = ['description', 'budget']
-
-    def has_form_permissions(self):
-        if self.can_edit_and_see_everything:
-            return True
-        if self.project.project_manager == self.active_person:
-            return True
-
-    @property
-    def title(self):
-        return "Nieuwe budgetaanpassing voor %s" % self.project.code
-
-    @cached_property
-    def project(self):
-        return Project.objects.get(pk=self.kwargs['pk'])
-
-    @cached_property
-    def success_url(self):
-        return self.project.get_absolute_url()
-
-    def form_valid(self, form):
-        form.instance.assigned_to = self.project
-        messages.success(self.request, "Budget aangepast")
-        return super(BudgetAddView, self).form_valid(form)
 
 
 class PersonChangeView(LoginAndPermissionsRequiredMixin,

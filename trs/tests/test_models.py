@@ -150,17 +150,6 @@ class ProjectTestCase(TestCase):
                                         assigned_on=project)
         self.assertEqual(project.assigned_persons()[0], person)
 
-    def test_budget1(self):
-        project = factories.ProjectFactory.create()
-        self.assertEqual(project.budget(), 0)
-
-    def test_budget2(self):
-        project = factories.ProjectFactory.create()
-        factories.BudgetAssignmentFactory.create(
-            budget=1000,
-            assigned_to=project)
-        self.assertEqual(project.budget(), 1000)
-
 
 class EventBaseTestCase(TestCase):
 
@@ -226,11 +215,11 @@ class WorkAssignmentTestCase(TestCase):
         self.assertTrue(work_assignment)
 
 
-class BudgetAssignmentTestCase(TestCase):
+class BudgetItemTestCase(TestCase):
 
     def test_smoke(self):
-        budget_assignment = factories.BudgetAssignmentFactory.create()
-        self.assertTrue(budget_assignment)
+        budget_item = factories.BudgetItemFactory.create()
+        self.assertTrue(budget_item)
 
 
 class UtilsTestCase(TestCase):

@@ -30,7 +30,7 @@ class WorkAssignmentAdmin(admin.ModelAdmin):
     pass
 
 
-class BudgetAssignmentAdmin(admin.ModelAdmin):
+class BudgetItemAdmin(admin.ModelAdmin):
     pass
 
 
@@ -45,5 +45,5 @@ admin.site.register(models.Invoice, InvoiceAdmin)
 admin.site.register(models.PersonChange, PersonChangeAdmin)
 admin.site.register(models.Booking, BookingAdmin)
 admin.site.register(models.WorkAssignment, WorkAssignmentAdmin)
-admin.site.register(models.BudgetAssignment, BudgetAssignmentAdmin)
+admin.site.register(models.BudgetItem, BudgetItemAdmin)
 admin.site.register(models.YearWeek, YearWeekAdmin)

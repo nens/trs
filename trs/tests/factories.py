@@ -61,5 +61,5 @@ class WorkAssignmentFactory(factory.django.DjangoModelFactory):
     hourly_tariff = 0
 
 
-class BudgetAssignmentFactory(factory.django.DjangoModelFactory):
-    FACTORY_FOR = models.BudgetAssignment
+class BudgetItemFactory(factory.django.DjangoModelFactory):
+    FACTORY_FOR = models.BudgetItem

@@ -291,11 +291,6 @@ class Project(models.Model):
             work_assignments__assigned_on=self).distinct()
 
     @cache_on_model
-    def budget(self):
-        return self.budget_assignments.all().aggregate(
-            models.Sum('budget'))['budget__sum'] or 0
-
-    @cache_on_model
     def hour_budget(self):
         return self.work_assignments.all().aggregate(
             models.Sum('hours'))['hours__sum'] or 0
@@ -610,32 +605,3 @@ class WorkAssignment(EventBase):
         self.assigned_to.save()  # Increments cache indicatorc.
         self.assigned_on.save()  # Increments cache indicator.
         return super(WorkAssignment, self).save(*args, **kwargs)
-
-
-class BudgetAssignment(EventBase):
-    budget = models.DecimalField(
-        max_digits=12,  # We don't mind a metric ton of hard cash.
-        decimal_places=DECIMAL_PLACES,
-        blank=True,
-        null=True,
-        verbose_name="bedrag")
-    description = models.CharField(
-        verbose_name="omschrijving",
-        blank=True,
-        max_length=255)
-    # TODO: link to doc or so
-
-    assigned_to = models.ForeignKey(
-        Project,
-        blank=True,
-        null=True,
-        verbose_name="toegekend aan",
-        related_name="budget_assignments")
-
-    class Meta:
-        verbose_name = "toekenning van budget"
-        verbose_name_plural = "toekenningen van budget"
-
-    def save(self, *args, **kwargs):
-        self.assigned_to.save()  # Increments cache indicator.
-        return super(BudgetAssignment, self).save(*args, **kwargs)
