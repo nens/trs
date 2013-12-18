@@ -226,6 +226,9 @@ def import_from_csv(filename, dialect):
             hours = int(hours)
             if not hours:
                 continue
+            if not year_weeks[index]:
+                logger.warn("Year week at index %s doesn't exist", index)
+                continue
             if year_weeks[index].year != 2013:
                 # Only book in this year
                 continue
