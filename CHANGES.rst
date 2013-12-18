@@ -2,7 +2,7 @@ Changelog of trs
 ===================================================
 
 
-0.1 (unreleased)
+0.1 (2013-12-18)
 ----------------
 
 - Using memcache. Waaay faster.
