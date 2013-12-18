@@ -60,7 +60,7 @@ LOGGING = {
     'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
-            'format': '%(asctime)s %(name)s %(levelname)s\n%(message)s',
+            'format': '%(asctime)s %(name)s %(levelname)s\n    %(message)s',
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
@@ -74,7 +74,7 @@ LOGGING = {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+            'formatter': 'verbose'
         },
         'logfile': {
             'level': 'INFO',

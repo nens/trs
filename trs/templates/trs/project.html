@@ -139,15 +139,6 @@
       {% endif %}
     </table>
 
-    {% if view.can_see_project_financials %}
-      <p class="text-muted">
-        Totaal beschikbaar (zie hieronder) is {{ view.subtotal|money }}.
-        Huidige omzet is {{ view.total_turnover|money }},
-        nog-te-boeken is {{ view.total_turnover_left|money }}.
-        Dus er is nog <b>{{ view.amount_left|money }}</b> dat niet verdeeld is.
-      </p>
-    {% endif %}
-
     {% if view.can_edit_team %}
       <div>
         <a href="{% url 'trs.project.team' pk=view.project.pk %}"
@@ -166,24 +157,51 @@
         <thead>
           <tr>
             <th>Beschrijving</th>
-            <th>Wanneer</th>
+            <th>Reservering?</th>
             <th class="text-right">Bedrag</th>
           </tr>
         </thead>
         <tbody>
-          {% for budget_assignment in view.project.budget_assignments.all %}
+          <tr>
+            <td>Opdrachtsom</td>
+            <td></td>
+            <td class="text-right">{{ view.project.contract_amount|money }}</td>
+          </tr>
+          {% for budget_item in view.project.budget_items.all %}
             <tr>
-              <td>{{ budget_assignment.description }}</td>
-              <td>{{ budget_assignment.year_week.friendly }}</td>
-              <td class="text-right">{{ budget_assignment.budget|money }}</td>
+              <td>
+                <a href="{% url 'trs.budget_item.edit' project_pk=view.project.pk pk=budget_item.pk %}">
+                  {{ budget_item.description }}
+                </a>
+              </td>
+              <td>
+                {% if budget_item.is_reservation %}
+                  <span class="text-muted glyphicon glyphicon-ok"></span>
+                {% endif %}
+              </td>
+              <td class="text-right">{{ budget_item.amount|money }}</td>
             </tr>
           {% endfor %}
+          <tr>
+            <td>Personele kosten</td>
+            <td></td>
+            <td class="text-right">{{ view.person_costs|money }}</td>
+          </tr>
         </tbody>
         <tfoot>
           <tr>
             <th>Totaal</th>
             <th></th>
-            <th class="text-right">{{ view.subtotal|money }}</th>
+            {% if view.total %}
+              <th class="text-right danger"
+                  title="Moet op 0 uitkomen">
+                {{ view.total|money }}
+              </th>
+            {% else %}
+              <th class="text-right">
+                {{ view.total|money }}
+              </th>
+            {% endif %}
           </tr>
         </tfoot>
       </table>
@@ -191,10 +209,10 @@
 
     {% if view.can_edit_financials %}
       <div>
-        <a href="{% url 'trs.project.add_budget' pk=view.project.pk %}"
+        <a href="{% url 'trs.budget_item.add' project_pk=view.project.pk %}"
            class="btn btn-default">
           <span class="glyphicon glyphicon-plus"></span>
-          Voeg budgetwijziging toe
+          Voeg begrotingsitem toe
         </a>
       </div>
     {% endif %}

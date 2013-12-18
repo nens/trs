@@ -270,6 +270,9 @@ def get_project(project_code,
     project.internal = (project_code.lower().startswith('intern'))
     if project.internal:
         project.hidden = True
+    else:
+        # Set it because sqlite has a 'None' false value too...
+        project.hidden = False
     project.save()
     return project
 

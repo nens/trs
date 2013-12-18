@@ -5,6 +5,13 @@ Changelog of trs
 0.1 (unreleased)
 ----------------
 
+- Using memcache. Waaay faster.
+
+- Optimized caching for PersonChange changes. They happen less frequently.
+
+- Better management projects overview: showing the invoiced/projectamount
+  percentage now.
+
 - Way quicker site due to optimized queries. It is still a bit slow in places,
   but bearable now.
 

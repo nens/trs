@@ -1,5 +1,6 @@
 import datetime
 import logging
+import time
 
 from django import forms
 from django.contrib import messages
@@ -21,7 +22,7 @@ from django.views.generic.edit import UpdateView
 
 from trs import core
 from trs.models import Booking
-from trs.models import BudgetAssignment
+from trs.models import BudgetItem
 from trs.models import Invoice
 from trs.models import Person
 from trs.models import PersonChange
@@ -211,21 +212,7 @@ class HomeView(BaseView):
                 result.append(changes)
         return result
 
-    @cached_property
-    def project_budget_changes(self):
-        result = []
-        for project in (list(self.active_person.projects_i_lead.all()) +
-                        list(self.active_person.projects_i_manage.all())):
-            changes = BudgetAssignment.objects.filter(
-                year_week__in=self.relevant_year_weeks,
-                assigned_to=project).aggregate(
-                    models.Sum('budget'))
-            changes = {k: v for k, v in changes.items() if v}
-            if changes:
-                changes['project'] = project  # Inject for template.
-                result.append(changes)
-        return result
-
+    # TODO: project_budget_item_changes
     @cached_property
     def project_invoice_changes(self):
         result = []
@@ -424,12 +411,22 @@ class ProjectsView(BaseView):
 
     @cached_property
     def projects(self):
-        return Project.objects.filter(archived=False)
+        all_projects = Project.objects.filter(archived=False)
+        if self.can_view_elaborate_version:
+            return all_projects
+        return all_projects.filter(hidden=False)
 
     @cached_property
     def lines(self):
         # Used for the elaborate view (projects.html)
         result = []
+        invoices_per_project = Invoice.objects.filter(
+            project__in=self.projects).values(
+            'project').annotate(
+            models.Sum('amount_exclusive'))
+        invoice_amounts = {item['project']: round(item['amount_exclusive__sum'])
+                           for item in invoices_per_project}
+
         for project in self.projects:
             line = {}
             line['project'] = project
@@ -440,15 +437,14 @@ class ProjectsView(BaseView):
             else:
                 klass = 'default'
             line['klass'] = klass
-
-            # Progress bar chart styling
-            width_indication = project.booked() / (project.hour_budget() or 1)
-            inner_width = min(100, round(100 * width_indication))
-            inner_bar_style = "width: {}%;".format(inner_width)
-            line['inner_bar_style'] = inner_bar_style
-            line['progress_explanation'] = "Budget: %s, geboekt: %s" % (
-                round(project.hour_budget()), round(project.booked()))
-
+            invoice_amount = invoice_amounts.get(project.id, 0)
+            if project.contract_amount:
+                invoice_amount_percentage = round(
+                    invoice_amount / project.contract_amount * 100)
+            else:  # Division by zero.
+                invoice_amount_percentage = None
+            line['invoice_amount'] = invoice_amount
+            line['invoice_amount_percentage'] = invoice_amount_percentage
             result.append(line)
         return result
 
@@ -580,9 +576,14 @@ class ProjectView(BaseView):
         return sum([line['left_to_turn_over'] for line in self.lines])
 
     @cached_property
-    def subtotal(self):
-        return self.project.budget_assignments.all().aggregate(
-            models.Sum('budget'))['budget__sum'] or 0
+    def person_costs(self):
+        return -1 * self.total_turnover
+
+    @cached_property
+    def total(self):
+        budget = self.project.budget_items.all().aggregate(
+            models.Sum('amount'))['amount__sum'] or 0
+        return self.project.contract_amount + budget + self.person_costs
 
     @cached_property
     def amount_left(self):
@@ -690,6 +691,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 for project in self.active_projects}
 
     def form_valid(self, form):
+        start_time = time.time()
         total_difference = 0
         absolute_difference = 0
         for project_code, new_hours in form.cleaned_data.items():
@@ -705,7 +707,6 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                                   booked_on=project,
                                   year_week=self.active_year_week)
                 booking.save()
-                logger.info("Added booking %s", booking)
 
         if absolute_difference:
             if total_difference < 0:
@@ -717,7 +718,8 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             messages.success(self.request, "Uren aangepast (%s)." % indicator)
         else:
             messages.info(self.request, "Niets aan de uren gewijzigd.")
-
+        elapsed = (time.time() - start_time)
+        logger.debug("Handled booking in %s secs", elapsed)
         return super(BookingView, self).form_valid(form)
 
     @cached_property
@@ -874,6 +876,60 @@ class InvoiceEditView(LoginAndPermissionsRequiredMixin,
     def form_valid(self, form):
         messages.success(self.request, "Factuur aangepast")
         return super(InvoiceEditView, self).form_valid(form)
+
+
+class BudgetItemCreateView(LoginAndPermissionsRequiredMixin,
+                           CreateView,
+                           BaseMixin):
+    template_name = 'trs/edit.html'
+    model = BudgetItem
+    title = "Nieuw begrotingsitem"
+    fields = ['description', 'amount', 'is_reservation']
+
+    def has_form_permissions(self):
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['project_pk'])
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
+
+    def form_valid(self, form):
+        form.instance.project = self.project
+        messages.success(self.request, "Begrotingsitem toegevoegd")
+        return super(BudgetItemCreateView, self).form_valid(form)
+
+
+class BudgetItemEditView(LoginAndPermissionsRequiredMixin,
+                         UpdateView,
+                         BaseMixin):
+    template_name = 'trs/edit.html'
+    model = BudgetItem
+    fields = ['description', 'amount', 'is_reservation']
+
+    @property
+    def title(self):
+        return "Aanpassen begrotingsitem voor %s" % self.project.code
+
+    def has_form_permissions(self):
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['project_pk'])
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
+
+    def form_valid(self, form):
+        messages.success(self.request, "Begrotingsitem aangepast")
+        return super(BudgetItemEditView, self).form_valid(form)
 
 
 class PersonEditView(LoginAndPermissionsRequiredMixin,
@@ -1098,37 +1154,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         url = self.project.get_absolute_url()
         text = "Terug naar het project"
         return mark_safe(template.format(url=url, text=text))
-
-
-class BudgetAddView(LoginAndPermissionsRequiredMixin,
-                    CreateView,
-                    BaseMixin):
-    template_name = 'trs/edit.html'
-    model = BudgetAssignment
-    fields = ['description', 'budget']
-
-    def has_form_permissions(self):
-        if self.can_edit_and_see_everything:
-            return True
-        if self.project.project_manager == self.active_person:
-            return True
-
-    @property
-    def title(self):
-        return "Nieuwe budgetaanpassing voor %s" % self.project.code
-
-    @cached_property
-    def project(self):
-        return Project.objects.get(pk=self.kwargs['pk'])
-
-    @cached_property
-    def success_url(self):
-        return self.project.get_absolute_url()
-
-    def form_valid(self, form):
-        form.instance.assigned_to = self.project
-        messages.success(self.request, "Budget aangepast")
-        return super(BudgetAddView, self).form_valid(form)
 
 
 class PersonChangeView(LoginAndPermissionsRequiredMixin,

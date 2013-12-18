@@ -1,5 +1,6 @@
 import datetime
 import logging
+import time
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
@@ -18,6 +19,7 @@ from tls import request as tls_request
 # too. 999999.99 should be possible, so that's 8 digits with 2 decimal places.
 MAX_DIGITS = 8
 DECIMAL_PLACES = 2
+LOG_DURATION = True
 
 logger = logging.getLogger(__name__)
 
@@ -41,11 +43,16 @@ def last_four_year_weeks():
 
 
 def cache_per_week(callable):
+    # Note: only for PersonChange related fields.
     def inner(self, year_week=None):
-        cache_key = self.cache_key(callable.__name__, year_week)
+        cache_key = self.person_change_cache_key(callable.__name__, year_week)
         result = cache.get(cache_key)
         if result is None:
+            start_time = time.time()
             result = callable(self, year_week)
+            elapsed = (time.time() - start_time)
+            if LOG_DURATION:
+                logger.debug("Calculated in %s secs: %s", elapsed, cache_key)
             cache.set(cache_key, result)
         return result
     return inner
@@ -56,7 +63,11 @@ def cache_on_model(callable):
         cache_key = self.cache_key(callable.__name__)
         result = cache.get(cache_key)
         if result is None:
+            start_time = time.time()
             result = callable(self)
+            elapsed = (time.time() - start_time)
+            if LOG_DURATION:
+                logger.debug("Calculated in %s secs: %s", elapsed, cache_key)
             cache.set(cache_key, result)
         return result
     return inner
@@ -103,6 +114,9 @@ class Person(models.Model):
     cache_indicator = models.IntegerField(
         default=0,
         verbose_name="cache indicator")
+    cache_indicator_person_change = models.IntegerField(
+        default=0,
+        verbose_name="cache indicator voor PersonChange veranderingen")
 
     class Meta:
         verbose_name = "persoon"
@@ -117,9 +131,14 @@ class Person(models.Model):
         return self.name
 
     def cache_key(self, for_what, year_week=None):
-        week_id = year_week and year_week.id or ''
+        week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-%s-%s-%s' % (
             self.id, self.cache_indicator, for_what, week_id)
+
+    def person_change_cache_key(self, for_what, year_week=None):
+        week_id = year_week and year_week.id or this_year_week().id
+        return 'person-%s-pc%s-%s-%s' % (
+            self.id, self.cache_indicator_person_change, for_what, week_id)
 
     def get_absolute_url(self):
         return reverse('trs.person', kwargs={'pk': self.pk})
@@ -132,35 +151,35 @@ class Person(models.Model):
     def hours_per_week(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return self.person_changes.filter(
+        return round(self.person_changes.filter(
             year_week__lte=year_week).aggregate(
-                models.Sum('hours_per_week'))['hours_per_week__sum'] or 0
+                models.Sum('hours_per_week'))['hours_per_week__sum'] or 0)
 
     @cache_per_week
     def standard_hourly_tariff(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return self.person_changes.filter(
+        return round(self.person_changes.filter(
             year_week__lte=year_week).aggregate(
                 models.Sum('standard_hourly_tariff'))[
-                    'standard_hourly_tariff__sum'] or 0
+                    'standard_hourly_tariff__sum'] or 0)
 
     @cache_per_week
     def minimum_hourly_tariff(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return self.person_changes.filter(
+        return round(self.person_changes.filter(
             year_week__lte=year_week).aggregate(
                 models.Sum('minimum_hourly_tariff'))[
-                    'minimum_hourly_tariff__sum'] or 0
+                    'minimum_hourly_tariff__sum'] or 0)
 
     @cache_per_week
     def target(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return self.person_changes.filter(
+        return round(self.person_changes.filter(
             year_week__lte=year_week).aggregate(
-                models.Sum('target'))['target__sum'] or 0
+                models.Sum('target'))['target__sum'] or 0)
 
     @cache_on_model
     def filtered_assigned_projects(self):
@@ -176,6 +195,7 @@ class Person(models.Model):
 
     @cache_on_model
     def booking_percentage(self):
+        # xxx
         # Key performance indicator
         weeks = last_four_year_weeks()
         hours_to_work = sum([self.hours_per_week(year_week=week)
@@ -291,11 +311,6 @@ class Project(models.Model):
             work_assignments__assigned_on=self).distinct()
 
     @cache_on_model
-    def budget(self):
-        return self.budget_assignments.all().aggregate(
-            models.Sum('budget'))['budget__sum'] or 0
-
-    @cache_on_model
     def hour_budget(self):
         return self.work_assignments.all().aggregate(
             models.Sum('hours'))['hours__sum'] or 0
@@ -326,7 +341,7 @@ class Project(models.Model):
         return round(self.overbooked() / self.hour_budget() * 100)
 
 
-class Invoice(models.Model):
+class FinancialBase(models.Model):
     added = models.DateTimeField(
         auto_now_add=True,
         verbose_name="toegevoegd op")
@@ -337,6 +352,22 @@ class Invoice(models.Model):
         #editable=False,
         verbose_name="toegevoegd door")
     # ^^^ The two above are copied from EventBase.
+
+    class Meta:
+        abstract = True
+        ordering = ['project', 'added']
+
+    def save(self, *args, **kwargs):
+        # Partially copied form EventBase.
+        if not self.added_by:
+            if tls_request:
+                # If tls_request doesn't exist we're running tests. Adding
+                # this 'if' is handier than mocking it the whole time :-)
+                self.added_by = tls_request.user
+        return super(FinancialBase, self).save(*args, **kwargs)
+
+
+class Invoice(FinancialBase):
     project = models.ForeignKey(
         Project,
         related_name="invoices",
@@ -372,15 +403,6 @@ class Invoice(models.Model):
         verbose_name_plural = "facturen"
         ordering = ('number',)
 
-    def save(self, *args, **kwargs):
-        # Partially copied form EventBase.
-        if not self.added_by:
-            if tls_request:
-                # If tls_request doesn't exist we're running tests. Adding
-                # this 'if' is handier than mocking it the whole time :-)
-                self.added_by = tls_request.user
-        return super(Invoice, self).save(*args, **kwargs)
-
     def __str__(self):
         return self.number
 
@@ -392,6 +414,38 @@ class Invoice(models.Model):
     @property
     def amount_inclusive(self):
         return self.amount_exclusive + self.vat
+
+
+class BudgetItem(FinancialBase):
+    project = models.ForeignKey(
+        Project,
+        related_name="budget_items",
+        verbose_name="project")
+    description = models.CharField(
+        verbose_name="omschrijving",
+        blank=True,
+        max_length=255)
+    amount = models.DecimalField(
+        max_digits=12,  # We don't mind a metric ton of hard cash.
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="bedrag exclusief")
+    is_reservation = models.BooleanField(
+        verbose_name="reservering",
+        default=False)
+
+    class Meta:
+        verbose_name = "begrotingsitem"
+        verbose_name_plural = "begrotingsitems"
+
+    def __str__(self):
+        return self.description
+
+    def get_absolute_url(self):
+        return reverse('trs.budget_item.edit', kwargs={
+            'pk': self.pk,
+            'project_pk': self.project.pk})
+
 
 
 class YearWeek(models.Model):
@@ -494,6 +548,7 @@ class PersonChange(EventBase):
         related_name="person_changes")
 
     def save(self, *args, **kwargs):
+        self.person.cache_indicator_person_change += 1  # Specially for us.
         self.person.save()  # Increments cache indicator.
         return super(PersonChange, self).save(*args, **kwargs)
 
@@ -571,32 +626,3 @@ class WorkAssignment(EventBase):
         self.assigned_to.save()  # Increments cache indicatorc.
         self.assigned_on.save()  # Increments cache indicator.
         return super(WorkAssignment, self).save(*args, **kwargs)
-
-
-class BudgetAssignment(EventBase):
-    budget = models.DecimalField(
-        max_digits=12,  # We don't mind a metric ton of hard cash.
-        decimal_places=DECIMAL_PLACES,
-        blank=True,
-        null=True,
-        verbose_name="bedrag")
-    description = models.CharField(
-        verbose_name="omschrijving",
-        blank=True,
-        max_length=255)
-    # TODO: link to doc or so
-
-    assigned_to = models.ForeignKey(
-        Project,
-        blank=True,
-        null=True,
-        verbose_name="toegekend aan",
-        related_name="budget_assignments")
-
-    class Meta:
-        verbose_name = "toekenning van budget"
-        verbose_name_plural = "toekenningen van budget"
-
-    def save(self, *args, **kwargs):
-        self.assigned_to.save()  # Increments cache indicator.
-        return super(BudgetAssignment, self).save(*args, **kwargs)
