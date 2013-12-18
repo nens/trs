@@ -193,7 +193,7 @@ class Command(BaseCommand):
         dialect = csv.Sniffer().sniff(
             open(found[0], encoding='cp1252').read())
         print(found)
-        # import_project_csv(found[0], dialect)
+        import_project_csv(found[0], dialect)
 
         # Person data
         pattern = basedir + '/Totalen per werknemer *.csv'
@@ -234,6 +234,22 @@ def import_person_csv(filename, dialect):
         person_change.standard_hourly_tariff = hourly_tariff
         person_change.target = target
         person_change.save()
+
+
+def import_project_csv(filename, dialect):
+    logger.info("Opening %s", filename)
+    lines = list(csv.reader(open(filename, encoding='cp1252'), dialect))
+    START_LINE = 6
+    for line in lines[START_LINE:]:
+        if not line:
+            break
+        project_code = line[0]
+        project = get_project2(project_code)
+        project_manager_name = line[2]
+        project_manager = get_person(project_manager_name)
+
+        project.project_manager = project_manager
+        project.save()
 
 
 def import_from_csv(filename, dialect):
@@ -338,6 +354,13 @@ def get_project(project_code,
         # Set it because sqlite has a 'None' false value too...
         project.hidden = False
     project.save()
+    return project
+
+
+def get_project2(project_code):
+    project, created = models.Project.objects.get_or_create(code=project_code)
+    if created:
+        logger.info("Created new project %s", project)
     return project
 
 
