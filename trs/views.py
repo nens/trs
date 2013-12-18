@@ -443,9 +443,25 @@ class ProjectsView(BaseView):
                     invoice_amount / project.contract_amount * 100)
             else:  # Division by zero.
                 invoice_amount_percentage = None
+            line['contract_amount'] = project.contract_amount
             line['invoice_amount'] = invoice_amount
             line['invoice_amount_percentage'] = invoice_amount_percentage
             result.append(line)
+        return result
+
+    @cached_property
+    def total_invoice_amount_percentage(self):
+        result = {}
+        result['contract_amount'] = sum([line['contract_amount']
+                                         for line in self.lines])
+        result['invoice_amount'] = sum([line['invoice_amount']
+                                         for line in self.lines])
+        if result['contract_amount']:
+            percentage = round(
+                result['invoice_amount'] / result['contract_amount'] * 100)
+        else:  # Division by zero.
+            percentage = None
+        result['percentage'] = percentage
         return result
 
 

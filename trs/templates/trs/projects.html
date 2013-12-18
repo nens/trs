@@ -52,3 +52,22 @@
     </p>
   {% endif %}
 {% endblock %}
+
+{% block overview-column %}
+  {% if view.can_see_everything %}
+    <h1>Totaal</h1>
+    <div>Verhouding gefactureerd t.o.v. opdrachtsom:</div>
+    <div style="font-size: 500%">
+      {{ view.total_invoice_amount_percentage.percentage }}%
+    </div>
+    <div>
+      Totaal gefactureerd:
+      {{ view.total_invoice_amount_percentage.invoice_amount|money }}
+    </div>
+    <div>
+      Totaal opdrachtsommen:
+      {{ view.total_invoice_amount_percentage.contract_amount|money }}
+    </div>
+
+  {% endif %}
+{% endblock %}
