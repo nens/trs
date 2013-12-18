@@ -1,5 +1,6 @@
 import datetime
 import logging
+import time
 
 from django import forms
 from django.contrib import messages
@@ -684,6 +685,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 for project in self.active_projects}
 
     def form_valid(self, form):
+        start_time = time.time()
         total_difference = 0
         absolute_difference = 0
         for project_code, new_hours in form.cleaned_data.items():
@@ -699,7 +701,6 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                                   booked_on=project,
                                   year_week=self.active_year_week)
                 booking.save()
-                logger.info("Added booking %s", booking)
 
         if absolute_difference:
             if total_difference < 0:
@@ -711,7 +712,8 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             messages.success(self.request, "Uren aangepast (%s)." % indicator)
         else:
             messages.info(self.request, "Niets aan de uren gewijzigd.")
-
+        elapsed = (time.time() - start_time)
+        logger.debug("Handled booking in %s secs", elapsed)
         return super(BookingView, self).form_valid(form)
 
     @cached_property

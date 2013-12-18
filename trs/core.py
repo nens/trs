@@ -1,6 +1,7 @@
 # Calculation core around the models.
 import datetime
 import logging
+import time
 
 from django.core.cache import cache
 from django.db import models
@@ -40,12 +41,15 @@ class PersonYearCombination(object):
             self.set_cache()
 
     def just_calculate_everything(self):
+        start_time = time.time()
         last_year_week = YearWeek.objects.filter(year=self.year).last()
         self.target = self.person.target(year_week=last_year_week)
         self.calc_target_and_overbookings()
         self.billable_percentage = self.calc_external_percentage()
         self.unbillable_percentage = 100 - self.billable_percentage
-        logger.debug("Re-calculated person/year info for %s", self.person)
+        elapsed = (time.time() - start_time)
+        logger.debug("Re-calculated person/year info for %s in % secs",
+                     self.person, elapsed)
 
     def set_cache(self):
         result = {key: getattr(self, key) for key in self.PYC_KEYS}

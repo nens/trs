@@ -151,35 +151,35 @@ class Person(models.Model):
     def hours_per_week(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return self.person_changes.filter(
+        return round(self.person_changes.filter(
             year_week__lte=year_week).aggregate(
-                models.Sum('hours_per_week'))['hours_per_week__sum'] or 0
+                models.Sum('hours_per_week'))['hours_per_week__sum'] or 0)
 
     @cache_per_week
     def standard_hourly_tariff(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return self.person_changes.filter(
+        return round(self.person_changes.filter(
             year_week__lte=year_week).aggregate(
                 models.Sum('standard_hourly_tariff'))[
-                    'standard_hourly_tariff__sum'] or 0
+                    'standard_hourly_tariff__sum'] or 0)
 
     @cache_per_week
     def minimum_hourly_tariff(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return self.person_changes.filter(
+        return round(self.person_changes.filter(
             year_week__lte=year_week).aggregate(
                 models.Sum('minimum_hourly_tariff'))[
-                    'minimum_hourly_tariff__sum'] or 0
+                    'minimum_hourly_tariff__sum'] or 0)
 
     @cache_per_week
     def target(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return self.person_changes.filter(
+        return round(self.person_changes.filter(
             year_week__lte=year_week).aggregate(
-                models.Sum('target'))['target__sum'] or 0
+                models.Sum('target'))['target__sum'] or 0)
 
     @cache_on_model
     def filtered_assigned_projects(self):
