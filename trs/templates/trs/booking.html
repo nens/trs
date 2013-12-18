@@ -34,7 +34,14 @@
         {% for line in view.lines %}
           <tr>
             <td>
-              {{ line.project.as_widget }}
+              {% if line.project.hidden and not view.can_see_everything %}
+                {{ line.project.code }}
+              {% else %}
+                <a href="{{ line.project.get_absolute_url }}"
+                   {% if not line.project.internal %}class="external-project"{% endif %}>
+                  {{ line.project.code }}
+                </a>
+              {% endif %}
             </td>
             <td>
               <span class="text-muted"
