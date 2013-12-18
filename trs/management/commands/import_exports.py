@@ -175,7 +175,7 @@ class Command(BaseCommand):
         # prepare_tls_request()
         pattern = basedir + '/Totalen * per project per week *.csv'
         found = glob.glob(pattern)
-        dialect = csv.Sniffer().sniff(open(found[0]).read())
+        dialect = csv.Sniffer().sniff(open(found[0], encoding='cp1252').read())
         for filename in found:
             import_from_csv(filename, dialect)
 
