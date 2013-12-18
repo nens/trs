@@ -43,8 +43,9 @@ def last_four_year_weeks():
 
 
 def cache_per_week(callable):
+    # Note: only for PersonChange related fields.
     def inner(self, year_week=None):
-        cache_key = self.cache_key(callable.__name__, year_week)
+        cache_key = self.person_change_cache_key(callable.__name__, year_week)
         result = cache.get(cache_key)
         if result is None:
             start_time = time.time()
@@ -113,6 +114,9 @@ class Person(models.Model):
     cache_indicator = models.IntegerField(
         default=0,
         verbose_name="cache indicator")
+    cache_indicator_person_change = models.IntegerField(
+        default=0,
+        verbose_name="cache indicator voor PersonChange veranderingen")
 
     class Meta:
         verbose_name = "persoon"
@@ -130,6 +134,11 @@ class Person(models.Model):
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-%s-%s-%s' % (
             self.id, self.cache_indicator, for_what, week_id)
+
+    def person_change_cache_key(self, for_what, year_week=None):
+        week_id = year_week and year_week.id or this_year_week().id
+        return 'person-%s-pc%s-%s-%s' % (
+            self.id, self.cache_indicator_person_change, for_what, week_id)
 
     def get_absolute_url(self):
         return reverse('trs.person', kwargs={'pk': self.pk})
@@ -539,6 +548,7 @@ class PersonChange(EventBase):
         related_name="person_changes")
 
     def save(self, *args, **kwargs):
+        self.person.cache_indicator_person_change += 1  # Specially for us.
         self.person.save()  # Increments cache indicator.
         return super(PersonChange, self).save(*args, **kwargs)
 
