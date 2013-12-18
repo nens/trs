@@ -7,11 +7,12 @@ from trs.testsettings import *
 DEBUG = False
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(BUILDOUT_DIR, 'var/cache'),
-        'TIMEOUT': 60 * 60 * 24 * 4,  # 4 days
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'trs_cache',
+        'TIMEOUT': 60 * 60 * 24 * 40,  # 40 days
         'OPTIONS': {'MAX_ENTRIES': 50000,
                 },
+        'KEY_PREFIX': 'trs',
     }
 }
 
