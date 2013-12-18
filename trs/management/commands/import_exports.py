@@ -149,11 +149,26 @@ def download_everything():
                          ]
     tempdir = tempfile.mkdtemp()
     logger.info("Tempdir: %s", tempdir)
-    for hardcoded_userid in hardcoded_userids:
+    # for hardcoded_userid in hardcoded_userids:
+    #     export = s.post('https://www.trsnens.nl/',
+    #                     params={'page': 'export_4'},
+    #                     data={'userId': hardcoded_userid,
+    #                           'beginweek': 0,
+    #                           'beginyear': 2000,
+    #                           'endweek': 53,
+    #                           'endyear': 2013},
+    #                     verify=False)
+    #     parts = export.headers['content-disposition'].split('filename="')
+    #     filename = parts[1].rstrip('"')
+    #     output_filename = os.path.join(tempdir, filename)
+    #     open(output_filename, 'wb').write(export.content)
+    #     logger.info("Wrote %s", output_filename)
+
+    # Person export
+    for form_number in [1, 2]:
         export = s.post('https://www.trsnens.nl/',
-                        params={'page': 'export_4'},
-                        data={'userId': hardcoded_userid,
-                              'beginweek': 0,
+                        params={'page': 'export_%s' % form_number},
+                        data={'beginweek': 0,
                               'beginyear': 2000,
                               'endweek': 53,
                               'endyear': 2013},
@@ -172,12 +187,53 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         basedir = download_everything()
-        # prepare_tls_request()
+        # Project data
+        pattern = basedir + '/Totalen per project *.csv'
+        found = glob.glob(pattern)
+        dialect = csv.Sniffer().sniff(
+            open(found[0], encoding='cp1252').read())
+        print(found)
+        # import_project_csv(found[0], dialect)
+
+        # Person data
+        pattern = basedir + '/Totalen per werknemer *.csv'
+        found = glob.glob(pattern)
+        print(found)
+        import_person_csv(found[0], dialect)
+
+        # The booking data per person per project
         pattern = basedir + '/Totalen * per project per week *.csv'
         found = glob.glob(pattern)
-        dialect = csv.Sniffer().sniff(open(found[0], encoding='cp1252').read())
         for filename in found:
             import_from_csv(filename, dialect)
+
+
+def get_import_user():
+    import_user, created = User.objects.get_or_create(
+        username='import_user',
+        first_name='Automatic',
+        last_name='Import')
+    return import_user
+
+
+def import_person_csv(filename, dialect):
+    logger.info("Opening %s", filename)
+    lines = list(csv.reader(open(filename, encoding='cp1252'), dialect))
+    import_user = get_import_user()
+    START_LINE = 7
+    models.PersonChange.objects.filter(added_by=import_user).delete()
+    for line in lines[START_LINE:]:
+        if not line:
+            break
+        person_name = line[0]
+        target = int(line[11])
+        cost_per_day = int(line[13])
+        hourly_tariff = round(cost_per_day / 8)
+        person = get_person(person_name)
+        person_change = get_person_change(person, import_user)
+        person_change.standard_hourly_tariff = hourly_tariff
+        person_change.target = target
+        person_change.save()
 
 
 def import_from_csv(filename, dialect):
@@ -188,10 +244,7 @@ def import_from_csv(filename, dialect):
     logger.debug("Person's name: %s", person_name)
     year_weeks = create_year_week_column_mapping(
         lines[YEAR_LINE], lines[WEEKS_LINE])
-    import_user, created = User.objects.get_or_create(
-        username='import_user',
-        first_name='Automatic',
-        last_name='Import')
+    import_user = get_import_user()
     models.Booking.objects.filter(added_by=import_user,
                                   booked_by=person).delete()
     booked_this_year = False
@@ -286,6 +339,17 @@ def get_project(project_code,
         project.hidden = False
     project.save()
     return project
+
+
+def get_person_change(person, import_user):
+    (person_change,
+     created) = models.PersonChange.objects.get_or_create(
+         person=person,
+         added_by=import_user,
+         year_week=import_year_week())
+    if created:
+        logger.info("Created person change for %s", person)
+    return person_change
 
 
 def create_year_week_column_mapping(year_line, weeks_line):
