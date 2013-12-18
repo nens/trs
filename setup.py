@@ -17,6 +17,7 @@ install_requires = [
     'django-tls',
     'gunicorn',
     'lizard-auth-client >= 0.9',
+    'python3-memcached',
     'requests',
     'setuptools',
     'south',
