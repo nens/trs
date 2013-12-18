@@ -194,6 +194,7 @@ def import_from_csv(filename, dialect):
         last_name='Import')
     models.Booking.objects.filter(added_by=import_user,
                                   booked_by=person).delete()
+    booked_this_year = False
     for line in lines[WEEKS_LINE + 1:]:
         if not line:
             break
@@ -225,12 +226,19 @@ def import_from_csv(filename, dialect):
             hours = int(hours)
             if not hours:
                 continue
+            if year_weeks[index].year != 2013:
+                # Only book in this year
+                continue
             booking = models.Booking(booked_by=person,
                                      booked_on=project,
                                      added_by=import_user,
                                      year_week=year_weeks[index],
                                      hours=hours)
             booking.save()
+            booked_this_year = True
+    if not booked_this_year:
+        person.archived = True
+        person.save()
 
 
 def get_work_assignment(project, person):
