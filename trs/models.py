@@ -1,5 +1,6 @@
 import datetime
 import logging
+import time
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
@@ -18,6 +19,7 @@ from tls import request as tls_request
 # too. 999999.99 should be possible, so that's 8 digits with 2 decimal places.
 MAX_DIGITS = 8
 DECIMAL_PLACES = 2
+LOG_DURATION = True
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +47,11 @@ def cache_per_week(callable):
         cache_key = self.cache_key(callable.__name__, year_week)
         result = cache.get(cache_key)
         if result is None:
+            start_time = time.time()
             result = callable(self, year_week)
+            elapsed = (time.time() - start_time)
+            if LOG_DURATION:
+                logger.debug("Calculated in %s secs: %s", elapsed, cache_key)
             cache.set(cache_key, result)
         return result
     return inner
@@ -56,7 +62,11 @@ def cache_on_model(callable):
         cache_key = self.cache_key(callable.__name__)
         result = cache.get(cache_key)
         if result is None:
+            start_time = time.time()
             result = callable(self)
+            elapsed = (time.time() - start_time)
+            if LOG_DURATION:
+                logger.debug("Calculated in %s secs: %s", elapsed, cache_key)
             cache.set(cache_key, result)
         return result
     return inner
@@ -117,7 +127,7 @@ class Person(models.Model):
         return self.name
 
     def cache_key(self, for_what, year_week=None):
-        week_id = year_week and year_week.id or ''
+        week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-%s-%s-%s' % (
             self.id, self.cache_indicator, for_what, week_id)
 
@@ -176,6 +186,7 @@ class Person(models.Model):
 
     @cache_on_model
     def booking_percentage(self):
+        # xxx
         # Key performance indicator
         weeks = last_four_year_weeks()
         hours_to_work = sum([self.hours_per_week(year_week=week)
