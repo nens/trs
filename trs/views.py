@@ -420,6 +420,13 @@ class ProjectsView(BaseView):
     def lines(self):
         # Used for the elaborate view (projects.html)
         result = []
+        invoices_per_project = Invoice.objects.filter(
+            project__in=self.projects).values(
+            'project').annotate(
+            models.Sum('amount_exclusive'))
+        invoice_amounts = {item['project']: round(item['amount_exclusive__sum'])
+                           for item in invoices_per_project}
+
         for project in self.projects:
             line = {}
             line['project'] = project
@@ -430,15 +437,14 @@ class ProjectsView(BaseView):
             else:
                 klass = 'default'
             line['klass'] = klass
-
-            # Progress bar chart styling
-            width_indication = project.booked() / (project.hour_budget() or 1)
-            inner_width = min(100, round(100 * width_indication))
-            inner_bar_style = "width: {}%;".format(inner_width)
-            line['inner_bar_style'] = inner_bar_style
-            line['progress_explanation'] = "Budget: %s, geboekt: %s" % (
-                round(project.hour_budget()), round(project.booked()))
-
+            invoice_amount = invoice_amounts.get(project.id, 0)
+            if project.contract_amount:
+                invoice_amount_percentage = round(
+                    invoice_amount / project.contract_amount * 100)
+            else:  # Division by zero.
+                invoice_amount_percentage = None
+            line['invoice_amount'] = invoice_amount
+            line['invoice_amount_percentage'] = invoice_amount_percentage
             result.append(line)
         return result
 
