@@ -233,6 +233,7 @@ def import_person_csv(filename, dialect):
         person_change = get_person_change(person, import_user)
         person_change.standard_hourly_tariff = hourly_tariff
         person_change.target = target
+        person.archived = False  # If you're in this list...
         person_change.save()
 
 
@@ -247,8 +248,13 @@ def import_project_csv(filename, dialect):
         project = get_project2(project_code)
         project_manager_name = line[2]
         project_manager = get_person(project_manager_name)
-
+        project.contract_amount = line[7]
         project.project_manager = project_manager
+        REMARK_COLUMN = 12  # Weird, should be 14?
+        remarks = [remark for remark in line[REMARK_COLUMN:]
+                   if remark != '' and not
+                   (len(remark) == 3 and remark.endswith(',0'))]
+        project.remark = '\n'.join(remarks)
         project.save()
 
 
