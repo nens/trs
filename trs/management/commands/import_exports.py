@@ -359,6 +359,12 @@ def get_project(project_code,
     else:
         # Set it because sqlite has a 'None' false value too...
         project.hidden = False
+    if ('verlof' in project_description.lower() or
+        'feestdag' in project_description.lower()):
+        project.hourless = True
+    else:
+        # Set it because sqlite has a 'None' false value too...
+        project.hourless = False
     project.save()
     return project
 

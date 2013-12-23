@@ -16,6 +16,14 @@
       <span title="Subsidieproject"
             class="text-muted glyphicon glyphicon-usd"></span>
     {% endif %}
+    {% if view.project.hidden %}
+      <span title="Afgeschermd project: je ziet elkaars uren niet"
+            class="text-muted glyphicon glyphicon-ban-circle"></span>
+    {% endif %}
+    {% if view.project.hourless %}
+      <span title="Uren tellen niet mee voor totaal"
+            class="text-muted glyphicon glyphicon-picture"></span>
+    {% endif %}
     <small>{{ view.project.description }}</small>
   </h1>
   <table class="table borderless-table table-condensed"

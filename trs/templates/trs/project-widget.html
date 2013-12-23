@@ -15,6 +15,14 @@
   <span title="Subsidieproject"
         class="text-muted glyphicon glyphicon-usd"></span>
 {% endif %}
+{% if project.hidden %}
+  <span title="Afgeschermd project: je ziet elkaars uren niet"
+        class="text-muted glyphicon glyphicon-ban-circle"></span>
+{% endif %}
+{% if project.hourless %}
+  <span title="Uren tellen niet mee voor totaal"
+        class="text-muted glyphicon glyphicon-picture"></span>
+{% endif %}
 {% if view.can_see_everything %}
   {% if project.overbooked_percentage > 5 %}
     <span

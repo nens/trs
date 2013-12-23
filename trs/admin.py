@@ -10,7 +10,8 @@ class PersonAdmin(admin.ModelAdmin):
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ['code', 'internal', 'hidden', 'archived', 'description']
+    list_display = ['code', 'internal', 'hidden', 'hourless', 'archived',
+                    'description']
 
 
 class InvoiceAdmin(admin.ModelAdmin):
