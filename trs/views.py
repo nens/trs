@@ -483,18 +483,16 @@ class ProjectView(BaseView):
     def project(self):
         return Project.objects.get(pk=self.kwargs['pk'])
 
-    def has_form_permissions(self):
-        # A little bit of abuse regarding naming, but this is the only
-        # protected regular view, so that's OK.
+    @cached_property
+    def can_view_team(self):
         if not self.project.hidden:
-            # Regular project, everyone may see it.
+            # Normally everyone can see it.
             return True
-        # Hidden projects can only be seen by those managing it.
-        if self.can_see_everything:
-            return True
-        if self.project.project_manager == self.active_person:
+        if self.can_edit_and_see_everything:
             return True
         if self.project.project_leader == self.active_person:
+            return True
+        if self.project.project_manager == self.active_person:
             return True
 
     @cached_property
