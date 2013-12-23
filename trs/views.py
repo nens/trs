@@ -300,6 +300,8 @@ class PersonView(BaseView):
     def sidebar_person(self):
         if self.can_see_everything:
             return self.person
+        if self.person == self.active_person:
+            return self.person
 
     @cached_property
     def can_see_internal_projects(self):
