@@ -5,7 +5,11 @@ Changelog of trs
 0.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Importing more project and person information from the csv files: project
+  manager, project comments, target, hourly tariff.
+
+- Only importing bookings from 2013, that fits better with the rest of the
+  import.
 
 
 0.1 (2013-12-18)
