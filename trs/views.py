@@ -120,10 +120,14 @@ class BaseMixin(object):
                 if not project.archived]
 
     @cached_property
-    def person_year_info(self):
-        if not self.active_person:
+    def sidebar_person(self):
+        return self.active_person
+
+    @cached_property
+    def sidebar_person_year_info(self):
+        if not self.sidebar_person:
             return
-        return core.get_pyc(person=self.active_person)
+        return core.get_pyc(person=self.sidebar_person)
 
     @cached_property
     def selected_tab(self):
@@ -291,6 +295,11 @@ class PersonView(BaseView):
     @cached_property
     def person(self):
         return Person.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def sidebar_person(self):
+        if self.can_see_everything:
+            return self.person
 
     @cached_property
     def can_see_internal_projects(self):
