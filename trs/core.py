@@ -33,7 +33,7 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        self.cache_key = 'pycdata6-%s-%s-%s' % (
+        self.cache_key = 'pycdata8-%s-%s-%s' % (
             person.id, person.cache_indicator, year)
         has_cached_data = self.get_cache()
         if not has_cached_data:
@@ -69,7 +69,7 @@ class PersonYearCombination(object):
         booked_this_year_per_project = Booking.objects.filter(
             booked_by=self.person,
             year_week__year=self.year,
-            booked_on__internal=False).values(
+            booked_on__hourless=False).values(
                 'booked_on').annotate(
                     models.Sum('hours'))
         booked_this_year = {
@@ -135,6 +135,7 @@ class PersonYearCombination(object):
         """
         query_result = Booking.objects.filter(
             booked_by=self.person,
+            booked_on__hourless=False,
             year_week__year=self.year).values(
                 'booked_on__internal').annotate(
                     models.Sum('hours'))
