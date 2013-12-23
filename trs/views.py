@@ -1184,10 +1184,10 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 class PersonChangeView(LoginAndPermissionsRequiredMixin,
                        CreateView,
                        BaseMixin):
-    template_name = 'trs/edit.html'
+    template_name = 'trs/person-change.html'
     model = PersonChange
     fields = ['hours_per_week', 'target', 'standard_hourly_tariff',
-              'minimum_hourly_tariff', 'year_week']
+              'minimum_hourly_tariff']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -1199,20 +1199,68 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
 
     @cached_property
     def title(self):
-        return "Wijzig werkweek en target voor %s" % self.person.name
+        return "Wijzig gegevens voor %s (stand %s)" % (
+            self.person.name, self.chosen_year_week)
 
     @cached_property
     def success_url(self):
         return self.person.get_absolute_url()
 
     @cached_property
+    def edit_action(self):
+        return '.?year_week=%s' % self.chosen_year_week
+
+    @cached_property
+    def chosen_year_week(self):
+        if not 'year_week' in self.request.GET:
+            return this_year_week()
+        year, week = self.request.GET['year_week'].split('-')
+        return YearWeek.objects.get(year=int(year), week=int(week))
+
+    def year_week_suggestions(self):
+        current_year = this_year_week().year
+        next_year = current_year + 1
+        return [
+            # (yyyy-ww, title)
+            (str(YearWeek.objects.filter(year=current_year).first()),
+             'Begin %s (begin dit jaar)' % current_year),
+            (str(this_year_week()),
+             'Nu'),
+            (str(YearWeek.objects.filter(year=next_year).first()),
+             'Begin %s (begin volgend jaar)' % next_year),
+            ]
+
+    def all_year_weeks(self):
+        # Well, all... 2013 is our TRS start year.
+        return YearWeek.objects.filter(year__gte=2013)
+
+    @cached_property
+    def previous_changes(self):
+        changes = list(PersonChange.objects.filter(
+            person=self.person).values(
+                'year_week').annotate(
+                    models.Sum('hours_per_week'),
+                    models.Sum('target'),
+                    models.Sum('standard_hourly_tariff'),
+                    models.Sum('minimum_hourly_tariff')))
+        relevant_weeks = YearWeek.objects.filter(
+            id__in=[change['year_week'] for change in changes])
+        for index, change in enumerate(changes):
+            change['year_week_str'] = str(relevant_weeks[index])
+        return changes
+
+    @cached_property
     def initial(self):
         """Return initial form values. Turn the decimals into integers already."""
-        return {'hours_per_week': int(self.person.hours_per_week()),
-                'standard_hourly_tariff': int(self.person.standard_hourly_tariff()),
-                'minimum_hourly_tariff': int(self.person.minimum_hourly_tariff()),
-                'target': int(self.person.target()),
-                'year_week': this_year_week()}
+        return {
+            'hours_per_week': int(self.person.hours_per_week(
+                year_week=self.chosen_year_week)),
+            'standard_hourly_tariff': int(self.person.standard_hourly_tariff(
+                year_week=self.chosen_year_week)),
+            'minimum_hourly_tariff': int(self.person.minimum_hourly_tariff(
+                year_week=self.chosen_year_week)),
+            'target': int(self.person.target(
+                year_week=self.chosen_year_week))}
 
     def form_valid(self, form):
         form.instance.person = self.person
@@ -1230,6 +1278,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         form.instance.minimum_hourly_tariff = (
             minimum_hourly_tariff - self.initial['minimum_hourly_tariff'])
         form.instance.target = target - self.initial['target']
+        form.instance.year_week = self.chosen_year_week
 
         adjusted = []
         if form.instance.hours_per_week:
