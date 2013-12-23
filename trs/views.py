@@ -807,7 +807,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Project
     title = "Project aanpassen"
-    fields = ['code', 'description', 'internal', 'hidden',
+    fields = ['code', 'description', 'internal', 'hidden', 'hourless',
               'archived',  # Note: archived only on edit view :-)
               'is_subsidized', 'principal',
               'contract_amount',
@@ -831,7 +831,7 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Project
     title = "Nieuw project"
-    fields = ['code', 'description', 'internal', 'hidden',
+    fields = ['code', 'description', 'internal', 'hidden', 'hourless',
               'is_subsidized', 'principal',
               'contract_amount',
               'start', 'end', 'project_leader', 'project_manager',
