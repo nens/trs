@@ -6,6 +6,7 @@ import logging
 import os
 import tempfile
 
+from bs4 import BeautifulSoup
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 import requests
@@ -40,129 +41,45 @@ def download_everything():
                  'login': 'reinout.vanrees',
                  'password': password},
            verify=False)
-    s.get('https://www.trsnens.nl/?page=export',
+    export_page = s.get('https://www.trsnens.nl/?page=export',
           verify=False)
-    hardcoded_userids = [101,
-                         104,
-                         105,
-                         122,
-                         123,
-                         124,
-                         125,
-                         139,
-                         143,
-                         147,
-                         148,
-                         149,
-                         152,
-                         153,
-                         155,
-                         158,
-                         165,
-                         169,
-                         180,
-                         184,
-                         186,
-                         187,
-                         188,
-                         189,
-                         192,
-                         193,
-                         196,
-                         198,
-                         204,
-                         206,
-                         211,
-                         215,
-                         217,
-                         220,
-                         223,
-                         225,
-                         226,
-                         227,
-                         231,
-                         232,
-                         233,
-                         234,
-                         235,
-                         236,
-                         237,
-                         238,
-                         239,
-                         240,
-                         241,
-                         242,
-                         243,
-                         244,
-                         245,
-                         246,
-                         247,
-                         248,
-                         249,
-                         250,
-                         251,
-                         252,
-                         253,
-                         254,
-                         255,
-                         256,
-                         257,
-                         258,
-                         259,
-                         260,
-                         261,
-                         262,
-                         263,
-                         264,
-                         265,
-                         266,
-                         267,
-                         268,
-                         269,
-                         27,
-                         270,
-                         271,
-                         272,
-                         273,
-                         31,
-                         41,
-                         42,
-                         43,
-                         46,
-                         48,
-                         49,
-                         50,
-                         51,
-                         52,
-                         53,
-                         54,
-                         55,
-                         56,
-                         6,
-                         61,
-                         62,
-                         63,
-                         68,
-                         76,
-                         81,
-                         99,
-                         ]
+    soup = BeautifulSoup(export_page.content)
+    user_export_select = soup.find_all(attrs={'name': 'userId'})[0]
+    user_ids = [int(tag['value']) for tag in user_export_select.find_all('option')]
+    project_export_select = soup.find_all(attrs={'name': 'budgetId'})[0]
+    project_ids = [int(tag['value']) for tag in project_export_select.find_all('option')]
+    print(project_ids)
     tempdir = tempfile.mkdtemp()
     logger.info("Tempdir: %s", tempdir)
-    # for hardcoded_userid in hardcoded_userids:
-    #     export = s.post('https://www.trsnens.nl/',
-    #                     params={'page': 'export_4'},
-    #                     data={'userId': hardcoded_userid,
-    #                           'beginweek': 0,
-    #                           'beginyear': 2000,
-    #                           'endweek': 53,
-    #                           'endyear': 2013},
-    #                     verify=False)
-    #     parts = export.headers['content-disposition'].split('filename="')
-    #     filename = parts[1].rstrip('"')
-    #     output_filename = os.path.join(tempdir, filename)
-    #     open(output_filename, 'wb').write(export.content)
-    #     logger.info("Wrote %s", output_filename)
+    for user_id in user_ids:
+        export = s.post('https://www.trsnens.nl/',
+                        params={'page': 'export_4'},
+                        data={'userId': user_id,
+                              'beginweek': 0,
+                              'beginyear': 2000,
+                              'endweek': 53,
+                              'endyear': 2013},
+                        verify=False)
+        parts = export.headers['content-disposition'].split('filename="')
+        filename = parts[1].rstrip('"')
+        output_filename = os.path.join(tempdir, filename)
+        open(output_filename, 'wb').write(export.content)
+        logger.info("Wrote %s", output_filename)
+
+    for project_id in project_ids:
+        export = s.post('https://www.trsnens.nl/',
+                        params={'page': 'export_3'},
+                        data={'budgetId': project_id,
+                              'beginweek': 0,
+                              'beginyear': 2000,
+                              'endweek': 53,
+                              'endyear': 2013},
+                        verify=False)
+        parts = export.headers['content-disposition'].split('filename="')
+        filename = parts[1].rstrip('"')
+        output_filename = os.path.join(tempdir, filename)
+        open(output_filename, 'wb').write(export.content)
+        logger.info("Wrote %s", output_filename)
 
     # Person export
     for form_number in [1, 2]:
@@ -178,6 +95,7 @@ def download_everything():
         output_filename = os.path.join(tempdir, filename)
         open(output_filename, 'wb').write(export.content)
         logger.info("Wrote %s", output_filename)
+
     return tempdir
 
 
@@ -187,25 +105,37 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         basedir = download_everything()
-        # Project data
-        pattern = basedir + '/Totalen per project *.csv'
+        # basedir = '/var/folders/dl/wpghhqhj2bs9bcnn213f1nqw0000gn/T/tmp4zggjr'
+
+        # Sniffing the dialect
+        pattern = basedir + '/*.csv'
         found = glob.glob(pattern)
         dialect = csv.Sniffer().sniff(
             open(found[0], encoding='cp1252').read())
-        print(found)
-        import_project_csv(found[0], dialect)
+
+        # Project data
+        pattern = basedir + '/Totalen per project *.csv'
+        found = glob.glob(pattern)
+        if found:
+            import_project_csv(found[0], dialect)
 
         # Person data
         pattern = basedir + '/Totalen per werknemer *.csv'
         found = glob.glob(pattern)
-        print(found)
-        import_person_csv(found[0], dialect)
+        if found:
+            import_person_csv(found[0], dialect)
 
         # The booking data per person per project
         pattern = basedir + '/Totalen * per project per week *.csv'
         found = glob.glob(pattern)
         for filename in found:
             import_from_csv(filename, dialect)
+
+        # The project's budget data
+        pattern = basedir + '/Totalen project * per werknemer *.csv'
+        found = glob.glob(pattern)
+        for filename in found:
+            import_budget_csv(filename, dialect)
 
 
 def get_import_user():
@@ -256,6 +186,36 @@ def import_project_csv(filename, dialect):
                    (len(remark) == 3 and remark.endswith(',0'))]
         project.remark = '\n'.join(remarks)
         project.save()
+
+
+def import_budget_csv(filename, dialect):
+    logger.info("Opening %s", filename)
+    lines = list(csv.reader(open(filename, encoding='cp1252'), dialect))
+    import_user = get_import_user()
+    project_and_description_string = lines[1][1]
+    project_id = project_and_description_string.split(' ')[0]
+    project = get_project2(project_id)
+    models.BudgetItem.objects.filter(added_by=import_user,
+                                     project=project).delete()
+    on_budget_line = False
+    for line in lines:
+        if line[0].startswith('Overige kosten'):
+            on_budget_line = True
+            continue
+        if not on_budget_line:
+            continue
+        if not line[0]:
+            break
+        description = line[0]
+        amount = -1 * int(line[1])
+        budget_item = models.BudgetItem(
+            project=project,
+            description=description,
+            amount=amount,
+            added_by=import_user)
+        logger.debug("Added on %s: %s = %s",
+                     project, description, amount)
+        budget_item.save()
 
 
 def import_from_csv(filename, dialect):
