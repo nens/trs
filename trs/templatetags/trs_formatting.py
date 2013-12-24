@@ -28,7 +28,7 @@ def moneydiff(value):
         return value
     if rounded > 0:
         return mark_safe('<tt>+%s</tt>' % intcomma(rounded))
-    return mark_safe('<tt>+%s</tt>' % intcomma(rounded))
+    return mark_safe('<tt>%s</tt>' % intcomma(rounded))
 
 
 @register.filter

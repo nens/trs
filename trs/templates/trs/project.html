@@ -16,9 +16,18 @@
       <span title="Subsidieproject"
             class="text-muted glyphicon glyphicon-usd"></span>
     {% endif %}
+    {% if view.project.hidden %}
+      <span title="Afgeschermd project: je ziet elkaars uren niet"
+            class="text-muted glyphicon glyphicon-ban-circle"></span>
+    {% endif %}
+    {% if view.project.hourless %}
+      <span title="Uren tellen niet mee voor totaal"
+            class="text-muted glyphicon glyphicon-picture"></span>
+    {% endif %}
     <small>{{ view.project.description }}</small>
   </h1>
-  <table class="table borderless-table">
+  <table class="table borderless-table table-condensed"
+         style="width: auto;">
     <tbody>
       <tr>
         <th>Opdrachtgever</th>
@@ -68,87 +77,95 @@
     </p>
   {% endif %}
 
-  <h2>Projectteam</h2>
-  <div class="table-responsive">
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Wie</th>
-          <th></th>
-          <th class="text-right">Toegekend</th>
-          <th class="text-right">Geboekt</th>
-          {% if view.can_see_financials %}
-            <th class="text-right">Tarief</th>
-            <th class="text-right">Omzet</th>
-            <th class="text-right">Verlies</th>
-          {% endif %}
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for line in view.lines %}
+  {% if view.can_view_team %}
+    <h2>Projectteam</h2>
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
           <tr>
-            <td>
-              {{ line.person.as_widget }}
-            </td>
-            <td>
-              {% if line.is_project_leader %}
-                <span title="Projectleider: gaat over de uren">PL</span>
-              {% endif %}
-              &nbsp;
-              {% if line.is_project_manager %}
-                <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
-              {% endif %}
-            </td>
-            <td class="text-right">{{ line.budget|hours }}</td>
-            <td class="text-right
-                       {% if line.is_overbooked %}danger{% endif %}">
-              {{ line.booked|hours }}
-            </td>
+            <th>Wie</th>
+            <th></th>
+            <th class="text-right">Toegekend</th>
+            <th class="text-right">Geboekt</th>
             {% if view.can_see_financials %}
-              {% if line.hourly_tariff >= line.desired_hourly_tariff %}
-                <td class="text-right">
-                  {{ line.hourly_tariff|money }}
-                </td>
-              {% else %}
-                <td class="text-right danger">
-                  <span title="Gewenst: {{ line.desired_hourly_tariff }}.">
-                    {{ line.hourly_tariff|money }}
-                  </span>
-                </td>
-              {% endif %}
-              <td class="text-right">{{ line.turnover|money }}</td>
-              <td class="text-right">{{ line.loss|money }}</td>
+              <th class="text-right">Tarief</th>
+              <th class="text-right">Omzet</th>
+              <th class="text-right">Verlies</th>
             {% endif %}
           </tr>
-        {% endfor %}
-      </tbody>
+        </thead>
 
-      {% if view.can_see_financials %}
-        <tfoot>
-          <tr>
-            <th>Totaal</th>
-            <td></td>
-            <td class="text-right"></td>
-            <td class="text-right"></td>
-            <td class="text-right"></td>
-            <th class="text-right">{{ view.total_turnover|money }}</th>
-            <th class="text-right">{{ view.total_loss|money }}</th>
-          </tr>
-        </tfoot>
+        <tbody>
+          {% for line in view.lines %}
+            <tr>
+              <td>
+                {{ line.person.as_widget }}
+              </td>
+              <td>
+                {% if line.is_project_leader %}
+                  <span title="Projectleider: gaat over de uren">PL</span>
+                  &nbsp;
+                {% endif %}
+                {% if line.is_project_manager %}
+                  <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
+                {% endif %}
+              </td>
+              <td class="text-right">{{ line.budget|hours }}</td>
+              <td class="text-right
+                         {% if line.is_overbooked %}danger{% endif %}">
+                {{ line.booked|hours }}
+              </td>
+              {% if view.can_see_financials %}
+                {% if line.hourly_tariff >= line.desired_hourly_tariff %}
+                  <td class="text-right">
+                    {{ line.hourly_tariff|money }}
+                  </td>
+                {% else %}
+                  <td class="text-right danger">
+                    <span title="Gewenst: {{ line.desired_hourly_tariff }}.">
+                      {{ line.hourly_tariff|money }}
+                    </span>
+                  </td>
+                {% endif %}
+                <td class="text-right">{{ line.turnover|money }}</td>
+                <td class="text-right">{{ line.loss|money }}</td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+
+        {% if view.can_see_financials %}
+          <tfoot>
+            <tr>
+              <th>Totaal</th>
+              <td></td>
+              <td class="text-right"></td>
+              <td class="text-right"></td>
+              <td class="text-right"></td>
+              <th class="text-right">{{ view.total_turnover|money }}</th>
+              <th class="text-right">{{ view.total_loss|money }}</th>
+            </tr>
+          </tfoot>
+        {% endif %}
+      </table>
+
+      {% if view.can_edit_team %}
+        <div>
+          <a href="{% url 'trs.project.team' pk=view.project.pk %}"
+             class="btn btn-default">
+            <span class="glyphicon glyphicon-pencil"></span>
+            Pas team aan
+          </a>
+        </div>
       {% endif %}
-    </table>
-
-    {% if view.can_edit_team %}
-      <div>
-        <a href="{% url 'trs.project.team' pk=view.project.pk %}"
-           class="btn btn-default">
-          <span class="glyphicon glyphicon-pencil"></span>
-          Pas team aan
-        </a>
-      </div>
-    {% endif %}
-  </div>
+    </div>
+  {% else %}
+    <p>
+      <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+      Dit project is afgeschermd, dus je kan niet zien wie er op dit project
+      mogen boeken.
+    </p>
+  {% endif %}
 
   {% if view.can_see_project_financials %}
     <h2>Begroting</h2>

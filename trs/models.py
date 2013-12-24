@@ -225,7 +225,14 @@ class Project(models.Model):
     hidden = models.BooleanField(
         verbose_name="afgeschermd project",
         help_text=("Zet dit standaard aan voor interne projecten, tenzij " +
-                   "het een 'echt' project is waar uren voor staan."),
+                   "het een 'echt' project is waar uren voor staan. " +
+                   "Afgeschermde projecten kan je andermans gegevens niet " +
+                   "van zien. Goed voor ziekte enzo."),
+        default=False)
+    hourless = models.BooleanField(
+        verbose_name="tel uren niet mee",
+        help_text=("Uren van dit project tellen niet mee voor de " +
+                   "intern/extern verhouding en binnen/buiten budget."),
         default=False)
     archived = models.BooleanField(
         verbose_name="gearchiveerd",
@@ -429,7 +436,10 @@ class BudgetItem(FinancialBase):
         max_digits=12,  # We don't mind a metric ton of hard cash.
         decimal_places=DECIMAL_PLACES,
         default=0,
-        verbose_name="bedrag exclusief")
+        verbose_name="bedrag exclusief",
+        help_text=("Opgepast: positieve bedragen verhogen ons budget, " +
+                   "negatieve verlagen het. Het wordt dus niet automatisch " +
+                   "afgetrokken."))
     is_reservation = models.BooleanField(
         verbose_name="reservering",
         default=False)

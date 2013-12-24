@@ -6,6 +6,7 @@ import logging
 import os
 import tempfile
 
+from bs4 import BeautifulSoup
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 import requests
@@ -18,6 +19,7 @@ NAME_LINE = 1
 YEAR_LINE = 6
 WEEKS_LINE = 7
 START_COLUMN = 10
+INVOICES_FILENAME = 'invoices.html'
 
 
 def date_string_to_date(date_string):
@@ -26,6 +28,13 @@ def date_string_to_date(date_string):
     month = int(date_string[3:5])
     year = int(date_string[6:])
     return datetime.date(year, month, day)
+
+
+def dutch_string_to_int(dutch_string):
+    # 1.234,00 to 1234
+    dutch_string = dutch_string.replace('.', '')
+    dutch_string = dutch_string.replace(',', '.')
+    return int(float(dutch_string))
 
 
 def import_year_week():
@@ -40,129 +49,44 @@ def download_everything():
                  'login': 'reinout.vanrees',
                  'password': password},
            verify=False)
-    s.get('https://www.trsnens.nl/?page=export',
+    export_page = s.get('https://www.trsnens.nl/?page=export',
           verify=False)
-    hardcoded_userids = [101,
-                         104,
-                         105,
-                         122,
-                         123,
-                         124,
-                         125,
-                         139,
-                         143,
-                         147,
-                         148,
-                         149,
-                         152,
-                         153,
-                         155,
-                         158,
-                         165,
-                         169,
-                         180,
-                         184,
-                         186,
-                         187,
-                         188,
-                         189,
-                         192,
-                         193,
-                         196,
-                         198,
-                         204,
-                         206,
-                         211,
-                         215,
-                         217,
-                         220,
-                         223,
-                         225,
-                         226,
-                         227,
-                         231,
-                         232,
-                         233,
-                         234,
-                         235,
-                         236,
-                         237,
-                         238,
-                         239,
-                         240,
-                         241,
-                         242,
-                         243,
-                         244,
-                         245,
-                         246,
-                         247,
-                         248,
-                         249,
-                         250,
-                         251,
-                         252,
-                         253,
-                         254,
-                         255,
-                         256,
-                         257,
-                         258,
-                         259,
-                         260,
-                         261,
-                         262,
-                         263,
-                         264,
-                         265,
-                         266,
-                         267,
-                         268,
-                         269,
-                         27,
-                         270,
-                         271,
-                         272,
-                         273,
-                         31,
-                         41,
-                         42,
-                         43,
-                         46,
-                         48,
-                         49,
-                         50,
-                         51,
-                         52,
-                         53,
-                         54,
-                         55,
-                         56,
-                         6,
-                         61,
-                         62,
-                         63,
-                         68,
-                         76,
-                         81,
-                         99,
-                         ]
+    soup = BeautifulSoup(export_page.content)
+    user_export_select = soup.find_all(attrs={'name': 'userId'})[0]
+    user_ids = [int(tag['value']) for tag in user_export_select.find_all('option')]
+    project_export_select = soup.find_all(attrs={'name': 'budgetId'})[0]
+    project_ids = [int(tag['value']) for tag in project_export_select.find_all('option')]
     tempdir = tempfile.mkdtemp()
     logger.info("Tempdir: %s", tempdir)
-    # for hardcoded_userid in hardcoded_userids:
-    #     export = s.post('https://www.trsnens.nl/',
-    #                     params={'page': 'export_4'},
-    #                     data={'userId': hardcoded_userid,
-    #                           'beginweek': 0,
-    #                           'beginyear': 2000,
-    #                           'endweek': 53,
-    #                           'endyear': 2013},
-    #                     verify=False)
-    #     parts = export.headers['content-disposition'].split('filename="')
-    #     filename = parts[1].rstrip('"')
-    #     output_filename = os.path.join(tempdir, filename)
-    #     open(output_filename, 'wb').write(export.content)
-    #     logger.info("Wrote %s", output_filename)
+    for user_id in user_ids:
+        export = s.post('https://www.trsnens.nl/',
+                        params={'page': 'export_4'},
+                        data={'userId': user_id,
+                              'beginweek': 0,
+                              'beginyear': 2000,
+                              'endweek': 53,
+                              'endyear': 2013},
+                        verify=False)
+        parts = export.headers['content-disposition'].split('filename="')
+        filename = parts[1].rstrip('"')
+        output_filename = os.path.join(tempdir, filename)
+        open(output_filename, 'wb').write(export.content)
+        logger.info("Wrote %s", output_filename)
+
+    for project_id in project_ids:
+        export = s.post('https://www.trsnens.nl/',
+                        params={'page': 'export_3'},
+                        data={'budgetId': project_id,
+                              'beginweek': 0,
+                              'beginyear': 2000,
+                              'endweek': 53,
+                              'endyear': 2013},
+                        verify=False)
+        parts = export.headers['content-disposition'].split('filename="')
+        filename = parts[1].rstrip('"')
+        output_filename = os.path.join(tempdir, filename)
+        open(output_filename, 'wb').write(export.content)
+        logger.info("Wrote %s", output_filename)
 
     # Person export
     for form_number in [1, 2]:
@@ -178,6 +102,45 @@ def download_everything():
         output_filename = os.path.join(tempdir, filename)
         open(output_filename, 'wb').write(export.content)
         logger.info("Wrote %s", output_filename)
+
+    active_projects_invoices_page = s.get(
+        'https://www.trsnens.nl/',
+        params={'page': 'invoice_projects'},
+        verify=False)
+    soup = BeautifulSoup(active_projects_invoices_page.content)
+    budget_select = soup.find(id='budgetId')
+    active_budget_ids = [int(tag['value']) for tag in budget_select.find_all('option')]
+
+    archived_projects_invoices_page = s.get(
+        'https://www.trsnens.nl/',
+        params={'page': 'invoice_projects',
+                'filter': 'archive'},
+        verify=False)
+    soup = BeautifulSoup(archived_projects_invoices_page.content)
+    budget_select = soup.find(id='budgetId')
+    archived_budget_ids = [int(tag['value']) for tag in budget_select.find_all('option')]
+
+    for budget_id in active_budget_ids:
+        page = s.get(
+            'https://www.trsnens.nl/',
+            params={'page': 'invoice_projects',
+                    'budgetId': budget_id},
+            verify=False)
+        soup = BeautifulSoup(page.content)
+        filename = 'invoices_%s.html' % budget_id
+        open(os.path.join(tempdir, filename), 'w').write(str(soup))
+
+    for budget_id in archived_budget_ids:
+        page = s.get(
+            'https://www.trsnens.nl/',
+            params={'page': 'invoice_projects',
+                    'filter': 'archive',
+                    'budgetId': budget_id},
+            verify=False)
+        soup = BeautifulSoup(page.content)
+        filename = 'invoices_%s.html' % budget_id
+        open(os.path.join(tempdir, filename), 'w').write(str(soup))
+
     return tempdir
 
 
@@ -187,25 +150,42 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         basedir = download_everything()
+        # Sniffing the dialect
+        pattern = basedir + '/*.csv'
+        found = glob.glob(pattern)
+        if found:
+            dialect = csv.Sniffer().sniff(
+                open(found[0], encoding='cp1252').read())
+
         # Project data
         pattern = basedir + '/Totalen per project *.csv'
         found = glob.glob(pattern)
-        dialect = csv.Sniffer().sniff(
-            open(found[0], encoding='cp1252').read())
-        print(found)
-        import_project_csv(found[0], dialect)
+        if found:
+            import_project_csv(found[0], dialect)
 
         # Person data
         pattern = basedir + '/Totalen per werknemer *.csv'
         found = glob.glob(pattern)
-        print(found)
-        import_person_csv(found[0], dialect)
+        if found:
+            import_person_csv(found[0], dialect)
 
         # The booking data per person per project
         pattern = basedir + '/Totalen * per project per week *.csv'
         found = glob.glob(pattern)
         for filename in found:
             import_from_csv(filename, dialect)
+
+        # The project's budget data
+        pattern = basedir + '/Totalen project * per werknemer *.csv'
+        found = glob.glob(pattern)
+        for filename in found:
+            import_budget_csv(filename, dialect)
+
+        # The invoices
+        pattern = basedir + '/invoices_*.html'
+        found = glob.glob(pattern)
+        for filename in found:
+            import_invoices(filename)
 
 
 def get_import_user():
@@ -233,6 +213,7 @@ def import_person_csv(filename, dialect):
         person_change = get_person_change(person, import_user)
         person_change.standard_hourly_tariff = hourly_tariff
         person_change.target = target
+        person.archived = False  # If you're in this list...
         person_change.save()
 
 
@@ -247,9 +228,89 @@ def import_project_csv(filename, dialect):
         project = get_project2(project_code)
         project_manager_name = line[2]
         project_manager = get_person(project_manager_name)
-
+        project.contract_amount = line[7]
         project.project_manager = project_manager
+        REMARK_COLUMN = 12  # Weird, should be 14?
+        remarks = [remark for remark in line[REMARK_COLUMN:]
+                   if remark != '' and not
+                   (len(remark) == 3 and remark.endswith(',0'))]
+        project.remark = '\n'.join(remarks)
         project.save()
+
+
+def import_budget_csv(filename, dialect):
+    logger.info("Opening %s", filename)
+    lines = list(csv.reader(open(filename, encoding='cp1252'), dialect))
+    import_user = get_import_user()
+    project_and_description_string = lines[1][1]
+    project_id = project_and_description_string.split(' ')[0]
+    project = get_project2(project_id)
+    models.BudgetItem.objects.filter(added_by=import_user,
+                                     project=project).delete()
+    on_budget_line = False
+    for line in lines:
+        if line[0].startswith('Overige kosten'):
+            on_budget_line = True
+            continue
+        if not on_budget_line:
+            continue
+        if not line[0]:
+            break
+        description = line[0]
+        amount = -1 * int(line[1])
+        budget_item = models.BudgetItem(
+            project=project,
+            description=description,
+            amount=amount,
+            added_by=import_user)
+        logger.debug("Added on %s: %s = %s",
+                     project, description, amount)
+        budget_item.save()
+
+
+def import_invoices(filename):
+    logger.info("Importing invoices from %s", filename)
+    soup = BeautifulSoup(open(filename))
+    budget_select = soup.find(id='budgetId')
+    budget_id = filename.split('invoices_')[1].split('.')[0]
+    selected_option = budget_select.find('option', attrs={'value': budget_id})
+    project_code = selected_option.string
+    project = get_project2(project_code)
+    import_user = get_import_user()
+    models.Invoice.objects.filter(added_by=import_user,
+                                  project=project).delete()
+    invoices_table = soup.find('table', attrs={'style': 'font-size:7pt;'})
+    for row in invoices_table.find_all('tr')[1:]:
+        cells = row.find_all('td')
+        if 'colspan' in cells[0].attrs:
+            break
+        invoice_date_string = cells[0].string
+        dd, mm, yy = invoice_date_string.split('-')
+        invoice_date = datetime.date(2000 + int(yy), int(mm), int(dd))
+        number = cells[1].string
+        if not number:
+            logger.error("Invoice without a number! %s", cells)
+            number = "DEZE FACTUUR HAD GEEN NUMBER IN DE IMPORT"
+        description = cells[2].string or "NIET INGEVULD"
+        amount_exclusive = dutch_string_to_int(cells[3].string)
+        vat = dutch_string_to_int(cells[4].string)
+        payed_date_string = cells[6].string
+        if not payed_date_string:
+            payed = None
+        else:
+            dd, mm, yy = payed_date_string.split('-')
+            payed = datetime.date(2000 + int(yy), int(mm), int(dd))
+        invoice = models.Invoice(
+            added_by=import_user,
+            project=project,
+            date=invoice_date,
+            number=number,  # This isn't always a proper unique number, btw.
+            description=description,
+            amount_exclusive=amount_exclusive,
+            vat=vat,
+            payed=payed)
+        invoice.save()
+        logger.debug("Added invoice %s on %s", invoice, project)
 
 
 def import_from_csv(filename, dialect):
@@ -296,7 +357,7 @@ def import_from_csv(filename, dialect):
             if not hours:
                 continue
             if not year_weeks[index]:
-                logger.warn("Year week at index %s doesn't exist", index)
+                # Doesn't matter really.
                 continue
             if year_weeks[index].year != 2013:
                 # Only book in this year
@@ -353,6 +414,12 @@ def get_project(project_code,
     else:
         # Set it because sqlite has a 'None' false value too...
         project.hidden = False
+    if ('verlof' in project_description.lower() or
+        'feestdag' in project_description.lower()):
+        project.hourless = True
+    else:
+        # Set it because sqlite has a 'None' false value too...
+        project.hourless = False
     project.save()
     return project
 
@@ -389,6 +456,6 @@ def create_year_week_column_mapping(year_line, weeks_line):
             result.append(models.YearWeek.objects.get(
                 year=int(year), week=int(week)))
         except models.YearWeek.DoesNotExist:
-            logger.warn("Week %s-%s does not exist", year, week)
+            # Doesn't really matter.
             result.append(None)
     return result

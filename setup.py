@@ -10,8 +10,9 @@ long_description = '\n\n'.join([
     ])
 
 install_requires = [
-    'Django >= 1.6b4',
+    'Django >= 1.6',
     'Werkzeug',
+    'beautifulsoup4',
     'django-debug-toolbar',
     'django-extensions',
     'django-tls',

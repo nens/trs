@@ -3,7 +3,8 @@
 
 {% block main-column %}
   <h1>{{ view.person.name }}</h1>
-  <table class="table borderless-table">
+  <table class="table borderless-table table-condensed"
+         style="width: auto;">
     <tbody>
       <tr>
         <th>Werkweek</th>
@@ -19,7 +20,7 @@
       </tr>
       {% if view.can_see_everything %}
         <tr>
-          <th>Uren over budget geboekt (extern)</th>
+          <th>Uren over budget geboekt</th>
           <td>{{ view.pyc.overbooked|hours }}</td>
         </tr>
         <tr>
@@ -68,10 +69,11 @@
   {% endif %}
 
   <h2>Actieve projecten</h2>
-  <table class="table table-hover">
+  <table class="table table-hover table-condensed">
     <thead>
       <tr>
         <th>Project</th>
+        <th>Omschrijving</th>
         <th></th>
         <th class="text-right">Toegekend</th>
         <th class="text-right">Geboekt</th>
@@ -86,7 +88,8 @@
         <tr>
           <td>
             {{ line.project.as_widget }}
-            <br>
+          </td>
+          <td>
             <span class="text-muted">{{ line.project.description }}</span>
           </td>
           <td>
@@ -111,9 +114,4 @@
       {% endfor %}
     </tbody>
   </table>
-{% endblock %}
-
-{% block overview-column %}
-  {# No personal sidebar here, it would be too confusing next #}
-  {# to someone else's data. #}
 {% endblock %}

@@ -105,45 +105,49 @@
         </div>
         <div class="col-md-3 col-md-offset-1">
           {% block overview-column %}
-            {% if view.active_person %}
+            {% if view.sidebar_person %}
 
-              <h2>Voortgang</h2>
-
+              <h2>
+                Voortgang
+                {% if view.sidebar_person != view.active_person %}
+                  <small>(van {{ view.sidebar_person.name }})</small>
+                {% endif %}
+              </h2>
               <div><b>Bij met boeken?</b></div>
               <div class="progress"
-                   title="{{ view.active_person.booking_percentage }}% geboekt de laatste weken">
+                   title="{{ view.sidebar_person.booking_percentage }}% geboekt de laatste weken">
                 <div class="progress-bar"
-                     style="width: {{ view.active_person.booking_percentage }}%;">
+                     style="width: {{ view.sidebar_person.booking_percentage }}%;">
                 </div>
               </div>
 
               <div><b>Binnen budget?</b></div>
               <div class="progress"
-                   title="{{ view.person_year_info.overbooked_percentage }}% buiten budget geboekt">
+                   title="{{ view.sidebar_person_year_info.overbooked_percentage }}% buiten budget geboekt">
                 <div class="progress-bar progress-bar-success"
-                     style="width: {{ view.person_year_info.well_booked_percentage }}%;">
+                     style="width: {{ view.sidebar_person_year_info.well_booked_percentage }}%;">
                 </div>
                 <div class="progress-bar progress-bar-danger"
-                     style="width: {{ view.person_year_info.overbooked_percentage }}%;">
+                     style="width: {{ view.sidebar_person_year_info.overbooked_percentage }}%;">
                 </div>
               </div>
 
               <div><b>Extern/intern?</b></div>
               <div class="progress"
-                   title="{{ view.person_year_info.billable_percentage }}% op externe projecten geboekt.">
+                   title="{{ view.sidebar_person_year_info.billable_percentage }}% op externe projecten geboekt.">
                 <div class="progress-bar progress-bar-success"
-                     style="width: {{ view.person_year_info.billable_percentage }}%;">
+                     style="width: {{ view.sidebar_person_year_info.billable_percentage }}%;">
                 </div>
                 <div class="progress-bar progress-bar-danger"
-                     style="width: {{ view.person_year_info.unbillable_percentage }}%;">
+                     style="width: {{ view.sidebar_person_year_info.unbillable_percentage }}%;">
                 </div>
               </div>
 
               <div><b>Target?</b></div>
               <div class="progress"
-                   title="{{ view.person_year_info.target_percentage }}% van je target gehaald">
+                   title="{{ view.sidebar_person_year_info.target_percentage }}% van je target gehaald">
                 <div class="progress-bar"
-                     style="width: {{ view.person_year_info.target_percentage }}%;">
+                     style="width: {{ view.sidebar_person_year_info.target_percentage }}%;">
                 </div>
               </div>
 

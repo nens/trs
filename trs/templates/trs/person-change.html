@@ -1,0 +1,61 @@
+{% extends "trs/edit.html" %}
+{% load trs_formatting %}
+
+{% block extra-edit-content %}
+  <hr>
+  <h2>Ander tijdstip</h2>
+  <p>
+    De bovenstaande wijziging is standaard ingaande deze week. Dat is niet
+    altijd het gewenste tijdstip. Kies hieronder een andere datum indien
+    handig. (Let op: eerst datum kiezen, daarna pas hierboven wat invullen).
+  </p>
+  <ul>
+    {% for yyyy_ww, title in view.year_week_suggestions %}
+      <li>
+        <a href="?year_week={{ yyyy_ww }}">{{ title }}</a>
+      </li>
+    {% endfor %}
+    <li>
+      <form class="form-inline"
+            action="."
+            method="get">
+        <select name="year_week">
+          {% for year_week in view.all_year_weeks %}
+            <option value="{{ year_week }}">{{ year_week }}</option>
+          {% endfor %}
+        </select>
+        <input type="submit"
+               class="btn"
+               value="Kies deze week" />
+      </form>
+    </li>
+  </ul>
+
+  <p>
+    Relevante tijdstippen kunnen ook eerdere wijzigingen zijn. Hier is een
+    overzicht.
+  </p>
+
+  <ul>
+    {% for change in view.previous_changes %}
+      <li>
+        <a href="?year_week={{ change.year_week_str }}">
+          {{ change.year_week_str }}
+        </a><br>
+        {% if change.hours_per_week__sum %}
+          Uren per week: {{ change.hours_per_week__sum|hoursdiff }}<br>
+        {% endif %}
+        {% if change.target__sum %}
+          Target: {{ change.target__sum|moneydiff }}<br>
+        {% endif %}
+        {% if change.standard_hourly_tariff__sum %}
+          Standaard uurtarief: {{ change.standard_hourly_tariff__sum|moneydiff }}<br>
+        {% endif %}
+        {% if change.minimum_hourly_tariff__sum %}
+          Minimum uurtarief: {{ change.minimum_hourly_tariff__sum|moneydiff }}<br>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+
+{% endblock %}
