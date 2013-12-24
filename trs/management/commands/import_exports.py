@@ -19,6 +19,7 @@ NAME_LINE = 1
 YEAR_LINE = 6
 WEEKS_LINE = 7
 START_COLUMN = 10
+INVOICES_FILENAME = 'invoices.html'
 
 
 def date_string_to_date(date_string):
@@ -27,6 +28,13 @@ def date_string_to_date(date_string):
     month = int(date_string[3:5])
     year = int(date_string[6:])
     return datetime.date(year, month, day)
+
+
+def dutch_string_to_int(dutch_string):
+    # 1.234,00 to 1234
+    dutch_string = dutch_string.replace('.', '')
+    dutch_string = dutch_string.replace(',', '.')
+    return int(float(dutch_string))
 
 
 def import_year_week():
@@ -48,7 +56,6 @@ def download_everything():
     user_ids = [int(tag['value']) for tag in user_export_select.find_all('option')]
     project_export_select = soup.find_all(attrs={'name': 'budgetId'})[0]
     project_ids = [int(tag['value']) for tag in project_export_select.find_all('option')]
-    print(project_ids)
     tempdir = tempfile.mkdtemp()
     logger.info("Tempdir: %s", tempdir)
     for user_id in user_ids:
@@ -96,6 +103,44 @@ def download_everything():
         open(output_filename, 'wb').write(export.content)
         logger.info("Wrote %s", output_filename)
 
+    active_projects_invoices_page = s.get(
+        'https://www.trsnens.nl/',
+        params={'page': 'invoice_projects'},
+        verify=False)
+    soup = BeautifulSoup(active_projects_invoices_page.content)
+    budget_select = soup.find(id='budgetId')
+    active_budget_ids = [int(tag['value']) for tag in budget_select.find_all('option')]
+
+    archived_projects_invoices_page = s.get(
+        'https://www.trsnens.nl/',
+        params={'page': 'invoice_projects',
+                'filter': 'archive'},
+        verify=False)
+    soup = BeautifulSoup(archived_projects_invoices_page.content)
+    budget_select = soup.find(id='budgetId')
+    archived_budget_ids = [int(tag['value']) for tag in budget_select.find_all('option')]
+
+    for budget_id in active_budget_ids:
+        page = s.get(
+            'https://www.trsnens.nl/',
+            params={'page': 'invoice_projects',
+                    'budgetId': budget_id},
+            verify=False)
+        soup = BeautifulSoup(page.content)
+        filename = 'invoices_%s.html' % budget_id
+        open(os.path.join(tempdir, filename), 'w').write(str(soup))
+
+    for budget_id in archived_budget_ids:
+        page = s.get(
+            'https://www.trsnens.nl/',
+            params={'page': 'invoice_projects',
+                    'filter': 'archive',
+                    'budgetId': budget_id},
+            verify=False)
+        soup = BeautifulSoup(page.content)
+        filename = 'invoices_%s.html' % budget_id
+        open(os.path.join(tempdir, filename), 'w').write(str(soup))
+
     return tempdir
 
 
@@ -105,13 +150,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         basedir = download_everything()
-        # basedir = '/var/folders/dl/wpghhqhj2bs9bcnn213f1nqw0000gn/T/tmp4zggjr'
-
+        # basedir = '/var/folders/dl/wpghhqhj2bs9bcnn213f1nqw0000gn/T/tmpzeac52'
         # Sniffing the dialect
         pattern = basedir + '/*.csv'
         found = glob.glob(pattern)
-        dialect = csv.Sniffer().sniff(
-            open(found[0], encoding='cp1252').read())
+        if found:
+            dialect = csv.Sniffer().sniff(
+                open(found[0], encoding='cp1252').read())
 
         # Project data
         pattern = basedir + '/Totalen per project *.csv'
@@ -136,6 +181,12 @@ class Command(BaseCommand):
         found = glob.glob(pattern)
         for filename in found:
             import_budget_csv(filename, dialect)
+
+        # The invoices
+        pattern = basedir + '/invoices_*.html'
+        found = glob.glob(pattern)
+        for filename in found:
+            import_invoices(filename)
 
 
 def get_import_user():
@@ -216,6 +267,51 @@ def import_budget_csv(filename, dialect):
         logger.debug("Added on %s: %s = %s",
                      project, description, amount)
         budget_item.save()
+
+
+def import_invoices(filename):
+    soup = BeautifulSoup(open(filename))
+    budget_select = soup.find(id='budgetId')
+    budget_id = filename.split('invoices_')[1].split('.')[0]
+    selected_option = budget_select.find('option', attrs={'value': budget_id})
+    project_code = selected_option.string
+    project = get_project2(project_code)
+    import_user = get_import_user()
+    models.Invoice.objects.filter(added_by=import_user,
+                                  project=project).delete()
+    invoices_table = soup.find('table', attrs={'style': 'font-size:7pt;'})
+    for row in invoices_table.find_all('tr')[1:]:
+        cells = row.find_all('td')
+        if 'colspan' in cells[0].attrs:
+            break
+        print(cells)
+        invoice_date_string = cells[0].string
+        dd, mm, yy = invoice_date_string.split('-')
+        invoice_date = datetime.date(2000 + int(yy), int(mm), int(dd))
+        number = cells[1].string
+        if not number:
+            logger.error("Invoice without a number! %s", cells)
+            number = "DEZE FACTUUR HAD GEEN NUMBER IN DE IMPORT"
+        description = cells[2].string or "NIET INGEVULD"
+        amount_exclusive = dutch_string_to_int(cells[3].string)
+        vat = dutch_string_to_int(cells[4].string)
+        payed_date_string = cells[6].string
+        if not payed_date_string:
+            payed = None
+        else:
+            dd, mm, yy = payed_date_string.split('-')
+            payed = datetime.date(2000 + int(yy), int(mm), int(dd))
+        invoice = models.Invoice(
+            added_by=import_user,
+            project=project,
+            date=invoice_date,
+            number=number,  # This isn't always a proper unique number, btw.
+            description=description,
+            amount_exclusive=amount_exclusive,
+            vat=vat,
+            payed=payed)
+        invoice.save()
+        logger.debug("Added invoice %s on %s", invoice, project)
 
 
 def import_from_csv(filename, dialect):
@@ -361,6 +457,6 @@ def create_year_week_column_mapping(year_line, weeks_line):
             result.append(models.YearWeek.objects.get(
                 year=int(year), week=int(week)))
         except models.YearWeek.DoesNotExist:
-            logger.warn("Week %s-%s does not exist", year, week)
+            # Doesn't really matter.
             result.append(None)
     return result
