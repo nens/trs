@@ -5,6 +5,15 @@ Changelog of trs
 0.2 (unreleased)
 ----------------
 
+- UI improvements.
+
+- Allowing projects not to be counted towards internal/external hours (for
+  holidays, for instance).
+
+- Showing a person's KPI if you're admin.
+
+- Importing extra project costs and invoices.
+
 - Importing more project and person information from the csv files: project
   manager, project comments, target, hourly tariff.
 
