@@ -150,7 +150,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         basedir = download_everything()
-        # basedir = '/var/folders/dl/wpghhqhj2bs9bcnn213f1nqw0000gn/T/tmpzeac52'
         # Sniffing the dialect
         pattern = basedir + '/*.csv'
         found = glob.glob(pattern)
@@ -270,6 +269,7 @@ def import_budget_csv(filename, dialect):
 
 
 def import_invoices(filename):
+    logger.info("Importing invoices from %s", filename)
     soup = BeautifulSoup(open(filename))
     budget_select = soup.find(id='budgetId')
     budget_id = filename.split('invoices_')[1].split('.')[0]
@@ -284,7 +284,6 @@ def import_invoices(filename):
         cells = row.find_all('td')
         if 'colspan' in cells[0].attrs:
             break
-        print(cells)
         invoice_date_string = cells[0].string
         dd, mm, yy = invoice_date_string.split('-')
         invoice_date = datetime.date(2000 + int(yy), int(mm), int(dd))
