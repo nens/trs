@@ -22,7 +22,12 @@
             {{ line.project.as_widget }}
           </td>
           <td>
-            <span class="text-muted">{{ line.project.description }}</span>
+            <span class="text-muted"
+                  {% if line.project.description|length > 30 %}
+                    title="{{ line.project.description }}"
+                  {% endif %}>
+              {{ line.project.description|truncatechars:30 }}
+            </span>
           </td>
           <td class="text-right {{ line.klass }}">
             {{ line.project.overbooked|hours }}
