@@ -436,7 +436,10 @@ class BudgetItem(FinancialBase):
         max_digits=12,  # We don't mind a metric ton of hard cash.
         decimal_places=DECIMAL_PLACES,
         default=0,
-        verbose_name="bedrag exclusief")
+        verbose_name="bedrag exclusief",
+        help_text=("Opgepast: positieve bedragen verhogen ons budget, " +
+                   "negatieve verlagen het. Het wordt dus niet automatisch " +
+                   "afgetrokken."))
     is_reservation = models.BooleanField(
         verbose_name="reservering",
         default=False)
