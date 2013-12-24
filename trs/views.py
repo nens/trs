@@ -1077,7 +1077,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         if self.can_add_team_member:
             # New team member field
             name = 'new_team_member'
-            choices = list(Person.objects.all().values_list('pk', 'name'))
+            choices = list(Person.objects.filter(
+                archived=False).values_list('pk', 'name'))
             choices.insert(0, ('', '---'))
             # TODO: ^^^ filter out inactive users.
             field_type = forms.ChoiceField(
