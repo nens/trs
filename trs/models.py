@@ -230,7 +230,6 @@ class Person(models.Model):
     def to_book(self):
         """Return absolute days and weeks (rounded) left to book."""
         this_year = this_year_week().year
-        # import pdb;pdb.set_trace()
         hours_to_work = self.to_work_up_till_now()
         booked_this_year = self.bookings.filter(year_week__year=this_year).aggregate(
             models.Sum('hours'))['hours__sum'] or 0
