@@ -1299,6 +1299,10 @@ class OverviewsView(BaseView):
 class InvoicesView(BaseView):
     template_name = 'trs/invoices.html'
 
+    def has_form_permissions(self):
+        return self.can_edit_and_see_everything
+
     @cached_property
     def invoices(self):
-        return Invoice.objects.all().prefetch_related('project')
+        return Invoice.objects.all().prefetch_related('project').order_by(
+            '-date')
