@@ -19,7 +19,7 @@ from tls import request as tls_request
 # too. 999999.99 should be possible, so that's 8 digits with 2 decimal places.
 MAX_DIGITS = 8
 DECIMAL_PLACES = 2
-LOG_DURATION = True
+LOG_DURATION = False
 
 logger = logging.getLogger(__name__)
 
@@ -230,7 +230,6 @@ class Person(models.Model):
     def to_book(self):
         """Return absolute days and weeks (rounded) left to book."""
         this_year = this_year_week().year
-        # import pdb;pdb.set_trace()
         hours_to_work = self.to_work_up_till_now()
         booked_this_year = self.bookings.filter(year_week__year=this_year).aggregate(
             models.Sum('hours'))['hours__sum'] or 0
@@ -367,7 +366,9 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        return 'project-%s-%s-%s' % (self.id, self.cache_indicator, for_what)
+        version = 1
+        return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
+                                        for_what, version)
 
     def as_widget(self):
         return mark_safe(render_to_string('trs/project-widget.html',
@@ -378,35 +379,80 @@ class Project(models.Model):
         return Person.objects.filter(
             work_assignments__assigned_on=self).distinct()
 
-    @cache_on_model
     def hour_budget(self):
-        return self.work_assignments.all().aggregate(
-            models.Sum('hours'))['hours__sum'] or 0
-
-    @cache_on_model
-    def booked(self):
-        return self.bookings.all().aggregate(
-            models.Sum('hours'))['hours__sum'] or 0
+        return self.work_calculation()['budget']
 
     def overbooked(self):
-        return max(0, (self.booked() - self.hour_budget()))
+        return self.work_calculation()['overbooked']
 
     def left_to_book(self):
-        return max(0, (self.hour_budget() - self.booked()))
+        return self.work_calculation()['left_to_book']
+
+    def turnover(self):
+        return self.work_calculation()['turnover']
+
+    def costs(self):
+        return self.work_calculation()['costs']
 
     def overbooked_percentage(self):
-        """Return quick estimate of percentage overbooked hours.
-
-        'Quick' as it lumps everything together and doesn't take into account
-        that one person might yet have hours left to book and one other is
-        already heavily over budget. Good for a quick indication, though. Used
-        in the widget.
-        """
         if not self.overbooked():
             return 0
         if not self.hour_budget():  # Division by zero
             return 100
         return round(self.overbooked() / self.hour_budget() * 100)
+
+    @cache_on_model
+    def work_calculation(self):
+        # The big calculation from which the rest derives.
+        work_per_person = WorkAssignment.objects.filter(
+            assigned_on=self).values(
+                'assigned_to').annotate(
+                    models.Sum('hours'),
+                    models.Sum('hourly_tariff'))
+        budget_per_person = {
+            item['assigned_to']: round(item['hours__sum'] or 0)
+            for item in work_per_person}
+        hourly_tariff_per_person = {
+            item['assigned_to']: round(item['hourly_tariff__sum'] or 0)
+            for item in work_per_person}
+        ids = budget_per_person.keys()
+
+        booked_this_year_per_person = Booking.objects.filter(
+            booked_on=self,
+            booked_by__in=ids).values(
+                'booked_by').annotate(
+                    models.Sum('hours'))
+        total_booked_per_person = {
+            item['booked_by']: round(item['hours__sum'])
+            for item in booked_this_year_per_person}
+
+        costs = -1 * (self.budget_items.all().aggregate(
+            models.Sum('amount'))['amount__sum'] or 0)
+
+        overbooked_per_person = {
+            id: max(0, (total_booked_per_person.get(id, 0) - budget_per_person[id]))
+            for id in ids}
+        well_booked_per_person = {
+            id: (total_booked_per_person.get(id, 0) - overbooked_per_person[id])
+            for id in ids}
+        left_to_book_per_person = {
+            id: (budget_per_person[id] - well_booked_per_person[id])
+            for id in ids}
+        turnover_per_person = {
+            id: (well_booked_per_person[id] * hourly_tariff_per_person[id])
+            for id in ids}
+        left_to_turn_over_per_person = {
+            id: (left_to_book_per_person[id] * hourly_tariff_per_person[id])
+            for id in ids}
+
+        return {'budget': sum(budget_per_person.values()),
+                'overbooked': sum(overbooked_per_person.values()),
+                'well_booked': sum(well_booked_per_person.values()),
+                'left_to_book': sum(left_to_book_per_person.values()),
+                'turnover': sum(turnover_per_person.values()),
+                'left_to_turn_over': sum(
+                    left_to_turn_over_per_person.values()),
+                'costs': costs}
 
 
 class FinancialBase(models.Model):

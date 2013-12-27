@@ -18,6 +18,9 @@ Changelog of trs
 
 - Added overview page listing all overviews.
 
+- Added detailed turnover/booking/overbooked calculation for projects,
+  including percentage "invoiced versus turnover+costs".
+
 
 0.2 (2013-12-24)
 ----------------

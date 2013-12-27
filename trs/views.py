@@ -426,14 +426,25 @@ class ProjectsView(BaseView):
                 klass = 'default'
             line['klass'] = klass
             invoice_amount = invoice_amounts.get(project.id, 0)
+            turnover = project.turnover()
+            costs = project.costs()
             if project.contract_amount:
                 invoice_amount_percentage = round(
                     invoice_amount / project.contract_amount * 100)
             else:  # Division by zero.
                 invoice_amount_percentage = None
+            if turnover + costs:
+                invoice_versus_turnover_percentage = round(
+                    invoice_amount / (turnover + costs) * 100)
+            else:
+                invoice_versus_turnover_percentage = None
             line['contract_amount'] = project.contract_amount
             line['invoice_amount'] = invoice_amount
+            line['turnover'] = turnover
+            line['costs'] = costs
             line['invoice_amount_percentage'] = invoice_amount_percentage
+            line['invoice_versus_turnover_percentage'] = (
+                invoice_versus_turnover_percentage)
             result.append(line)
         return result
 
