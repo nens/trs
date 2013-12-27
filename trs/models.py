@@ -35,10 +35,18 @@ def this_year_week():
     return result
 
 
-def last_four_year_weeks():
-    result = list(YearWeek.objects.filter(
-        first_day__lte=datetime.date.today()).reverse()[1:5])
-    result.reverse()  # In-place...
+def days_missing_per_year():
+    cache_key = 'days_missing_per_year3'
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+    result = {}
+    from django.conf import settings  # Local import, prevents circular.
+    for year in range(settings.TRS_START_YEAR, settings.TRS_END_YEAR + 1):
+        first_year_week = YearWeek.objects.filter(year=year).first()
+        missing = first_year_week.first_day.weekday()  # Mon=0, Tue=1, Wed=3
+        result[year] = missing
+    cache.set(cache_key, result, 3600 * 24 * 29)  # Max memcache age.
     return result
 
 
@@ -125,14 +133,17 @@ class Person(models.Model):
         return self.name
 
     def cache_key(self, for_what, year_week=None):
+        cache_version = 1
         week_id = year_week and year_week.id or this_year_week().id
-        return 'person-%s-%s-%s-%s' % (
-            self.id, self.cache_indicator, for_what, week_id)
+        return 'person-%s-%s-%s-%s-%s' % (
+            self.id, self.cache_indicator, for_what, week_id, cache_version)
 
     def person_change_cache_key(self, for_what, year_week=None):
+        cache_version = 1
         week_id = year_week and year_week.id or this_year_week().id
-        return 'person-%s-pc%s-%s-%s' % (
-            self.id, self.cache_indicator_person_change, for_what, week_id)
+        return 'person-%s-pc%s-%s-%s-%s' % (
+            self.id, self.cache_indicator_person_change, for_what, week_id,
+            cache_version)
 
     def get_absolute_url(self):
         return reverse('trs.person', kwargs={'pk': self.pk})
@@ -187,19 +198,75 @@ class Person(models.Model):
         return Project.objects.filter(
             work_assignments__assigned_to=self).distinct()
 
-    @cache_on_model
-    def booking_percentage(self):
-        # xxx
-        # Key performance indicator
-        weeks = last_four_year_weeks()
-        hours_to_work = sum([self.hours_per_week(year_week=week)
-                             for week in weeks])
-        booked_in_weeks = self.bookings.filter(year_week__in=weeks).aggregate(
+    @cache_per_week
+    def to_work_up_till_now(self, year_week=None):
+        """Return hours I've had to work this year."""
+        if year_week is None:
+            year_week = this_year_week()
+        this_year = year_week.year
+        start_amount = round(self.person_changes.filter(
+            year_week__year__lt=this_year).aggregate(
+                models.Sum('hours_per_week'))['hours_per_week__sum'] or 0)
+        changes_this_year = self.person_changes.filter(
+            year_week__year=this_year,
+            year_week__week__lte=year_week.week).values(
+                'year_week__week').annotate(
+                    models.Sum('hours_per_week'))
+        changes_per_week = {change['year_week__week']:
+                            round(change['hours_per_week__sum'])
+                            for change in changes_this_year}
+        result = 0
+        current_amount = start_amount
+        for week in range(year_week.week):
+            # ^^^ not range(... + 1) so that we don't count the current week.
+            if week in changes_per_week:
+                current_amount += changes_per_week[week]
+            result += current_amount
+        result -= days_missing_per_year()[this_year] * 8
+        # The line above might have pushed it below zero, so compensate:
+        return max(0, result)
+
+    #@cache_on_model
+    def to_book(self):
+        """Return absolute days and weeks (rounded) left to book."""
+        this_year = this_year_week().year
+        # import pdb;pdb.set_trace()
+        hours_to_work = self.to_work_up_till_now()
+        booked_this_year = self.bookings.filter(year_week__year=this_year).aggregate(
             models.Sum('hours'))['hours__sum'] or 0
-        if not hours_to_work:
-            # Prevent division by zero.
-            return 100
-        return min(100, round(100 * booked_in_weeks / hours_to_work))
+        hours_to_book = max(0, (hours_to_work - booked_this_year))
+        days_to_book = round(hours_to_book / 8)  # Assumption: 8 hour workday.
+        if self.hours_per_week():
+            weeks_to_book = round(hours_to_book / self.hours_per_week())
+        else:  # Division by zero
+            weeks_to_book = 0
+
+        if weeks_to_book > 1:
+            klass = 'danger'
+            friendly = '%s weken' % weeks_to_book
+            short = '%sw' % weeks_to_book
+        elif weeks_to_book == 1:
+            klass = 'warning'
+            friendly = '%s week' % weeks_to_book
+            short = '%sw' % weeks_to_book
+        elif days_to_book > 1:
+            klass = 'warning'
+            friendly = '%s dagen' % days_to_book
+            short = '%sd' % days_to_book
+        elif days_to_book == 1:
+            klass = 'warning'
+            friendly = '%s dag' % days_to_book
+            short = '%sd' % days_to_book
+        else:
+            klass = 'success'
+            friendly = 0
+            short = ''
+        return {'hours': hours_to_book,
+                'days': days_to_book,
+                'weeks': weeks_to_book,
+                'friendly': friendly,
+                'short': short,
+                'klass': klass}
 
 
 class Project(models.Model):

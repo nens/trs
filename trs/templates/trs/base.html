@@ -38,6 +38,12 @@
             <li {% if view.selected_tab = 'booking' %}class="active"{% endif %}>
               <a href="{% url 'trs.booking' %}">
                 Boeken
+                {% if view.active_person.to_book.friendly %}
+                  <span class="badge"
+                        title="Achter met boeken: {{ view.active_person.to_book.friendly }}">
+                    {{ view.active_person.to_book.short }}
+                  <span>
+                {% endif %}
               </a>
             </li>
             <li {% if view.selected_tab = 'projects' %}class="active"{% endif %}>
@@ -114,12 +120,13 @@
                 {% endif %}
               </h2>
               <div><b>Bij met boeken?</b></div>
-              <div class="progress"
-                   title="{{ view.sidebar_person.booking_percentage }}% geboekt de laatste weken">
-                <div class="progress-bar"
-                     style="width: {{ view.sidebar_person.booking_percentage }}%;">
-                </div>
+              <div>
+                Nog te boeken:
+                <span class="label label-{{ view.sidebar_person.to_book.klass }}">
+                  {{ view.sidebar_person.to_book.friendly }}
+                </span>
               </div>
+              <br>
 
               <div><b>Binnen budget?</b></div>
               <div class="progress"

@@ -100,6 +100,14 @@
             <tr>
               <td>
                 {{ line.person.as_widget }}
+                {% if view.can_see_financials %}
+                  {% if line.person.to_book.friendly %}
+                    <span class="badge"
+                          title="Achter met boeken: {{ line.person.to_book.friendly }}">
+                      {{ line.person.to_book.short }}
+                    <span>
+                  {% endif %}
+                {% endif %}
               </td>
               <td>
                 {% if line.is_project_leader %}
