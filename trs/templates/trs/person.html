@@ -15,8 +15,10 @@
         <td>{{ view.pyc.left_to_book|hours }}</td>
       </tr>
       <tr>
-        <th>Bij qua boeken</th>
-        <td>{{ view.person.booking_percentage }}%</td>
+        <th>Nog te boeken</th>
+        <td>
+          {{ view.person.to_book.friendly }}
+        </td>
       </tr>
       {% if view.can_see_everything %}
         <tr>

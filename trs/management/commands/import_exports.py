@@ -19,7 +19,7 @@ NAME_LINE = 1
 YEAR_LINE = 6
 WEEKS_LINE = 7
 START_COLUMN = 10
-INVOICES_FILENAME = 'invoices.html'
+HOURS_TO_WORK_FILENAME = 'hours_to_work.html'
 
 
 def date_string_to_date(date_string):
@@ -141,6 +141,14 @@ def download_everything():
         filename = 'invoices_%s.html' % budget_id
         open(os.path.join(tempdir, filename), 'w').write(str(soup))
 
+    # Hours to work per week
+    page = s.get(
+        'https://www.trsnens.nl/',
+        params={'page': 'time_view'},
+        verify=False)
+    soup = BeautifulSoup(page.content)
+    open(os.path.join(tempdir, HOURS_TO_WORK_FILENAME), 'w').write(str(soup))
+
     return tempdir
 
 
@@ -164,10 +172,11 @@ class Command(BaseCommand):
             import_project_csv(found[0], dialect)
 
         # Person data
+        hours_to_work_filename = os.path.join(basedir, HOURS_TO_WORK_FILENAME)
         pattern = basedir + '/Totalen per werknemer *.csv'
         found = glob.glob(pattern)
         if found:
-            import_person_csv(found[0], dialect)
+            import_person_csv(found[0], dialect, hours_to_work_filename)
 
         # The booking data per person per project
         pattern = basedir + '/Totalen * per project per week *.csv'
@@ -196,7 +205,20 @@ def get_import_user():
     return import_user
 
 
-def import_person_csv(filename, dialect):
+def import_person_csv(filename, dialect, hours_to_work_filename):
+    # First detect ours to work
+    hours_per_week = {}
+    if os.path.exists(hours_to_work_filename):
+        logger.info("Opening %s", hours_to_work_filename)
+        soup = BeautifulSoup(open(hours_to_work_filename))
+        table = soup.find('table')
+        import_user = get_import_user()
+        for row in table.find_all('tr')[1:]:
+            cells = row.find_all('td')
+            name = cells[0].string
+            hours_per_week[name] = cells[1].string
+        logger.debug("Detected hours to work: %s", hours_per_week)
+
     logger.info("Opening %s", filename)
     lines = list(csv.reader(open(filename, encoding='cp1252'), dialect))
     import_user = get_import_user()
@@ -213,6 +235,7 @@ def import_person_csv(filename, dialect):
         person_change = get_person_change(person, import_user)
         person_change.standard_hourly_tariff = hourly_tariff
         person_change.target = target
+        person_change.hours_per_week = hours_per_week.get(person_name, 0)
         person.archived = False  # If you're in this list...
         person_change.save()
 
@@ -290,7 +313,7 @@ def import_invoices(filename):
         number = cells[1].string
         if not number:
             logger.error("Invoice without a number! %s", cells)
-            number = "DEZE FACTUUR HAD GEEN NUMBER IN DE IMPORT"
+            number = "GEEN NUMMER"
         description = cells[2].string or "NIET INGEVULD"
         amount_exclusive = dutch_string_to_int(cells[3].string)
         vat = dutch_string_to_int(cells[4].string)

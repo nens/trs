@@ -16,7 +16,6 @@ class PersonFactory(factory.django.DjangoModelFactory):
 
     name = 'Reinout'
     user = factory.SubFactory(UserFactory)
-    login_name = 'reinout.vanrees'
 
 
 class ProjectFactory(factory.django.DjangoModelFactory):

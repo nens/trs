@@ -1,0 +1,37 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block full-width %}
+  <h1>Overzicht facturen op datum</h1>
+  <table class="table table-condensed">
+    <thead>
+      <tr>
+        <th>Datum</th>
+        <th>Factuurnummer</th>
+        <th>Project</th>
+        <th>Omschrijving</th>
+        <th class="text-right">Exclusief</th>
+        <th class="text-right">BTW</th>
+        <th class="text-right">Inclusief</th>
+        <th>Betaald</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for invoice in view.invoices %}
+      <tr>
+        <td>{{ invoice.date }}</td>
+        <td>
+          {{ invoice.number }}
+        </td>
+        <td>{{ invoice.project.as_widget }}</td>
+        <td>{{ invoice.description }}</td>
+        <td class="text-right">{{ invoice.amount_exclusive|money }}</td>
+        <td class="text-right">{{ invoice.vat|money }}</td>
+        <td class="text-right">{{ invoice.amount_inclusive|money }}</td>
+        <td>{{ invoice.payed|default:'Nee' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

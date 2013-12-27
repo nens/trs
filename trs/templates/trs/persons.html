@@ -11,9 +11,8 @@
             title="Nog boekbare uren op externe projecten">
           Werkvoorraad
         </th>
-        <th class="text-right"
-            title="Gekeken wordt naar de laatste 4 volledige weken">
-          Bij met boeken?
+        <th class="text-right">
+          Nog te boeken
         </th>
         <th class="text-right"
             title="Uren over budget geboekt?">
@@ -32,14 +31,14 @@
     <tbody>
       {% for line in view.lines %}
         <tr>
-          <td>
+          <td style="white-space: nowrap;">
             {{ line.person.as_widget }}
           </td>
           <td class="text-right">
             {{ line.pyc.left_to_book|hours }}
           </td>
-          <td class="{{ line.booking_klass }} text-right">
-            {{ line.person.booking_percentage }}%
+          <td class="{{ line.person.to_book.klass }} text-right">
+            {{ line.person.to_book.friendly }}
           </td>
           <td class="text-right {{ line.klass }}">
             {{ line.pyc.overbooked|hours }}

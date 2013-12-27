@@ -262,31 +262,8 @@ class PersonsView(BaseView):
     @cached_property
     def lines(self):
         # This is the elaborate view for management.
-        result = []
-        for person in self.persons:
-            line = {}
-            line['person'] = person
-            pyc = core.get_pyc(person)
-            line['pyc'] = pyc
-            # if overbooked > 0.5 * float(booked):
-            #     klass = 'danger'
-            # elif overbooked:
-            #     klass = 'warning'
-            # else:
-            #     klass = 'success'
-            # line['klass'] = klass
-            # line['booked'] = booked
-            # line['overbooked'] = overbooked
-            # line['left_to_book'] = left_to_book
-            if person.booking_percentage() < 60:
-                booking_klass = 'danger'
-            elif person.booking_percentage() < 90:
-                booking_klass = 'warning'
-            else:
-                booking_klass = 'success'
-            line['booking_klass'] = booking_klass
-            result.append(line)
-        return result
+        return [{'person': person, 'pyc': core.get_pyc(person)}
+                for person in self.persons]
 
 
 class PersonView(BaseView):
@@ -509,13 +486,16 @@ class ProjectView(BaseView):
 
     @cached_property
     def can_edit_team(self):
+        # TODO: archived projects cannot be edited.
         if self.can_edit_and_see_everything:
             return True
-        if self.project.is_accepted:
-            # Not editable anymore
-            return False
         if self.project.project_leader == self.active_person:
+            # Whatever happens, a PL can still add persons to the project for
+            # zero hours and a zero tariff.
             return True
+        if self.project.is_accepted:
+            # Not editable anymore for project managers and others.
+            return False
 
     @cached_property
     def can_see_financials(self):
@@ -963,7 +943,7 @@ class PersonEditView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Person
     title = "Medewerker aanpassen"
-    fields = ['name', 'login_name', 'user', 'is_management', 'archived']
+    fields = ['name', 'user', 'is_management', 'archived']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -980,7 +960,7 @@ class PersonCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Person
     title = "Nieuwe medewerker"
-    fields = ['name', 'login_name', 'user', 'is_management']
+    fields = ['name', 'user', 'is_management']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -999,6 +979,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             return True
         if self.project.project_leader == self.active_person:
             return True
+        if self.project.project_manager == self.active_person:
+            return True
 
     @cached_property
     def project(self):
@@ -1013,6 +995,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         # TODO: add docstring with meaning.
         if self.can_edit_and_see_everything:
             return True
+        if self.project.is_accepted:
+            return False
         if self.project.project_leader == self.active_person:
             return True
 
@@ -1021,12 +1005,14 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         if self.can_edit_and_see_everything:
             return True
         if self.project.project_leader == self.active_person:
-            return True
+            return True  # Even if is_accepted is True, btw!
 
     @cached_property
     def can_edit_hourly_tariff(self):
         if self.can_edit_and_see_everything:
             return True
+        if self.project.is_accepted:
+            return False
         if self.project.project_manager == self.active_person:
             return True
 
@@ -1044,10 +1030,10 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                     models.Sum('hours'),
                     models.Sum('hourly_tariff'))
         budgets = {
-            item['assigned_to']: round(item['hours__sum'])
+            item['assigned_to']: round(item['hours__sum'] or 0)
             for item in budget_per_person}
         hourly_tariffs = {
-            item['assigned_to']: round(item['hourly_tariff__sum'])
+            item['assigned_to']: round(item['hourly_tariff__sum'] or 0)
             for item in budget_per_person}
         return budgets, hourly_tariffs
 
@@ -1080,7 +1066,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             choices = list(Person.objects.filter(
                 archived=False).values_list('pk', 'name'))
             choices.insert(0, ('', '---'))
-            # TODO: ^^^ filter out inactive users.
             field_type = forms.ChoiceField(
                 required=False,
                 choices=choices,
@@ -1159,12 +1144,20 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             new_team_member_id = form.cleaned_data.get('new_team_member')
             if new_team_member_id:
                 person = Person.objects.get(id=new_team_member_id)
+                msg = "%s is aan het team toegevoegd" % person.name
+                hourly_tariff = person.standard_hourly_tariff()
+                if self.project.is_accepted:
+                    # Oops, we cannot change the financials of the project,
+                    # but as project leader we *are* always allowed to add
+                    # someone to the project. But... the hourly tariff is zero
+                    # in that case.
+                    hourly_tariff = 0
+                    msg += " (opgepast: voor nultarief)"
                 work_assignment = WorkAssignment(
                     assigned_on=self.project,
                     assigned_to=person,
-                    hourly_tariff=person.standard_hourly_tariff())
+                    hourly_tariff=hourly_tariff)
                 work_assignment.save()
-                msg = "Added %s to team" % person.name
                 logger.info(msg)
                 messages.success(self.request, msg)
 
@@ -1297,3 +1290,19 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         else:
             messages.info(self.request, "Niets aan te passen")
         return super(PersonChangeView, self).form_valid(form)
+
+
+class OverviewsView(BaseView):
+    template_name = 'trs/overviews.html'
+
+
+class InvoicesView(BaseView):
+    template_name = 'trs/invoices.html'
+
+    def has_form_permissions(self):
+        return self.can_edit_and_see_everything
+
+    @cached_property
+    def invoices(self):
+        return Invoice.objects.all().prefetch_related('project').order_by(
+            '-date')

@@ -73,6 +73,14 @@ urlpatterns = patterns(
         views.BookingView.as_view(),
         name='trs.booking'),
 
+    # Overviews
+    url(r'^overviews/$',
+        views.OverviewsView.as_view(),
+        name='trs.overviews'),
+    url(r'^overviews/invoices/$',
+        views.InvoicesView.as_view(),
+        name='trs.overviews.invoices'),
+
     url(r'^locallogin/$',
         views.LoginView.as_view(),
         name='trs.login'),

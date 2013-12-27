@@ -1,0 +1,17 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>Overzichten</h1>
+
+  <ul>
+    {% if view.can_see_everything %}
+      <li>
+        <a href="{% url 'trs.overviews.invoices' %}">
+          Overzicht facturen op datum
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+
+{% endblock %}
