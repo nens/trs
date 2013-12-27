@@ -5,7 +5,7 @@ Changelog of trs
 0.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Removed unused login_name field from Person.
 
 
 0.2 (2013-12-24)
