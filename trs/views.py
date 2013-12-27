@@ -963,7 +963,7 @@ class PersonEditView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Person
     title = "Medewerker aanpassen"
-    fields = ['name', 'login_name', 'user', 'is_management', 'archived']
+    fields = ['name', 'user', 'is_management', 'archived']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -980,7 +980,7 @@ class PersonCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Person
     title = "Nieuwe medewerker"
-    fields = ['name', 'login_name', 'user', 'is_management']
+    fields = ['name', 'user', 'is_management']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
