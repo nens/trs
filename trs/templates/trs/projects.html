@@ -1,7 +1,7 @@
 {% extends "trs/base.html" %}
 {% load trs_formatting %}
 
-{% block main-column %}
+{% block full-width %}
   <h1>Projecten</h1>
   <table class="table table-hover table-condensed">
     <thead>
@@ -10,9 +10,20 @@
         <th>Omschrijving</th>
         <th class="text-right">Verliesuren</th>
         <th class="text-right">Opdrachtsom</th>
+        <th class="text-right">Omzet</th>
+        <th class="text-right">Extra kosten</th>
         <th class="text-right"
             title="Inclusief nog niet betaalde facturen">Gefactureerd</th>
-        <th class="text-right">Gefact. t.o.v. opdrachtsom</th>
+        <th class="text-right">
+          Gefact.<br>
+          t.o.v.<br>
+          opdrachtsom
+        </th>
+        <th class="text-right">
+          Gefact.<br>
+          t.o.v.<br>
+          omzet + kosten
+        </th>
       </tr>
     </thead>
     <tbody>
@@ -36,11 +47,22 @@
             {{ line.project.contract_amount|money }}
           </td>
           <td class="text-right">
+            {{ line.turnover|money }}
+          </td>
+          <td class="text-right">
+            {{ line.costs|money }}
+          </td>
+          <td class="text-right">
             {{ line.invoice_amount|money }}
           </td>
           <td class="text-right">
             {% if line.invoice_amount_percentage != None %}
               {{ line.invoice_amount_percentage }}%
+            {% endif %}
+          </td>
+          <td class="text-right">
+            {% if line.invoice_versus_turnover_percentage != None %}
+              {{ line.invoice_versus_turnover_percentage }}%
             {% endif %}
           </td>
         </tr>
@@ -59,6 +81,7 @@
 {% endblock %}
 
 {% block overview-column %}
+  <!-- TODO: this isn't shown anymore -->
   {% if view.can_see_everything %}
     <h1>Totaal</h1>
     <div>Verhouding gefactureerd t.o.v. opdrachtsom:</div>
