@@ -226,7 +226,7 @@ class Person(models.Model):
         # The line above might have pushed it below zero, so compensate:
         return max(0, result)
 
-    #@cache_on_model
+    @cache_on_model
     def to_book(self):
         """Return absolute days and weeks (rounded) left to book."""
         this_year = this_year_week().year
@@ -469,7 +469,7 @@ class Invoice(FinancialBase):
     class Meta:
         verbose_name = "factuur"
         verbose_name_plural = "facturen"
-        ordering = ('number',)
+        ordering = ('date', 'number',)
 
     def __str__(self):
         return self.number

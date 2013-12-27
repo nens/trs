@@ -53,7 +53,7 @@
               <a href="{% url 'trs.persons' %}">Medewerkers</a>
             </li>
             <li {% if view.selected_tab = 'overviews' %}class="active"{% endif %}>
-              <a href="#">Overzichten</a>
+              <a href="{% url 'trs.overviews' %}">Overzichten</a>
             </li>
           </ul>
           <ul class="nav navbar-nav navbar-right">

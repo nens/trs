@@ -1290,3 +1290,15 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         else:
             messages.info(self.request, "Niets aan te passen")
         return super(PersonChangeView, self).form_valid(form)
+
+
+class OverviewsView(BaseView):
+    template_name = 'trs/overviews.html'
+
+
+class InvoicesView(BaseView):
+    template_name = 'trs/invoices.html'
+
+    @cached_property
+    def invoices(self):
+        return Invoice.objects.all().prefetch_related('project')
