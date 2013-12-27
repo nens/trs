@@ -7,6 +7,9 @@ Changelog of trs
 
 - Removed unused login_name field from Person.
 
+- Still-to-book info is now in absolute numbers for the whole year instead of
+  a percentage of the last four weeks.
+
 
 0.2 (2013-12-24)
 ----------------
