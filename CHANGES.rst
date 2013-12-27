@@ -10,6 +10,10 @@ Changelog of trs
 - Still-to-book info is now in absolute numbers for the whole year instead of
   a percentage of the last four weeks.
 
+- A project leader can always add someone to the project, even if the project
+  is accepted (="locked down for changes"). In the latter case, the person is
+  added for a zero hourly tariff. At least the person can book on the project!
+
 
 0.2 (2013-12-24)
 ----------------
