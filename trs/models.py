@@ -19,7 +19,7 @@ from tls import request as tls_request
 # too. 999999.99 should be possible, so that's 8 digits with 2 decimal places.
 MAX_DIGITS = 8
 DECIMAL_PLACES = 2
-LOG_DURATION = True
+LOG_DURATION = False
 
 logger = logging.getLogger(__name__)
 
