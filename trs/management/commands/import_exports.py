@@ -313,7 +313,7 @@ def import_invoices(filename):
         number = cells[1].string
         if not number:
             logger.error("Invoice without a number! %s", cells)
-            number = "DEZE FACTUUR HAD GEEN NUMBER IN DE IMPORT"
+            number = "GEEN NUMMER"
         description = cells[2].string or "NIET INGEVULD"
         amount_exclusive = dutch_string_to_int(cells[3].string)
         vat = dutch_string_to_int(cells[4].string)
