@@ -14,6 +14,10 @@ Changelog of trs
   is accepted (="locked down for changes"). In the latter case, the person is
   added for a zero hourly tariff. At least the person can book on the project!
 
+- Added overview page for all invoices (full-width).
+
+- Added overview page listing all overviews.
+
 
 0.2 (2013-12-24)
 ----------------
