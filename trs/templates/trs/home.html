@@ -52,7 +52,8 @@
           <div class="panel panel-default">
             <div class="panel-heading">
               Verandering aan je werk op
-              {{ change.project.as_widget }}
+              {{ change.project.as_widget }}<br>
+              <span class="text-muted">{{ change.project.description }}</span>
             </div>
             <div class="panel-body">
               {% if change.hours__sum %}
@@ -79,7 +80,8 @@
           <div class="panel panel-default">
             <div class="panel-heading">
               Budgetverandering aan jouw project
-              {{ change.project.as_widget }}
+              {{ change.project.as_widget }}<br>
+              <span class="text-muted">{{ change.project.description }}</span>
             </div>
             <div class="panel-body">
               {% if change.budget__sum %}
@@ -96,7 +98,8 @@
           <div class="panel panel-default">
             <div class="panel-heading">
               Nieuwe of betaalde facturen bij jouw project
-              {{ change.project.as_widget }}
+              {{ change.project.as_widget }}<br>
+              <span class="text-muted">{{ change.project.description }}</span>
             </div>
             <div class="panel-body">
               {% for invoice in change.added %}
