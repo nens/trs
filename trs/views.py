@@ -738,6 +738,9 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 for project in self.relevant_projects}
 
     def form_valid(self, form):
+        # Note: filtering on inactive (start/end date) projects and on booking
+        # year is done in the visual part of the view. It isn't enforced here
+        # yet. To do once we start using this as an API.
         start_time = time.time()
         total_difference = 0
         absolute_difference = 0
