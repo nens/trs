@@ -2,7 +2,7 @@ Changelog of trs
 ===================================================
 
 
-0.4 (unreleased)
+0.4 (2013-12-30)
 ----------------
 
 - Showing number of vacation hours left on homepage. Handy!
