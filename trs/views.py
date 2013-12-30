@@ -114,11 +114,7 @@ class BaseMixin(object):
     def active_projects(self):
         if not self.active_person:
             return []
-        return [project for project in
-                self.active_person.filtered_assigned_projects()
-                # filtered_assigned_projects filters out archived and
-                # not-active-anymore projects.
-                if not project.archived]
+        return list(self.active_person.filtered_assigned_projects())
 
     @cached_property
     def sidebar_person(self):
@@ -237,6 +233,26 @@ class HomeView(BaseView):
     def are_there_changes(self):
         return (self.person_changes or self.work_changes or
                 self.project_budget_changes or self.project_invoice_changes)
+
+    @cached_property
+    def vacation_left(self):
+        """Return weeks and hours of vacation left."""
+        vacation_projects = [project for project in self.active_projects
+                             if project.description.lower() == 'verlof']
+        if not vacation_projects:
+            logger.warning("Couldn't find a project named 'verlof'")
+            return
+        vacation_project = vacation_projects[0]
+        available = self.active_person.work_assignments.filter(
+            assigned_on=vacation_project).aggregate(
+                models.Sum('hours'))['hours__sum'] or 0
+        used = self.active_person.bookings.filter(
+            booked_on=vacation_project).aggregate(
+                models.Sum('hours'))['hours__sum'] or 0
+        hours_left = round(available - used)
+        weeks_available = hours_left / self.active_person.hours_per_week()
+        return {'hours': hours_left,
+                'weeks': weeks_available}
 
 
 class PersonsView(BaseView):
