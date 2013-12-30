@@ -71,6 +71,17 @@
       </tbody>
       <tfoot>
         <tr>
+          <th>Totaal</th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          {% for total in view.totals %}
+            <th class="text-right">{{ total|hours }}</th>
+          {% endfor %}
+        </tr>
+        <tr>
           <th></th>
           <th></th>
           <th></th>

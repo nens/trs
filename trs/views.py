@@ -837,6 +837,10 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             result.append(line)
         return result
 
+    def totals(self):
+        return [sum([line['hours%s' % index] for line in self.lines])
+                  for index in range(4)]
+
 
 class ProjectEditView(LoginAndPermissionsRequiredMixin,
                       UpdateView,
