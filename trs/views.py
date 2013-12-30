@@ -929,8 +929,6 @@ class InvoiceEditView(LoginAndPermissionsRequiredMixin,
         return super(InvoiceEditView, self).form_valid(form)
 
 
-# xxx vanaf hier verder kijken
-
 class BudgetItemCreateView(LoginAndPermissionsRequiredMixin,
                            CreateView,
                            BaseMixin):
@@ -1110,6 +1108,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         budgets, hourly_tariffs = self.budgets_and_tariffs
 
         for index, person in enumerate(self.project.assigned_persons()):
+            if person.archived:
+                continue
             if self.can_edit_hours:
                 field_type = forms.IntegerField(
                     min_value=0,
@@ -1159,12 +1159,12 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                   for item in booked_per_person}
         for person in self.project.assigned_persons():
             line = {'person': person}
-            if self.can_edit_hours:
+            if self.can_edit_hours and not person.archived:
                 line['hours'] = fields[field_index]
                 field_index += 1
             else:
                 line['hours'] = format_as_hours(budgets.get(person.id, 0))
-            if self.can_edit_hourly_tariff:
+            if self.can_edit_hourly_tariff and not person.archived:
                 line['hourly_tariff'] = fields[field_index]
                 field_index += 1
             else:
@@ -1183,6 +1183,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         num_changes = 0
         budgets, hourly_tariffs = self.budgets_and_tariffs
         for person in self.project.assigned_persons():
+            if person.archived:
+                continue
             hours = 0
             hourly_tariff = 0
             if self.can_edit_hours:
