@@ -5,7 +5,8 @@
   <h1>Uren boeken</h1>
   <form action="." method="post">
     {% csrf_token %}
-    <table class="table table-hover table-condensed">
+    <table id="booking-table"
+           class="table table-hover table-condensed">
       <thead>
         <tr>
           <th>Code</th>
@@ -24,10 +25,7 @@
             {% else %}
               <th class="text-right">{{ year_week.as_widget }}</th>
             {% endif %}
-            <!-- TODO: give feedback in widget if you need to book in that week -->
           {% endfor %}
-          <!-- TODO: add nice week widget including hover for starting date
-            and so -->
         </tr>
       </thead>
       <tbody>
@@ -59,7 +57,7 @@
             <td style="border-left: 1px solid rgb(221, 221, 221);">&nbsp;&nbsp;&nbsp;</td>
             <td class="text-right text-muted">{{ line.hours0|hours }}</td>
             <td class="text-right text-muted">{{ line.hours1|hours }}</td>
-            <td class="text-right">
+            <td class="text-right hour-for-total">
               {{ line.field }}
               {% for error in line.field.errors %}
                 <div class="alert alert-danger">{{ error }}</div>
@@ -78,7 +76,9 @@
           <th></th>
           <th></th>
           {% for total in view.totals %}
-            <th class="text-right">{{ total|hours }}</th>
+            <th class="text-right"
+                {% if forloop.counter = 3 %}id="hour-total"{% endif %}
+                >{{ total|hours }}</th>
           {% endfor %}
         </tr>
         <tr>
