@@ -293,6 +293,13 @@ class PersonView(BaseView):
             return True
 
     @cached_property
+    def can_edit_person_changes(self):
+        if self.person.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
     def can_see_financials(self):
         if self.can_see_everything:
             return True
@@ -485,11 +492,16 @@ class ProjectView(BaseView):
 
     @cached_property
     def can_edit_project(self):
+        # True even when the project is archived: you must be able to un-set
+        # the archive bit. To compensate for this, the title of the edit page
+        # has a big fat "you're editing an archived project!" warning.
         if self.can_edit_and_see_everything:
             return True
 
     @cached_property
     def can_edit_financials(self):
+        if self.project.archived:
+            return False
         if self.can_edit_and_see_everything:
             return True
         if self.project.project_manager == self.active_person:
@@ -497,7 +509,8 @@ class ProjectView(BaseView):
 
     @cached_property
     def can_edit_team(self):
-        # TODO: archived projects cannot be edited.
+        if self.project.archived:
+            return False
         if self.can_edit_and_see_everything:
             return True
         if self.project.project_leader == self.active_person:
@@ -824,6 +837,8 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
         return text
 
     def has_form_permissions(self):
+        # Editable even when archived as you must be able to un-set the
+        # 'archive' bit. If archived, the title warns you in no uncertain way.
         if self.can_edit_and_see_everything:
             return True
 
@@ -925,6 +940,8 @@ class BudgetItemCreateView(LoginAndPermissionsRequiredMixin,
     fields = ['description', 'amount', 'is_reservation']
 
     def has_form_permissions(self):
+        if self.project.archived:
+            return False
         if self.can_edit_and_see_everything:
             return True
 
@@ -954,6 +971,8 @@ class BudgetItemEditView(LoginAndPermissionsRequiredMixin,
         return "Aanpassen begrotingsitem voor %s" % self.project.code
 
     def has_form_permissions(self):
+        if self.project.archived:
+            return False
         if self.can_edit_and_see_everything:
             return True
 
@@ -975,10 +994,22 @@ class PersonEditView(LoginAndPermissionsRequiredMixin,
                      BaseMixin):
     template_name = 'trs/edit.html'
     model = Person
-    title = "Medewerker aanpassen"
     fields = ['name', 'user', 'is_management', 'archived']
 
+    @cached_property
+    def person(self):
+        return Person.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def title(self):
+        text = "Medewerker aanpassen"
+        if self.person.archived:
+            text = "OPGEPAST: JE BEWERKT EEN GEARCHIVEERDE MEDEWERKER!"
+        return text
+
     def has_form_permissions(self):
+        # Archived persons are editable: we must be able to un-set the archive
+        # bit. The title warns us, though.
         if self.can_edit_and_see_everything:
             return True
 
@@ -1008,6 +1039,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     template_name = 'trs/team.html'
 
     def has_form_permissions(self):
+        if self.project.archived:
+            return False
         if self.can_edit_and_see_everything:
             return True
         if self.project.project_leader == self.active_person:
@@ -1217,6 +1250,8 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
               'minimum_hourly_tariff']
 
     def has_form_permissions(self):
+        if self.person.archived:
+            return False
         if self.can_edit_and_see_everything:
             return True
 
