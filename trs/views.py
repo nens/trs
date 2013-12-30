@@ -112,11 +112,12 @@ class BaseMixin(object):
 
     @cached_property
     def active_projects(self):
-        # TODO: extra filtering for projects that are past their date.
         if not self.active_person:
             return []
         return [project for project in
                 self.active_person.filtered_assigned_projects()
+                # filtered_assigned_projects filters out archived and
+                # not-active-anymore projects.
                 if not project.archived]
 
     @cached_property
@@ -676,18 +677,29 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def year_weeks_to_display(self):
-        """Return the active YearWeek, the two previous ones and the next.
-
-        Note that at the end we return only the first 4 results. This may look
-        weird, but around the end of the year we can have splitted weeks with
-        1 January starting halfway the week and so. And we don't want that
-        extra column, so... :-)
-
-        """
+        """Return the active YearWeek, the two previous ones and the next."""
         end = self.active_first_day + datetime.timedelta(days=7)
         start = self.active_first_day - datetime.timedelta(days=2 * 7)
-        return list(YearWeek.objects.filter(first_day__lte=end).filter(
-            first_day__gte=start))[:4]
+        result = list(YearWeek.objects.filter(first_day__lte=end).filter(
+            first_day__gte=start))
+        if len(result) > 4:
+            # Splitted week at start/end of year problem. We get 5 weeks...
+            # Trim off the first or last one depending on whether we're in the
+            # first weeks or not.
+            if result[2].week < 10:
+                result = result[-4:]
+            else:
+                result = result[:4]
+        return result
+
+    @cached_property
+    def relevant_projects(self):
+        first_week = self.year_weeks_to_display[0]
+        latest_week = self.year_weeks_to_display[-1]
+        return Project.objects.filter(
+            work_assignments__assigned_to=self.active_person,
+            end__gte=first_week,
+            start__lte=latest_week).distinct()
 
     @cached_property
     def highlight_column(self):
@@ -701,7 +713,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     def get_form_class(self):
         """Return dynamically generated form class."""
         fields = SortedDict()
-        for index, project in enumerate(self.active_projects):
+        for index, project in enumerate(self.relevant_projects):
             field_type = forms.IntegerField(
                 min_value=0,
                 max_value=100,
@@ -717,13 +729,13 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         bookings = Booking.objects.filter(
             year_week=self.active_year_week,
             booked_by=self.active_person,
-            booked_on__in=self.active_projects).values(
+            booked_on__in=self.relevant_projects).values(
                 'booked_on__code').annotate(
                     models.Sum('hours'))
         result = {item['booked_on__code']: round(item['hours__sum'])
                   for item in bookings}
         return {project.code: result.get(project.code, 0)
-                for project in self.active_projects}
+                for project in self.relevant_projects}
 
     def form_valid(self, form):
         start_time = time.time()
@@ -735,7 +747,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             total_difference += difference
             absolute_difference += abs(difference)
             if difference:
-                project = [project for project in self.active_projects
+                project = [project for project in self.relevant_projects
                            if project.code == project_code][0]
                 booking = Booking(hours=difference,
                                   booked_by=self.active_person,
@@ -759,7 +771,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def tabindex_submit_button(self):
-        return len(self.active_projects) + 1
+        return len(self.relevant_projects) + 1
 
     @cached_property
     def success_url(self):
@@ -782,7 +794,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         # Idem for budget
         budget_per_project = WorkAssignment.objects.filter(
             assigned_to=self.active_person,
-            assigned_on__in=self.active_projects).values(
+            assigned_on__in=self.relevant_projects).values(
                 'assigned_on').annotate(
                     models.Sum('hours'))
         budgets = {item['assigned_on']: round(item['hours__sum'])
@@ -790,19 +802,31 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         # Item for hours worked.
         booked_per_project = Booking.objects.filter(
             booked_by=self.active_person,
-            booked_on__in=self.active_projects).values(
+            booked_on__in=self.relevant_projects).values(
                 'booked_on').annotate(
                     models.Sum('hours'))
         booked_total = {item['booked_on']: round(item['hours__sum'])
                         for item in booked_per_project}
 
-        for project_index, project in enumerate(self.active_projects):
+        this_year = this_year_week().year
+        for project_index, project in enumerate(self.relevant_projects):
             line = {'project': project}
             for index, year_week in enumerate(self.year_weeks_to_display):
                 booked = bookings.get((project.id, year_week.id), 0)
                 key = 'hours%s' % index
                 line[key] = booked
-            line['field'] = fields[project_index]
+
+            # Filtering if we're allowed to book or not.
+            if not (project.archived or
+                    # TODO: figure out proper python3 comparisons... Shame on me.
+                    str(project.start) > str(self.active_year_week) or
+                    str(project.end) < str(self.active_year_week) or
+                    self.active_year_week.year != this_year):
+                line['field'] = fields[project_index]
+            else:
+                line['field'] = round(bookings.get(
+                    (project.id, self.active_year_week.id), 0))
+
             line['budget'] = budgets.get(project.id, 0)
             line['booked_total'] = booked_total.get(project.id, 0)
             line['is_overbooked'] = line['booked_total'] > line['budget']
