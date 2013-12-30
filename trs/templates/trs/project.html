@@ -195,9 +195,13 @@
           {% for budget_item in view.project.budget_items.all %}
             <tr>
               <td>
-                <a href="{% url 'trs.budget_item.edit' project_pk=view.project.pk pk=budget_item.pk %}">
+                {% if view.can_edit_financials %}
+                  <a href="{% url 'trs.budget_item.edit' project_pk=view.project.pk pk=budget_item.pk %}">
+                    {{ budget_item.description }}
+                  </a>
+                {% else %}
                   {{ budget_item.description }}
-                </a>
+                {% endif %}
               </td>
               <td>
                 {% if budget_item.is_reservation %}
@@ -261,9 +265,13 @@
             <tr>
               <td>{{ invoice.date }}</td>
               <td>
-                <a href="{% url 'trs.invoice.edit' project_pk=view.project.pk pk=invoice.pk %}">
+                {% if view.can_edit_financials %}
+                  <a href="{% url 'trs.invoice.edit' project_pk=view.project.pk pk=invoice.pk %}">
+                    {{ invoice.number }}
+                  </a>
+                {% else %}
                   {{ invoice.number }}
-                </a>
+                {% endif %}
               </td>
               <td>{{ invoice.description }}</td>
               <td class="text-right">{{ invoice.amount_exclusive|money }}</td>

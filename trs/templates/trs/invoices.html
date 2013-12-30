@@ -21,7 +21,13 @@
       <tr>
         <td>{{ invoice.date }}</td>
         <td>
-          {{ invoice.number }}
+          {% if not invoice.project.archived %}
+            <a href="{% url 'trs.invoice.edit' project_pk=invoice.project.pk pk=invoice.pk %}">
+              {{ invoice.number }}
+            </a>
+          {% else %}
+            {{ invoice.number }}
+          {% endif %}
         </td>
         <td>{{ invoice.project.as_widget }}</td>
         <td>{{ invoice.description }}</td>

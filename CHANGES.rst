@@ -5,7 +5,20 @@ Changelog of trs
 0.4 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Showing number of vacation hours left on homepage. Handy!
+
+- Added totals to booking page (not dynamic yet, though).
+
+- Got booking filtering to work:
+
+  - Archived projects aren't bookable.
+
+  - Not-yet-active or not-active-anymore projects aren't bookable.
+
+  - You can only book in the current year.
+
+- Prevented a lot of editing on archived items. Editing archived persons on a
+  team, adding/editing invoices on archived projects, etc.
 
 
 0.3 (2013-12-28)

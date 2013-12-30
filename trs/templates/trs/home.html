@@ -52,7 +52,8 @@
           <div class="panel panel-default">
             <div class="panel-heading">
               Verandering aan je werk op
-              {{ change.project.as_widget }}
+              {{ change.project.as_widget }}<br>
+              <span class="text-muted">{{ change.project.description }}</span>
             </div>
             <div class="panel-body">
               {% if change.hours__sum %}
@@ -71,6 +72,21 @@
           </div>
         {% endfor %}
 
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Resterende vakantieuren
+          </div>
+          <div class="panel-body">
+            {% if view.vacation_left %}
+              <b>In weken:</b> {{ view.vacation_left.weeks|floatformat }}<br>
+              <b>In uren:</b> {{ view.vacation_left.hours }}
+            {% else %}
+              Hm. Geen project gevonden dat 'verlof' heet. Jammer, dat wordt
+              doorwerken dit jaar.
+            {% endif %}
+          </div>
+        </div>
+
       </div>
       <div class="col-md-6">
         <!-- Changes on your projects -->
@@ -79,7 +95,8 @@
           <div class="panel panel-default">
             <div class="panel-heading">
               Budgetverandering aan jouw project
-              {{ change.project.as_widget }}
+              {{ change.project.as_widget }}<br>
+              <span class="text-muted">{{ change.project.description }}</span>
             </div>
             <div class="panel-body">
               {% if change.budget__sum %}
@@ -96,7 +113,8 @@
           <div class="panel panel-default">
             <div class="panel-heading">
               Nieuwe of betaalde facturen bij jouw project
-              {{ change.project.as_widget }}
+              {{ change.project.as_widget }}<br>
+              <span class="text-muted">{{ change.project.description }}</span>
             </div>
             <div class="panel-body">
               {% for invoice in change.added %}

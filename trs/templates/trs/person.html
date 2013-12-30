@@ -2,7 +2,13 @@
 {% load trs_formatting %}
 
 {% block main-column %}
-  <h1>{{ view.person.name }}</h1>
+  <h1>
+    {{ view.person.name }}
+    {% if view.person.archived %}
+      <span title="Werkt hier niet meer"
+            class="text-muted glyphicon glyphicon-lock"></span>
+    {% endif %}
+  </h1>
   <table class="table borderless-table table-condensed"
          style="width: auto;">
     <tbody>
@@ -62,11 +68,13 @@
         Wijzig
       </a>
       &nbsp;
-      <a href="{% url 'trs.person.target' pk=view.person.pk %}"
-         class="btn btn-default">
-        <span class="glyphicon glyphicon-pencil"></span>
-        Wijzig target/werkweek/uurtarief
-      </a>
+      {% if view.can_edit_person_changes %}
+        <a href="{% url 'trs.person.target' pk=view.person.pk %}"
+           class="btn btn-default">
+          <span class="glyphicon glyphicon-pencil"></span>
+          Wijzig target/werkweek/uurtarief
+        </a>
+      {% endif %}
     </div>
   {% endif %}
 
