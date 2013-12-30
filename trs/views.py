@@ -804,7 +804,6 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                       BaseMixin):
     template_name = 'trs/edit.html'
     model = Project
-    title = "Project aanpassen"
     fields = ['code', 'description', 'internal', 'hidden', 'hourless',
               'archived',  # Note: archived only on edit view :-)
               'is_subsidized', 'principal',
@@ -813,6 +812,17 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
               'is_accepted',  # Note: is_accepted only on edit view!
               'remark',
     ]
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def title(self):
+        text = "Project aanpassen"
+        if self.project.archived:
+            text = "OPGEPAST: JE BEWERKT EEN GEARCHIVEERD PROJECT!"
+        return text
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
