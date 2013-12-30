@@ -572,7 +572,6 @@ class ProjectView(BaseView):
             line['desired_hourly_tariff'] = round(person.standard_hourly_tariff(
                 year_week=self.project.start))
             result.append(line)
-            #xxx
         return result
 
     @cached_property
@@ -865,6 +864,8 @@ class InvoiceCreateView(LoginAndPermissionsRequiredMixin,
               'amount_exclusive', 'vat', 'payed']
 
     def has_form_permissions(self):
+        if self.project.archived:
+            return False
         if self.can_edit_and_see_everything:
             return True
 
@@ -895,6 +896,8 @@ class InvoiceEditView(LoginAndPermissionsRequiredMixin,
         return "Aanpassen factuur voor %s" % self.project.code
 
     def has_form_permissions(self):
+        if self.project.archived:
+            return False
         if self.can_edit_and_see_everything:
             return True
 
@@ -910,6 +913,8 @@ class InvoiceEditView(LoginAndPermissionsRequiredMixin,
         messages.success(self.request, "Factuur aangepast")
         return super(InvoiceEditView, self).form_valid(form)
 
+
+# xxx vanaf hier verder kijken
 
 class BudgetItemCreateView(LoginAndPermissionsRequiredMixin,
                            CreateView,
