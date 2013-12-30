@@ -664,11 +664,18 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def year_weeks_to_display(self):
-        """Return the active YearWeek, the two previous ones and the next."""
+        """Return the active YearWeek, the two previous ones and the next.
+
+        Note that at the end we return only the first 4 results. This may look
+        weird, but around the end of the year we can have splitted weeks with
+        1 January starting halfway the week and so. And we don't want that
+        extra column, so... :-)
+
+        """
         end = self.active_first_day + datetime.timedelta(days=7)
         start = self.active_first_day - datetime.timedelta(days=2 * 7)
         return list(YearWeek.objects.filter(first_day__lte=end).filter(
-            first_day__gte=start))
+            first_day__gte=start))[:4]
 
     @cached_property
     def highlight_column(self):
