@@ -35,20 +35,6 @@ def this_year_week():
     return result
 
 
-def days_missing_per_year():
-    cache_key = 'days_missing_per_year3'
-    cached = cache.get(cache_key)
-    if cached is not None:
-        return cached
-    result = {}
-    from django.conf import settings  # Local import, prevents circular.
-    for year in range(settings.TRS_START_YEAR, settings.TRS_END_YEAR + 1):
-        first_year_week = YearWeek.objects.filter(year=year).first()
-        missing = first_year_week.first_day.weekday()  # Mon=0, Tue=1, Wed=3
-        result[year] = missing
-    cache.set(cache_key, result, 3600 * 24 * 29)  # Max memcache age.
-    return result
-
 
 def days_missing_per_year_at_start_and_end():
     cache_key = 'days_missing_per_year_at_start_and_end1'
@@ -150,7 +136,7 @@ class Person(models.Model):
         return self.name
 
     def cache_key(self, for_what, year_week=None):
-        cache_version = 1
+        cache_version = 2
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-%s-%s-%s-%s' % (
             self.id, self.cache_indicator, for_what, week_id, cache_version)
@@ -239,8 +225,13 @@ class Person(models.Model):
             if week in changes_per_week:
                 current_amount += changes_per_week[week]
             result += current_amount
-        result -= days_missing_per_year()[this_year] * 8
-        # The line above might have pushed it below zero, so compensate:
+
+        (missing_at_start,
+         missing_at_end) = days_missing_per_year_at_start_and_end()[this_year]
+        result -= missing_at_start * 8
+        if year_week.week >= 52:
+            result -= missing_at_end * 8
+        # The lines above might have pushed it below zero, so compensate:
         return max(0, result)
 
     @cache_on_model
