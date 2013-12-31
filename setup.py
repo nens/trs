@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from setuptools import setup
 
-version = '0.5.dev0'
+version = '0.5'
 
 long_description = '\n\n'.join([
     open('README.rst').read(),
