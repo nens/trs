@@ -437,18 +437,23 @@ class BookingOverview(PersonView):
         to_book = start_hours_amount
         (missing_at_start,
          missing_at_end) = days_missing_per_year_at_start_and_end()[self.year]
+        logger.debug(missing_at_start)
+        logger.debug(missing_at_end)
         year_weeks = YearWeek.objects.filter(year=self.year)
-        last_week_index = len(year_weeks)
+        last_week_index = len(year_weeks) - 1
         for index, year_week in enumerate(year_weeks):
             to_book += changes_per_week.get(year_week.week, 0)
             to_book_this_week = to_book
-            # TODO index == 0
+            if index == 0:
+                to_book_this_week -= missing_at_start * 8
+            if index == last_week_index:
+                to_book_this_week -= missing_at_end * 8
             booked = booked_per_week.get(year_week.week, 0)
             klass = ''
             hint = ''
             if booked < to_book_this_week:
                 klass = 'danger'
-                hint = "Te boeken: %s" % round(to_book)
+                hint = "Te boeken: %s" % round(to_book_this_week)
             result.append({'year_week': year_week,
                            'booked': booked,
                            'klass': klass,
