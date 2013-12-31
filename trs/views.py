@@ -406,12 +406,24 @@ class PersonView(BaseView):
 
 class BookingOverview(PersonView):
     template_name = 'trs/booking_overview.html'
-    # xxx
+
+    def has_form_permissions(self):
+        if self.can_see_everything:
+            return True
+        if self.active_person == self.person:
+            return True
+        return False
 
     @cached_property
     def year(self):
-        # TODO: GET param for year.
-        return this_year_week().year
+        return int(self.request.GET.get('year', this_year_week().year))
+
+    @cached_property
+    def available_years(self):
+        return Booking.objects.filter(
+            booked_by=self.person).values(
+                'year_week__year').distinct().values_list(
+                    'year_week__year', flat=True)
 
     @cached_property
     def lines(self):
