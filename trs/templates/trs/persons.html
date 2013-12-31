@@ -37,7 +37,9 @@
             {{ line.pyc.left_to_book|hours }}
           </td>
           <td class="{{ line.person.to_book.klass }} text-right">
-            {{ line.person.to_book.friendly }}
+            <a href="{% url 'trs.booking.overview' pk=line.person.id %}">
+              {{ line.person.to_book.friendly }}
+            </a>
           </td>
           <td class="text-right {{ line.klass }}">
             {{ line.pyc.overbooked|hours }}
