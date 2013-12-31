@@ -5,7 +5,7 @@ Changelog of trs
 0.6 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Cache tweak to get correct number-of-hours-to-work.
 
 
 0.5 (2013-12-31)
