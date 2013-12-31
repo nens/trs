@@ -9,8 +9,8 @@ function SumTotalHours() {
             // I am not editable, I only have my hours as text.
             value = $(this).text();
         }
-        if (!isNaN(value) && (value.length != 0))  {
-            total += parseInt(value);
+        if (!isNaN(value) && (value.length !== 0))  {
+            total += parseInt(value, 10);
         }
     });
     $('#hour-total').text(total);
