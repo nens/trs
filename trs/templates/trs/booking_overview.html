@@ -1,0 +1,37 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>Boekingoverzicht {{ view.person }} {{ view.year }}</h1>
+  <table class="table table-hover table-condensed"
+         style="width: auto;">
+    <thead>
+      <tr>
+        <th>Week</th>
+        <th>Begindag</th>
+        <th class="text-right">Geboekt</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in view.lines %}
+        <tr>
+          <td>
+            <a href="{{ line.year_week.get_absolute_url }}">
+              Week {{ line.year_week.week }}
+            </a>
+          </td>
+          <td>
+            <span class="year-date-hint">
+              {{ line.year_week.first_day|date:"j b" }}
+            </span>
+          </td>
+          <td class="text-right {{ line.klass }}"
+              {% if line.hint %}title="{{ line.hint }}"{% endif %}>
+            {{ line.booked|hours }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

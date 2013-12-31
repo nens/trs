@@ -72,6 +72,10 @@ urlpatterns = patterns(
     url(r'^booking/(?P<year>\d\d\d\d)-0(?P<week>\d)/$',
         views.BookingView.as_view(),
         name='trs.booking'),
+    # A PK has no dashes, so it doesn't conflict with the above two regexes.
+    url(r'^booking/(?P<pk>\d+)/$',
+        views.BookingOverview.as_view(),
+        name='trs.booking.overview'),
 
     # Overviews
     url(r'^overviews/$',

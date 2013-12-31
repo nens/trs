@@ -403,6 +403,53 @@ class PersonView(BaseView):
         return ', '.join(roles)
 
 
+class BookingOverview(PersonView):
+    template_name = 'trs/booking_overview.html'
+    # xxx
+
+    @cached_property
+    def year(self):
+        # TODO: GET param for year.
+        return this_year_week().year
+
+    @cached_property
+    def lines(self):
+        booked_this_year_per_week = Booking.objects.filter(
+            booked_by=self.person,
+            year_week__year=self.year).values(
+                'year_week__week').annotate(
+                    models.Sum('hours'))
+        booked_per_week = {
+            item['year_week__week']: round(item['hours__sum'])
+            for item in booked_this_year_per_week}
+        start_hours_amount = round(self.person.person_changes.filter(
+            year_week__year__lt=self.year).aggregate(
+                models.Sum('hours_per_week'))['hours_per_week__sum'] or 0)
+        changes_this_year = self.person.person_changes.filter(
+            year_week__year=self.year).values(
+                'year_week__week').annotate(
+                    models.Sum('hours_per_week'))
+        changes_per_week = {change['year_week__week']:
+                            round(change['hours_per_week__sum'])
+                            for change in changes_this_year}
+        result = []
+        to_book = start_hours_amount
+        for year_week in YearWeek.objects.filter(year=self.year):
+            to_book += changes_per_week.get(year_week.week, 0)
+            booked = booked_per_week.get(year_week.week, 0)
+            klass = ''
+            hint = ''
+            if booked < to_book:
+                klass = 'danger'
+                hint = "Te boeken: %s" % round(to_book)
+            result.append({'year_week': year_week,
+                           'to_book': to_book,
+                           'booked': booked,
+                           'klass': klass,
+                           'hint': hint})
+        return result
+
+
 class ProjectsView(BaseView):
 
     @property
