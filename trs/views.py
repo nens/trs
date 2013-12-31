@@ -3,6 +3,7 @@ import logging
 import time
 
 from django import forms
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.decorators import login_required
@@ -161,6 +162,10 @@ class BaseMixin(object):
             return True
         if self.active_person.is_management:
             return True
+
+    @cached_property
+    def gauges_id(self):
+        return getattr(settings, 'GAUGES_ID', None)
 
 
 class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
