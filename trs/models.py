@@ -486,6 +486,9 @@ class FinancialBase(models.Model):
                 # If tls_request doesn't exist we're running tests. Adding
                 # this 'if' is handier than mocking it the whole time :-)
                 self.added_by = tls_request.user
+        self.project.save()
+        # ^^^ Project is available on subclasses. This increments the cache
+        # key.
         return super(FinancialBase, self).save(*args, **kwargs)
 
 
