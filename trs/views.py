@@ -894,15 +894,13 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 line[key] = booked
 
             # Filtering if we're allowed to book or not.
-            if not (project.archived or
-                    # TODO: figure out proper python3 comparisons... Shame on me.
-                    str(project.start) > str(self.active_year_week) or
-                    str(project.end) < str(self.active_year_week) or
-                    self.active_year_week.year < this_year):
-                line['field'] = fields[project_index]
-            else:
-                line['field'] = round(bookings.get(
-                    (project.id, self.active_year_week.id), 0))
+            line['field'] = fields[project_index]
+            if (project.archived or
+                # TODO: figure out proper python3 comparisons... Shame on me.
+                str(project.start) > str(self.active_year_week) or
+                str(project.end) < str(self.active_year_week) or
+                self.active_year_week.year < this_year):
+                line['field'].field.widget.attrs['readonly'] = True
 
             line['budget'] = budgets.get(project.id, 0)
             line['booked_total'] = booked_total.get(project.id, 0)
