@@ -3,6 +3,7 @@ import logging
 import time
 
 from django import forms
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.decorators import login_required
@@ -30,6 +31,7 @@ from trs.models import Project
 from trs.models import WorkAssignment
 from trs.models import YearWeek
 from trs.models import this_year_week
+from trs.models import days_missing_per_year_at_start_and_end
 from trs.templatetags.trs_formatting import hours as format_as_hours
 from trs.templatetags.trs_formatting import money as format_as_money
 
@@ -160,6 +162,10 @@ class BaseMixin(object):
             return True
         if self.active_person.is_management:
             return True
+
+    @cached_property
+    def gauges_id(self):
+        return getattr(settings, 'GAUGES_ID', None)
 
 
 class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
@@ -401,6 +407,75 @@ class PersonView(BaseView):
         if not roles:
             return 'Geen'
         return ', '.join(roles)
+
+
+class BookingOverview(PersonView):
+    template_name = 'trs/booking_overview.html'
+
+    def has_form_permissions(self):
+        if self.can_see_everything:
+            return True
+        if self.active_person == self.person:
+            return True
+        return False
+
+    @cached_property
+    def year(self):
+        return int(self.request.GET.get('year', this_year_week().year))
+
+    @cached_property
+    def available_years(self):
+        return Booking.objects.filter(
+            booked_by=self.person).values(
+                'year_week__year').distinct().values_list(
+                    'year_week__year', flat=True)
+
+    @cached_property
+    def lines(self):
+        booked_this_year_per_week = Booking.objects.filter(
+            booked_by=self.person,
+            year_week__year=self.year).values(
+                'year_week__week').annotate(
+                    models.Sum('hours'))
+        booked_per_week = {
+            item['year_week__week']: round(item['hours__sum'])
+            for item in booked_this_year_per_week}
+        start_hours_amount = round(self.person.person_changes.filter(
+            year_week__year__lt=self.year).aggregate(
+                models.Sum('hours_per_week'))['hours_per_week__sum'] or 0)
+        changes_this_year = self.person.person_changes.filter(
+            year_week__year=self.year).values(
+                'year_week__week').annotate(
+                    models.Sum('hours_per_week'))
+        changes_per_week = {change['year_week__week']:
+                            round(change['hours_per_week__sum'])
+                            for change in changes_this_year}
+        result = []
+        to_book = start_hours_amount
+        (missing_at_start,
+         missing_at_end) = days_missing_per_year_at_start_and_end()[self.year]
+        logger.debug(missing_at_start)
+        logger.debug(missing_at_end)
+        year_weeks = YearWeek.objects.filter(year=self.year)
+        last_week_index = len(year_weeks) - 1
+        for index, year_week in enumerate(year_weeks):
+            to_book += changes_per_week.get(year_week.week, 0)
+            to_book_this_week = to_book
+            if index == 0:
+                to_book_this_week -= missing_at_start * 8
+            if index == last_week_index:
+                to_book_this_week -= missing_at_end * 8
+            booked = booked_per_week.get(year_week.week, 0)
+            klass = ''
+            hint = ''
+            if booked < to_book_this_week:
+                klass = 'danger'
+                hint = "Te boeken: %s" % round(to_book_this_week)
+            result.append({'year_week': year_week,
+                           'booked': booked,
+                           'klass': klass,
+                           'hint': hint})
+        return result
 
 
 class ProjectsView(BaseView):
@@ -836,15 +911,13 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 line[key] = booked
 
             # Filtering if we're allowed to book or not.
-            if not (project.archived or
-                    # TODO: figure out proper python3 comparisons... Shame on me.
-                    str(project.start) > str(self.active_year_week) or
-                    str(project.end) < str(self.active_year_week) or
-                    self.active_year_week.year < this_year):
-                line['field'] = fields[project_index]
-            else:
-                line['field'] = round(bookings.get(
-                    (project.id, self.active_year_week.id), 0))
+            line['field'] = fields[project_index]
+            if (project.archived or
+                # TODO: figure out proper python3 comparisons... Shame on me.
+                str(project.start) > str(self.active_year_week) or
+                str(project.end) < str(self.active_year_week) or
+                self.active_year_week.year < this_year):
+                line['field'].field.widget.attrs['readonly'] = True
 
             line['budget'] = budgets.get(project.id, 0)
             line['booked_total'] = booked_total.get(project.id, 0)

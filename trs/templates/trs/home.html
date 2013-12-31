@@ -72,21 +72,6 @@
           </div>
         {% endfor %}
 
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            Resterende vakantieuren
-          </div>
-          <div class="panel-body">
-            {% if view.vacation_left %}
-              <b>In weken:</b> {{ view.vacation_left.weeks|floatformat }}<br>
-              <b>In uren:</b> {{ view.vacation_left.hours }}
-            {% else %}
-              Hm. Geen project gevonden dat 'verlof' heet. Jammer, dat wordt
-              doorwerken dit jaar.
-            {% endif %}
-          </div>
-        </div>
-
       </div>
       <div class="col-md-6">
         <!-- Changes on your projects -->
@@ -148,5 +133,25 @@
   {% else %}
     <p>Er zijn de laatste tijd geen wijzigingen.</p>
   {% endif %}
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          Resterende vakantieuren
+        </div>
+        <div class="panel-body">
+          {% if view.vacation_left %}
+            <b>In weken:</b> {{ view.vacation_left.weeks|floatformat }}<br>
+            <b>In uren:</b> {{ view.vacation_left.hours }}
+          {% else %}
+            Hm. Geen project gevonden dat 'verlof' heet. Jammer, dat wordt
+            doorwerken dit jaar.
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
 
 {% endblock %}

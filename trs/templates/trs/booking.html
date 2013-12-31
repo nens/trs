@@ -1,10 +1,23 @@
 {% extends "trs/base.html" %}
+{% load staticfiles %}
 {% load trs_formatting %}
 
 {% block main-column %}
   <h1>Uren boeken</h1>
-  <form action="." method="post">
+  <div class="text-muted">
+    Zie
+    <a href="{% url 'trs.booking.overview' pk=view.active_person.id %}">
+      jaaroverzicht boekingen
+    </a>
+    als je nog in oude weken moet boeken.
+  </div>
+  <form action="."
+        method="post"
+        id="booking-form">
     {% csrf_token %}
+    {% for error in form.errors %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endfor %}
     <table id="booking-table"
            class="table table-hover table-condensed">
       <thead>
@@ -96,4 +109,8 @@
     </table>
   </form>
 
+{% endblock %}
+
+{% block javascript %}
+  <script src="{% static 'trs/trs.js' %}"></script>
 {% endblock %}

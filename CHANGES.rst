@@ -5,7 +5,17 @@ Changelog of trs
 0.5 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Added gaug.es tracking.
+
+- Added booking overview page.
+
+- Booking form fixes.
+
+- UI improvements.
+
+- Handling incomplete first/last weeks of the year the right way.
+
+- Javascript to auto-sum the hours for the week you're booking.
 
 
 0.4 (2013-12-30)
