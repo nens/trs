@@ -1,4 +1,5 @@
 {% extends "trs/base.html" %}
+{% load staticfiles %}
 {% load trs_formatting %}
 
 {% block main-column %}
@@ -96,4 +97,8 @@
     </table>
   </form>
 
+{% endblock %}
+
+{% block javascript %}
+  <script src="{% static 'trs/trs.js' %}"></script>
 {% endblock %}
