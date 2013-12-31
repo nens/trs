@@ -30,6 +30,7 @@ from trs.models import Project
 from trs.models import WorkAssignment
 from trs.models import YearWeek
 from trs.models import this_year_week
+from trs.models import days_missing_per_year_at_start_and_end
 from trs.templatetags.trs_formatting import hours as format_as_hours
 from trs.templatetags.trs_formatting import money as format_as_money
 
@@ -434,16 +435,21 @@ class BookingOverview(PersonView):
                             for change in changes_this_year}
         result = []
         to_book = start_hours_amount
-        for year_week in YearWeek.objects.filter(year=self.year):
+        (missing_at_start,
+         missing_at_end) = days_missing_per_year_at_start_and_end()[self.year]
+        year_weeks = YearWeek.objects.filter(year=self.year)
+        last_week_index = len(year_weeks)
+        for index, year_week in enumerate(year_weeks):
             to_book += changes_per_week.get(year_week.week, 0)
+            to_book_this_week = to_book
+            # TODO index == 0
             booked = booked_per_week.get(year_week.week, 0)
             klass = ''
             hint = ''
-            if booked < to_book:
+            if booked < to_book_this_week:
                 klass = 'danger'
                 hint = "Te boeken: %s" % round(to_book)
             result.append({'year_week': year_week,
-                           'to_book': to_book,
                            'booked': booked,
                            'klass': klass,
                            'hint': hint})

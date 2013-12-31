@@ -50,6 +50,23 @@ def days_missing_per_year():
     return result
 
 
+def days_missing_per_year_at_start_and_end():
+    cache_key = 'days_missing_per_year_at_start_and_end1'
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+    result = {}
+    from django.conf import settings  # Local import, prevents circular.
+    for year in range(settings.TRS_START_YEAR, settings.TRS_END_YEAR + 1):
+        first_year_week = YearWeek.objects.filter(year=year).first()
+        at_start = first_year_week.first_day.weekday()  # Mon=0, Tue=1, Wed=3
+        last_day = datetime.date(year=year, month=12, day=31)
+        at_end = max(0, 4 - last_day.weekday())
+        result[year] = (at_start, at_end)
+    cache.set(cache_key, result, 3600 * 24 * 29)  # Max memcache age.
+    return result
+
+
 def cache_per_week(callable):
     # Note: only for PersonChange related fields.
     def inner(self, year_week=None):
