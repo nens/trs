@@ -4,6 +4,13 @@
 
 {% block main-column %}
   <h1>Uren boeken</h1>
+  <div class="text-muted">
+    Zie
+    <a href="{% url 'trs.booking.overview' pk=view.active_person.id %}">
+      jaaroverzicht boekingen
+    </a>
+    als je nog in oude weken moet boeken.
+  </div>
   <form action="."
         method="post"
         id="booking-form">
