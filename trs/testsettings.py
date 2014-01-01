@@ -106,10 +106,7 @@ TRS_END_YEAR = 2020
 USE_L10N = True
 USE_I18N = True
 LANGUAGE_CODE = 'nl-nl'
-
-# LOGIN_URL = 'trs.login'
-# LOGOUT_URL = 'trs.logout'
-
+TIME_ZONE = 'Europe/Amsterdam'
 
 INTERNAL_IPS = ['localhost', '127.0.0.1']
 
