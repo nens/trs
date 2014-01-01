@@ -68,6 +68,9 @@
             <td class="text-right text-muted">{{ line.hours1|hours }}</td>
             <td class="text-right hour-for-total">
               {{ line.field }}
+              {% if line.show_uneditable_value %}
+                {{ line.hours2|hours }}
+              {% endif %}
               {% for error in line.field.errors %}
                 <div class="alert alert-danger">{{ error }}</div>
               {% endfor %}
