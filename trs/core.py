@@ -33,7 +33,7 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        version = 9
+        version = 10
         self.cache_key = 'pycdata-%s-%s-%s-%s' % (
             person.id, person.cache_indicator, year, version)
         has_cached_data = self.get_cache()
@@ -121,7 +121,7 @@ class PersonYearCombination(object):
             well_booked_percentage = 100 - overbooked_percentage
         else:
             overbooked_percentage = 0
-            well_booked_percentage = 0
+            well_booked_percentage = 100
 
         self.overbooked = total_overbooked
         self.overbooked_percentage = overbooked_percentage
