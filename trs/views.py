@@ -454,8 +454,6 @@ class BookingOverview(PersonView):
         to_book = start_hours_amount
         (missing_at_start,
          missing_at_end) = days_missing_per_year_at_start_and_end()[self.year]
-        logger.debug(missing_at_start)
-        logger.debug(missing_at_end)
         year_weeks = YearWeek.objects.filter(year=self.year)
         last_week_index = len(year_weeks) - 1
         for index, year_week in enumerate(year_weeks):
