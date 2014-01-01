@@ -1497,5 +1497,5 @@ class InvoicesView(BaseView):
 
     @cached_property
     def invoices(self):
-        return Invoice.objects.all().prefetch_related('project').order_by(
+        return Invoice.objects.all().select_related('project').order_by(
             '-date')
