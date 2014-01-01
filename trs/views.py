@@ -471,6 +471,10 @@ class BookingOverview(PersonView):
             if booked < to_book_this_week:
                 klass = 'danger'
                 hint = "Te boeken: %s" % round(to_book_this_week)
+            if (year_week.year == this_year_week().year and
+                year_week.week >= this_year_week().week):
+                # Don't complain about this or future weeks.
+                klass = ''
             result.append({'year_week': year_week,
                            'booked': booked,
                            'klass': klass,
