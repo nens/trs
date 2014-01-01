@@ -1,5 +1,9 @@
-/* Code for fixing a table header in place copied from
+/* Code for fixing a table header in place. Copied from
    https://gist.github.com/i-scorpion/2948136/
+
+   I included the fix in
+   https://gist.github.com/i-scorpion/2948136#comment-935170, which uses
+   `outerWidth(true)` instead of `width()`.
 */
 
 (function($) {
