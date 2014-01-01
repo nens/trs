@@ -33,8 +33,9 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        self.cache_key = 'pycdata8-%s-%s-%s' % (
-            person.id, person.cache_indicator, year)
+        version = 9
+        self.cache_key = 'pycdata-%s-%s-%s-%s' % (
+            person.id, person.cache_indicator, year, version)
         has_cached_data = self.get_cache()
         if not has_cached_data:
             self.just_calculate_everything()
@@ -130,8 +131,6 @@ class PersonYearCombination(object):
 
     def calc_external_percentage(self):
         """Return percentage hours booked this year on external projects.
-
-        TODO: filter out holiday hours?
         """
         query_result = Booking.objects.filter(
             booked_by=self.person,
@@ -147,7 +146,7 @@ class PersonYearCombination(object):
             else:
                 external = round(result['hours__sum'])
         if not internal + external:  # Division by zero
-            return 0
+            return 100
         return round(100 * external / (internal + external))
 
     @cached_property
