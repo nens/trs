@@ -6,8 +6,8 @@
 
 $.fn.fixedHeader = function (options) {
  var config = {
-   topOffset: 40,
-   bgColor: '#EEEEEE'
+   topOffset: 00,
+   bgColor: '#fff'
  };
  if (options){ $.extend(config, options); }
 
@@ -39,14 +39,17 @@ $.fn.fixedHeader = function (options) {
   $head.clone().removeClass('header').addClass('header-copy header-fixed').appendTo(o);
   var ww = [];
   o.find('thead.header > tr:first > th').each(function (i, h){
-    ww.push($(h).width());
+    ww.push($(h).outerWidth(true));
   });
+
+
   $.each(ww, function (i, w){
     o.find('thead.header > tr > th:eq('+i+'), thead.header-copy > tr > th:eq('+i+')').css({width: w});
   });
 
   o.find('thead.header-copy').css({ margin:'0 auto',
-                                    width: o.width(),
+                                    'margin-left': '-1px',
+                                    width: o.outerWidth(),
                                    'background-color':config.bgColor });
   processScroll();
  });
