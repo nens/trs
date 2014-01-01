@@ -136,13 +136,13 @@ class Person(models.Model):
         return self.name
 
     def cache_key(self, for_what, year_week=None):
-        cache_version = 3
+        cache_version = 4
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-%s-%s-%s-%s' % (
             self.id, self.cache_indicator, for_what, week_id, cache_version)
 
     def person_change_cache_key(self, for_what, year_week=None):
-        cache_version = 2
+        cache_version = 3
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-pc%s-%s-%s-%s' % (
             self.id, self.cache_indicator_person_change, for_what, week_id,
@@ -207,7 +207,7 @@ class Person(models.Model):
         if year_week is None:
             year_week = this_year_week()
         this_year = year_week.year
-        start_amount = round(self.person_changes.filter(
+        hours_per_week = round(self.person_changes.filter(
             year_week__year__lt=this_year).aggregate(
                 models.Sum('hours_per_week'))['hours_per_week__sum'] or 0)
         changes_this_year = self.person_changes.filter(
@@ -219,12 +219,15 @@ class Person(models.Model):
                             round(change['hours_per_week__sum'])
                             for change in changes_this_year}
         result = 0
-        current_amount = start_amount
-        for week in range(year_week.week):
-            # ^^^ not range(... + 1) so that we don't count the current week.
+        # Grab week numbers. "lt" isn't "lte" as we want to exclude the
+        # current week. You only have to book on friday!
+        week_numbers = YearWeek.objects.filter(
+            year=year_week.year,
+            week__lt=year_week.week).values_list('week', flat=True)
+        for week in week_numbers:
             if week in changes_per_week:
-                current_amount += changes_per_week[week]
-            result += current_amount
+                hours_per_week += changes_per_week[week]
+            result += hours_per_week
         (missing_at_start,
          missing_at_end) = days_missing_per_year_at_start_and_end()[this_year]
         result -= missing_at_start * 8
