@@ -30,4 +30,5 @@ $(document).ready(function () {
     $("#booking-form").submit(function(e) {
         window.form_changed = false;
     });
+    $('.table-fixed-header').fixedHeader();
 });

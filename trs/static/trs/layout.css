@@ -27,3 +27,10 @@ table.borderless-table td,
 table.borderless-table th {
     border-top: 0 ! important;
 }
+
+/* Modified css from https://gist.github.com/i-scorpion/2948136/ for fixed thead */
+table .header-fixed {
+    position: fixed;
+    top: 0px;
+    z-index: 1020; /* 10 less than .navbar-fixed to prevent any overlap */
+}
