@@ -2,7 +2,22 @@
 {% load trs_formatting %}
 
 {% block full-width %}
-  <h1>Overzicht facturen op datum</h1>
+  <h1>
+    Overzicht facturen
+    {% if view.year == 'all' %}
+      (allemaal)
+    {% else %}
+      voor {{ view.year }}
+    {% endif %}
+  </h1>
+
+  <div class="text-muted">
+    {% for year in view.available_years %}
+      <a href="?year={{ year }}">{{ year }}</a> |
+    {% endfor %}
+    <a href="?year=all">Allemaal</a>
+  </div>
+
   <table class="table table-condensed table-fixed-header">
     <thead class="header">
       <tr>

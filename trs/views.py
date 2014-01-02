@@ -93,8 +93,13 @@ class BaseMixin(object):
                 continue
             if from_get == 'true':
                 result[key] = True
-            if from_get == 'false':
+            elif from_get == 'false':
                 result[key] = False
+            else:
+                try:
+                    result[key] = int(from_get)
+                except ValueError:
+                    result[key] = from_get
 
         return result
 
@@ -1561,11 +1566,26 @@ class OverviewsView(BaseView):
 
 class InvoicesView(BaseView):
     template_name = 'trs/invoices.html'
+    available_filters = {'year': this_year_week().year}
 
     def has_form_permissions(self):
         return self.can_edit_and_see_everything
 
     @cached_property
+    def year(self):
+        return self.filters['year']
+
+    @cached_property
+    def available_years(self):
+        this_year = this_year_week().year
+        first_date = Invoice.objects.all().first().date
+        first_year = first_date.year
+        return list(range(first_year, this_year + 1))
+
+    @cached_property
     def invoices(self):
-        return Invoice.objects.all().select_related('project').order_by(
+        result = Invoice.objects.all()
+        if self.year != 'all':
+            result = result.filter(date__year=self.year)
+        return result.select_related('project').order_by(
             '-date')
