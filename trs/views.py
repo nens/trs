@@ -444,10 +444,15 @@ class BookingOverview(PersonView):
 
     @cached_property
     def available_years(self):
-        return Booking.objects.filter(
+        years_i_booked_in = list(Booking.objects.filter(
             booked_by=self.person).values(
                 'year_week__year').distinct().values_list(
-                    'year_week__year', flat=True)
+                    'year_week__year', flat=True))
+        current_year = this_year_week().year
+        if current_year not in years_i_booked_in:
+            # Corner case if you haven't booked yet in this year :-)
+            years_i_booked_in.append(current_year)
+        return years_i_booked_in
 
     @cached_property
     def lines(self):
