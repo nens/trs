@@ -126,7 +126,7 @@ class Person(models.Model):
     class Meta:
         verbose_name = "persoon"
         verbose_name_plural = "personen"
-        ordering = ['-archived', 'name']
+        ordering = ['archived', 'name']
 
     def save(self, *args, **kwargs):
         self.cache_indicator += 1
