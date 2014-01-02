@@ -1231,6 +1231,95 @@ class PersonCreateView(LoginAndPermissionsRequiredMixin,
         return super(PersonCreateView, self).form_valid(form)
 
 
+class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
+    """View for auto-adding PM/PL and internal members (if needed)."""
+    template_name = 'trs/team-update.html'
+
+    def has_form_permissions(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def title(self):
+        return "Projectteam updaten voor %s" % self.project.code
+
+    form_class = forms.Form  # Yes, an empty form.
+
+    @cached_property
+    def missing_project_leader(self):
+        if self.project.project_leader:
+            if self.project.project_leader not in self.project.assigned_persons():
+                return self.project.project_leader
+
+    @cached_property
+    def missing_project_manager(self):
+        if self.project.project_manager:
+            if self.project.project_manager not in self.project.assigned_persons():
+                return self.project.project_manager
+
+    @cached_property
+    def missing_internal_persons(self):
+        if self.project.internal:
+            already_assigned = self.project.assigned_persons()
+            active_persons = Person.objects.filter(archived=False)
+            missing = [person for person in active_persons
+                       if person not in already_assigned]
+            return missing
+        return []
+
+    @cached_property
+    def todo(self):
+        result = []
+        if self.missing_project_leader:
+            result.append("Voeg {} toe (projectleider)".format(
+                self.missing_project_leader))
+        if self.missing_project_manager:
+            result.append("Voeg {} toe (projectmanager)".format(
+                self.missing_project_manager))
+        if self.missing_internal_persons:
+            result.append(
+                "Voeg {} personen toe aan dit interne project".format(
+                    len(self.missing_internal_persons)))
+        return result
+
+    def form_valid(self, form):
+        num_added = 0
+        if self.missing_project_leader:
+            WorkAssignment.objects.get_or_create(
+                assigned_on=self.project,
+                assigned_to=self.missing_project_leader)
+            num_added += 1
+        if self.missing_project_manager:
+            WorkAssignment.objects.get_or_create(
+                assigned_on=self.project,
+                assigned_to=self.missing_project_manager)
+            num_added += 1
+        for person in self.missing_internal_persons:
+            WorkAssignment.objects.get_or_create(
+                assigned_on=self.project,
+                assigned_to=person)
+            num_added += 1
+        messages.success(self.request, "%s teamleden toegevoegd" % num_added)
+        return super(TeamUpdateView, self).form_valid(form)
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project.team', kwargs={'pk': self.project.pk})
+
+    @cached_property
+    def back_url(self):
+        template = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
+        url = self.project.get_absolute_url()
+        text = "Terug naar het project"
+        return mark_safe(template.format(url=url, text=text))
+
+
 class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     template_name = 'trs/team.html'
 
@@ -1336,6 +1425,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 widget=forms.Select(attrs={'tabindex': tabindex}))
             fields[name] = field_type
             tabindex += 1
+
         return type("GeneratedTeamEditForm", (forms.Form,), fields)
 
     @cached_property

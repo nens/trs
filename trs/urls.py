@@ -46,6 +46,9 @@ urlpatterns = patterns(
     url(r'^projects/(?P<pk>\d+)/team/$',
         views.TeamEditView.as_view(),
         name='trs.project.team'),
+    url(r'^projects/(?P<pk>\d+)/team-update/$',
+        views.TeamUpdateView.as_view(),
+        name='trs.project.update-team'),
 
     url(r'^projects/(?P<project_pk>\d+)/add_invoice/$',
         views.InvoiceCreateView.as_view(),

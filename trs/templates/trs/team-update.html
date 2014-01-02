@@ -1,0 +1,41 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>{{ view.title }}</h1>
+  {{ view.back_url }}
+
+  {% if view.todo %}
+    <form action="." method="post">
+      {% csrf_token %}
+      <p>
+        Er zijn teamleden waarvan het systeem weet dat ze toegevoegd moeten
+        worden. Projectleiders en managers horen erbij. En bij interne
+        projecten moeten alle nu-actieve medewerkers toegevoegd worden.
+      </p>
+      <p>
+        De onderstaande acties kunnen uitgevoegd worden:
+      </p>
+      <ul>
+        {% for todo_item in view.todo %}
+          <li>{{ todo_item }}</li>
+        {% endfor %}
+      </ul>
+
+      <input type="submit"
+             class="btn btn-primary"
+             tabindex="1"
+             value="Update project" /></th>
+    </form>
+  {% else %}
+    <p>
+      Er valt niets automatisch te updaten. De projectleider en manager zijn
+      al lid van het team en, als het een intern project is, er zijn geen
+      actieve medewerkers die nog niet toegevoegd zijn.
+    </p>
+  {% endif %}
+
+{% endblock %}
+
+{% block overview-column %}
+{% endblock %}
