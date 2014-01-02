@@ -126,7 +126,7 @@ class Person(models.Model):
     class Meta:
         verbose_name = "persoon"
         verbose_name_plural = "personen"
-        ordering = ['-archived', 'name']
+        ordering = ['archived', 'name']
 
     def save(self, *args, **kwargs):
         self.cache_indicator += 1
@@ -302,7 +302,8 @@ class Project(models.Model):
     hourless = models.BooleanField(
         verbose_name="tel uren niet mee",
         help_text=("Uren van dit project tellen niet mee voor de " +
-                   "intern/extern verhouding en binnen/buiten budget."),
+                   "intern/extern verhouding en binnen/buiten budget. " +
+                   "Gebruik dit voor verlof en zwangerschapsverlof."),
         default=False)
     archived = models.BooleanField(
         verbose_name="gearchiveerd",
@@ -320,12 +321,14 @@ class Project(models.Model):
         'YearWeek',
         blank=True,
         null=True,
+        default=this_year_week,
         related_name="starting_projects",
         verbose_name="startweek")
     end = models.ForeignKey(
         'YearWeek',
         blank=True,
         null=True,
+        default=this_year_week,
         related_name="ending_projects",
         verbose_name="laatste week")
     project_leader = models.ForeignKey(
@@ -595,7 +598,7 @@ class YearWeek(models.Model):
         ordering = ['year', 'week']
 
     def __str__(self):
-        return "{:04d}-{:02d}".format(self.year, self.week)
+        return "{}  (week {:02d})".format(self.first_day, self.week)
 
     def get_absolute_url(self):
         """Return link to the booking page for this year/week."""

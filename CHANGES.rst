@@ -5,7 +5,23 @@ Changelog of trs
 1.1 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Added filtering to projects, persons and invoices pages.
+
+- Forcing IE8 to use the newest rendering mode (fix for IE8).
+
+- Disabled full import: the last import of 2013 is done, now the new TRS takes
+  over.
+
+- Added view to automatically add Pl/PM to a project. Same for persons on an
+  internal project.
+
+- Using the current week as default for start/end week for projects.
+
+- Nicer formatting of YearWeek for the project edit view.
+
+- Showing active persons before archived ones (handy for project edit page).
+
+- Fixed team display on project page.
 
 
 1.0 (2013-12-31)

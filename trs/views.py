@@ -380,10 +380,10 @@ class PersonView(BaseView):
                     models.Sum('hours'),
                     models.Sum('hourly_tariff'))
         budgets = {
-            item['assigned_on']: round(item['hours__sum'])
+            item['assigned_on']: round(item['hours__sum'] or 0)
             for item in budget_per_project}
         hourly_tariffs = {
-            item['assigned_on']: round(item['hourly_tariff__sum'])
+            item['assigned_on']: round(item['hourly_tariff__sum'] or 0)
             for item in budget_per_project}
         # Hours worked query.
         booked_per_project = Booking.objects.filter(
@@ -391,7 +391,7 @@ class PersonView(BaseView):
             booked_on__in=self.projects).values(
                 'booked_on').annotate(
                     models.Sum('hours'))
-        booked = {item['booked_on']: round(item['hours__sum'])
+        booked = {item['booked_on']: round(item['hours__sum'] or 0)
                   for item in booked_per_project}
 
         for project in self.projects:
@@ -466,7 +466,7 @@ class BookingOverview(PersonView):
                 'year_week__week').annotate(
                     models.Sum('hours'))
         booked_per_week = {
-            item['year_week__week']: round(item['hours__sum'])
+            item['year_week__week']: round(item['hours__sum'] or 0)
             for item in booked_this_year_per_week}
         start_hours_amount = round(self.person.person_changes.filter(
             year_week__year__lt=self.year).aggregate(
@@ -721,10 +721,10 @@ class ProjectView(BaseView):
                     models.Sum('hours'),
                     models.Sum('hourly_tariff'))
         budgets = {
-            item['assigned_to']: round(item['hours__sum'])
+            item['assigned_to']: round(item['hours__sum'] or 0)
             for item in budget_per_person}
         hourly_tariffs = {
-            item['assigned_to']: round(item['hourly_tariff__sum'])
+            item['assigned_to']: round(item['hourly_tariff__sum'] or 0)
             for item in budget_per_person}
         # Hours worked query.
         booked_per_person = Booking.objects.filter(
@@ -732,7 +732,7 @@ class ProjectView(BaseView):
             booked_on=self.project).values(
                 'booked_by').annotate(
                     models.Sum('hours'))
-        booked = {item['booked_by']: round(item['hours__sum'])
+        booked = {item['booked_by']: round(item['hours__sum'] or 0)
                   for item in booked_per_person}
 
         for person in self.persons:
@@ -900,7 +900,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             booked_on__in=self.relevant_projects).values(
                 'booked_on__code').annotate(
                     models.Sum('hours'))
-        result = {item['booked_on__code']: round(item['hours__sum'])
+        result = {item['booked_on__code']: round(item['hours__sum'] or 0)
                   for item in bookings}
         return {project.code: result.get(project.code, 0)
                 for project in self.relevant_projects}
@@ -960,7 +960,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             booked_by=self.active_person).values(
                 'booked_on', 'year_week').annotate(
                     models.Sum('hours'))
-        bookings = {(item['booked_on'], item['year_week']): item['hours__sum']
+        bookings = {(item['booked_on'], item['year_week']): item['hours__sum'] or 0
                     for item in booking_table}
         # Idem for budget
         budget_per_project = WorkAssignment.objects.filter(
@@ -968,7 +968,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             assigned_on__in=self.relevant_projects).values(
                 'assigned_on').annotate(
                     models.Sum('hours'))
-        budgets = {item['assigned_on']: round(item['hours__sum'])
+        budgets = {item['assigned_on']: round(item['hours__sum'] or 0)
                    for item in budget_per_project}
         # Item for hours worked.
         booked_per_project = Booking.objects.filter(
@@ -976,7 +976,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             booked_on__in=self.relevant_projects).values(
                 'booked_on').annotate(
                     models.Sum('hours'))
-        booked_total = {item['booked_on']: round(item['hours__sum'])
+        booked_total = {item['booked_on']: round(item['hours__sum'] or 0)
                         for item in booked_per_project}
 
         this_year = this_year_week().year
@@ -1231,6 +1231,95 @@ class PersonCreateView(LoginAndPermissionsRequiredMixin,
         return super(PersonCreateView, self).form_valid(form)
 
 
+class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
+    """View for auto-adding PM/PL and internal members (if needed)."""
+    template_name = 'trs/team-update.html'
+
+    def has_form_permissions(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def title(self):
+        return "Projectteam updaten voor %s" % self.project.code
+
+    form_class = forms.Form  # Yes, an empty form.
+
+    @cached_property
+    def missing_project_leader(self):
+        if self.project.project_leader:
+            if self.project.project_leader not in self.project.assigned_persons():
+                return self.project.project_leader
+
+    @cached_property
+    def missing_project_manager(self):
+        if self.project.project_manager:
+            if self.project.project_manager not in self.project.assigned_persons():
+                return self.project.project_manager
+
+    @cached_property
+    def missing_internal_persons(self):
+        if self.project.internal:
+            already_assigned = self.project.assigned_persons()
+            active_persons = Person.objects.filter(archived=False)
+            missing = [person for person in active_persons
+                       if person not in already_assigned]
+            return missing
+        return []
+
+    @cached_property
+    def todo(self):
+        result = []
+        if self.missing_project_leader:
+            result.append("Voeg {} toe (projectleider)".format(
+                self.missing_project_leader))
+        if self.missing_project_manager:
+            result.append("Voeg {} toe (projectmanager)".format(
+                self.missing_project_manager))
+        if self.missing_internal_persons:
+            result.append(
+                "Voeg {} personen toe aan dit interne project".format(
+                    len(self.missing_internal_persons)))
+        return result
+
+    def form_valid(self, form):
+        num_added = 0
+        if self.missing_project_leader:
+            WorkAssignment.objects.get_or_create(
+                assigned_on=self.project,
+                assigned_to=self.missing_project_leader)
+            num_added += 1
+        if self.missing_project_manager:
+            WorkAssignment.objects.get_or_create(
+                assigned_on=self.project,
+                assigned_to=self.missing_project_manager)
+            num_added += 1
+        for person in self.missing_internal_persons:
+            WorkAssignment.objects.get_or_create(
+                assigned_on=self.project,
+                assigned_to=person)
+            num_added += 1
+        messages.success(self.request, "%s teamleden toegevoegd" % num_added)
+        return super(TeamUpdateView, self).form_valid(form)
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project.team', kwargs={'pk': self.project.pk})
+
+    @cached_property
+    def back_url(self):
+        template = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
+        url = self.project.get_absolute_url()
+        text = "Terug naar het project"
+        return mark_safe(template.format(url=url, text=text))
+
+
 class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     template_name = 'trs/team.html'
 
@@ -1336,6 +1425,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 widget=forms.Select(attrs={'tabindex': tabindex}))
             fields[name] = field_type
             tabindex += 1
+
         return type("GeneratedTeamEditForm", (forms.Form,), fields)
 
     @cached_property
@@ -1353,7 +1443,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             booked_on=self.project).values(
                 'booked_by').annotate(
                     models.Sum('hours'))
-        booked = {item['booked_by']: round(item['hours__sum'])
+        booked = {item['booked_by']: round(item['hours__sum'] or 0)
                   for item in booked_per_person}
         for person in self.project.assigned_persons():
             line = {'person': person}
