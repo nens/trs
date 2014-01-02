@@ -91,11 +91,10 @@ class BaseMixin(object):
             from_get = self.request.GET.get(key, None)
             if from_get is None:
                 continue
-            if isinstance(default, bool):
-                if from_get == 'true':
-                    result[key] = True
-                if from_get == 'false':
-                    result[key] = False
+            if from_get == 'true':
+                result[key] = True
+            if from_get == 'false':
+                result[key] = False
 
         return result
 
@@ -501,6 +500,11 @@ class BookingOverview(PersonView):
 
 
 class ProjectsView(BaseView):
+    available_filters = {'archived': None,
+                         'is_subsidized': None,
+                         'is_accepted': None,
+                         'ended': None,
+                         'started': None}
 
     @property
     def template_name(self):
@@ -519,11 +523,53 @@ class ProjectsView(BaseView):
             return True
 
     @cached_property
+    def no_filters(self):
+        return not len([value for value in self.filters.values()
+                        if value is not None])
+
+    @cached_property
     def projects(self):
-        all_projects = Project.objects.filter(archived=False)
+        result = Project.objects.all()
+        # If we don't filter on anything, we want some defaults.
+        if self.no_filters:
+            # Projects should not be archived. They should already have
+            # started and they should not have ended.
+            self.filters['archived'] = False
+            self.filters['ended'] = False
+            self.filters['started'] = True
+        if self.filters['archived'] is not None:
+            # Normally, don't filter on archived; the 'ended' filter is
+            # enough.
+            result = result.filter(
+                archived=self.filters['archived'])
+        if self.filters['ended'] is not None:
+            if self.filters['ended']:
+                # Projects that have already ended.
+                result = result.filter(
+                    end__lt=this_year_week())
+            else:
+                # Projects that have not yet ended.
+                result = result.filter(
+                    end__gte=this_year_week())
+        if self.filters['started'] is not None:
+            if self.filters['started']:
+                # Projects that have already started.
+                result = result.filter(
+                    start__lte=this_year_week())
+            else:
+                # Projects that have not yet started.
+                result = result.filter(
+                    start__gt=this_year_week())
+        if self.filters['is_subsidized'] is not None:
+            result = result.filter(
+                is_subsidized=self.filters['is_subsidized'])
+        if self.filters['is_accepted'] is not None:
+            result = result.filter(
+                is_accepted=self.filters['is_accepted'])
+
         if self.can_view_elaborate_version:
-            return all_projects
-        return all_projects.filter(hidden=False)
+            return result
+        return result.filter(hidden=False)
 
     @cached_property
     def lines(self):

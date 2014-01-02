@@ -3,6 +3,18 @@
 
 {% block main-column %}
   <h1>Projecten</h1>
+  <div class="text-muted">
+    {% if view.no_filters %}
+      <span>Actieve projecten</span>
+    {% else %}
+      <a href="?">Toon actieve projecten</a>
+    {% endif %}
+    |
+    <a href="?archived=true">Gearchiveerd</a> |
+    <a href="?ended=true">Ge&euml;indigd</a> |
+    <a href="?started=false">Nog niet gestart</a>
+    {# The filter list in 'projects.html' is more elaborate #}
+  </div>
   <table class="table table-hover table-condensed table-fixed-header">
     <thead class="header">
       <tr>
