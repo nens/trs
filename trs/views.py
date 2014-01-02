@@ -303,7 +303,6 @@ class PersonsView(BaseView):
 
     @cached_property
     def lines(self):
-        # This is the elaborate view for management.
         return [{'person': person, 'pyc': core.get_pyc(person)}
                 for person in self.persons]
 
