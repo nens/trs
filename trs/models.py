@@ -321,12 +321,14 @@ class Project(models.Model):
         'YearWeek',
         blank=True,
         null=True,
+        default=this_year_week,
         related_name="starting_projects",
         verbose_name="startweek")
     end = models.ForeignKey(
         'YearWeek',
         blank=True,
         null=True,
+        default=this_year_week,
         related_name="ending_projects",
         verbose_name="laatste week")
     project_leader = models.ForeignKey(
