@@ -4,6 +4,15 @@
 {% block main-column %}
   <h1>Tijdregistratiesysteem & projectoverzicht</h1>
 
+  {% if not view.active_person %}
+    <div class="alert alert-danger">
+      <strong>Oeps</strong>
+      In de import van het oude TRS is je naam kennelijk anders gespeld dan
+      in het inlogsysteem. 't Is niet gelukt ze automatisch te koppelen. Bel
+      Reinout (260) even en hij stelt het gelijk goed in.
+    </div>
+  {% endif %}
+
   {% if view.are_there_changes %}
     <p>
       Bij deze de relevante veranderingen vanaf
