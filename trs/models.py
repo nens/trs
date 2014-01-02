@@ -302,7 +302,8 @@ class Project(models.Model):
     hourless = models.BooleanField(
         verbose_name="tel uren niet mee",
         help_text=("Uren van dit project tellen niet mee voor de " +
-                   "intern/extern verhouding en binnen/buiten budget."),
+                   "intern/extern verhouding en binnen/buiten budget. " +
+                   "Gebruik dit voor verlof en zwangerschapsverlof."),
         default=False)
     archived = models.BooleanField(
         verbose_name="gearchiveerd",
