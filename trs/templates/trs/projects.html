@@ -3,6 +3,34 @@
 
 {% block full-width %}
   <h1>Projecten</h1>
+  <div class="text-muted">
+    {% if view.no_filters %}
+      <span>Actieve projecten</span>
+    {% else %}
+      <a href="?">Toon actieve projecten</a>
+    {% endif %}
+    |
+    <a href="?archived=true">Gearchiveerd</a> |
+    <a href="?ended=true">Ge&euml;indigd</a> |
+    <a href="?started=false">Nog niet gestart</a>
+  </div>
+  {# The filter list in 'projects-simple.html' is less elaborate #}
+
+  <div class="text-muted">
+    <a href="?is_subsidized=true&archived=false&ended=false&started=true">
+      Actieve subsidieprojecten
+    </a> |
+    <a href="?is_subsidized=true">Alle subsidieprojecten</a>
+  </div>
+  <div class="text-muted">
+    <a href="?is_accepted=true&archived=false&ended=false&started=true">
+      Actief en afgekaard
+    </a> |
+    <a href="?is_accepted=false&archived=false&ended=false&started=true">
+      Actief en <i>niet</i> afgekaard
+    </a>
+  </div>
+
   <table class="table table-hover table-condensed table-fixed-header">
     <thead class="header">
       <tr>
