@@ -158,6 +158,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         basedir = download_everything()
+        logger.info("Everything downloaded into %s", basedir)
+
+    def disabled_full_handle(self, *args, **options):
+        basedir = download_everything()
         # Sniffing the dialect
         pattern = basedir + '/*.csv'
         found = glob.glob(pattern)
