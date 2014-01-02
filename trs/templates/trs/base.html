@@ -116,8 +116,10 @@
               {% if view.sidebar_person %}
 
                 <h2>
-                  Voortgang
-                  {% if view.sidebar_person != view.active_person %}
+                  {% if view.sidebar_person == view.active_person %}
+                    Jouw voortgang
+                  {% else %}
+                    Voortgang
                     <small>(van {{ view.sidebar_person.name }})</small>
                   {% endif %}
                 </h2>
