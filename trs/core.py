@@ -33,7 +33,7 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        version = 10
+        version = 11
         self.cache_key = 'pycdata-%s-%s-%s-%s' % (
             person.id, person.cache_indicator, year, version)
         has_cached_data = self.get_cache()
@@ -67,6 +67,23 @@ class PersonYearCombination(object):
         return True
 
     def calc_target_and_overbookings(self):
+        budget_per_project = WorkAssignment.objects.filter(
+            assigned_to=self.person,
+            year_week__year__lte=self.year,
+            assigned_on__start__year__lte=self.year,
+            assigned_on__end__year__gte=self.year).values(
+                'assigned_on').annotate(
+                    models.Sum('hours'),
+                    models.Sum('hourly_tariff')
+                )
+        budget = {
+            item['assigned_on']: round(item['hours__sum'])
+            for item in budget_per_project}
+        hourly_tariff = {
+            item['assigned_on']: round(item['hourly_tariff__sum'])
+            for item in budget_per_project}
+        project_ids = budget.keys()
+
         booked_this_year_per_project = Booking.objects.filter(
             booked_by=self.person,
             year_week__year=self.year,
@@ -80,37 +97,23 @@ class PersonYearCombination(object):
         booked_up_to_this_year_per_project = Booking.objects.filter(
             booked_by=self.person,
             year_week__year__lt=self.year,
-            booked_on__in=booked_this_year.keys()).values(
+            booked_on__in=project_ids).values(
                 'booked_on').annotate(
                     models.Sum('hours'))
         booked_before_this_year = {
             item['booked_on']: round(item['hours__sum'])
             for item in booked_up_to_this_year_per_project}
 
-        budget_per_project = WorkAssignment.objects.filter(
-            assigned_to=self.person,
-            year_week__year__lte=self.year,
-            assigned_on__in=booked_this_year.keys()).values(
-                'assigned_on').annotate(
-                    models.Sum('hours'),
-                    models.Sum('hourly_tariff')
-                )
-        budget = {
-            item['assigned_on']: round(item['hours__sum'])
-            for item in budget_per_project}
-        hourly_tariff = {
-            item['assigned_on']: round(item['hourly_tariff__sum'])
-            for item in budget_per_project}
         total_booked = 0
         total_overbooked = 0
         total_turnover = 0
         total_left_to_book = 0
-        for id in booked_this_year:
-            booked = booked_this_year[id] + booked_before_this_year.get(id, 0)
+        for id in project_ids:
+            booked = booked_this_year.get(id, 0) + booked_before_this_year.get(id, 0)
             total_booked += booked
             overbooked = max(0, (booked - budget[id]))
-            overbooked_this_year = min(overbooked, booked_this_year[id])
-            well_booked_this_year = booked_this_year[id] - overbooked_this_year
+            overbooked_this_year = min(overbooked, booked_this_year.get(id, 0))
+            well_booked_this_year = booked_this_year.get(id, 0) - overbooked_this_year
             total_overbooked += overbooked_this_year
             total_turnover += well_booked_this_year * hourly_tariff[id]
             total_left_to_book += max(0, (budget[id] - booked))
