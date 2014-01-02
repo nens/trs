@@ -3,6 +3,15 @@
 
 {% block main-column %}
   <h1>Medewerkers</h1>
+  <div class="text-muted">
+    {% if view.filters.archived %}
+      <a href="?archived=false">Toon huidige medewerkers</a> |
+      <span>Gearchiveerde medewerkers</span>
+    {% else %}
+      <span>Huidige medewerkers</span> |
+      <a href="?archived=true">Toon gearchiveerde medewerkers</a>
+    {% endif %}
+  </div>
   <table class="table table-hover">
     <thead>
       <tr>
