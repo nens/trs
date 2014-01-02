@@ -12,7 +12,16 @@ Changelog of trs
 - Disabled full import: the last import of 2013 is done, now the new TRS takes
   over.
 
-- Various small fixes.
+- Added view to automatically add Pl/PM to a project. Same for persons on an
+  internal project.
+
+- Using the current week as default for start/end week for projects.
+
+- Nicer formatting of YearWeek for the project edit view.
+
+- Showing active persons before archived ones (handy for project edit page).
+
+- Fixed team display on project page.
 
 
 1.0 (2013-12-31)
