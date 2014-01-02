@@ -77,10 +77,10 @@ class PersonYearCombination(object):
                     models.Sum('hourly_tariff')
                 )
         budget = {
-            item['assigned_on']: round(item['hours__sum'])
+            item['assigned_on']: round(item['hours__sum'] or 0)
             for item in budget_per_project}
         hourly_tariff = {
-            item['assigned_on']: round(item['hourly_tariff__sum'])
+            item['assigned_on']: round(item['hourly_tariff__sum'] or 0)
             for item in budget_per_project}
         project_ids = budget.keys()
 
