@@ -380,10 +380,10 @@ class PersonView(BaseView):
                     models.Sum('hours'),
                     models.Sum('hourly_tariff'))
         budgets = {
-            item['assigned_on']: round(item['hours__sum'])
+            item['assigned_on']: round(item['hours__sum'] or 0)
             for item in budget_per_project}
         hourly_tariffs = {
-            item['assigned_on']: round(item['hourly_tariff__sum'])
+            item['assigned_on']: round(item['hourly_tariff__sum'] or 0)
             for item in budget_per_project}
         # Hours worked query.
         booked_per_project = Booking.objects.filter(
@@ -391,7 +391,7 @@ class PersonView(BaseView):
             booked_on__in=self.projects).values(
                 'booked_on').annotate(
                     models.Sum('hours'))
-        booked = {item['booked_on']: round(item['hours__sum'])
+        booked = {item['booked_on']: round(item['hours__sum'] or 0)
                   for item in booked_per_project}
 
         for project in self.projects:
@@ -466,7 +466,7 @@ class BookingOverview(PersonView):
                 'year_week__week').annotate(
                     models.Sum('hours'))
         booked_per_week = {
-            item['year_week__week']: round(item['hours__sum'])
+            item['year_week__week']: round(item['hours__sum'] or 0)
             for item in booked_this_year_per_week}
         start_hours_amount = round(self.person.person_changes.filter(
             year_week__year__lt=self.year).aggregate(
@@ -721,10 +721,10 @@ class ProjectView(BaseView):
                     models.Sum('hours'),
                     models.Sum('hourly_tariff'))
         budgets = {
-            item['assigned_to']: round(item['hours__sum'])
+            item['assigned_to']: round(item['hours__sum'] or 0)
             for item in budget_per_person}
         hourly_tariffs = {
-            item['assigned_to']: round(item['hourly_tariff__sum'])
+            item['assigned_to']: round(item['hourly_tariff__sum'] or 0)
             for item in budget_per_person}
         # Hours worked query.
         booked_per_person = Booking.objects.filter(
@@ -732,7 +732,7 @@ class ProjectView(BaseView):
             booked_on=self.project).values(
                 'booked_by').annotate(
                     models.Sum('hours'))
-        booked = {item['booked_by']: round(item['hours__sum'])
+        booked = {item['booked_by']: round(item['hours__sum'] or 0)
                   for item in booked_per_person}
 
         for person in self.persons:
@@ -900,7 +900,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             booked_on__in=self.relevant_projects).values(
                 'booked_on__code').annotate(
                     models.Sum('hours'))
-        result = {item['booked_on__code']: round(item['hours__sum'])
+        result = {item['booked_on__code']: round(item['hours__sum'] or 0)
                   for item in bookings}
         return {project.code: result.get(project.code, 0)
                 for project in self.relevant_projects}
@@ -960,7 +960,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             booked_by=self.active_person).values(
                 'booked_on', 'year_week').annotate(
                     models.Sum('hours'))
-        bookings = {(item['booked_on'], item['year_week']): item['hours__sum']
+        bookings = {(item['booked_on'], item['year_week']): item['hours__sum'] or 0
                     for item in booking_table}
         # Idem for budget
         budget_per_project = WorkAssignment.objects.filter(
@@ -968,7 +968,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             assigned_on__in=self.relevant_projects).values(
                 'assigned_on').annotate(
                     models.Sum('hours'))
-        budgets = {item['assigned_on']: round(item['hours__sum'])
+        budgets = {item['assigned_on']: round(item['hours__sum'] or 0)
                    for item in budget_per_project}
         # Item for hours worked.
         booked_per_project = Booking.objects.filter(
@@ -976,7 +976,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             booked_on__in=self.relevant_projects).values(
                 'booked_on').annotate(
                     models.Sum('hours'))
-        booked_total = {item['booked_on']: round(item['hours__sum'])
+        booked_total = {item['booked_on']: round(item['hours__sum'] or 0)
                         for item in booked_per_project}
 
         this_year = this_year_week().year
@@ -1353,7 +1353,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             booked_on=self.project).values(
                 'booked_by').annotate(
                     models.Sum('hours'))
-        booked = {item['booked_by']: round(item['hours__sum'])
+        booked = {item['booked_by']: round(item['hours__sum'] or 0)
                   for item in booked_per_person}
         for person in self.project.assigned_persons():
             line = {'person': person}
