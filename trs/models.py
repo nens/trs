@@ -595,7 +595,7 @@ class YearWeek(models.Model):
         ordering = ['year', 'week']
 
     def __str__(self):
-        return "{:04d}-{:02d}".format(self.year, self.week)
+        return "{}  (week {:02d})".format(self.first_day, self.week)
 
     def get_absolute_url(self):
         """Return link to the booking page for this year/week."""
