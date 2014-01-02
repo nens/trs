@@ -81,6 +81,23 @@ def try_and_find_matching_person(user):
 class BaseMixin(object):
     template_name = 'trs/base.html'
     title = "TRS tijdregistratiesysteem"
+    available_filters = {}
+
+    @cached_property
+    def filters(self):
+        result = {}
+        for key, default in self.available_filters.items():
+            result[key] = default
+            from_get = self.request.GET.get(key, None)
+            if from_get is None:
+                continue
+            if isinstance(default, bool):
+                if from_get == 'true':
+                    result[key] = True
+                if from_get == 'false':
+                    result[key] = False
+
+        return result
 
     @cached_property
     def today(self):
@@ -262,6 +279,9 @@ class HomeView(BaseView):
 
 
 class PersonsView(BaseView):
+
+    available_filters = {'archived': False}
+
     @property
     def template_name(self):
         if self.can_view_elaborate_version:
@@ -280,7 +300,7 @@ class PersonsView(BaseView):
 
     @cached_property
     def persons(self):
-        return Person.objects.filter(archived=False)
+        return Person.objects.filter(archived=self.filters['archived'])
 
     @cached_property
     def lines(self):
