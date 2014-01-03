@@ -65,18 +65,14 @@
               <span class="text-muted">{{ change.project.description }}</span>
             </div>
             <div class="panel-body">
-              {% if change.hours__sum %}
-                <div>
-                  <b>Toegekende uren:</b>
-                  {{ change.hours__sum|hoursdiff }}
-                </div>
-              {% endif %}
-              {% if change.hourly_tariff__sum %}
-                <div>
-                  <b>Uurtarief:</b>
-                  {{ change.hourly_tariff__sum|hoursdiff }}
-                </div>
-              {% endif %}
+              <div>
+                <b>Toegekende uren:</b>
+                {{ change.hours|hoursdiff }}
+              </div>
+              <div>
+                <b>Uurtarief:</b>
+                {{ change.hourly_tariff|hoursdiff }}
+              </div>
             </div>
           </div>
         {% endfor %}

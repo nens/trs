@@ -228,16 +228,22 @@ class HomeView(BaseView):
     @cached_property
     def work_changes(self):
         result = []
+        changes = self.active_person.work_assignments.filter(
+            year_week__in=self.relevant_year_weeks,
+            assigned_on__in=self.active_person.filtered_assigned_projects()
+        ).values(
+            'assigned_on').annotate(
+                models.Sum('hours'),
+                models.Sum('hourly_tariff'))
+        changes = {change['assigned_on']:
+                   {'hours': change['hours__sum'] or 0,
+                    'hourly_tariff': change['hourly_tariff__sum'] or 0}
+                   for change in changes}
         for project in self.active_person.filtered_assigned_projects():
-            changes = self.active_person.work_assignments.filter(
-                year_week__in=self.relevant_year_weeks,
-                assigned_on=project).aggregate(
-                    models.Sum('hours'),
-                    models.Sum('hourly_tariff'))
-            changes = {k: v for k, v in changes.items() if v}
-            if changes:
-                changes['project'] = project  # Inject for template.
-                result.append(changes)
+            if project.id in changes:
+                change = changes[project.id]
+                change['project'] = project
+                result.append(change)
         return result
 
     # TODO: project_budget_item_changes
