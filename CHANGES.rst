@@ -5,6 +5,13 @@ Changelog of trs
 1.1 (unreleased)
 ----------------
 
+- Invoices edited go back to the invoice overview page when clicked on from
+  there.
+
+- Added hint that the 'left to book' number excludes the current week.
+
+- Auto-assigning projectleader/manager to projects. Including message.
+
 - Added filtering to projects, persons and invoices pages.
 
 - Forcing IE8 to use the newest rendering mode (fix for IE8).
