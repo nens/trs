@@ -166,14 +166,13 @@
           </a>
         </div>
       {% endif %}
-      {% if view.can_edit_and_see_everything %}
-        <div class="text-muted">
-          Indien projectleider/manager mist of als het een intern project is
-          en iedereen moet toegevoegd worden:
+      {% if view.can_edit_and_see_everything and view.project.internal %}
+        <p class="text-muted">
+          Indien iedereen aan dit interne project toegevoegd moet worden:
           <a href="{% url 'trs.project.update-team' pk=view.project.pk %}">
             update het team automatisch
           </a>.
-        </div>
+        </p>
       {% endif %}
     </div>
   {% else %}

@@ -1232,7 +1232,7 @@ class PersonCreateView(LoginAndPermissionsRequiredMixin,
 
 
 class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
-    """View for auto-adding PM/PL and internal members (if needed)."""
+    """View for auto-adding internal members (if needed)."""
     template_name = 'trs/team-update.html'
 
     def has_form_permissions(self):
@@ -1252,18 +1252,6 @@ class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     form_class = forms.Form  # Yes, an empty form.
 
     @cached_property
-    def missing_project_leader(self):
-        if self.project.project_leader:
-            if self.project.project_leader not in self.project.assigned_persons():
-                return self.project.project_leader
-
-    @cached_property
-    def missing_project_manager(self):
-        if self.project.project_manager:
-            if self.project.project_manager not in self.project.assigned_persons():
-                return self.project.project_manager
-
-    @cached_property
     def missing_internal_persons(self):
         if self.project.internal:
             already_assigned = self.project.assigned_persons()
@@ -1273,33 +1261,8 @@ class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             return missing
         return []
 
-    @cached_property
-    def todo(self):
-        result = []
-        if self.missing_project_leader:
-            result.append("Voeg {} toe (projectleider)".format(
-                self.missing_project_leader))
-        if self.missing_project_manager:
-            result.append("Voeg {} toe (projectmanager)".format(
-                self.missing_project_manager))
-        if self.missing_internal_persons:
-            result.append(
-                "Voeg {} personen toe aan dit interne project".format(
-                    len(self.missing_internal_persons)))
-        return result
-
     def form_valid(self, form):
         num_added = 0
-        if self.missing_project_leader:
-            WorkAssignment.objects.get_or_create(
-                assigned_on=self.project,
-                assigned_to=self.missing_project_leader)
-            num_added += 1
-        if self.missing_project_manager:
-            WorkAssignment.objects.get_or_create(
-                assigned_on=self.project,
-                assigned_to=self.missing_project_manager)
-            num_added += 1
         for person in self.missing_internal_persons:
             WorkAssignment.objects.get_or_create(
                 assigned_on=self.project,

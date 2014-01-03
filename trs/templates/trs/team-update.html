@@ -5,20 +5,16 @@
   <h1>{{ view.title }}</h1>
   {{ view.back_url }}
 
-  {% if view.todo %}
+  {% if view.missing_internal_persons %}
     <form action="." method="post">
       {% csrf_token %}
       <p>
-        Er zijn teamleden waarvan het systeem weet dat ze toegevoegd moeten
-        worden. Projectleiders en managers horen erbij. En bij interne
-        projecten moeten alle nu-actieve medewerkers toegevoegd worden.
-      </p>
-      <p>
-        De onderstaande acties kunnen uitgevoegd worden:
+        Bij interne projecten moeten alle nu-actieve medewerkers toegevoegd
+        worden (tegen nultarief). Deze medewerkers missen nu:
       </p>
       <ul>
-        {% for todo_item in view.todo %}
-          <li>{{ todo_item }}</li>
+        {% for person in view.missing_internal_persons %}
+          <li>{{ person.as_widget }}</li>
         {% endfor %}
       </ul>
 
@@ -29,10 +25,15 @@
     </form>
   {% else %}
     <p>
-      Er valt niets automatisch te updaten. De projectleider en manager zijn
-      al lid van het team en, als het een intern project is, er zijn geen
-      actieve medewerkers die nog niet toegevoegd zijn.
+      Er valt niets automatisch te updaten. Er zijn geen actieve medewerkers
+      die nog niet toegevoegd zijn aan dit project.
     </p>
+    {% if not view.project.internal %}
+      <p>
+        Oh, dit <i>is</i> geen intern project! Dan voegen we niemand toe,
+        inderdaad.
+      </p>
+    {% endif %}
   {% endif %}
 
 {% endblock %}
