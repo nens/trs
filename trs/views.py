@@ -1099,7 +1099,7 @@ class InvoiceCreateView(LoginAndPermissionsRequiredMixin,
 class InvoiceEditView(LoginAndPermissionsRequiredMixin,
                       UpdateView,
                       BaseMixin):
-    template_name = 'trs/edit.html'
+    template_name = 'trs/edit-invoice.html'
     model = Invoice
     fields = ['date', 'number', 'description',
               'amount_exclusive', 'vat', 'payed']

@@ -1,0 +1,20 @@
+{% extends "trs/edit.html" %}
+{% load trs_formatting %}
+
+{% block extra-edit-content %}
+  <table class="table table-condensed"
+         style="width: auto;">
+    <tr>
+      <th>Project</th>
+      <td>{{ view.project.description }}</td>
+    </tr>
+    <tr>
+      <th>Opdrachtgever</th>
+      <td>{{ view.project.prinicipal }}</td>
+    </tr>
+    <tr>
+      <th>Bedrag <i>inclusief</i></th>
+      <td>{{ view.invoice.amount_inclusive }}</td>
+    </tr>
+  </table>
+{% endblock %}
