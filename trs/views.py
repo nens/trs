@@ -1119,7 +1119,18 @@ class InvoiceEditView(LoginAndPermissionsRequiredMixin,
         return Project.objects.get(pk=self.kwargs['project_pk'])
 
     @cached_property
+    def invoice(self):
+        return Invoice.objects.get(pk=self.kwargs['pk'])
+
+    def edit_action(self):
+        if 'from_invoice_overview' in self.request.GET:
+            return '.?from_invoice_overview'
+
+    @cached_property
     def success_url(self):
+        if 'from_invoice_overview' in self.request.GET:
+            params = '?year=%s#%s' % (self.invoice.date.year, self.invoice.id)
+            return reverse('trs.overviews.invoices') + params
         return reverse('trs.project', kwargs={'pk': self.project.pk})
 
     def form_valid(self, form):
