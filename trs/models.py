@@ -2,6 +2,7 @@ import datetime
 import logging
 import time
 
+from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
@@ -370,6 +371,15 @@ class Project(models.Model):
 
     def save(self, *args, **kwargs):
         self.cache_indicator += 1
+        for person in [self.project_manager, self.project_leader]:
+            if person and person not in self.assigned_persons():
+                work_assignment = WorkAssignment(
+                    assigned_to=person,
+                    assigned_on=self)
+                work_assignment.save(save_assigned_on=False)
+                msg = "%s automatisch toegevoegd aan project" % person
+                messages.info(tls_request, msg)
+                self.cache_indicator += 1
         return super(Project, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -379,7 +389,7 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        version = 1
+        version = 2
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, version)
 
@@ -755,7 +765,9 @@ class WorkAssignment(EventBase):
         verbose_name = "toekenning van werk"
         verbose_name_plural = "toekenningen van werk"
 
-    def save(self, *args, **kwargs):
-        self.assigned_to.save()  # Increments cache indicatorc.
-        self.assigned_on.save()  # Increments cache indicator.
+    def save(self, save_assigned_on=True, *args, **kwargs):
+        self.assigned_to.save()  # Increments cache indicator.
+        if save_assigned_on:
+            self.assigned_on.save()  # Increments cache indicator.
+        logger.debug("cache indicator of project: %s", self.assigned_on.cache_key('test'))
         return super(WorkAssignment, self).save(*args, **kwargs)
