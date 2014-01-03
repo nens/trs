@@ -1641,4 +1641,4 @@ class InvoicesView(BaseView):
         if self.year != 'all':
             result = result.filter(date__year=self.year)
         return result.select_related('project').order_by(
-            '-date')
+            '-date', '-number')
