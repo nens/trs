@@ -36,7 +36,6 @@ def this_year_week():
     return result
 
 
-
 def days_missing_per_year_at_start_and_end():
     cache_key = 'days_missing_per_year_at_start_and_end1'
     cached = cache.get(cache_key)
