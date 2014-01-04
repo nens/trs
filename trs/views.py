@@ -551,7 +551,7 @@ class ProjectsView(BaseView):
             # started and they should not have ended.
             self.filters['archived'] = False
             self.filters['ended'] = False
-            self.filters['started'] = True
+            self.filters['started'] = None
         if self.filters['archived'] is not None:
             # Normally, don't filter on archived; the 'ended' filter is
             # enough.
