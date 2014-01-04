@@ -11,8 +11,7 @@
     {% endif %}
     |
     <a href="?archived=true">Gearchiveerd</a> |
-    <a href="?ended=true">Ge&euml;indigd</a> |
-    <a href="?started=false">Nog niet gestart</a>
+    <a href="?ended=true&archived=false">Ge&euml;indigd maar nog niet gearchiveerd</a>
   </div>
   {# The filter list in 'projects-simple.html' is less elaborate #}
 
@@ -24,10 +23,10 @@
   </div>
   <div class="text-muted">
     <a href="?is_accepted=true&archived=false&ended=false&started=true">
-      Actief en afgekaard
+      Actief en afgekaart
     </a> |
     <a href="?is_accepted=false&archived=false&ended=false&started=true">
-      Actief en <i>niet</i> afgekaard
+      Actief en <i>niet</i> afgekaart
     </a>
   </div>
 
