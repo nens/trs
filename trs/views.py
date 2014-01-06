@@ -249,18 +249,28 @@ class HomeView(BaseView):
     # TODO: project_budget_item_changes
     @cached_property
     def project_invoice_changes(self):
-        result = []
-        for project in (list(self.active_person.projects_i_lead.all()) +
-                        list(self.active_person.projects_i_manage.all())):
-            start = self.start_week.first_day
-            added = project.invoices.filter(date__gt=start)
-            payed = project.invoices.filter(payed__gt=start)
-            if added or payed:
-                change = {'project': project,
-                          'added': added,
-                          'payed': payed}
-                result.append(change)
-        return result
+        start = self.start_week.first_day
+        is_project_leader = models.Q(
+            project__project_leader=self.active_person)
+        is_project_manager = models.Q(
+            project__project_manager=self.active_person)
+        added_after_start = models.Q(date__gt=start)
+        payed_after_start = models.Q(date__gt=start)
+
+        invoices = Invoice.objects.filter(
+            project__archived=False).filter(
+                is_project_manager | is_project_leader).filter(
+                    added_after_start | payed_after_start).select_related(
+                        'project')
+        projects = {invoice.project.id: {'project': invoice.project,
+                                         'added': [],
+                                         'payed': []} for invoice in invoices}
+        for invoice in invoices:
+            if invoice.date >= start:
+                projects[invoice.project.id]['added'].append(invoice)
+            if invoice.payed is not None and invoice.payed >= start:
+                projects[invoice.project.id]['payed'].append(invoice)
+        return projects.values()
 
     @cached_property
     def are_there_changes(self):
