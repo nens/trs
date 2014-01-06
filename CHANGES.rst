@@ -5,7 +5,7 @@ Changelog of trs
 1.1 (unreleased)
 ----------------
 
-- Added sentry.lizard.net integration.
+- Added error 500 logging.
 
 - Invoices edited go back to the invoice overview page when clicked on from
   there.
