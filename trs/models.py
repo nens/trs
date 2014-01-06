@@ -241,8 +241,9 @@ class Person(models.Model):
         """Return absolute days and weeks (rounded) left to book."""
         this_year = this_year_week().year
         hours_to_work = self.to_work_up_till_now()
-        booked_this_year = self.bookings.filter(year_week__year=this_year).aggregate(
-            models.Sum('hours'))['hours__sum'] or 0
+        booked_this_year = self.bookings.filter(
+            year_week__year=this_year).aggregate(
+                models.Sum('hours'))['hours__sum'] or 0
         hours_to_book = max(0, (hours_to_work - booked_this_year))
         days_to_book = round(hours_to_book / 8)  # Assumption: 8 hour workday.
         if self.hours_per_week():
@@ -452,10 +453,12 @@ class Project(models.Model):
             models.Sum('amount'))['amount__sum'] or 0)
 
         overbooked_per_person = {
-            id: max(0, (total_booked_per_person.get(id, 0) - budget_per_person[id]))
+            id: max(0, (total_booked_per_person.get(id, 0) -
+                        budget_per_person[id]))
             for id in ids}
         well_booked_per_person = {
-            id: (total_booked_per_person.get(id, 0) - overbooked_per_person[id])
+            id: (total_booked_per_person.get(id, 0) -
+                 overbooked_per_person[id])
             for id in ids}
         left_to_book_per_person = {
             id: (budget_per_person[id] - well_booked_per_person[id])
@@ -587,7 +590,6 @@ class BudgetItem(FinancialBase):
         return reverse('trs.budget_item.edit', kwargs={
             'pk': self.pk,
             'project_pk': self.project.pk})
-
 
 
 class YearWeek(models.Model):
@@ -768,5 +770,4 @@ class WorkAssignment(EventBase):
         self.assigned_to.save()  # Increments cache indicator.
         if save_assigned_on:
             self.assigned_on.save()  # Increments cache indicator.
-        logger.debug("cache indicator of project: %s", self.assigned_on.cache_key('test'))
         return super(WorkAssignment, self).save(*args, **kwargs)

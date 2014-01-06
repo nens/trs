@@ -602,8 +602,8 @@ class ProjectsView(BaseView):
         result = []
         invoices_per_project = Invoice.objects.filter(
             project__in=self.projects).values(
-            'project').annotate(
-            models.Sum('amount_exclusive'))
+                'project').annotate(
+                    models.Sum('amount_exclusive'))
         invoice_amounts = {item['project']: round(item['amount_exclusive__sum'])
                            for item in invoices_per_project}
 
@@ -646,7 +646,7 @@ class ProjectsView(BaseView):
         result['contract_amount'] = sum([line['contract_amount']
                                          for line in self.lines])
         result['invoice_amount'] = sum([line['invoice_amount']
-                                         for line in self.lines])
+                                        for line in self.lines])
         if result['contract_amount']:
             percentage = round(
                 result['invoice_amount'] / result['contract_amount'] * 100)
@@ -1022,7 +1022,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     def totals(self):
         return [sum([line['hours%s' % index] for line in self.lines])
-                  for index in range(4)]
+                for index in range(4)]
 
 
 class ProjectEditView(LoginAndPermissionsRequiredMixin,
@@ -1570,7 +1570,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
              'Nu'),
             (str(YearWeek.objects.filter(year=next_year).first()),
              'Begin %s (begin volgend jaar)' % next_year),
-            ]
+        ]
 
     def all_year_weeks(self):
         # Well, all... 2013 is our TRS start year.
