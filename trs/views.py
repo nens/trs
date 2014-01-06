@@ -293,7 +293,8 @@ class HomeView(BaseView):
             booked_on=vacation_project).aggregate(
                 models.Sum('hours'))['hours__sum'] or 0
         hours_left = round(available - used)
-        weeks_available = hours_left / self.active_person.hours_per_week()
+        weeks_available = hours_left / (
+            self.active_person.hours_per_week() or 40)
         return {'hours': hours_left,
                 'weeks': weeks_available}
 
