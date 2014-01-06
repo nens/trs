@@ -22,10 +22,14 @@ class PersonYearCombination(object):
         'turnover',
         'overbooked',
         'left_to_book',
+        'well_booked',
+        'booked_internal',
+        'booked_external',
         'overbooked_percentage',
         'well_booked_percentage',
         'billable_percentage',
         'unbillable_percentage',
+        'per_project',
     ]
 
     def __init__(self, person, year=None):
@@ -33,7 +37,7 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        version = 11
+        version = 17
         self.cache_key = 'pycdata-%s-%s-%s-%s' % (
             person.id, person.cache_indicator, year, version)
         has_cached_data = self.get_cache()
@@ -71,8 +75,10 @@ class PersonYearCombination(object):
             assigned_to=self.person,
             year_week__year__lte=self.year,
             assigned_on__start__year__lte=self.year,
-            assigned_on__end__year__gte=self.year).values(
-                'assigned_on').annotate(
+            assigned_on__end__year__gte=self.year,
+            assigned_on__hourless=False).values(
+                'assigned_on',
+                'assigned_on__internal').annotate(
                     models.Sum('hours'),
                     models.Sum('hourly_tariff')
                 )
@@ -82,6 +88,10 @@ class PersonYearCombination(object):
         hourly_tariff = {
             item['assigned_on']: round(item['hourly_tariff__sum'] or 0)
             for item in budget_per_project}
+        is_internal = {
+            item['assigned_on']: item['assigned_on__internal']
+            for item in budget_per_project}
+
         project_ids = budget.keys()
 
         booked_this_year_per_project = Booking.objects.filter(
@@ -104,33 +114,58 @@ class PersonYearCombination(object):
             item['booked_on']: round(item['hours__sum'])
             for item in booked_up_to_this_year_per_project}
 
-        total_booked = 0
-        total_overbooked = 0
-        total_turnover = 0
-        total_left_to_book = 0
+        per_project = {}
         for id in project_ids:
-            booked = booked_this_year.get(id, 0) + booked_before_this_year.get(id, 0)
-            total_booked += booked
-            overbooked = max(0, (booked - budget[id]))
+            booked = booked_this_year.get(id, 0)
+            booked_till_now = booked + booked_before_this_year.get(id, 0)
+            overbooked = max(0, (booked_till_now - budget[id]))
             overbooked_this_year = min(overbooked, booked_this_year.get(id, 0))
             well_booked_this_year = booked_this_year.get(id, 0) - overbooked_this_year
-            total_overbooked += overbooked_this_year
-            total_turnover += well_booked_this_year * hourly_tariff[id]
-            total_left_to_book += max(0, (budget[id] - booked))
+            turnover = well_booked_this_year * hourly_tariff[id]
+            left_to_book = max(0, (budget[id] - booked_till_now))
+            if is_internal[id]:
+                booked_internal = booked_this_year.get(id, 0)
+                booked_external = 0
+            else:
+                booked_internal = 0
+                booked_external = booked_this_year.get(id, 0)
 
+            project_info = {
+                'booked': booked,
+                'overbooked': overbooked_this_year,
+                'well_booked': well_booked_this_year,
+                'left_to_book': left_to_book,
+                'turnover': turnover,
+                'booked_internal': booked_internal,
+                'booked_external': booked_external,
+            }
+            per_project[id] = project_info
+
+        self.overbooked = sum([project['overbooked']
+                               for project in per_project.values()])
+        self.well_booked = sum([project['well_booked']
+                                for project in per_project.values()])
+        self.turnover = sum([project['turnover']
+                             for project in per_project.values()])
+        self.left_to_book = sum([project['left_to_book']
+                                 for project in per_project.values()])
+        self.booked_internal = sum([project['booked_internal']
+                                    for project in per_project.values()])
+        self.booked_external = sum([project['booked_external']
+                                    for project in per_project.values()])
+        total_booked = sum([project['booked']
+                            for project in per_project.values()])
         if total_booked:
             overbooked_percentage = round(
-                100 * total_overbooked / total_booked)
+                100 * self.overbooked / total_booked)
             well_booked_percentage = 100 - overbooked_percentage
         else:
             overbooked_percentage = 0
             well_booked_percentage = 100
 
-        self.overbooked = total_overbooked
         self.overbooked_percentage = overbooked_percentage
         self.well_booked_percentage = well_booked_percentage
-        self.turnover = total_turnover
-        self.left_to_book = total_left_to_book
+        self.per_project = per_project
 
     def calc_external_percentage(self):
         """Return percentage hours booked this year on external projects.

@@ -1,0 +1,92 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>Voortgang {{ view.sidebar_person.name }} in {{ view.year }}</h1>
+  <div class="text-muted">
+    Jaar:
+    {% for year in view.available_years %}
+      {% if year == view.year %}
+        {{ year }}
+      {% else %}
+        <a href="?year={{ year }}">{{ year }}</a>
+      {% endif %}
+      {% if not forloop.last %}
+        |
+      {% endif %}
+    {% endfor %}
+  </div>
+  <p class="text-muted">
+    Bij de projecten zijn degene die voor de uren niet meetellen (zoals
+    verlof) eruitgefilterd.
+  </p>
+  <table class="table table-condensed table-hover table-fixed-header">
+    <thead class="header">
+      <tr>
+        <th>Project</th>
+        <th class="text-right">Binnen budget</th>
+        <th class="text-right">Buiten budget</th>
+        <th class="text-right">Extern geboekt</th>
+        <th class="text-right">Intern geboekt</th>
+        <th class="text-right">Bijdrage aan target</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in view.lines %}
+        <tr>
+          <td>{{ line.project.as_widget }}</td>
+          <td class="text-right">{{ line.well_booked|hours }}</td>
+          <td class="text-right">{{ line.overbooked|hours }}</td>
+          <td class="text-right">{{ line.booked_external|hours }}</td>
+          <td class="text-right">{{ line.booked_internal|hours }}</td>
+          <td class="text-right">{{ line.turnover|money }}</td>
+
+        </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th>Totaal</th>
+        <th class="text-right">{{ view.sidebar_person_year_info.well_booked|hours }}</th>
+        <th class="text-right">{{ view.sidebar_person_year_info.overbooked|hours }}</th>
+        <th class="text-right">{{ view.sidebar_person_year_info.booked_external|hours }}</th>
+        <th class="text-right">{{ view.sidebar_person_year_info.booked_internal|hours }}</th>
+        <th class="text-right">{{ view.sidebar_person_year_info.turnover|money }}</th>
+      </tr>
+      <tr>
+        <th>Berekening</th>
+        <th class="text-right" colspan="2">
+          {{ view.sidebar_person_year_info.overbooked|hours }} /
+          ({{ view.sidebar_person_year_info.overbooked|hours }} +
+           {{ view.sidebar_person_year_info.well_booked|hours }})
+        </th>
+        <th class="text-right" colspan="2">
+          {{ view.sidebar_person_year_info.booked_external|hours }} /
+          ({{ view.sidebar_person_year_info.booked_internal|hours }} +
+          {{ view.sidebar_person_year_info.booked_external|hours }})
+        </th>
+        <th class="text-right">
+          {{ view.sidebar_person_year_info.turnover|money }} /
+          {{ view.sidebar_person_year_info.target|money }}
+        </th>
+      </tr>
+      <tr>
+        <th>Percentage</th>
+        <th class="text-right" colspan="2">
+          Buiten budget:
+          {{ view.sidebar_person_year_info.overbooked_percentage }}%
+        </th>
+        <th class="text-right" colspan="2">
+          Extern:
+          {{ view.sidebar_person_year_info.billable_percentage|hours }}%
+        </th>
+        <th class="text-right">
+          Target:
+          {{ view.sidebar_person_year_info.target_percentage }}%
+        </th>
+      </tr>
+    </tfoot>
+  </table>
+
+
+{% endblock %}
