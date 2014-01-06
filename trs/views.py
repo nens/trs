@@ -108,6 +108,15 @@ class BaseMixin(object):
         return datetime.date.today()
 
     @cached_property
+    def year(self):
+        # Customization based on year happens a lot.
+        return int(self.request.GET.get('year', this_year_week().year))
+
+    @cached_property
+    def is_custom_year(self):
+        return self.year != this_year_week().year
+
+    @cached_property
     def active_person(self):
         if self.request.user.is_anonymous():
             logger.debug("Anonymous user")
@@ -147,7 +156,7 @@ class BaseMixin(object):
     def sidebar_person_year_info(self):
         if not self.sidebar_person:
             return
-        return core.get_pyc(person=self.sidebar_person)
+        return core.get_pyc(person=self.sidebar_person, year=self.year)
 
     @cached_property
     def selected_tab(self):
@@ -447,6 +456,41 @@ class PersonView(BaseView):
         if not roles:
             return 'Geen'
         return ', '.join(roles)
+
+
+class PersonKPIView(PersonView):
+    template_name = 'trs/kpi.html'
+
+    def has_form_permissions(self):
+        if self.can_see_everything:
+            return True
+        if self.active_person == self.person:
+            return True
+        return False
+
+    @cached_property
+    def lines(self):
+        pyc = core.get_pyc(person=self.sidebar_person, year=self.year)
+        project_ids = pyc.per_project.keys()
+        result = []
+        for project in Project.objects.filter(id__in=project_ids):
+            line = {}
+            line.update(pyc.per_project[project.id])
+            line['project'] = project
+            result.append(line)
+        return result
+
+    @cached_property
+    def available_years(self):
+        years_person_booked_in = list(Booking.objects.filter(
+            booked_by=self.sidebar_person).values(
+                'year_week__year').distinct().values_list(
+                    'year_week__year', flat=True))
+        current_year = this_year_week().year
+        if current_year not in years_person_booked_in:
+            # Corner case if you haven't booked yet in this year :-)
+            years_person_booked_in.append(current_year)
+        return years_person_booked_in
 
 
 class BookingOverview(PersonView):

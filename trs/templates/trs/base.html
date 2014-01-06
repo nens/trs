@@ -121,7 +121,10 @@
                     Jouw voortgang
                   {% else %}
                     Voortgang
-                    <small>(van {{ view.sidebar_person.name }})</small>
+                    <small>van {{ view.sidebar_person.name }}</small>
+                  {% endif %}
+                  {% if view.is_custom_year %}
+                    <small>({{ view.year }})</small>
                   {% endif %}
                 </h2>
                 <div><b>Bij met boeken?</b></div>
@@ -166,6 +169,16 @@
                   <div class="progress-bar"
                        style="width: {{ view.sidebar_person_year_info.target_percentage }}%;">
                   </div>
+                </div>
+
+                <div>
+                  Zie ook de onderbouwing van de
+                  <a href="{% url 'trs.booking.overview' pk=view.sidebar_person.id %}">
+                    boekingen
+                  </a>
+                  en de
+                  <a href="{% url 'trs.person.kpi' pk=view.sidebar_person.id %}">
+                    percentages</a>.
                 </div>
 
               {% endif %}

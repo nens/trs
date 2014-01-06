@@ -5,6 +5,8 @@ Changelog of trs
 1.1 (unreleased)
 ----------------
 
+- Added explanation page for the main percentages.
+
 - Added error 500 logging.
 
 - Invoices edited go back to the invoice overview page when clicked on from
