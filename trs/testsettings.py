@@ -42,7 +42,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     # Defaults above, extra two below.
     'tls.TLSRequestMiddleware',
-    # 'lizard_auth_client.middleware.LoginRequiredMiddleware',
+    'trs.middleware.TracebackLoggingMiddleware',
 )
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
