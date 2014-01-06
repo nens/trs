@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'south',
     'gunicorn',
     'debug_toolbar',
+    'raven.contrib.django.raven_compat',
     'django.contrib.staticfiles',
     'django_extensions',
     'django_nose',
@@ -71,6 +72,10 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'django.utils.log.NullHandler',
         },
+        'sentry': {
+            'level': 'ERROR',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -86,7 +91,7 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'logfile'],
+            'handlers': ['console', 'logfile', 'sentry'],
             'propagate': True,
             'level': 'DEBUG',
         },
@@ -94,6 +99,16 @@ LOGGING = {
             'handlers': ['null'],  # Quiet by default!
             'propagate': False,
             'level': 'DEBUG',
+        },
+        'raven': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'sentry.errors': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
         },
     }
 }
