@@ -8,7 +8,7 @@ STATIC_URL = '/static/'
 ROOT_URLCONF = 'trs.urls'
 SECRET_KEY = 'sleutel van het secreet'
 DEBUG = True
-ALLOWED_HOSTS = ['trs.lizard.net']
+ALLOWED_HOSTS = ['trs.lizard.net', 'localhost']
 TEMPLATE_DEBUG = True
 DATABASES = {
     'default': {'ENGINE': 'django.db.backends.sqlite3',
@@ -40,8 +40,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # Defaults above, extra two below.
+    # 'trs.middleware.TracebackLoggingMiddleware',
     'tls.TLSRequestMiddleware',
-    'trs.middleware.TracebackLoggingMiddleware',
 )
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -94,6 +94,11 @@ LOGGING = {
             'handlers': ['null'],  # Quiet by default!
             'propagate': False,
             'level': 'DEBUG',
+        },
+        'django.request': {
+            'handlers': ['console', 'logfile'],
+            'propagate': False,
+            'level': 'ERROR',  # WARN also shows 404 errors
         },
     }
 }
