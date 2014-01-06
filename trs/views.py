@@ -253,7 +253,7 @@ class HomeView(BaseView):
         for project in (list(self.active_person.projects_i_lead.all()) +
                         list(self.active_person.projects_i_manage.all())):
             start = self.start_week.first_day
-            added = project.invoices.filter(added__gt=start)
+            added = project.invoices.filter(date__gt=start)
             payed = project.invoices.filter(payed__gt=start)
             if added or payed:
                 change = {'project': project,
