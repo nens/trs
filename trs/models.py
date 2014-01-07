@@ -613,6 +613,10 @@ class YearWeek(models.Model):
     def __str__(self):
         return "{}  (week {:02d})".format(self.first_day, self.week)
 
+    def as_param(self):
+        """Return string representation for in url parameters."""
+        return "{}-{:02d}".format(self.year, self.week)
+
     def get_absolute_url(self):
         """Return link to the booking page for this year/week."""
         return reverse('trs.booking', kwargs={'year': self.year,

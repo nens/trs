@@ -1684,11 +1684,11 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         next_year = current_year + 1
         return [
             # (yyyy-ww, title)
-            (str(YearWeek.objects.filter(year=current_year).first()),
+            (YearWeek.objects.filter(year=current_year).first().as_param(),
              'Begin %s (begin dit jaar)' % current_year),
-            (str(this_year_week()),
+            (this_year_week().as_param(),
              'Nu'),
-            (str(YearWeek.objects.filter(year=next_year).first()),
+            (YearWeek.objects.filter(year=next_year).first().as_param(),
              'Begin %s (begin volgend jaar)' % next_year),
         ]
 
@@ -1708,7 +1708,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         relevant_weeks = YearWeek.objects.filter(
             id__in=[change['year_week'] for change in changes])
         for index, change in enumerate(changes):
-            change['year_week_str'] = str(relevant_weeks[index])
+            change['year_week_str'] = relevant_weeks[index].as_param()
         return changes
 
     @cached_property
