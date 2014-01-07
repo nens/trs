@@ -1,0 +1,20 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>{{ view.title }}</h1>
+  {{ view.back_url }}
+
+  <form action="." method="post">
+    {% csrf_token %}
+
+    <input type="submit"
+           class="btn btn-primary"
+           tabindex="1"
+           value="Verwijder {{ view.person.name }} uit het team" />
+  </form>
+
+{% endblock %}
+
+{% block overview-column %}
+{% endblock %}
