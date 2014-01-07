@@ -58,7 +58,7 @@
         <tbody>
           <tr>
             <td>Nieuw teamlid:</td>
-            <td colspan="4"  class="text-right">
+            <td colspan="5"  class="text-right">
               {{ view.new_team_member_field }}
             </td>
           </tr>
@@ -66,9 +66,7 @@
       {% endif %}
       <tfoot>
         <tr>
-          <th></th>
-          <th></th>
-          <th colspan="4" class="text-right">
+          <th colspan="6" class="text-right">
             <input type="submit"
                    class="btn btn-primary"
                    tabindex="{{ view.tabindex_submit_button|default:99 }}"
