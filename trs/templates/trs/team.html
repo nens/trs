@@ -17,6 +17,7 @@
           <th>Persoon</th>
           <th class="text-right">Uren</th>
           <th class="text-right">(Al geboekt)</th>
+          <th></th>
           <th class="text-right">Uurtarief</th>
           <th class="text-right">(Gewenst)</th>
         </tr>
@@ -32,6 +33,13 @@
               {{ line.hours }}
             </td>
             <td class="text-right">{{ line.booked|hours }}</td>
+            <td>
+              {% if line.deletable %}
+                <a href="{% url 'trs.project.team-member-delete' pk=view.project.pk person_pk=line.person.pk %}">
+                  <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                </a>
+              {% endif %}
+            </td>
             <td class="text-right">
               {% for error in line.hourly_tariff.errors %}
                 <div class="alert alert-danger">{{ error }}</div>

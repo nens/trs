@@ -1355,6 +1355,64 @@ class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         return mark_safe(template.format(url=url, text=text))
 
 
+class TeamMemberDeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
+    template_name = 'trs/team-member-delete.html'
+
+    def has_form_permissions(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.is_accepted:
+            return False
+        if self.project.project_leader == self.active_person:
+            return True
+        if self.person_has_booked:
+            return False
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def person(self):
+        return Person.objects.get(pk=self.kwargs['person_pk'])
+
+    @cached_property
+    def person_has_booked(self):
+        return Booking.objects.filter(
+            booked_on=self.project,
+            booked_by=self.person).exists()
+
+    @cached_property
+    def title(self):
+        return "Verwijder %s uit %s" % (self.person.name, self.project.code)
+
+    form_class = forms.Form  # Yes, an empty form.
+
+    def form_valid(self, form):
+        WorkAssignment.objects.filter(
+            assigned_on=self.project,
+            assigned_to=self.person).delete()
+        self.project.save()  # Increment cache key.
+        self.person.save()  # Increment cache key.
+        messages.success(
+            self.request,
+            "%s verwijderd uit %s" % (self.person.name, self.project.code))
+        return super(TeamMemberDeleteView, self).form_valid(form)
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project.team', kwargs={'pk': self.project.pk})
+
+    @cached_property
+    def back_url(self):
+        template = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
+        url = self.project.get_absolute_url()
+        text = "Terug naar het project"
+        return mark_safe(template.format(url=url, text=text))
+
+
 class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     template_name = 'trs/team.html'
 
@@ -1388,8 +1446,21 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def can_add_team_member(self):
+        if self.project.archived:
+            return False
         if self.can_edit_and_see_everything:
             return True
+        if self.project.project_leader == self.active_person:
+            return True  # Even if is_accepted is True, btw!
+
+    @property
+    def can_delete_team_member(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.is_accepted:
+            return False
         if self.project.project_leader == self.active_person:
             return True  # Even if is_accepted is True, btw!
 
@@ -1494,6 +1565,10 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 line['hourly_tariff'] = format_as_money(
                     hourly_tariffs.get(person.id, 0))
             line['booked'] = format_as_hours(booked.get(person.id, 0))
+            line['deletable'] = False
+            if not booked.get(person.id):
+                if self.can_delete_team_member:
+                    line['deletable'] = True
             result.append(line)
         return result
 
