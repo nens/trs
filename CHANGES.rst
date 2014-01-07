@@ -5,6 +5,8 @@ Changelog of trs
 1.1 (unreleased)
 ----------------
 
+- You can now remove team members, provided they haven't booked anything yet.
+
 - Teams are updated right away, again, after adding a new team member.
 
 - Added explanation page for the main percentages.
