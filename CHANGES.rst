@@ -2,7 +2,7 @@ Changelog of trs
 ===================================================
 
 
-1.1 (unreleased)
+1.1 (2014-01-09)
 ----------------
 
 - YearWeeks now store the amount of days they're missing. This is only
