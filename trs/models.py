@@ -36,23 +36,6 @@ def this_year_week():
     return result
 
 
-def days_missing_per_year_at_start_and_end():
-    cache_key = 'days_missing_per_year_at_start_and_end1'
-    cached = cache.get(cache_key)
-    if cached is not None:
-        return cached
-    result = {}
-    from django.conf import settings  # Local import, prevents circular.
-    for year in range(settings.TRS_START_YEAR, settings.TRS_END_YEAR + 1):
-        first_year_week = YearWeek.objects.filter(year=year).first()
-        at_start = first_year_week.first_day.weekday()  # Mon=0, Tue=1, Wed=3
-        last_day = datetime.date(year=year, month=12, day=31)
-        at_end = max(0, 4 - last_day.weekday())
-        result[year] = (at_start, at_end)
-    cache.set(cache_key, result, 3600 * 24 * 29)  # Max memcache age.
-    return result
-
-
 def cache_per_week(callable):
     # Note: only for PersonChange related fields.
     def inner(self, year_week=None):
@@ -221,19 +204,17 @@ class Person(models.Model):
         result = 0
         # Grab week numbers. "lt" isn't "lte" as we want to exclude the
         # current week. You only have to book on friday!
-        week_numbers = YearWeek.objects.filter(
+        year_weeks = YearWeek.objects.filter(
             year=year_week.year,
-            week__lt=year_week.week).values_list('week', flat=True)
+            week__lt=year_week.week).values('week', 'num_days_missing')
+        week_numbers = [item['week'] for item in year_weeks]
+        missing_days = sum([item['num_days_missing'] for item in year_weeks])
         for week in week_numbers:
             if week in changes_per_week:
                 hours_per_week += changes_per_week[week]
             result += hours_per_week
-        (missing_at_start,
-         missing_at_end) = days_missing_per_year_at_start_and_end()[this_year]
-        result -= missing_at_start * 8
-        if year_week.week >= 52:
-            result -= missing_at_end * 8
-        # The lines above might have pushed it below zero, so compensate:
+        result -= missing_days * 8
+        # The line above might have pushed it below zero, so compensate:
         return max(0, result)
 
     @cache_on_model
@@ -604,10 +585,10 @@ class YearWeek(models.Model):
         verbose_name="eerste maandag van de week",
         # Note: 1 january won't always be a monday, that's fine.
         db_index=True)
-    num_days = models.IntegerField(
-        verbose_name="aantal dagen",
-        help_text="(Relevant voor de eerste en laatste week van het jaar)",
-        default=5)
+    num_days_missing = models.IntegerField(
+        verbose_name="aantal dagen dat mist",
+        help_text="(Alleen relevant voor de eerste en laatste week v/h jaar)",
+        default=0)
 
     class Meta:
         verbose_name = "jaar/week combinatie"
