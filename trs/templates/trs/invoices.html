@@ -55,9 +55,9 @@
         </td>
         <td>{{ invoice.project.as_widget }}</td>
         <td>{{ invoice.description }}</td>
-        <td class="text-right">{{ invoice.amount_exclusive|money }}</td>
-        <td class="text-right">{{ invoice.vat|money }}</td>
-        <td class="text-right">{{ invoice.amount_inclusive|money }}</td>
+        <td class="text-right">{{ invoice.amount_exclusive|money_with_decimal }}</td>
+        <td class="text-right">{{ invoice.vat|money_with_decimal }}</td>
+        <td class="text-right">{{ invoice.amount_inclusive|money_with_decimal }}</td>
         <td>{{ invoice.payed|default:'Nee' }}</td>
       </tr>
       {% endfor %}

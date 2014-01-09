@@ -19,6 +19,13 @@ def money(value):
 
 
 @register.filter
+def money_with_decimal(value):
+    """Return monetary value, rounded and nicely formatted. Fixed width font.
+    """
+    return mark_safe('<tt>%s</tt>' % intcomma(value))
+
+
+@register.filter
 def moneydiff(value):
     """Return monetary value like money, but including a + sign when needed.
     """

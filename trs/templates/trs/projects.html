@@ -80,7 +80,7 @@
             {{ line.costs|money }}
           </td>
           <td class="text-right">
-            {{ line.invoice_amount|money }}
+            {{ line.invoice_amount|money_with_decimal }}
           </td>
           <td class="text-right">
             {% if line.invoice_amount_percentage != None %}

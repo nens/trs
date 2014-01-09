@@ -14,7 +14,7 @@
     </tr>
     <tr>
       <th>Bedrag <i>inclusief</i></th>
-      <td>{{ view.invoice.amount_inclusive }}</td>
+      <td>{{ view.invoice.amount_inclusive|money_with_decimal }}</td>
     </tr>
   </table>
 {% endblock %}

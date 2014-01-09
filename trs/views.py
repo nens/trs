@@ -642,7 +642,7 @@ class ProjectsView(BaseView):
             project__in=self.projects).values(
                 'project').annotate(
                     models.Sum('amount_exclusive'))
-        invoice_amounts = {item['project']: round(item['amount_exclusive__sum'])
+        invoice_amounts = {item['project']: item['amount_exclusive__sum']
                            for item in invoices_per_project}
 
         for project in self.projects:
