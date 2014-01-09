@@ -14,6 +14,21 @@ logger = logging.getLogger(__name__)
 MONTH_NUMBERS = range(1, 13)
 
 
+def fix_num_days():
+    for year in range(settings.TRS_START_YEAR, settings.TRS_END_YEAR + 1):
+        first_year_week = models.YearWeek.objects.filter(year=year).first()
+        missing_at_start = first_year_week.first_day.weekday()
+        # .weekday() returns Mon=0, Tue=1, Wed=3.
+        first_year_week.num_days_missing = missing_at_start
+        first_year_week.save()
+
+        last_year_week = models.YearWeek.objects.filter(year=year).last()
+        last_day = datetime.date(year=year, month=12, day=31)
+        missing_at_end = max(0, 4 - last_day.weekday())
+        last_year_week.num_days_missing = missing_at_end
+        last_year_week.save()
+
+
 def year_and_week_from_date(date):
     """Return year and week (as string).
 
@@ -52,6 +67,8 @@ class Command(BaseCommand):
                 if added:
                     count += 1
         logger.info("Added %s YearWeek objects", count)
+        fix_num_days()
+        logger.info("Adjusted the number of days per week where necessary.")
 
     def interesting_days(self, year):
         """Return all mondays and 1 january."""

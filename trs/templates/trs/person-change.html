@@ -21,7 +21,7 @@
             method="get">
         <select name="year_week">
           {% for year_week in view.all_year_weeks %}
-            <option value="{{ year_week }}">{{ year_week }}</option>
+            <option value="{{ year_week.as_param }}">{{ year_week }}</option>
           {% endfor %}
         </select>
         <input type="submit"
