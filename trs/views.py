@@ -31,7 +31,6 @@ from trs.models import Project
 from trs.models import WorkAssignment
 from trs.models import YearWeek
 from trs.models import this_year_week
-from trs.models import days_missing_per_year_at_start_and_end
 from trs.templatetags.trs_formatting import hours as format_as_hours
 from trs.templatetags.trs_formatting import money as format_as_money
 
@@ -541,7 +540,6 @@ class BookingOverview(PersonView):
                             for change in changes_this_year}
         result = []
         to_book = start_hours_amount
-        (missing_at_start,
          missing_at_end) = days_missing_per_year_at_start_and_end()[self.year]
         year_weeks = YearWeek.objects.filter(year=self.year)
         last_week_index = len(year_weeks) - 1
