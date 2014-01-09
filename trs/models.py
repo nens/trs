@@ -604,6 +604,10 @@ class YearWeek(models.Model):
         verbose_name="eerste maandag van de week",
         # Note: 1 january won't always be a monday, that's fine.
         db_index=True)
+    num_days = models.IntegerField(
+        verbose_name="aantal dagen",
+        help_text="(Relevant voor de eerste en laatste week van het jaar)",
+        default=5)
 
     class Meta:
         verbose_name = "jaar/week combinatie"
