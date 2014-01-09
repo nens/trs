@@ -115,7 +115,7 @@
                     {{ invoice.description }}
                   </span>
                   &agrave;
-                  &euro;{{ invoice.amount_exclusive|money }}
+                  &euro;{{ invoice.amount_exclusive|money_with_decimal }}
                 </div>
               {% endfor %}
               {% for invoice in change.payed %}
@@ -126,7 +126,7 @@
                     {{ invoice.description }}
                   </span>
                   &agrave;
-                  &euro;{{ invoice.amount_exclusive|money }}
+                  &euro;{{ invoice.amount_exclusive|money_with_decimal }}
                 </div>
               {% endfor %}
             </div>
