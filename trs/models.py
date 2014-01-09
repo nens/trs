@@ -119,7 +119,7 @@ class Person(models.Model):
         return self.name
 
     def cache_key(self, for_what, year_week=None):
-        cache_version = 5
+        cache_version = 6
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-%s-%s-%s-%s' % (
             self.id, self.cache_indicator, for_what, week_id, cache_version)
@@ -232,6 +232,13 @@ class Person(models.Model):
         else:  # Division by zero
             weeks_to_book = 0
 
+        to_book_this_week = (self.hours_per_week() -
+                             8 * this_year_week().num_days_missing)
+        booked_this_week = self.bookings.filter(
+            year_week=this_year_week()).aggregate(
+                models.Sum('hours'))['hours__sum'] or 0
+        left_to_book_this_week = to_book_this_week - booked_this_week
+
         if weeks_to_book > 1:
             klass = 'danger'
             friendly = '%s weken' % weeks_to_book
@@ -257,7 +264,8 @@ class Person(models.Model):
                 'weeks': weeks_to_book,
                 'friendly': friendly,
                 'short': short,
-                'klass': klass}
+                'klass': klass,
+                'left_to_book_this_week': round(left_to_book_this_week)}
 
 
 class Project(models.Model):
