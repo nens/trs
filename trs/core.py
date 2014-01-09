@@ -37,7 +37,7 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        version = 17
+        version = 18
         self.cache_key = 'pycdata-%s-%s-%s-%s' % (
             person.id, person.cache_indicator, year, version)
         has_cached_data = self.get_cache()
@@ -73,7 +73,6 @@ class PersonYearCombination(object):
     def calc_target_and_overbookings(self):
         budget_per_project = WorkAssignment.objects.filter(
             assigned_to=self.person,
-            year_week__year__lte=self.year,
             assigned_on__start__year__lte=self.year,
             assigned_on__end__year__gte=self.year,
             assigned_on__hourless=False).values(

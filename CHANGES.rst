@@ -7,6 +7,8 @@ Changelog of trs
 
 - Invoice amounts are shown including their decimal part.
 
+- Fixed target calculation on per-year percentages overview page.
+
 
 1.1 (2014-01-09)
 ----------------
