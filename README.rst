@@ -21,3 +21,16 @@ lizard site setup is out of the window. Time to try something new!
 
 The installation is explained in the password-protected trs-site project's
 README.
+
+
+Weeks
+-----
+
+A ``YearWeek`` is the core time object in the site: every year+week
+combination has its own database object for easy filtering. They must be
+created with a management command::
+
+    $ bin/django update_weeks
+
+It is save to run this command more than once. In case this site is still used
+after 2020: adjust the ``TRS_END_YEAR`` setting and run the command again :-)
