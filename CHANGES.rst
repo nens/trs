@@ -9,6 +9,8 @@ Changelog of trs
   relevant for the start and end week of a year. Storing it in there cuts down
   on complexity in quite a few places.
 
+- Fixed YearWeek representation in forms: the personchange form works again.
+
 - You can now remove team members, provided they haven't booked anything yet.
 
 - Teams are updated right away, again, after adding a new team member.
