@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 def this_year_week():
-    cache_key = 'this-year-week'
+    cache_key = 'this-year-week2'
     cached = cache.get(cache_key)
     if cached is not None:
         return cached
