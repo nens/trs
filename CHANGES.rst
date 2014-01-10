@@ -2,7 +2,7 @@ Changelog of trs
 ===================================================
 
 
-1.2 (unreleased)
+1.2 (2014-01-10)
 ----------------
 
 - Invoice amounts are shown including their decimal part.
