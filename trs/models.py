@@ -359,15 +359,17 @@ class Project(models.Model):
         ordering = ('internal', 'code')
 
     def save(self, *args, **kwargs):
-        for person in [self.project_manager, self.project_leader]:
-            if person and person not in self.assigned_persons():
-                work_assignment = WorkAssignment(
-                    assigned_to=person,
-                    assigned_on=self)
-                work_assignment.save(save_assigned_on=False)
-                msg = "%s automatisch toegevoegd aan project" % person
-                messages.info(tls_request, msg)
-                self.cache_indicator += 1
+        if tls_request:
+            # If not tls_request, we're in some automated import loop.
+            for person in [self.project_manager, self.project_leader]:
+                if person and person not in self.assigned_persons():
+                    work_assignment = WorkAssignment(
+                        assigned_to=person,
+                        assigned_on=self)
+                    work_assignment.save(save_assigned_on=False)
+                    msg = "%s automatisch toegevoegd aan project" % person
+                    messages.info(tls_request, msg)
+                    self.cache_indicator += 1
         self.cache_indicator += 1
         # ^^^ Cache indicator is also needed for self.assigned_persons(),
         # which we call above. So increment the indicator *afterwards*.
