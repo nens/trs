@@ -30,20 +30,21 @@
   <table class="table table-condensed table-fixed-header">
     <thead class="header">
       <tr>
-        <th>Datum</th>
+        <th class="text-right">Datum</th>
         <th>Factuurnummer</th>
         <th>Project</th>
+        <th>Opdrachtgever</th>
         <th>Omschrijving</th>
         <th class="text-right">Exclusief</th>
         <th class="text-right">BTW</th>
         <th class="text-right">Inclusief</th>
-        <th>Betaald</th>
+        <th class="text-right">Betaald</th>
       </tr>
     </thead>
     <tbody>
       {% for invoice in view.invoices %}
       <tr id="{{ invoice.id }}">
-        <td>{{ invoice.date }}</td>
+        <td class="text-right">{{ invoice.date|date:"SHORT_DATE_FORMAT" }}</td>
         <td>
           {% if not invoice.project.archived %}
             <a href="{% url 'trs.invoice.edit' project_pk=invoice.project.pk pk=invoice.pk %}?from_invoice_overview">
@@ -54,11 +55,12 @@
           {% endif %}
         </td>
         <td>{{ invoice.project.as_widget }}</td>
+        <td>{{ invoice.project.principal }}</td>
         <td>{{ invoice.description }}</td>
         <td class="text-right">{{ invoice.amount_exclusive|money_with_decimal }}</td>
         <td class="text-right">{{ invoice.vat|money_with_decimal }}</td>
         <td class="text-right">{{ invoice.amount_inclusive|money_with_decimal }}</td>
-        <td>{{ invoice.payed|default:'Nee' }}</td>
+        <td class="text-right">{{ invoice.payed|date:"SHORT_DATE_FORMAT"|default:'Nee' }}</td>
       </tr>
       {% endfor %}
     </tbody>
