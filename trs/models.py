@@ -271,6 +271,7 @@ class Person(models.Model):
 class Project(models.Model):
     code = models.CharField(
         verbose_name="projectcode",
+        unique=True,
         max_length=255)
     description = models.CharField(
         verbose_name="omschrijving",
