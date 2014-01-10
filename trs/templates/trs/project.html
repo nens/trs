@@ -199,6 +199,7 @@
           <tr>
             <td>Opdrachtsom</td>
             <td></td>
+            <td></td>
             <td class="text-right">{{ view.project.contract_amount|money }}</td>
           </tr>
           {% for budget_item in view.project.budget_items.all %}
@@ -229,6 +230,7 @@
           {% endfor %}
           <tr>
             <td>Personele kosten</td>
+            <td></td>
             <td></td>
             <td class="text-right">{{ view.person_costs|money }}</td>
           </tr>
