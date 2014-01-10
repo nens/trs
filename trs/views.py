@@ -643,7 +643,9 @@ class ProjectsView(BaseView):
         invoices_per_project = Invoice.objects.filter(
             project__in=self.projects).values(
                 'project').annotate(
-                    models.Sum('amount_exclusive'))
+                    models.Sum('amount_exclusive')).order_by()
+        # ^^^ .order_by() is needed to prevent a weird grouping issue. See
+        # https://docs.djangoproject.com/en/1.6/topics/db/aggregation/#interaction-with-default-ordering-or-order-by
         invoice_amounts = {item['project']: item['amount_exclusive__sum']
                            for item in invoices_per_project}
 
