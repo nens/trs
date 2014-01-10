@@ -392,9 +392,13 @@ class Project(models.Model):
                                           {'project': self}))
 
     def not_yet_started(self):
+        if not self.start:
+            return False
         return self.start.first_day > this_year_week().first_day
 
     def already_ended(self):
+        if not self.end:
+            return False
         return self.end.first_day < this_year_week().first_day
 
     @cache_on_model
