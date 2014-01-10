@@ -1411,8 +1411,38 @@ class TeamMemberDeleteView(DeleteView):
         return reverse('trs.project.team', kwargs={'pk': self.project.pk})
 
 
+class BudgetItemDeleteView(DeleteView):
+
+    def has_form_permissions(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def budget_item(self):
+        return BudgetItem.objects.get(pk=self.kwargs['budget_item_pk'])
+
+    @cached_property
+    def title(self):
+        return "Verwijder budget item %s uit %s" % (
+            self.budget_item.description, self.project.code)
+
+    def form_valid(self, form):
+        self.budget_item.delete()
+        self.project.save()  # Increment cache key.
+        messages.success(
+            self.request,
+            "%s verwijderd uit %s" % (self.budget_item.description,
+                                      self.project.code))
+        return super(BudgetItemDeleteView, self).form_valid(form)
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
+
+
 class InvoiceDeleteView(DeleteView):
-    template_name = 'trs/delete.html'
 
     def has_form_permissions(self):
         if self.project.archived:

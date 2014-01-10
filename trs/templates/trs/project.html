@@ -190,6 +190,7 @@
         <thead>
           <tr>
             <th>Beschrijving</th>
+            <th></th>
             <th>Reservering?</th>
             <th class="text-right">Bedrag</th>
           </tr>
@@ -212,6 +213,13 @@
                 {% endif %}
               </td>
               <td>
+                {% if view.can_edit_financials %}
+                  <a href="{% url 'trs.project.budget-item-delete' pk=view.project.pk budget_item_pk=budget_item.pk %}">
+                    <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                  </a>
+                {% endif %}
+              </td>
+              <td>
                 {% if budget_item.is_reservation %}
                   <span class="text-muted glyphicon glyphicon-ok"></span>
                 {% endif %}
@@ -228,6 +236,7 @@
         <tfoot>
           <tr>
             <th>Totaal</th>
+            <th></th>
             <th></th>
             {% if view.total %}
               <th class="text-right danger"
@@ -300,6 +309,7 @@
         <tfoot>
           <tr>
             <th>Totaal</th>
+            <th></th>
             <th></th>
             <th></th>
             <th class="text-right">{{ view.total_invoice_exclusive|money_with_decimal }}</th>
