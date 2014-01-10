@@ -643,7 +643,9 @@ class ProjectsView(BaseView):
         invoices_per_project = Invoice.objects.filter(
             project__in=self.projects).values(
                 'project').annotate(
-                    models.Sum('amount_exclusive'))
+                    models.Sum('amount_exclusive')).order_by()
+        # ^^^ .order_by() is needed to prevent a weird grouping issue. See
+        # https://docs.djangoproject.com/en/1.6/topics/db/aggregation/#interaction-with-default-ordering-or-order-by
         invoice_amounts = {item['project']: item['amount_exclusive__sum']
                            for item in invoices_per_project}
 
@@ -807,6 +809,7 @@ class ProjectView(BaseView):
             line['loss'] = (
                 max(0, (line['booked'] - line['budget'])) * line['hourly_tariff'])
             line['left_to_turn_over'] = line['left_to_book'] * line['hourly_tariff']
+            line['planned_turnover'] = line['budget'] * line['hourly_tariff']
             line['desired_hourly_tariff'] = round(person.standard_hourly_tariff(
                 year_week=self.project.start))
             result.append(line)
@@ -830,13 +833,18 @@ class ProjectView(BaseView):
 
     @cached_property
     def person_costs(self):
-        return -1 * self.total_turnover
+        return sum([line['planned_turnover'] for line in self.lines])
 
     @cached_property
-    def total(self):
+    def total_costs(self):
         budget = self.project.budget_items.all().aggregate(
             models.Sum('amount'))['amount__sum'] or 0
-        return self.project.contract_amount + budget + self.person_costs
+        budget = -1 * budget
+        return budget + self.person_costs
+
+    @cached_property
+    def left_to_dish_out(self):
+        return self.project.contract_amount - self.total_costs
 
     @cached_property
     def amount_left(self):
@@ -1350,8 +1358,24 @@ class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         return mark_safe(template.format(url=url, text=text))
 
 
-class TeamMemberDeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
-    template_name = 'trs/team-member-delete.html'
+class DeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
+    template_name = 'trs/delete.html'
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['pk'])
+
+    form_class = forms.Form  # Yes, an empty form.
+
+    @cached_property
+    def back_url(self):
+        template = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
+        url = self.project.get_absolute_url()
+        text = "Terug naar het project"
+        return mark_safe(template.format(url=url, text=text))
+
+
+class TeamMemberDeleteView(DeleteView):
 
     def has_form_permissions(self):
         if self.project.archived:
@@ -1366,10 +1390,6 @@ class TeamMemberDeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin
             return False
 
     @cached_property
-    def project(self):
-        return Project.objects.get(pk=self.kwargs['pk'])
-
-    @cached_property
     def person(self):
         return Person.objects.get(pk=self.kwargs['person_pk'])
 
@@ -1382,8 +1402,6 @@ class TeamMemberDeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin
     @cached_property
     def title(self):
         return "Verwijder %s uit %s" % (self.person.name, self.project.code)
-
-    form_class = forms.Form  # Yes, an empty form.
 
     def form_valid(self, form):
         WorkAssignment.objects.filter(
@@ -1400,12 +1418,65 @@ class TeamMemberDeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin
     def success_url(self):
         return reverse('trs.project.team', kwargs={'pk': self.project.pk})
 
+
+class BudgetItemDeleteView(DeleteView):
+
+    def has_form_permissions(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+
     @cached_property
-    def back_url(self):
-        template = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
-        url = self.project.get_absolute_url()
-        text = "Terug naar het project"
-        return mark_safe(template.format(url=url, text=text))
+    def budget_item(self):
+        return BudgetItem.objects.get(pk=self.kwargs['budget_item_pk'])
+
+    @cached_property
+    def title(self):
+        return "Verwijder budget item %s uit %s" % (
+            self.budget_item.description, self.project.code)
+
+    def form_valid(self, form):
+        self.budget_item.delete()
+        self.project.save()  # Increment cache key.
+        messages.success(
+            self.request,
+            "%s verwijderd uit %s" % (self.budget_item.description,
+                                      self.project.code))
+        return super(BudgetItemDeleteView, self).form_valid(form)
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
+
+
+class InvoiceDeleteView(DeleteView):
+
+    def has_form_permissions(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def invoice(self):
+        return Invoice.objects.get(pk=self.kwargs['invoice_pk'])
+
+    @cached_property
+    def title(self):
+        return "Verwijder factuur %s uit %s" % (self.invoice.number, self.project.code)
+
+    def form_valid(self, form):
+        self.invoice.delete()
+        self.project.save()  # Increment cache key.
+        messages.success(
+            self.request,
+            "%s verwijderd uit %s" % (self.invoice.number, self.project.code))
+        return super(InvoiceDeleteView, self).form_valid(form)
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
 
 
 class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
@@ -1784,3 +1855,13 @@ class InvoicesView(BaseView):
             result = result.filter(date__year=self.year)
         return result.select_related('project').order_by(
             '-date', '-number')
+
+    @cached_property
+    def total_exclusive(self):
+        return sum([invoice.amount_exclusive or 0
+                    for invoice in self.invoices])
+
+    @cached_property
+    def total_inclusive(self):
+        return sum([invoice.amount_inclusive or 0
+                    for invoice in self.invoices])

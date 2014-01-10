@@ -392,9 +392,13 @@ class Project(models.Model):
                                           {'project': self}))
 
     def not_yet_started(self):
+        if not self.start:
+            return False
         return self.start.first_day > this_year_week().first_day
 
     def already_ended(self):
+        if not self.end:
+            return False
         return self.end.first_day < this_year_week().first_day
 
     @cache_on_model
@@ -585,6 +589,10 @@ class BudgetItem(FinancialBase):
 
     def __str__(self):
         return self.description
+
+    def amount_as_costs(self):
+        # The value should be inversed  when used as costs.
+        return -1 * self.amount
 
     def get_absolute_url(self):
         return reverse('trs.budget_item.edit', kwargs={

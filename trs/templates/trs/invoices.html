@@ -64,6 +64,19 @@
       </tr>
       {% endfor %}
     </tbody>
+    <tfoot>
+      <tr>
+        <th>Totaal</th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th class="text-right">{{ view.total_exclusive|money_with_decimal }}</th>
+        <th></th>
+        <th class="text-right">{{ view.total_inclusive|money_with_decimal }}</th>
+        <th></th>
+      </tr>
+    </tfoot>
   </table>
 
 {% endblock %}

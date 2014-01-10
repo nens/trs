@@ -190,16 +190,13 @@
         <thead>
           <tr>
             <th>Beschrijving</th>
+            <th></th>
             <th>Reservering?</th>
-            <th class="text-right">Bedrag</th>
+            <th class="text-right">Kosten</th>
+            <th class="text-right">Opdrachtsom</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>Opdrachtsom</td>
-            <td></td>
-            <td class="text-right">{{ view.project.contract_amount|money }}</td>
-          </tr>
           {% for budget_item in view.project.budget_items.all %}
             <tr>
               <td>
@@ -212,33 +209,47 @@
                 {% endif %}
               </td>
               <td>
+                {% if view.can_edit_financials %}
+                  <a href="{% url 'trs.project.budget-item-delete' pk=view.project.pk budget_item_pk=budget_item.pk %}">
+                    <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                  </a>
+                {% endif %}
+              </td>
+              <td>
                 {% if budget_item.is_reservation %}
                   <span class="text-muted glyphicon glyphicon-ok"></span>
                 {% endif %}
               </td>
-              <td class="text-right">{{ budget_item.amount|money }}</td>
+              <td class="text-right">{{ budget_item.amount_as_costs|money }}</td>
+              <td></td>
             </tr>
           {% endfor %}
           <tr>
-            <td>Personele kosten</td>
+            <td title="Gepland uurbudget x tarief">Personele kosten</td>
+            <td></td>
             <td></td>
             <td class="text-right">{{ view.person_costs|money }}</td>
+            <td></td>
           </tr>
         </tbody>
         <tfoot>
           <tr>
             <th>Totaal</th>
             <th></th>
-            {% if view.total %}
-              <th class="text-right danger"
-                  title="Moet op 0 uitkomen">
-                {{ view.total|money }}
-              </th>
-            {% else %}
-              <th class="text-right">
-                {{ view.total|money }}
-              </th>
-            {% endif %}
+            <th></th>
+            <th class="text-right">
+                {{ view.total_costs|money }}
+            </th>
+            <th class="text-right">{{ view.project.contract_amount|money }}</th>
+          </tr>
+          <tr>
+            <th>Nog te verdelen</th>
+            <th></th>
+            <th></th>
+            <th class="text-right">
+                {{ view.left_to_dish_out|money }}
+            </th>
+            <th></th>
           </tr>
         </tfoot>
       </table>
@@ -261,6 +272,7 @@
           <tr>
             <th>Datum</th>
             <th>Factuurnummer</th>
+            <th></th>
             <th>Omschrijving</th>
             <th class="text-right">Exclusief</th>
             <th class="text-right">BTW</th>
@@ -271,7 +283,7 @@
         <tbody>
           {% for invoice in view.project.invoices.all %}
             <tr>
-              <td>{{ invoice.date }}</td>
+              <td>{{ invoice.date|date:"SHORT_DATE_FORMAT" }}</td>
               <td>
                 {% if view.can_edit_financials %}
                   <a href="{% url 'trs.invoice.edit' project_pk=view.project.pk pk=invoice.pk %}">
@@ -281,17 +293,25 @@
                   {{ invoice.number }}
                 {% endif %}
               </td>
+              <td>
+                {% if view.can_edit_financials %}
+                  <a href="{% url 'trs.project.invoice-delete' pk=view.project.pk invoice_pk=invoice.pk %}">
+                    <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                  </a>
+                {% endif %}
+              </td>
               <td>{{ invoice.description }}</td>
               <td class="text-right">{{ invoice.amount_exclusive|money_with_decimal }}</td>
               <td class="text-right">{{ invoice.vat|money_with_decimal }}</td>
               <td class="text-right">{{ invoice.amount_inclusive|money_with_decimal }}</td>
-              <td>{{ invoice.payed|default:'Nee' }}</td>
+              <td>{{ invoice.payed|date:"SHORT_DATE_FORMAT"|default:'Nee' }}</td>
             </tr>
           {% endfor %}
         </tbody>
         <tfoot>
           <tr>
             <th>Totaal</th>
+            <th></th>
             <th></th>
             <th></th>
             <th class="text-right">{{ view.total_invoice_exclusive|money_with_decimal }}</th>
