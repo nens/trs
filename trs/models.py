@@ -391,6 +391,12 @@ class Project(models.Model):
         return mark_safe(render_to_string('trs/project-widget.html',
                                           {'project': self}))
 
+    def not_yet_started(self):
+        return self.start.first_day > this_year_week().first_day
+
+    def already_ended(self):
+        return self.end.first_day < this_year_week().first_day
+
     @cache_on_model
     def assigned_persons(self):
         return Person.objects.filter(

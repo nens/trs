@@ -23,6 +23,14 @@
   <span title="Uren tellen niet mee voor totaal"
         class="text-muted glyphicon glyphicon-picture"></span>
 {% endif %}
+{% if project.not_yet_started %}
+  <span title="Project moet nog starten"
+        class="text-muted glyphicon glyphicon-time"></span>
+{% endif %}
+{% if project.already_ended %}
+  <span title="Project is al ge&euml;indigd"
+        class="text-muted glyphicon glyphicon-time"></span>
+{% endif %}
 {% if view.can_see_everything %}
   {% if project.overbooked_percentage > 5 %}
     <span
