@@ -305,6 +305,14 @@ def import_invoices(filename):
     selected_option = budget_select.find('option', attrs={'value': budget_id})
     project_code = selected_option.string
     project = get_project2(project_code)
+
+    # Find the principal
+    principal_title_cell = soup.find('td', text='Opdrachtgever')
+    principal = principal_title_cell.next_sibling.next_sibling.string
+    if principal:
+        project.principal = principal
+        project.save()
+
     import_user = get_import_user()
     models.Invoice.objects.filter(added_by=import_user,
                                   project=project).delete()
