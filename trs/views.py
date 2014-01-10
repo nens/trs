@@ -1855,3 +1855,13 @@ class InvoicesView(BaseView):
             result = result.filter(date__year=self.year)
         return result.select_related('project').order_by(
             '-date', '-number')
+
+    @cached_property
+    def total_exclusive(self):
+        return sum([invoice.amount_exclusive or 0
+                    for invoice in self.invoices])
+
+    @cached_property
+    def total_inclusive(self):
+        return sum([invoice.amount_inclusive or 0
+                    for invoice in self.invoices])
