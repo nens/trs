@@ -1350,8 +1350,24 @@ class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         return mark_safe(template.format(url=url, text=text))
 
 
-class TeamMemberDeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
-    template_name = 'trs/team-member-delete.html'
+class DeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
+    template_name = 'trs/delete.html'
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['pk'])
+
+    form_class = forms.Form  # Yes, an empty form.
+
+    @cached_property
+    def back_url(self):
+        template = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
+        url = self.project.get_absolute_url()
+        text = "Terug naar het project"
+        return mark_safe(template.format(url=url, text=text))
+
+
+class TeamMemberDeleteView(DeleteView):
 
     def has_form_permissions(self):
         if self.project.archived:
@@ -1366,10 +1382,6 @@ class TeamMemberDeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin
             return False
 
     @cached_property
-    def project(self):
-        return Project.objects.get(pk=self.kwargs['pk'])
-
-    @cached_property
     def person(self):
         return Person.objects.get(pk=self.kwargs['person_pk'])
 
@@ -1382,8 +1394,6 @@ class TeamMemberDeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin
     @cached_property
     def title(self):
         return "Verwijder %s uit %s" % (self.person.name, self.project.code)
-
-    form_class = forms.Form  # Yes, an empty form.
 
     def form_valid(self, form):
         WorkAssignment.objects.filter(
@@ -1400,12 +1410,35 @@ class TeamMemberDeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin
     def success_url(self):
         return reverse('trs.project.team', kwargs={'pk': self.project.pk})
 
+
+class InvoiceDeleteView(DeleteView):
+    template_name = 'trs/delete.html'
+
+    def has_form_permissions(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+
     @cached_property
-    def back_url(self):
-        template = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
-        url = self.project.get_absolute_url()
-        text = "Terug naar het project"
-        return mark_safe(template.format(url=url, text=text))
+    def invoice(self):
+        return Invoice.objects.get(pk=self.kwargs['invoice_pk'])
+
+    @cached_property
+    def title(self):
+        return "Verwijder factuur %s uit %s" % (self.invoice.number, self.project.code)
+
+    def form_valid(self, form):
+        self.invoice.delete()
+        self.project.save()  # Increment cache key.
+        messages.success(
+            self.request,
+            "%s verwijderd uit %s" % (self.invoice.number, self.project.code))
+        return super(InvoiceDeleteView, self).form_valid(form)
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
 
 
 class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):

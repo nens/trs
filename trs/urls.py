@@ -55,6 +55,9 @@ urlpatterns = patterns(
     url(r'^projects/(?P<pk>\d+)/team-member-delete/(?P<person_pk>\d+)/$',
         views.TeamMemberDeleteView.as_view(),
         name='trs.project.team-member-delete'),
+    url(r'^projects/(?P<pk>\d+)/invoice-delete/(?P<invoice_pk>\d+)/$',
+        views.InvoiceDeleteView.as_view(),
+        name='trs.project.invoice-delete'),
 
     url(r'^projects/(?P<project_pk>\d+)/add_invoice/$',
         views.InvoiceCreateView.as_view(),

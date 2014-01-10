@@ -261,6 +261,7 @@
           <tr>
             <th>Datum</th>
             <th>Factuurnummer</th>
+            <th></th>
             <th>Omschrijving</th>
             <th class="text-right">Exclusief</th>
             <th class="text-right">BTW</th>
@@ -279,6 +280,13 @@
                   </a>
                 {% else %}
                   {{ invoice.number }}
+                {% endif %}
+              </td>
+              <td>
+                {% if view.can_edit_financials %}
+                  <a href="{% url 'trs.project.invoice-delete' pk=view.project.pk invoice_pk=invoice.pk %}">
+                    <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                  </a>
                 {% endif %}
               </td>
               <td>{{ invoice.description }}</td>
