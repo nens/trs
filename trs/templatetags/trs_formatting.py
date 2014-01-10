@@ -22,7 +22,13 @@ def money(value):
 def money_with_decimal(value):
     """Return monetary value, rounded and nicely formatted. Fixed width font.
     """
-    return mark_safe('<tt>%s</tt>' % intcomma(value))
+    try:
+        whole = value // 1
+        remainder = value % 1
+    except:  # Yes, a bare except: filters should not raise exceptions
+        return value
+
+    return mark_safe('<tt>%s,%02d</tt>' % (intcomma(whole), 100 * remainder))
 
 
 @register.filter
