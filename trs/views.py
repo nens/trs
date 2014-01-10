@@ -807,6 +807,7 @@ class ProjectView(BaseView):
             line['loss'] = (
                 max(0, (line['booked'] - line['budget'])) * line['hourly_tariff'])
             line['left_to_turn_over'] = line['left_to_book'] * line['hourly_tariff']
+            line['planned_turnover'] = line['budget'] * line['hourly_tariff']
             line['desired_hourly_tariff'] = round(person.standard_hourly_tariff(
                 year_week=self.project.start))
             result.append(line)
@@ -830,13 +831,18 @@ class ProjectView(BaseView):
 
     @cached_property
     def person_costs(self):
-        return -1 * self.total_turnover
+        return sum([line['planned_turnover'] for line in self.lines])
 
     @cached_property
-    def total(self):
+    def total_costs(self):
         budget = self.project.budget_items.all().aggregate(
             models.Sum('amount'))['amount__sum'] or 0
-        return self.project.contract_amount + budget + self.person_costs
+        budget = -1 * budget
+        return budget + self.person_costs
+
+    @cached_property
+    def left_to_dish_out(self):
+        return self.project.contract_amount - self.total_costs
 
     @cached_property
     def amount_left(self):

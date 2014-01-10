@@ -586,6 +586,10 @@ class BudgetItem(FinancialBase):
     def __str__(self):
         return self.description
 
+    def amount_as_costs(self):
+        # The value should be inversed  when used as costs.
+        return -1 * self.amount
+
     def get_absolute_url(self):
         return reverse('trs.budget_item.edit', kwargs={
             'pk': self.pk,

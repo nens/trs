@@ -192,16 +192,11 @@
             <th>Beschrijving</th>
             <th></th>
             <th>Reservering?</th>
-            <th class="text-right">Bedrag</th>
+            <th class="text-right">Kosten</th>
+            <th class="text-right">Opdrachtsom</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>Opdrachtsom</td>
-            <td></td>
-            <td></td>
-            <td class="text-right">{{ view.project.contract_amount|money }}</td>
-          </tr>
           {% for budget_item in view.project.budget_items.all %}
             <tr>
               <td>
@@ -225,14 +220,16 @@
                   <span class="text-muted glyphicon glyphicon-ok"></span>
                 {% endif %}
               </td>
-              <td class="text-right">{{ budget_item.amount|money }}</td>
+              <td class="text-right">{{ budget_item.amount_as_costs|money }}</td>
+              <td></td>
             </tr>
           {% endfor %}
           <tr>
-            <td>Personele kosten</td>
+            <td title="Gepland uurbudget x tarief">Personele kosten</td>
             <td></td>
             <td></td>
             <td class="text-right">{{ view.person_costs|money }}</td>
+            <td></td>
           </tr>
         </tbody>
         <tfoot>
@@ -240,16 +237,19 @@
             <th>Totaal</th>
             <th></th>
             <th></th>
-            {% if view.total %}
-              <th class="text-right danger"
-                  title="Moet op 0 uitkomen">
-                {{ view.total|money }}
-              </th>
-            {% else %}
-              <th class="text-right">
-                {{ view.total|money }}
-              </th>
-            {% endif %}
+            <th class="text-right">
+                {{ view.total_costs|money }}
+            </th>
+            <th class="text-right">{{ view.project.contract_amount|money }}</th>
+          </tr>
+          <tr>
+            <th>Nog te verdelen</th>
+            <th></th>
+            <th></th>
+            <th class="text-right">
+                {{ view.left_to_dish_out|money }}
+            </th>
+            <th></th>
           </tr>
         </tfoot>
       </table>
