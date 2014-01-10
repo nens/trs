@@ -157,8 +157,8 @@ class Command(BaseCommand):
     help = "Import the xls exports from the old TRS"
 
     def handle(self, *args, **options):
-        # basedir = download_everything()
-        basedir = '/var/folders/dl/wpghhqhj2bs9bcnn213f1nqw0000gn/T/tmptxwxhw'
+        basedir = download_everything()
+        # basedir = '/var/folders/dl/wpghhqhj2bs9bcnn213f1nqw0000gn/T/tmptxwxhw'
         logger.info("Everything downloaded into %s", basedir)
 
         # Sniffing the dialect
