@@ -9,6 +9,21 @@ Changelog of trs
 
 - Fixed target calculation on per-year percentages overview page.
 
+- Logout works now.
+
+- Added totals in/exclusive on invoice overview page.
+
+- Fixed invoice amount calculation on projects page.
+
+- Improved project budget display.
+
+- Added deletion of invoices and budget items.
+
+- Import fixes: invoices amounts aren't rounded anymore and the principal
+  ("opdrachtgever") is imported, too.
+
+- A project code must be unique now.
+
 
 1.1 (2014-01-09)
 ----------------
