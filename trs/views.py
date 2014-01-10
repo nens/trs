@@ -595,11 +595,13 @@ class ProjectsView(BaseView):
         result = Project.objects.all()
         # If we don't filter on anything, we want some defaults.
         if self.no_filters:
-            # Projects should not be archived. They should already have
-            # started and they should not have ended.
+            # Projects should not be archived.
             self.filters['archived'] = False
-            self.filters['ended'] = False
-            self.filters['started'] = None
+            # Specific change: we don't mind whether projects haven't started
+            # yet or if they're already ended: we only want to filter out
+            # archived projects.
+            # self.filters['ended'] = False
+            # self.filters['started'] = None
         if self.filters['archived'] is not None:
             # Normally, don't filter on archived; the 'ended' filter is
             # enough.
