@@ -128,20 +128,29 @@
                   {% endif %}
                 </h2>
                 <div><b>Bij met boeken?</b></div>
-                <div>
-                  Nog te boeken:
-                  <a href="{% url 'trs.booking.overview' pk=view.sidebar_person.id %}">
-                    <span class="label label-{{ view.sidebar_person.to_book.klass }}">
-                      {{ view.sidebar_person.to_book.friendly }}
-                    </span>
-                  </a>
-                </div>
-                <div class="text-muted">
-                  (plus
-                  {{ view.sidebar_person.to_book.left_to_book_this_week }}
-                  uur in de lopende week)
-                </div>
-                <br>
+                {% if not view.is_custom_year %}
+                  <div>
+                    Nog te boeken:
+                    <a href="{% url 'trs.booking.overview' pk=view.sidebar_person.id %}">
+                      <span class="label label-{{ view.sidebar_person.to_book.klass }}">
+                        {{ view.sidebar_person.to_book.friendly }}
+                      </span>
+                    </a>
+                  </div>
+                  <div class="text-muted">
+                    (plus
+                    {{ view.sidebar_person.to_book.left_to_book_this_week }}
+                    uur in de lopende week)
+                  </div>
+                  <br>
+                {% else %}
+                  <div class="progress"
+                       title="{{ view.sidebar_person_year_info.all_bookings_percentage }}% van je uren geboekt ({{ view.sidebar_person_year_info.all_booked_hours }} van de {{ view.sidebar_person_year_info.to_book_this_year }})">
+                    <div class="progress-bar"
+                         style="width: {{ view.sidebar_person_year_info.all_bookings_percentage }}%;">
+                    </div>
+                  </div>
+                {% endif %}
 
                 <div><b>Binnen budget?</b></div>
                 <div class="progress"

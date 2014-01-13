@@ -30,6 +30,9 @@ class PersonYearCombination(object):
         'billable_percentage',
         'unbillable_percentage',
         'per_project',
+        'all_booked_hours',
+        'to_book_this_year',
+        'all_bookings_percentage',
     ]
 
     def __init__(self, person, year=None):
@@ -37,7 +40,7 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        version = 18
+        version = 22
         self.cache_key = 'pycdata-%s-%s-%s-%s' % (
             person.id, person.cache_indicator, year, version)
         has_cached_data = self.get_cache()
@@ -140,6 +143,38 @@ class PersonYearCombination(object):
             }
             per_project[id] = project_info
 
+        # year-based person.to_work_up_till_now() implementation.
+        hours_per_week = round(self.person.person_changes.filter(
+            year_week__year__lt=self.year).aggregate(
+                models.Sum('hours_per_week'))['hours_per_week__sum'] or 0)
+        changes_this_year = self.person.person_changes.filter(
+            year_week__year=self.year).values(
+                'year_week__week').annotate(
+                    models.Sum('hours_per_week'))
+        changes_per_week = {change['year_week__week']:
+                            round(change['hours_per_week__sum'])
+                            for change in changes_this_year}
+        year_weeks = YearWeek.objects.filter(
+            year=self.year).values('week', 'num_days_missing')
+        week_numbers = [year_week['week'] for year_week in year_weeks]
+        missing_days = sum([year_week['num_days_missing'] for year_week in year_weeks])
+        self.to_book_this_year = 0
+        for week in week_numbers:
+            if week in changes_per_week:
+                hours_per_week += changes_per_week[week]
+            self.to_book_this_year += hours_per_week
+        self.to_book_this_year -= missing_days * 8
+        self.all_booked_hours = round(self.person.bookings.filter(
+            year_week__year=self.year).aggregate(
+                models.Sum('hours'))['hours__sum'] or 0)
+        # ^^^ self.all_booked_hours *includes* the 'hourless' projects that
+        # are filtered out in the rest of this calculation.
+        if self.to_book_this_year:
+            self.all_bookings_percentage = round(
+                100 * self.all_booked_hours / self.to_book_this_year)
+        else:  # Division by zero
+            self.all_bookings_percentage = 0
+
         self.overbooked = sum([project['overbooked']
                                for project in per_project.values()])
         self.well_booked = sum([project['well_booked']
@@ -153,7 +188,9 @@ class PersonYearCombination(object):
         self.booked_external = sum([project['booked_external']
                                     for project in per_project.values()])
         total_booked = sum([project['booked']
-                            for project in per_project.values()])
+                                 for project in per_project.values()])
+        # ^^^ total_booked excludes, like everything here, the 'hourless'
+        # projects.
         if total_booked:
             overbooked_percentage = round(
                 100 * self.overbooked / total_booked)
