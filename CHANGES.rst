@@ -7,6 +7,9 @@ Changelog of trs
 
 - Booking overview shows the correct booking feedback in the sidebar now.
 
+- Showing target percentage also relative to the size of the elapsed year.
+  More useful.
+
 
 1.2 (2014-01-10)
 ----------------
