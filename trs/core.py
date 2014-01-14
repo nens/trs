@@ -230,6 +230,18 @@ class PersonYearCombination(object):
         return round(self.turnover / self.target * 100)
 
     @cached_property
+    def relative_target_percentage(self):
+        """Return target percentage relative to the elapsed weeks."""
+        if self.year == datetime.date.today().year:
+            days_elapsed = datetime.date.today().timetuple().tm_yday
+            portion_of_year = days_elapsed / 365
+        else:
+            portion_of_year = 1
+        if not self.target:  # Division by zero.
+            return 100
+        return round(self.turnover / self.target * 100 / portion_of_year)
+
+    @cached_property
     def left_to_turn_over(self):
         return max((self.target - self.turnover), 0)
 
