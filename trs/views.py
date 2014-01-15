@@ -1835,7 +1835,7 @@ class InvoicesView(BaseView):
     available_filters = {'year': this_year_week().year}
 
     def has_form_permissions(self):
-        return self.can_edit_and_see_everything
+        return self.can_see_everything
 
     @cached_property
     def year(self):
