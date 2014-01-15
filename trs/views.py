@@ -319,7 +319,7 @@ class PersonsView(BaseView):
 
     @cached_property
     def can_view_elaborate_version(self):
-        if self.can_edit_and_see_everything:
+        if self.can_see_everything:
             return True
 
     @cached_property
@@ -582,7 +582,7 @@ class ProjectsView(BaseView):
 
     @cached_property
     def can_view_elaborate_version(self):
-        if self.can_edit_and_see_everything:
+        if self.can_see_everything:
             return True
 
     @cached_property
