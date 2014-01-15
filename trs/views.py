@@ -1834,7 +1834,8 @@ class OverviewsView(BaseView):
 
 class InvoicesView(BaseView):
     template_name = 'trs/invoices.html'
-    available_filters = {'year': this_year_week().year}
+    available_filters = {'year': this_year_week().year,
+                         'only_not_payed': False}
 
     def has_form_permissions(self):
         return self.can_see_everything
@@ -1853,7 +1854,9 @@ class InvoicesView(BaseView):
     @cached_property
     def invoices(self):
         result = Invoice.objects.all()
-        if self.year != 'all':
+        if self.filters['only_not_payed']:
+            result = result.filter(payed=None)
+        elif self.year != 'all':
             result = result.filter(date__year=self.year)
         return result.select_related('project').order_by(
             '-date', '-number')

@@ -9,6 +9,9 @@
     {% else %}
       voor {{ view.year }}
     {% endif %}
+    {% if view.filters.only_not_payed %}
+      (niet-betaalde)
+    {% endif %}
   </h1>
   {% for message in messages %}
     <div class="alert alert-{{ message.tags }} alert-dismissable">
@@ -24,7 +27,8 @@
     {% for year in view.available_years %}
       <a href="?year={{ year }}">{{ year }}</a> |
     {% endfor %}
-    <a href="?year=all">Allemaal</a>
+    <a href="?year=all">Allemaal</a> |
+    <a href="?only_not_payed=true">Niet-betaalde</a>
   </div>
 
   <table class="table table-condensed table-fixed-header">
