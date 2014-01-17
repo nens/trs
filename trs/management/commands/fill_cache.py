@@ -25,4 +25,6 @@ class Command(BaseCommand):
         logger.info("%s projects in total.", num_projects)
         for index, project in enumerate(models.Project.objects.all()):
             project.work_calculation()
+            project.not_yet_started()
+            project.already_ended()
             logger.info("%s out of %s done", index + 1, num_projects)
