@@ -20,26 +20,6 @@
         <th>Werkvoorraad op externe projecten</th>
         <td>{{ view.pyc.left_to_book|hours }}</td>
       </tr>
-      <tr>
-        <th>Nog te boeken</th>
-        <td>
-          {{ view.person.to_book.friendly }}
-        </td>
-      </tr>
-      {% if view.can_see_everything %}
-        <tr>
-          <th>Uren over budget geboekt</th>
-          <td>{{ view.pyc.overbooked|hours }}</td>
-        </tr>
-        <tr>
-          <th>Percentage extern</th>
-          <td>{{ view.pyc.billable_percentage }}%</td>
-        </tr>
-        <tr>
-          <th>Percentage target</th>
-          <td>{{ view.pyc.target_percentage }}%</td>
-        </tr>
-      {% endif %}
       {% if view.can_see_financials %}
         <tr>
           <th>Target</th>
