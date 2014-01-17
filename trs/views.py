@@ -1749,7 +1749,12 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
     @cached_property
     def chosen_year_week(self):
         if not 'year_week' in self.request.GET:
-            return this_year_week()
+            # Return the current week, unless we're at the start of the year.
+            if this_year_week().week < 5:
+                return YearWeek.objects.filter(
+                    year=this_year_week().year).first()
+            else:
+                return this_year_week()
         year, week = self.request.GET['year_week'].split('-')
         return YearWeek.objects.get(year=int(year), week=int(week))
 
