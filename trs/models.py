@@ -122,7 +122,7 @@ class Person(models.Model):
         return self.name
 
     def cache_key(self, for_what, year_week=None):
-        cache_version = 7
+        cache_version = 8
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-%s-%s-%s-%s' % (
             self.id, self.cache_indicator, for_what, week_id, cache_version)
@@ -265,7 +265,7 @@ class Person(models.Model):
             klass = 'success'
             friendly = 0
             short = ''
-        return {'hours': hours_to_book,
+        return {'hours': round(hours_to_book),
                 'days': days_to_book,
                 'weeks': weeks_to_book,
                 'friendly': friendly,
