@@ -10,7 +10,7 @@ admin.autodiscover()
 urlpatterns = patterns(
     '',
     url(r'^$',
-        views.HomeView.as_view(),
+        views.home,
         name='trs.home'),
 
     url(r'', include('lizard_auth_client.urls')),
@@ -98,6 +98,9 @@ urlpatterns = patterns(
     url(r'^overviews/invoices/$',
         views.InvoicesView.as_view(),
         name='trs.overviews.invoices'),
+    url(r'^overviews/changes/$',
+        views.ChangesOverview.as_view(),
+        name='trs.overviews.changes'),
 
     url(r'^locallogin/$',
         views.LoginView.as_view(),

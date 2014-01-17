@@ -77,6 +77,10 @@ def try_and_find_matching_person(user):
         return Person.objects.get(name=names[0])
 
 
+def home(request):
+    return redirect('trs.booking')
+
+
 class BaseMixin(object):
     template_name = 'trs/base.html'
     title = "TRS tijdregistratiesysteem"
@@ -199,112 +203,6 @@ class BaseMixin(object):
 
 class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
     pass
-
-
-class HomeView(BaseView):
-    template_name = 'trs/home.html'
-
-    @cached_property
-    def num_weeks(self):
-        """Return number of weeks to use for the summaries."""
-        # Optionally add GET query param for this. Default is 2 now.
-        return 2
-
-    @cached_property
-    def relevant_year_weeks(self):
-        end = self.today
-        start = self.today - datetime.timedelta(days=(self.num_weeks + 1) * 7)
-        # ^^^ num_weeks + 1 to get a bit of padding halfway the week.
-        return YearWeek.objects.filter(first_day__lte=end).filter(
-            first_day__gte=start)
-
-    @cached_property
-    def start_week(self):
-        return self.relevant_year_weeks[0]
-
-    @cached_property
-    def person_changes(self):
-        changes = self.active_person.person_changes.filter(
-            year_week__in=self.relevant_year_weeks).aggregate(
-                models.Sum('hours_per_week'),
-                models.Sum('target'),
-                models.Sum('standard_hourly_tariff'),
-                models.Sum('minimum_hourly_tariff'))
-        changes = {k: v for k, v in changes.items() if v}
-        return changes
-
-    @cached_property
-    def work_changes(self):
-        result = []
-        changes = self.active_person.work_assignments.filter(
-            year_week__in=self.relevant_year_weeks,
-            assigned_on__in=self.active_person.filtered_assigned_projects()
-        ).values(
-            'assigned_on').annotate(
-                models.Sum('hours'),
-                models.Sum('hourly_tariff'))
-        changes = {change['assigned_on']:
-                   {'hours': change['hours__sum'] or 0,
-                    'hourly_tariff': change['hourly_tariff__sum'] or 0}
-                   for change in changes}
-        for project in self.active_person.filtered_assigned_projects():
-            if project.id in changes:
-                change = changes[project.id]
-                change['project'] = project
-                result.append(change)
-        return result
-
-    # TODO: project_budget_item_changes
-    @cached_property
-    def project_invoice_changes(self):
-        start = self.start_week.first_day
-        is_project_leader = models.Q(
-            project__project_leader=self.active_person)
-        is_project_manager = models.Q(
-            project__project_manager=self.active_person)
-        added_after_start = models.Q(date__gt=start)
-        payed_after_start = models.Q(date__gt=start)
-
-        invoices = Invoice.objects.filter(
-            project__archived=False).filter(
-                is_project_manager | is_project_leader).filter(
-                    added_after_start | payed_after_start).select_related(
-                        'project')
-        projects = {invoice.project.id: {'project': invoice.project,
-                                         'added': [],
-                                         'payed': []} for invoice in invoices}
-        for invoice in invoices:
-            if invoice.date >= start:
-                projects[invoice.project.id]['added'].append(invoice)
-            if invoice.payed is not None and invoice.payed >= start:
-                projects[invoice.project.id]['payed'].append(invoice)
-        return projects.values()
-
-    @cached_property
-    def are_there_changes(self):
-        return (self.person_changes or self.work_changes or
-                self.project_budget_changes or self.project_invoice_changes)
-
-    @cached_property
-    def vacation_left(self):
-        """Return weeks and hours of vacation left."""
-        vacation_projects = [project for project in self.active_projects
-                             if project.description.lower() == 'verlof']
-        if not vacation_projects:
-            logger.warning("Couldn't find a project named 'verlof'")
-            return
-        vacation_project = vacation_projects[0]
-        available = self.active_person.work_assignments.filter(
-            assigned_on=vacation_project).aggregate(
-                models.Sum('hours'))['hours__sum'] or 0
-        used = self.active_person.bookings.filter(
-            booked_on=vacation_project).aggregate(
-                models.Sum('hours'))['hours__sum'] or 0
-        hours_left = round(available - used)
-        weeks_available = hours_left / (
-            self.active_person.hours_per_week() or 40)
-        return {'hours': hours_left,
-                'weeks': weeks_available}
 
 
 class PersonsView(BaseView):
@@ -1882,3 +1780,110 @@ class InvoicesView(BaseView):
     def total_inclusive(self):
         return sum([invoice.amount_inclusive or 0
                     for invoice in self.invoices])
+
+
+class ChangesOverview(BaseView):
+    template_name = 'trs/home.html'
+    # ^^^ TODO, fix that name.
+
+    @cached_property
+    def num_weeks(self):
+        """Return number of weeks to use for the summaries."""
+        # Optionally add GET query param for this. Default is 2 now.
+        return 2
+
+    @cached_property
+    def relevant_year_weeks(self):
+        end = self.today
+        start = self.today - datetime.timedelta(days=(self.num_weeks + 1) * 7)
+        # ^^^ num_weeks + 1 to get a bit of padding halfway the week.
+        return YearWeek.objects.filter(first_day__lte=end).filter(
+            first_day__gte=start)
+
+    @cached_property
+    def start_week(self):
+        return self.relevant_year_weeks[0]
+
+    @cached_property
+    def person_changes(self):
+        changes = self.active_person.person_changes.filter(
+            year_week__in=self.relevant_year_weeks).aggregate(
+                models.Sum('hours_per_week'),
+                models.Sum('target'),
+                models.Sum('standard_hourly_tariff'),
+                models.Sum('minimum_hourly_tariff'))
+        changes = {k: v for k, v in changes.items() if v}
+        return changes
+
+    @cached_property
+    def work_changes(self):
+        result = []
+        changes = self.active_person.work_assignments.filter(
+            year_week__in=self.relevant_year_weeks,
+            assigned_on__in=self.active_person.filtered_assigned_projects()
+        ).values(
+            'assigned_on').annotate(
+                models.Sum('hours'),
+                models.Sum('hourly_tariff'))
+        changes = {change['assigned_on']:
+                   {'hours': change['hours__sum'] or 0,
+                    'hourly_tariff': change['hourly_tariff__sum'] or 0}
+                   for change in changes}
+        for project in self.active_person.filtered_assigned_projects():
+            if project.id in changes:
+                change = changes[project.id]
+                change['project'] = project
+                result.append(change)
+        return result
+
+    # TODO: project_budget_item_changes
+    @cached_property
+    def project_invoice_changes(self):
+        start = self.start_week.first_day
+        is_project_leader = models.Q(
+            project__project_leader=self.active_person)
+        is_project_manager = models.Q(
+            project__project_manager=self.active_person)
+        added_after_start = models.Q(date__gt=start)
+        payed_after_start = models.Q(date__gt=start)
+
+        invoices = Invoice.objects.filter(
+            project__archived=False).filter(
+                is_project_manager | is_project_leader).filter(
+                    added_after_start | payed_after_start).select_related(
+                        'project')
+        projects = {invoice.project.id: {'project': invoice.project,
+                                         'added': [],
+                                         'payed': []} for invoice in invoices}
+        for invoice in invoices:
+            if invoice.date >= start:
+                projects[invoice.project.id]['added'].append(invoice)
+            if invoice.payed is not None and invoice.payed >= start:
+                projects[invoice.project.id]['payed'].append(invoice)
+        return projects.values()
+
+    @cached_property
+    def are_there_changes(self):
+        return (self.person_changes or self.work_changes or
+                self.project_budget_changes or self.project_invoice_changes)
+
+    @cached_property
+    def vacation_left(self):
+        """Return weeks and hours of vacation left."""
+        vacation_projects = [project for project in self.active_projects
+                             if project.description.lower() == 'verlof']
+        if not vacation_projects:
+            logger.warning("Couldn't find a project named 'verlof'")
+            return
+        vacation_project = vacation_projects[0]
+        available = self.active_person.work_assignments.filter(
+            assigned_on=vacation_project).aggregate(
+                models.Sum('hours'))['hours__sum'] or 0
+        used = self.active_person.bookings.filter(
+            booked_on=vacation_project).aggregate(
+                models.Sum('hours'))['hours__sum'] or 0
+        hours_left = round(available - used)
+        weeks_available = hours_left / (
+            self.active_person.hours_per_week() or 40)
+        return {'hours': hours_left,
+                'weeks': weeks_available}
