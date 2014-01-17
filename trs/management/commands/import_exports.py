@@ -157,6 +157,9 @@ class Command(BaseCommand):
     help = "Import the xls exports from the old TRS"
 
     def handle(self, *args, **options):
+        print("Disabled, no more imports.")
+
+    def disabled_handle(self, *args, **options):
         basedir = download_everything()
         # basedir = '/var/folders/dl/wpghhqhj2bs9bcnn213f1nqw0000gn/T/tmptxwxhw'
         logger.info("Everything downloaded into %s", basedir)
