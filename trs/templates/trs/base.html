@@ -132,7 +132,8 @@
                   <div>
                     Nog te boeken:
                     <a href="{% url 'trs.booking.overview' pk=view.sidebar_person.id %}">
-                      <span class="label label-{{ view.sidebar_person.to_book.klass }}">
+                      <span class="label label-{{ view.sidebar_person.to_book.klass }}"
+                            title="{{ view.sidebar_person.to_book.hours }} uur">
                         {{ view.sidebar_person.to_book.friendly }}
                       </span>
                     </a>
