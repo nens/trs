@@ -1744,7 +1744,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
 
     @cached_property
     def edit_action(self):
-        return '.?year_week=%s' % self.chosen_year_week
+        return '.?year_week=%s' % self.chosen_year_week.as_param()
 
     @cached_property
     def chosen_year_week(self):
@@ -1828,6 +1828,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         if adjusted:
             msg = ' en '.join(adjusted)
             msg = "%s aangepast" % msg.capitalize()
+            msg += " (ingaande %s)" % self.chosen_year_week.first_day
             messages.success(self.request, msg)
         else:
             messages.info(self.request, "Niets aan te passen")
