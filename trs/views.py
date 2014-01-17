@@ -745,12 +745,14 @@ class ProjectView(BaseView):
             # zero hours and a zero tariff.
             return True
         if self.project.is_accepted:
-            # Not editable anymore for project managers and others.
+            # Not editable anymore for project managers.
             return False
+        if self.project.project_manager == self.active_person:
+            return True
 
     @cached_property
     def can_see_financials(self):
-        if self.can_edit_and_see_everything:
+        if self.can_see_everything:
             return True
         if self.active_person in self.project.assigned_persons():
             return True
@@ -761,7 +763,7 @@ class ProjectView(BaseView):
 
     @cached_property
     def can_see_project_financials(self):
-        if self.can_edit_and_see_everything:
+        if self.can_see_everything:
             return True
         if self.project.project_leader == self.active_person:
             return True
@@ -1248,6 +1250,8 @@ class BudgetItemEditView(LoginAndPermissionsRequiredMixin,
             return False
         if self.can_edit_and_see_everything:
             return True
+        if self.project.project_manager == self.active_person:
+            return True
 
     @cached_property
     def project(self):
@@ -1427,6 +1431,8 @@ class BudgetItemDeleteView(DeleteView):
         if self.project.archived:
             return False
         if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_manager == self.active_person:
             return True
 
     @cached_property
