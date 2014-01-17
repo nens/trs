@@ -20,7 +20,6 @@ from tls import request as tls_request
 # too. 999999.99 should be possible, so that's 8 digits with 2 decimal places.
 MAX_DIGITS = 8
 DECIMAL_PLACES = 2
-LOG_DURATION = False
 
 logger = logging.getLogger(__name__)
 
@@ -42,11 +41,7 @@ def cache_per_week(callable):
         cache_key = self.person_change_cache_key(callable.__name__, year_week)
         result = cache.get(cache_key)
         if result is None:
-            start_time = time.time()
             result = callable(self, year_week)
-            elapsed = (time.time() - start_time)
-            if LOG_DURATION:
-                logger.debug("Calculated in %s secs: %s", elapsed, cache_key)
             cache.set(cache_key, result)
         return result
     return inner
@@ -57,11 +52,19 @@ def cache_on_model(callable):
         cache_key = self.cache_key(callable.__name__)
         result = cache.get(cache_key)
         if result is None:
-            start_time = time.time()
             result = callable(self)
-            elapsed = (time.time() - start_time)
-            if LOG_DURATION:
-                logger.debug("Calculated in %s secs: %s", elapsed, cache_key)
+            cache.set(cache_key, result)
+        return result
+    return inner
+
+
+def cache_on_model_every_week(callable):
+    def inner(self):
+        cache_key = self.cache_key(callable.__name__)
+        cache_key += this_year_week().as_param()
+        result = cache.get(cache_key)
+        if result is None:
+            result = callable(self)
             cache.set(cache_key, result)
         return result
     return inner
@@ -119,7 +122,7 @@ class Person(models.Model):
         return self.name
 
     def cache_key(self, for_what, year_week=None):
-        cache_version = 6
+        cache_version = 7
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-%s-%s-%s-%s' % (
             self.id, self.cache_indicator, for_what, week_id, cache_version)
@@ -217,13 +220,16 @@ class Person(models.Model):
         # The line above might have pushed it below zero, so compensate:
         return max(0, result)
 
-    @cache_on_model
+    @cache_on_model_every_week
     def to_book(self):
         """Return absolute days and weeks (rounded) left to book."""
         this_year = this_year_week().year
         hours_to_work = self.to_work_up_till_now()
+        # ^^^ Doesn't include the current week, so we don't count bookings in
+        # this week, too.
         booked_this_year = self.bookings.filter(
-            year_week__year=this_year).aggregate(
+            year_week__year=this_year,
+            year_week__week__lt=this_year_week().week).aggregate(
                 models.Sum('hours'))['hours__sum'] or 0
         hours_to_book = max(0, (hours_to_work - booked_this_year))
         days_to_book = round(hours_to_book / 8)  # Assumption: 8 hour workday.
