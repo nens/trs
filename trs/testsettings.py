@@ -8,7 +8,7 @@ STATIC_URL = '/static/'
 ROOT_URLCONF = 'trs.urls'
 SECRET_KEY = 'sleutel van het secreet'
 DEBUG = True
-ALLOWED_HOSTS = ['trs.lizard.net', 'localhost']
+ALLOWED_HOSTS = ['trs.lizard.net', 'localhost', 'trs.nelen-schuurmans.nl']
 TEMPLATE_DEBUG = True
 DATABASES = {
     'default': {'ENGINE': 'django.db.backends.sqlite3',
