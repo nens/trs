@@ -1577,6 +1577,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 line['hourly_tariff'] = format_as_money(
                     hourly_tariffs.get(person.id, 0))
             line['booked'] = format_as_hours(booked.get(person.id, 0))
+            line['costs'] = (hourly_tariffs.get(person.id, 0) *
+                             budgets.get(person.id, 0))
             line['deletable'] = False
             if not booked.get(person.id):
                 if self.can_delete_team_member:
@@ -1640,6 +1642,21 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 messages.success(self.request, msg)
 
         return super(TeamEditView, self).form_valid(form)
+
+    @cached_property
+    def person_costs(self):
+        return sum([line['costs'] for line in self.lines])
+
+    @cached_property
+    def total_costs(self):
+        budget = self.project.budget_items.all().aggregate(
+            models.Sum('amount'))['amount__sum'] or 0
+        budget = -1 * budget
+        return budget + self.person_costs
+
+    @cached_property
+    def left_to_dish_out(self):
+        return self.project.contract_amount - self.total_costs
 
     @cached_property
     def success_url(self):
