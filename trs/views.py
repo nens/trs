@@ -234,6 +234,18 @@ class PersonsView(BaseView):
         return [{'person': person, 'pyc': core.get_pyc(person)}
                 for person in self.persons]
 
+    @cached_property
+    def total_turnover(self):
+        return sum([line['pyc'].turnover for line in self.lines])
+
+    @cached_property
+    def total_left_to_book(self):
+        return sum([line['pyc'].left_to_book_external for line in self.lines])
+
+    @cached_property
+    def total_left_to_turn_over(self):
+        return sum([line['pyc'].left_to_turn_over for line in self.lines])
+
 
 class PersonView(BaseView):
     template_name = 'trs/person.html'
