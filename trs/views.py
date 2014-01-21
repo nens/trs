@@ -1006,9 +1006,9 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     'contract_amount',
                     'start', 'end', 'project_leader', 'project_manager',
                     'is_accepted',  # Note: is_accepted only on edit view!
-                    'remark',
+                    'remark', 'financial_remark',
                 ]
-        result = ['end']
+        result = ['end', 'remark']
         if self.active_person == self.project.project_leader:
             if not self.project.startup_meeting_done:
                 result.append('startup_meeting_done')

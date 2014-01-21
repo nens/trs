@@ -64,6 +64,12 @@
           <td>{{ view.project.remark|linebreaksbr }}</td>
         </tr>
       {% endif %}
+      {% if view.project.financial_remark %}
+        <tr>
+          <th>Financiële opmerkingen van het office management</th>
+          <td>{{ view.project.financial_remark|linebreaksbr }}</td>
+        </tr>
+      {% endif %}
     </tbody>
   </table>
 

@@ -360,6 +360,11 @@ class Project(models.Model):
         verbose_name="opmerkingen",
         blank=True,
         null=True)
+    financial_remark = models.TextField(
+        verbose_name="financiële opmerkingen",
+        help_text="Bedoeld voor het office management",
+        blank=True,
+        null=True)
     cache_indicator = models.IntegerField(
         default=0,
         verbose_name="cache indicator")
