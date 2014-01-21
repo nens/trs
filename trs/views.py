@@ -234,6 +234,18 @@ class PersonsView(BaseView):
         return [{'person': person, 'pyc': core.get_pyc(person)}
                 for person in self.persons]
 
+    @cached_property
+    def total_turnover(self):
+        return sum([line['pyc'].turnover for line in self.lines])
+
+    @cached_property
+    def total_left_to_book(self):
+        return sum([line['pyc'].left_to_book_external for line in self.lines])
+
+    @cached_property
+    def total_left_to_turn_over(self):
+        return sum([line['pyc'].left_to_turn_over for line in self.lines])
+
 
 class PersonView(BaseView):
     template_name = 'trs/person.html'
@@ -617,10 +629,16 @@ class ProjectView(BaseView):
 
     @cached_property
     def can_edit_project(self):
-        # True even when the project is archived: you must be able to un-set
-        # the archive bit. To compensate for this, the title of the edit page
-        # has a big fat "you're editing an archived project!" warning.
+        # True for admin even when the project is archived: you must be able
+        # to un-set the archive bit. To compensate for this, the title of the
+        # edit page has a big fat "you're editing an archived project!"
+        # warning.
         if self.can_edit_and_see_everything:
+            return True
+        if self.project.archived:
+            return False
+        if self.active_person in [self.project.project_leader,
+                                  self.project.project_manager]:
             return True
 
     @cached_property
@@ -978,14 +996,29 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                       BaseMixin):
     template_name = 'trs/edit.html'
     model = Project
-    fields = ['code', 'description', 'internal', 'hidden', 'hourless',
-              'archived',  # Note: archived only on edit view :-)
-              'is_subsidized', 'principal',
-              'contract_amount',
-              'start', 'end', 'project_leader', 'project_manager',
-              'is_accepted',  # Note: is_accepted only on edit view!
-              'remark',
-    ]
+
+    @property
+    def fields(self):
+        if self.can_edit_and_see_everything:
+            return ['code', 'description', 'internal', 'hidden', 'hourless',
+                    'archived',  # Note: archived only on edit view :-)
+                    'is_subsidized', 'principal',
+                    'contract_amount',
+                    'start', 'end', 'project_leader', 'project_manager',
+                    # Note: the next two are shown only on the edit view!
+                    'startup_meeting_done', 'is_accepted',
+                    'remark', 'financial_remark',
+                ]
+        result = ['remark']
+        if not self.project.is_accepted:
+            result.append('end')
+        if self.active_person == self.project.project_leader:
+            if not self.project.startup_meeting_done:
+                result.append('startup_meeting_done')
+        if self.active_person == self.project.project_manager:
+            if not self.project.is_accepted:
+                result.append('is_accepted')
+        return result
 
     @cached_property
     def project(self):
@@ -999,9 +1032,15 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
         return text
 
     def has_form_permissions(self):
-        # Editable even when archived as you must be able to un-set the
-        # 'archive' bit. If archived, the title warns you in no uncertain way.
+        # Editable for admins even when archived as you must be able to un-set
+        # the 'archive' bit. If archived, the title warns you in no uncertain
+        # way.
         if self.can_edit_and_see_everything:
+            return True
+        if self.project.archived:
+            return False
+        if self.active_person in [self.project.project_leader,
+                                  self.project.project_manager]:
             return True
 
     def form_valid(self, form):
@@ -1408,10 +1447,9 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def can_edit_hours(self):
-        # TODO: add docstring with meaning.
         if self.can_edit_and_see_everything:
             return True
-        if self.project.is_accepted:
+        if self.project.is_accepted or self.project.startup_meeting_done:
             return False
         if self.project.project_leader == self.active_person:
             return True
@@ -1427,6 +1465,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @property
     def can_delete_team_member(self):
+        # Note: team members can in any case only be deleted if they haven't
+        # yet booked any hours on the project.
         if self.project.archived:
             return False
         if self.can_edit_and_see_everything:
@@ -1537,6 +1577,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 line['hourly_tariff'] = format_as_money(
                     hourly_tariffs.get(person.id, 0))
             line['booked'] = format_as_hours(booked.get(person.id, 0))
+            line['costs'] = (hourly_tariffs.get(person.id, 0) *
+                             budgets.get(person.id, 0))
             line['deletable'] = False
             if not booked.get(person.id):
                 if self.can_delete_team_member:
@@ -1600,6 +1642,21 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 messages.success(self.request, msg)
 
         return super(TeamEditView, self).form_valid(form)
+
+    @cached_property
+    def person_costs(self):
+        return sum([line['costs'] for line in self.lines])
+
+    @cached_property
+    def total_costs(self):
+        budget = self.project.budget_items.all().aggregate(
+            models.Sum('amount'))['amount__sum'] or 0
+        budget = -1 * budget
+        return budget + self.person_costs
+
+    @cached_property
+    def left_to_dish_out(self):
+        return self.project.contract_amount - self.total_costs
 
     @cached_property
     def success_url(self):

@@ -10,6 +10,26 @@ Changelog of trs
 - Showing target percentage also relative to the size of the elapsed year.
   More useful.
 
+- project costs on the team edit page.
+
+- Unified team table and budgetitem table on the project page.
+
+- Added financial remark field on project; the other remark field is now also
+  editable by PL/PM. The financial one only by office management.
+
+- Allowing PM/PL to edit a project (but with fewer fields available for them
+  to edit). This way they can edit the project's end date and the "startup
+  meeting" and "accepted" checkboxes.
+
+- Added 'startup meeting done' boolean on project.
+
+- Calculating the money amount that is bookable per person, in addition to the
+  already-calculated amount of available external hours per person.
+
+- PM/PL get their hourly tariff automatically set upon project creation.
+
+- Better 'werkvoorraad' calculation: only counting external projects again.
+
 
 1.2 (2014-01-10)
 ----------------

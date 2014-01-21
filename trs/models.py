@@ -347,6 +347,10 @@ class Project(models.Model):
         help_text=("Project is goedgekeurd door PM en PL en kan qua team " +
                    "en budgetverdeling niet meer gewijzigd worden."),
         default=False)
+    startup_meeting_done = models.BooleanField(
+        verbose_name="startoverleg heeft plaatsgevonden",
+        help_text=("Dit kan eenmalig door de projectleider aangevinkt worden"),
+        default=False)
     is_subsidized = models.BooleanField(
         verbose_name="subsidieproject",
         help_text=("Dit project zit in een subsidietraject. " +
@@ -354,6 +358,11 @@ class Project(models.Model):
         default=False)
     remark = models.TextField(
         verbose_name="opmerkingen",
+        blank=True,
+        null=True)
+    financial_remark = models.TextField(
+        verbose_name="financiële opmerkingen",
+        help_text="Bedoeld voor het office management",
         blank=True,
         null=True)
     cache_indicator = models.IntegerField(
@@ -366,21 +375,21 @@ class Project(models.Model):
         ordering = ('internal', 'code')
 
     def save(self, *args, **kwargs):
+        self.cache_indicator += 1
+        result = super(Project, self).save(*args, **kwargs)
+        # We need to be saved before adding foreign keys to ourselves.
         if tls_request:
             # If not tls_request, we're in some automated import loop.
             for person in [self.project_manager, self.project_leader]:
                 if person and person not in self.assigned_persons():
                     work_assignment = WorkAssignment(
                         assigned_to=person,
-                        assigned_on=self)
+                        assigned_on=self,
+                        hourly_tariff=person.standard_hourly_tariff())
                     work_assignment.save(save_assigned_on=False)
                     msg = "%s automatisch toegevoegd aan project" % person
                     messages.info(tls_request, msg)
-                    self.cache_indicator += 1
-        self.cache_indicator += 1
-        # ^^^ Cache indicator is also needed for self.assigned_persons(),
-        # which we call above. So increment the indicator *afterwards*.
-        return super(Project, self).save(*args, **kwargs)
+        return result
 
     def __str__(self):
         return self.code

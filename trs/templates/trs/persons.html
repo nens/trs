@@ -1,7 +1,7 @@
 {% extends "trs/base.html" %}
 {% load trs_formatting %}
 
-{% block main-column %}
+{% block full-width %}
   <h1>Medewerkers</h1>
   <div class="text-muted">
     {% if view.filters.archived %}
@@ -16,10 +16,6 @@
     <thead class="header">
       <tr>
         <th>Naam</th>
-        <th class="text-right"
-            title="Nog boekbare uren op externe projecten">
-          Werkvoorraad
-        </th>
         <th class="text-right">
           Nog te boeken
         </th>
@@ -27,12 +23,28 @@
           Buiten budget geboekt
         </th>
         <th class="text-right"
-            title="">
+            title="Percentage uren dat op externe projecten is geboekt.">
           Extern percentage
         </th>
         <th class="text-right"
-            title="">
+            title="Percentage van het target dat al is omgezet.">
+          Target percentage
+        </th>
+        <th class="text-right text-muted"
+            title="Target dit jaar (gebruikt voor target percentage)">
           Target
+        </th>
+        <th class="text-right text-muted"
+            title="Omzet (gebruikt voor target percentage)">
+          Omzet
+        </th>
+        <th class="text-right"
+            title="Nog boekbare uren op externe projecten">
+          Werkvoorraad
+        </th>
+        <th class="text-right text-muted"
+            title="Vertaling van werkvoorraad (in uren) naar omzet">
+          Nog om te zetten
         </th>
       </tr>
     </thead>
@@ -41,9 +53,6 @@
         <tr>
           <td style="white-space: nowrap;">
             {{ line.person.as_widget }}
-          </td>
-          <td class="text-right">
-            {{ line.pyc.left_to_book|hours }}
           </td>
           <td class="{{ line.person.to_book.klass }} text-right">
             <a href="{% url 'trs.booking.overview' pk=line.person.id %}">
@@ -59,9 +68,40 @@
           <td class="text-right">
             {{ line.pyc.target_percentage }}%
           </td>
+          <td class="text-right text-muted">
+            {{ line.person.target|money }}
+          </td>
+          <td class="text-right text-muted">
+            {{ line.pyc.turnover|money }}
+          </td>
+          <td class="text-right">
+            {{ line.pyc.left_to_book_external|hours }}
+          </td>
+          <td class="text-right text-muted">
+            {{ line.pyc.left_to_turn_over|money }}
+          </td>
         </tr>
       {% endfor %}
     </tbody>
+    <tfoot>
+      <tr>
+        <th>Totaal</th>
+        <th colspan="5">
+        </th>
+        <th class="text-right text-muted"
+            title="Dit jaar gerealiseerde omzet">
+          {{ view.total_turnover|money }}
+        </th>
+        <th class="text-right"
+            title="Werkvoorraad in uren">
+          {{ view.total_left_to_book|hours }}
+        </th>
+        <th class="text-right text-muted"
+            title="Werkvoorraad in geld uitgedrukt">
+          {{ view.total_left_to_turn_over|money }}
+        </th>
+      </tr>
+    </tfoot>
   </table>
 
   {% if view.can_add_person %}

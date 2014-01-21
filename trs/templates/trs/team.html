@@ -16,10 +16,11 @@
         <tr>
           <th>Persoon</th>
           <th class="text-right">Uren</th>
-          <th class="text-right">(Al geboekt)</th>
+          <th class="text-right text-muted">(Al geboekt)</th>
           <th></th>
           <th class="text-right">Uurtarief</th>
-          <th class="text-right">(Gewenst)</th>
+          <th class="text-right text-muted">Standaardtarief</th>
+          <th class="text-right">Kosten</th>
         </tr>
       </thead>
       <tbody>
@@ -32,7 +33,7 @@
               {% endfor %}
               {{ line.hours }}
             </td>
-            <td class="text-right">{{ line.booked|hours }}</td>
+            <td class="text-right text-muted">{{ line.booked|hours }}</td>
             <td>
               {% if line.deletable %}
                 <a href="{% url 'trs.project.team-member-delete' pk=view.project.pk person_pk=line.person.pk %}">
@@ -46,19 +47,28 @@
               {% endfor %}
               {{ line.hourly_tariff }}
             </td>
-            <td class="text-right">
+            <td class="text-right text-muted">
               <span title="Minimum: {{ line.person.minimum_hourly_tariff }}">
                 {{ line.person.standard_hourly_tariff|money }}
               </span>
             </td>
+            <td class="text-right">
+              {{ line.costs|money }}
+            </td>
           </tr>
         {% endfor %}
+        <tr>
+          <td colspan="6">Subtotaal (personele kosten)</td>
+          <th class="text-right">{{ view.person_costs|money }}</th>
+        </tr>
+
+
       </tbody>
       {% if view.can_add_team_member %}
         <tbody>
           <tr>
             <td>Nieuw teamlid:</td>
-            <td colspan="5"  class="text-right">
+            <td colspan="6"  class="text-right">
               {{ view.new_team_member_field }}
             </td>
           </tr>
@@ -66,7 +76,7 @@
       {% endif %}
       <tfoot>
         <tr>
-          <th colspan="6" class="text-right">
+          <th colspan="7" class="text-right">
             <input type="submit"
                    class="btn btn-primary"
                    tabindex="{{ view.tabindex_submit_button|default:99 }}"
@@ -76,34 +86,68 @@
     </table>
   </form>
 
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h2 class="panel-title">
+        Overzicht projectbegroting
+        <small>ter info</small>
+      </h2>
+    </div>
+    <div class="panel-body">
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Omschrijving</th>
+            <th class="text-right">Kosten</th>
+            <th class="text-right">Opdrachtsom</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Personele kosten</td>
+            <td class="text-right">{{ view.person_costs|money }}</td>
+            <td class="text-right"></td>
+          </tr>
+          {% for budget_item in view.project.budget_items.all %}
+            <tr>
+              <td>{{ budget_item.description }}</td>
+              <td class="text-right">{{ budget_item.amount_as_costs|money }}</td>
+              <td></td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="3">
+                <i>Er zijn geen begrotingsitems toegevoegd.</i>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>Totaal</th>
+            <th class="text-right">
+              {{ view.total_costs|money }}
+            </th>
+            <th></th>
+          </tr>
+          <tr>
+            <td>Opdrachtsom</td>
+            <td class="text-right"></td>
+            <td class="text-right">{{ view.project.contract_amount|money }}</td>
+          </tr>
+          <tr>
+            <th>Nog te verdelen</th>
+            <th class="text-right">{{ view.left_to_dish_out|money }}</th>
+            <td class="text-right"></td>
+          </tr>
+        </tfoot>
+      </table>
+
+    </div>
+  </div>
 
 {% endblock %}
 
 {% block overview-column %}
-  <h2>Uitleg</h2>
-  <p>
-    <b>Projectleiders</b> gaan over de uren en de projectmedewerkers, maar
-    niet over het geld.
-  </p>
-  <p>
-    <b>Projectmanagers</b> mogen het uurtarief wijzigen, maar de
-    teamsamenstelling en urenverdeling is voor de projectleider.
-  </p>
-  <p>
-    Als de PM het project goedkeurt staat de urenverdeling in principe vast.
-    Via het secretariaat kan er nog wel wat gewijzigd worden. Ook kunnen er
-    nieuwe teamleden toegevoegd worden (zodat ze kunnen boeken), maar die
-    hebben dan geen uren en werken voor nultarief.
-  </p>
-  <p>
-    Dus, PL, de bedoeling is dat er in het begin een <b>deugdelijke
-    ureninschatting</b> is! Omdat de projectmedewerkers er deels op afgerekend
-    worden als ze over de ingeschatte uren heengaan moeten zij het ook met die
-    inschattingen eens zijn.
-  </p>
-  <p>
-    Richting PM betekent dit dat de <b>offerte moet kloppen</b> met de
-    ureninschatting, omdat de projectmedewerkers anders voor een lager tarief
-    moeten gaan werken.
-  </p>
 {% endblock %}
