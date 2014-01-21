@@ -1005,10 +1005,13 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     'is_subsidized', 'principal',
                     'contract_amount',
                     'start', 'end', 'project_leader', 'project_manager',
+                    'startup_meeting_done',
                     'is_accepted',  # Note: is_accepted only on edit view!
                     'remark', 'financial_remark',
                 ]
-        result = ['end', 'remark']
+        result = ['remark']
+        if not self.project.is_accepted:
+            result.append('end')
         if self.active_person == self.project.project_leader:
             if not self.project.startup_meeting_done:
                 result.append('startup_meeting_done')
