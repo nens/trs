@@ -366,6 +366,9 @@ class Project(models.Model):
         ordering = ('internal', 'code')
 
     def save(self, *args, **kwargs):
+        self.cache_indicator += 1
+        result = super(Project, self).save(*args, **kwargs)
+        # We need to be saved before adding foreign keys to ourselves.
         if tls_request:
             # If not tls_request, we're in some automated import loop.
             for person in [self.project_manager, self.project_leader]:
@@ -376,11 +379,7 @@ class Project(models.Model):
                     work_assignment.save(save_assigned_on=False)
                     msg = "%s automatisch toegevoegd aan project" % person
                     messages.info(tls_request, msg)
-                    self.cache_indicator += 1
-        self.cache_indicator += 1
-        # ^^^ Cache indicator is also needed for self.assigned_persons(),
-        # which we call above. So increment the indicator *afterwards*.
-        return super(Project, self).save(*args, **kwargs)
+        return result
 
     def __str__(self):
         return self.code
