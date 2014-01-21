@@ -2,7 +2,7 @@ Changelog of trs
 ===================================================
 
 
-1.3 (unreleased)
+1.3 (2014-01-21)
 ----------------
 
 - Booking overview shows the correct booking feedback in the sidebar now.
