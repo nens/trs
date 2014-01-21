@@ -9,7 +9,7 @@
             class="text-muted glyphicon glyphicon-lock"></span>
     {% endif %}
     {% if project.is_accepted %}
-      <span title="Project is afgekaart"
+      <span title="Project is goedgekeurd door de PM"
             class="text-muted glyphicon glyphicon-ok"></span>
     {% endif %}
     {% if project.is_subsidized %}
@@ -46,14 +46,14 @@
         <td>{{ view.project.end.friendly|default:"Niet ingevuld" }}</td>
       </tr>
       <tr>
-        <th>Afgekaart</th>
+        <th>Goedgekeurd</th>
         <td>
           {% if view.project.is_accepted %}
-            Het project is afgekaart door PL en PM. In principe wordt er nu
+            Het project is goedgekeurd door de PM. In principe wordt er nu
             niets meer veranderd aan teamsamenstelling, uurtarief en
             urenverdeling.
           {% else %}
-            Het project is nog niet afgekaart door PL en PM. Urenverdeling,
+            Het project is nog niet goedgekeurd door de PM. Urenverdeling,
             uurtarief en teamsamenstelling kunnen allemaal nog veranderd worden.
           {% endif %}
         </td>
