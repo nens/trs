@@ -1005,8 +1005,8 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     'is_subsidized', 'principal',
                     'contract_amount',
                     'start', 'end', 'project_leader', 'project_manager',
-                    'startup_meeting_done',
-                    'is_accepted',  # Note: is_accepted only on edit view!
+                    # Note: the next two are shown only on the edit view!
+                    'startup_meeting_done', 'is_accepted',
                     'remark', 'financial_remark',
                 ]
         result = ['remark']
