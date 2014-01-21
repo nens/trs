@@ -375,7 +375,8 @@ class Project(models.Model):
                 if person and person not in self.assigned_persons():
                     work_assignment = WorkAssignment(
                         assigned_to=person,
-                        assigned_on=self)
+                        assigned_on=self,
+                        hourly_tariff=person.standard_hourly_tariff())
                     work_assignment.save(save_assigned_on=False)
                     msg = "%s automatisch toegevoegd aan project" % person
                     messages.info(tls_request, msg)
