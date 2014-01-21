@@ -21,7 +21,7 @@ class PersonYearCombination(object):
         'target',
         'turnover',
         'overbooked',
-        'left_to_book',
+        'left_to_book_external',
         'well_booked',
         'booked_internal',
         'booked_external',
@@ -40,7 +40,7 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        version = 22
+        version = 23
         self.cache_key = 'pycdata-%s-%s-%s-%s' % (
             person.id, person.cache_indicator, year, version)
         has_cached_data = self.get_cache()
@@ -124,13 +124,17 @@ class PersonYearCombination(object):
             overbooked_this_year = min(overbooked, booked_this_year.get(id, 0))
             well_booked_this_year = booked_this_year.get(id, 0) - overbooked_this_year
             turnover = well_booked_this_year * hourly_tariff[id]
-            left_to_book = max(0, (budget[id] - booked_till_now))
             if is_internal[id]:
                 booked_internal = booked_this_year.get(id, 0)
                 booked_external = 0
+                left_to_book = 0
+                # ^^^ TODO: later on we might want to deal with internal
+                # projects that are in fact proper projects and count their
+                # left-to-book hours.
             else:
                 booked_internal = 0
                 booked_external = booked_this_year.get(id, 0)
+                left_to_book = max(0, (budget[id] - booked_till_now))
 
             project_info = {
                 'booked': booked,
@@ -181,8 +185,8 @@ class PersonYearCombination(object):
                                 for project in per_project.values()])
         self.turnover = sum([project['turnover']
                              for project in per_project.values()])
-        self.left_to_book = sum([project['left_to_book']
-                                 for project in per_project.values()])
+        self.left_to_book_external = sum(
+            [project['left_to_book'] for project in per_project.values()])
         self.booked_internal = sum([project['booked_internal']
                                     for project in per_project.values()])
         self.booked_external = sum([project['booked_external']

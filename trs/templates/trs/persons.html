@@ -51,7 +51,7 @@
             {{ line.person.as_widget }}
           </td>
           <td class="text-right">
-            {{ line.pyc.left_to_book|hours }}
+            {{ line.pyc.left_to_book_external|hours }}
           </td>
           <td class="{{ line.person.to_book.klass }} text-right">
             <a href="{% url 'trs.booking.overview' pk=line.person.id %}">
