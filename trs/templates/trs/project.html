@@ -8,11 +8,15 @@
       <span title="Project is gearchiveerd"
             class="text-muted glyphicon glyphicon-lock"></span>
     {% endif %}
-    {% if project.is_accepted %}
-      <span title="Project is goedgekeurd door de PM"
+    {% if view.project.startup_meeting_done %}
+      <span title="Startoverleg heeft plaatsgevonden"
             class="text-muted glyphicon glyphicon-ok"></span>
     {% endif %}
-    {% if project.is_subsidized %}
+    {% if view.project.is_accepted %}
+      <span title="Project is goedgekeurd door de PM"
+            class="text-success glyphicon glyphicon-ok"></span>
+    {% endif %}
+    {% if view.project.is_subsidized %}
       <span title="Subsidieproject"
             class="text-muted glyphicon glyphicon-usd"></span>
     {% endif %}
@@ -46,15 +50,24 @@
         <td>{{ view.project.end.friendly|default:"Niet ingevuld" }}</td>
       </tr>
       <tr>
+        <th>Startoverleg</th>
+        <td>
+          {% if view.project.startup_meeting_done %}
+            <span class="glyphicon glyphicon-ok"></span>
+            Het startoverleg heeft plaatsgevonden
+          {% else %}
+            <span class="glyphicon glyphicon-remove"></span>
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
         <th>Goedgekeurd</th>
         <td>
           {% if view.project.is_accepted %}
-            Het project is goedgekeurd door de PM. In principe wordt er nu
-            niets meer veranderd aan teamsamenstelling, uurtarief en
-            urenverdeling.
+            <span class="text-success glyphicon glyphicon-ok"></span>
+            Het project is goedgekeurd door de PM.
           {% else %}
-            Het project is nog niet goedgekeurd door de PM. Urenverdeling,
-            uurtarief en teamsamenstelling kunnen allemaal nog veranderd worden.
+            <span class="glyphicon glyphicon-remove"></span>
           {% endif %}
         </td>
       </tr>

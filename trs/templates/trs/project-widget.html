@@ -7,9 +7,13 @@
   <span title="Project is gearchiveerd"
         class="text-muted glyphicon glyphicon-lock"></span>
 {% endif %}
+{% if project.startup_meeting_done %}
+  <span title="Startoverleg heeft plaatsgevonden"
+        class="text-muted glyphicon glyphicon-ok"></span>
+{% endif %}
 {% if project.is_accepted %}
   <span title="Project is goedgekeurd door de PM"
-        class="text-muted glyphicon glyphicon-ok"></span>
+        class="text-success glyphicon glyphicon-ok"></span>
 {% endif %}
 {% if project.is_subsidized %}
   <span title="Subsidieproject"
