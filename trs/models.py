@@ -347,6 +347,10 @@ class Project(models.Model):
         help_text=("Project is goedgekeurd door PM en PL en kan qua team " +
                    "en budgetverdeling niet meer gewijzigd worden."),
         default=False)
+    startup_meeting_done = models.BooleanField(
+        verbose_name="startoverleg heeft plaatsgevonden",
+        help_text=("Dit kan eenmalig door de projectleider aangevinkt worden"),
+        default=False)
     is_subsidized = models.BooleanField(
         verbose_name="subsidieproject",
         help_text=("Dit project zit in een subsidietraject. " +
