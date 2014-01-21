@@ -1447,10 +1447,9 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def can_edit_hours(self):
-        # TODO: add docstring with meaning.
         if self.can_edit_and_see_everything:
             return True
-        if self.project.is_accepted:
+        if self.project.is_accepted or self.project.startup_meeting_done:
             return False
         if self.project.project_leader == self.active_person:
             return True
@@ -1466,6 +1465,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @property
     def can_delete_team_member(self):
+        # Note: team members can in any case only be deleted if they haven't
+        # yet booked any hours on the project.
         if self.project.archived:
             return False
         if self.can_edit_and_see_everything:
