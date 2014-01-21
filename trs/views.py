@@ -1482,6 +1482,9 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             return True
         if self.project.is_accepted:
             return False
+        if self.project.project_leader == self.active_person:
+            # Yes, PL can edit the tariff too, now.
+            return True
         if self.project.project_manager == self.active_person:
             return True
 

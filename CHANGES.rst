@@ -30,6 +30,8 @@ Changelog of trs
 
 - Better 'werkvoorraad' calculation: only counting external projects again.
 
+- Project leader can edit the tariffs for the team members too, now.
+
 
 1.2 (2014-01-10)
 ----------------
