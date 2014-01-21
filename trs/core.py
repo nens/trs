@@ -231,7 +231,7 @@ class PersonYearCombination(object):
 
     @cached_property
     def relative_target_percentage(self):
-        """Return target percentage relative to the elapsed weeks."""
+        """Return target percentage relative to the elapsed days."""
         if self.year == datetime.date.today().year:
             days_elapsed = datetime.date.today().timetuple().tm_yday
             portion_of_year = days_elapsed / 365
