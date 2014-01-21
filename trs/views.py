@@ -629,10 +629,16 @@ class ProjectView(BaseView):
 
     @cached_property
     def can_edit_project(self):
-        # True even when the project is archived: you must be able to un-set
-        # the archive bit. To compensate for this, the title of the edit page
-        # has a big fat "you're editing an archived project!" warning.
+        # True for admin even when the project is archived: you must be able
+        # to un-set the archive bit. To compensate for this, the title of the
+        # edit page has a big fat "you're editing an archived project!"
+        # warning.
         if self.can_edit_and_see_everything:
+            return True
+        if self.project.archived:
+            return False
+        if self.active_person in [self.project.project_leader,
+                                  self.project.project_manager]:
             return True
 
     @cached_property
@@ -990,14 +996,26 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                       BaseMixin):
     template_name = 'trs/edit.html'
     model = Project
-    fields = ['code', 'description', 'internal', 'hidden', 'hourless',
-              'archived',  # Note: archived only on edit view :-)
-              'is_subsidized', 'principal',
-              'contract_amount',
-              'start', 'end', 'project_leader', 'project_manager',
-              'is_accepted',  # Note: is_accepted only on edit view!
-              'remark',
-    ]
+
+    @property
+    def fields(self):
+        if self.can_edit_and_see_everything:
+            return ['code', 'description', 'internal', 'hidden', 'hourless',
+                    'archived',  # Note: archived only on edit view :-)
+                    'is_subsidized', 'principal',
+                    'contract_amount',
+                    'start', 'end', 'project_leader', 'project_manager',
+                    'is_accepted',  # Note: is_accepted only on edit view!
+                    'remark',
+                ]
+        result = ['end']
+        if self.active_person == self.project.project_leader:
+            if not self.project.startup_meeting_done:
+                result.append('startup_meeting_done')
+        if self.active_person == self.project.project_manager:
+            if not self.project.is_accepted:
+                result.append('is_accepted')
+        return result
 
     @cached_property
     def project(self):
@@ -1011,9 +1029,15 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
         return text
 
     def has_form_permissions(self):
-        # Editable even when archived as you must be able to un-set the
-        # 'archive' bit. If archived, the title warns you in no uncertain way.
+        # Editable for admins even when archived as you must be able to un-set
+        # the 'archive' bit. If archived, the title warns you in no uncertain
+        # way.
         if self.can_edit_and_see_everything:
+            return True
+        if self.project.archived:
+            return False
+        if self.active_person in [self.project.project_leader,
+                                  self.project.project_manager]:
             return True
 
     def form_valid(self, form):
