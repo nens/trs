@@ -582,6 +582,9 @@ class ProjectsView(BaseView):
         if self.filters['project_leader']:
             if self.filters['project_leader'] == self.active_person.id:
                 return True
+        if self.filters['project_manager']:
+            if self.filters['project_manager'] == self.active_person.id:
+                return True
 
     @cached_property
     def projects(self):
