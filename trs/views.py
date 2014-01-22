@@ -579,6 +579,9 @@ class ProjectsView(BaseView):
     def can_view_elaborate_version(self):
         if self.can_see_everything:
             return True
+        if self.filters['project_leader']:
+            if self.filters['project_leader'] == self.active_person.id:
+                return True
 
     @cached_property
     def projects(self):
