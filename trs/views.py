@@ -215,6 +215,18 @@ class PersonsView(BaseView):
     available_filters = {'archived': False,
                          'group': None}
 
+    @cached_property
+    def title(self):
+        if self.filters['archived']:
+            return 'Gearchiveerde medewerkers'
+        return 'Actieve medewerkers'
+
+    @cached_property
+    def small_title(self):
+        if self.filters['group'] is not None:
+            group = Group.objects.get(pk=self.filters['group'])
+            return "van groep %s" % group.name
+
     @property
     def template_name(self):
         if self.can_view_elaborate_version:
