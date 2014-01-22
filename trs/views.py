@@ -326,13 +326,24 @@ class PersonView(BaseView):
             booked_on__in=self.projects).values(
                 'booked_on').annotate(
                     models.Sum('hours'))
+        booked_this_year_per_project = Booking.objects.filter(
+            booked_by=self.person,
+            booked_on__in=self.projects,
+            year_week__year=this_year_week().year).values(
+                'booked_on').annotate(
+                    models.Sum('hours'))
         booked = {item['booked_on']: round(item['hours__sum'] or 0)
                   for item in booked_per_project}
+        booked_this_year = {item['booked_on']: round(item['hours__sum'] or 0)
+                            for item in booked_this_year_per_project}
 
         for project in self.projects:
             line = {'project': project}
             line['budget'] = budgets.get(project.id, 0)
             line['booked'] = booked.get(project.id, 0)
+            line['booked_this_year'] = booked_this_year.get(project.id, 0)
+            line['booked_previous_years'] = (line['booked'] -
+                                             line['booked_this_year'])
             line['is_overbooked'] = line['booked'] > line['budget']
             line['left_to_book'] = max(0, line['budget'] - line['booked'])
             line['is_project_leader'] = (

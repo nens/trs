@@ -66,7 +66,14 @@
         <th>Omschrijving</th>
         <th></th>
         <th class="text-right">Toegekend</th>
-        <th class="text-right">Geboekt</th>
+        <th class="text-right">
+          Geboekt<br>
+          totaal
+        </th>
+        <th class="text-right">
+          Geboekt<br>
+          in {{ view.year }}
+        </th>
         {% if view.can_see_financials %}
           <th class="text-right">Tarief</th>
           <th class="text-right">Omzet</th>
@@ -93,8 +100,13 @@
           </td>
           <td class="text-right">{{ line.budget|hours }}</td>
           <td class="text-right
-                     {% if line.is_overbooked %}danger{% endif %}">
+                     {% if line.is_overbooked %}danger{% endif %}"
+              title="Voor {{ view.year }}: {{ line.booked_previous_years|hours }}">
             {{ line.booked|hours }}
+          </td>
+          <td class="text-right
+                     {% if line.is_overbooked %}danger{% endif %}">
+            {{ line.booked_this_year|hours }}
           </td>
           {% if view.can_see_financials %}
             <td class="text-right">{{ line.hourly_tariff|money }}</td>

@@ -5,7 +5,7 @@ Changelog of trs
 1.4 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Added extra column 'booked this year' in PersonView. Handy.
 
 
 1.3 (2014-01-21)
