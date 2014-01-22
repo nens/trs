@@ -1011,7 +1011,8 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
     @property
     def fields(self):
         if self.can_edit_and_see_everything:
-            return ['code', 'description', 'internal', 'hidden', 'hourless',
+            return ['code', 'description', 'group',
+                    'internal', 'hidden', 'hourless',
                     'archived',  # Note: archived only on edit view :-)
                     'is_subsidized', 'principal',
                     'contract_amount',
@@ -1065,7 +1066,7 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Project
     title = "Nieuw project"
-    fields = ['code', 'description', 'internal', 'hidden', 'hourless',
+    fields = ['code', 'description', 'group', 'internal', 'hidden', 'hourless',
               'is_subsidized', 'principal',
               'contract_amount',
               'start', 'end', 'project_leader', 'project_manager',
