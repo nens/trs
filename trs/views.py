@@ -1932,7 +1932,8 @@ class ChangesOverview(BaseView):
     template_name = 'trs/home.html'
     # ^^^ TODO, fix that name.
 
-    available_filters = {'num_weeks': 1}
+    available_filters = {'num_weeks': 1,
+                         'total': False}
 
     @cached_property
     def num_weeks(self):
@@ -2010,11 +2011,15 @@ class ChangesOverview(BaseView):
         added_after_start = models.Q(date__gt=start)
         payed_after_start = models.Q(date__gt=start)
 
-        invoices = Invoice.objects.filter(
-            project__archived=False).filter(
-                is_project_manager | is_project_leader).filter(
-                    added_after_start | payed_after_start).select_related(
-                        'project')
+        invoices = Invoice.objects.all()
+        if not (self.can_see_everything and self.filters['total']):
+            # Normally restrict it to relevant projects for you, but a manager
+            # can see everything if desired.
+            invoices = invoices.filter(
+            is_project_manager | is_project_leader)
+        invoices = invoices.filter(
+                added_after_start | payed_after_start).select_related(
+                    'project')
         projects = {invoice.project.id: {'project': invoice.project,
                                          'added': [],
                                          'payed': []} for invoice in invoices}
