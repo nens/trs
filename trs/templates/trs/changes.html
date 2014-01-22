@@ -96,6 +96,7 @@
           projecten
         </h2>
 
+
         <div class="panel panel-default">
           <div class="panel-heading">
             Nieuwe kostenposten bij
@@ -123,6 +124,8 @@
                     </div>
                   {% endfor %}
                 </li>
+              {% empty %}
+                <div><i>Geen veranderingen</i></div>
               {% endfor %}
             </ul>
           </div>
@@ -168,6 +171,8 @@
                     </div>
                   {% endfor %}
                 </li>
+              {% empty %}
+                <div><i>Geen veranderingen</i></div>
               {% endfor %}
             </ul>
           </div>
