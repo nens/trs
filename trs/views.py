@@ -1929,9 +1929,7 @@ class InvoicesView(BaseView):
 
 
 class ChangesOverview(BaseView):
-    template_name = 'trs/home.html'
-    # ^^^ TODO, fix that name.
-
+    template_name = 'trs/changes.html'
     available_filters = {'num_weeks': 1,
                          'total': False}
 
