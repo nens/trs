@@ -3,6 +3,12 @@
 
 {% block main-column %}
   <h1>Tijdregistratiesysteem & projectoverzicht</h1>
+  <div class="text-muted">
+    Periode:
+    <a href="?num_weeks=0">Alleen deze week</a> |
+    <a href="?num_weeks=1">Ook vorige week</a> |
+    <a href="?num_weeks=4">Volledige maand</a>
+  </div>
 
   {% if view.are_there_changes %}
     <p>

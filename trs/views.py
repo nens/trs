@@ -1932,11 +1932,12 @@ class ChangesOverview(BaseView):
     template_name = 'trs/home.html'
     # ^^^ TODO, fix that name.
 
+    available_filters = {'num_weeks': 2}
+
     @cached_property
     def num_weeks(self):
         """Return number of weeks to use for the summaries."""
-        # Optionally add GET query param for this. Default is 2 now.
-        return 2
+        return self.filters['num_weeks']
 
     @cached_property
     def relevant_year_weeks(self):
@@ -1994,7 +1995,11 @@ class ChangesOverview(BaseView):
                 result.append(change)
         return result
 
-    # TODO: project_budget_item_changes
+    @cached_property
+    def project_budget_changes(self):
+        # TODO: project_budget_item_changes
+        pass
+
     @cached_property
     def project_invoice_changes(self):
         start = self.start_week.first_day
