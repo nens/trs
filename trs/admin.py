@@ -3,6 +3,10 @@ from django.contrib import admin
 from trs import models
 
 
+class GroupAdmin(admin.ModelAdmin):
+    list_display = ['name', 'description',]
+
+
 class PersonAdmin(admin.ModelAdmin):
     list_display = ['name', 'archived', 'user', 'is_office_management',
                     'is_management']
@@ -40,6 +44,7 @@ class YearWeekAdmin(admin.ModelAdmin):
     pass
 
 
+admin.site.register(models.Group, GroupAdmin)
 admin.site.register(models.Person, PersonAdmin)
 admin.site.register(models.Project, ProjectAdmin)
 admin.site.register(models.Invoice, InvoiceAdmin)

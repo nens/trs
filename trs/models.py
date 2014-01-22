@@ -70,6 +70,24 @@ def cache_on_model_every_week(callable):
     return inner
 
 
+class Group(models.Model):
+    name = models.CharField(
+        verbose_name="naam",
+        max_length=255)
+    description = models.CharField(
+        verbose_name="omschrijving",
+        blank=True,
+        max_length=255)
+
+    class Meta:
+        verbose_name = "groep"
+        verbose_name_plural = "groepen"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class Person(models.Model):
     name = models.CharField(
         verbose_name="naam",
@@ -90,6 +108,12 @@ class Person(models.Model):
         max_length=255)
     # Description on persons is useful for noting that someone doesn't work
     # for us anymore, for instance. And other corner cases.
+    group = models.ForeignKey(
+        Group,
+        blank=True,
+        null=True,
+        verbose_name="groep",
+        related_name="persons")
     is_office_management = models.BooleanField(
         verbose_name="office management",
         help_text="Office management can edit and add everything",
@@ -342,6 +366,12 @@ class Project(models.Model):
         verbose_name="projectmanager",
         help_text="verantwoordelijke voor het budget van het project",
         related_name="projects_i_manage")
+    group = models.ForeignKey(
+        Group,
+        blank=True,
+        null=True,
+        verbose_name="groep",
+        related_name="projects")
     is_accepted = models.BooleanField(
         verbose_name="goedgekeurd",
         help_text=("Project is goedgekeurd door PM en PL en kan qua team " +
