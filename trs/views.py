@@ -513,6 +513,8 @@ class ProjectsView(BaseView):
                          'is_accepted': None,
                          'startup_meeting_done': None,
                          'group': None,
+                         'project_leader': None,
+                         'project_manager': None,
                          'ended': None,
                          'started': None}
 
@@ -545,8 +547,20 @@ class ProjectsView(BaseView):
                 after.append('nog geen startoverleg')
 
         if self.filters['group'] is not None:
-            group = Group.objects.get(pk=self.filters['group'])
-            after.append("van groep %s" % group.name)
+            if self.filters['group'] != 'geen':
+                group = Group.objects.get(pk=self.filters['group'])
+                after.append("van groep %s" % group.name)
+            else:
+                after.append("zonder groep")
+
+        if self.filters['project_leader'] is not None:
+            project_leader = Person.objects.get(
+                pk=self.filters['project_leader'])
+            after.append("waar %s projectleider is" % project_leader.name)
+        if self.filters['project_manager'] is not None:
+            project_manager = Person.objects.get(
+                pk=self.filters['project_manager'])
+            after.append("waar %s projectmanager is" % project_manager.name)
 
         return ', '.join(after)
 
@@ -605,6 +619,13 @@ class ProjectsView(BaseView):
             if group_filter == 'geen':
                 group_filter = None
             result = result.filter(group=group_filter)
+
+        if self.filters['project_leader'] is not None:
+            result = result.filter(
+                project_leader=self.filters['project_leader'])
+        if self.filters['project_manager'] is not None:
+            result = result.filter(
+                project_manager=self.filters['project_manager'])
 
         if self.can_view_elaborate_version:
             return result
@@ -2012,3 +2033,17 @@ class ChangesOverview(BaseView):
             self.active_person.hours_per_week() or 40)
         return {'hours': hours_left,
                 'weeks': weeks_available}
+
+
+class ProjectLeadersAndManagersView(BaseView):
+    template_name = 'trs/pl_pm.html'
+
+    @cached_property
+    def project_leaders(self):
+        return Person.objects.filter(
+            projects_i_lead__archived=False).distinct()
+
+    @cached_property
+    def project_managers(self):
+        return Person.objects.filter(
+            projects_i_manage__archived=False).distinct()
