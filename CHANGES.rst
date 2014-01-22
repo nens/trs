@@ -15,6 +15,9 @@ Changelog of trs
 
 - Added extra column 'booked this year' in PersonView. Handy.
 
+- Better change overview page, including option to see all projects' changes
+  when you're a manager.
+
 
 1.3 (2014-01-21)
 ----------------
