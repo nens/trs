@@ -7,6 +7,14 @@ Changelog of trs
 
 - Added extra column 'booked this year' in PersonView. Handy.
 
+- Added overview of project leaders and managers.
+
+- Nicer feedback in title on selected filters (for persons and projects page).
+
+- Added groups. Including using filters on groups in person and projects views
+
+- Added extra column 'booked this year' in PersonView. Handy.
+
 
 1.3 (2014-01-21)
 ----------------
