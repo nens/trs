@@ -4,15 +4,6 @@
 {% block main-column %}
   <h1>Tijdregistratiesysteem & projectoverzicht</h1>
 
-  {% if not view.active_person %}
-    <div class="alert alert-danger">
-      <strong>Oeps</strong>
-      In de import van het oude TRS is je naam kennelijk anders gespeld dan
-      in het inlogsysteem. 't Is niet gelukt ze automatisch te koppelen. Bel
-      Reinout (260) even en hij stelt het gelijk goed in.
-    </div>
-  {% endif %}
-
   {% if view.are_there_changes %}
     <p>
       Bij deze de relevante veranderingen vanaf
@@ -32,25 +23,29 @@
               {% if view.person_changes.hours_per_week__sum %}
                 <div>
                   <b>Werkweek:</b>
-                  {{ view.person_changes.hours_per_week__sum|hoursdiff }}
+                  {{ view.active_person.hours_per_week|hours }}
+                  ({{ view.person_changes.hours_per_week__sum|hoursdiff }})
                 </div>
               {% endif %}
               {% if view.person_changes.target__sum %}
                 <div>
                   <b>Target:</b>
-                  {{ view.person_changes.target__sum|moneydiff }}
+                  {{ view.active_person.target|money }}
+                  ({{ view.person_changes.target__sum|moneydiff }})
                 </div>
               {% endif %}
               {% if view.person_changes.standard_hourly_tariff__sum %}
                 <div>
                   <b>Standaard uurtarief:</b>
-                  {{ view.person_changes.standard_hourly_tariff__sum|moneydiff }}
+                  {{ view.active_person.standard_hourly_tariff|money }}
+                  ({{ view.person_changes.standard_hourly_tariff__sum|moneydiff }})
                 </div>
               {% endif %}
               {% if view.person_changes.minimum_hourly_tariff__sum %}
                 <div>
                   <b>Minimum uurtarief:</b>
-                  {{ view.person_changes.minimum_hourly_tariff__sum|moneydiff }}
+                  {{ view.active_person.minimum_hourly_tariff|money }}
+                  ({{ view.person_changes.minimum_hourly_tariff__sum|moneydiff }})
                 </div>
               {% endif %}
             </div>
