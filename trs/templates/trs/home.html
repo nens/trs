@@ -62,11 +62,13 @@
             <div class="panel-body">
               <div>
                 <b>Toegekende uren:</b>
-                {{ change.hours|hoursdiff }}
+                {{ change.current.hours|hours }}
+                ({{ change.hours|hoursdiff }})
               </div>
               <div>
                 <b>Uurtarief:</b>
-                {{ change.hourly_tariff|hoursdiff }}
+                {{ change.current.hourly_tariff|money }}
+                ({{ change.hourly_tariff|moneydiff }})
               </div>
             </div>
           </div>

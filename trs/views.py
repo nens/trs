@@ -1975,10 +1975,22 @@ class ChangesOverview(BaseView):
                    {'hours': change['hours__sum'] or 0,
                     'hourly_tariff': change['hourly_tariff__sum'] or 0}
                    for change in changes}
+        all_work_assignments = self.active_person.work_assignments.filter(
+            assigned_on__in=self.active_person.filtered_assigned_projects()
+        ).values(
+            'assigned_on').annotate(
+                models.Sum('hours'),
+                models.Sum('hourly_tariff'))
+        current_values = {
+            work_assignment['assigned_on']:
+            {'hours': work_assignment['hours__sum'] or 0,
+             'hourly_tariff': work_assignment['hourly_tariff__sum'] or 0}
+            for work_assignment in all_work_assignments}
         for project in self.active_person.filtered_assigned_projects():
             if project.id in changes:
                 change = changes[project.id]
                 change['project'] = project
+                change['current'] = current_values[project.id]
                 result.append(change)
         return result
 
