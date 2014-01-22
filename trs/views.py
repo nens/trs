@@ -1932,7 +1932,7 @@ class ChangesOverview(BaseView):
     template_name = 'trs/home.html'
     # ^^^ TODO, fix that name.
 
-    available_filters = {'num_weeks': 2}
+    available_filters = {'num_weeks': 1}
 
     @cached_property
     def num_weeks(self):
