@@ -1220,7 +1220,7 @@ class PersonEditView(LoginAndPermissionsRequiredMixin,
                      BaseMixin):
     template_name = 'trs/edit.html'
     model = Person
-    fields = ['name', 'user', 'is_management', 'archived']
+    fields = ['name', 'user', 'group', 'is_management', 'archived']
 
     @cached_property
     def person(self):
@@ -1250,7 +1250,7 @@ class PersonCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Person
     title = "Nieuwe medewerker"
-    fields = ['name', 'user', 'is_management']
+    fields = ['name', 'user', 'group', 'is_management']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:

@@ -34,6 +34,12 @@
           <td>{{ view.person.minimum_hourly_tariff|money }}</td>
         </tr>
       {% endif %}
+      {% if view.person.group %}
+        <tr>
+          <th>Groep</th>
+          <td>{{ view.person.group }}</td>
+        </tr>
+      {% endif %}
       <tr>
         <th>Extra rollen</th>
         <td>{{ view.extra_roles }}</td>
