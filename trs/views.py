@@ -504,6 +504,40 @@ class ProjectsView(BaseView):
                          'ended': None,
                          'started': None}
 
+    @cached_property
+    def title(self):
+        kind_of_projects = 'projecten'
+        if self.filters['is_subsidized']:
+            kind_of_projects = 'subsidieprojecten'
+        before = []
+        if self.filters['archived']:
+            before.append('gearchiveerde')
+        else:
+            before.append('actieve')
+
+        result = ' '.join(before + [kind_of_projects])
+        return result.capitalize()
+
+    @cached_property
+    def small_title(self):
+        after = []
+        if self.filters['is_accepted'] is not None:
+            if self.filters['is_accepted']:
+                after.append('geaccepteerd')
+            else:
+                after.append('nog niet geaccepteerd')
+        if self.filters['startup_meeting_done'] is not None:
+            if self.filters['startup_meeting_done']:
+                after.append('startoverleg geweest')
+            else:
+                after.append('nog geen startoverleg')
+
+        if self.filters['group'] is not None:
+            group = Group.objects.get(pk=self.filters['group'])
+            after.append("van groep %s" % group.name)
+
+        return ', '.join(after)
+
     @property
     def template_name(self):
         if self.can_view_elaborate_version:

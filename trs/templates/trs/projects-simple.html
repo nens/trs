@@ -2,7 +2,7 @@
 {% load trs_formatting %}
 
 {% block main-column %}
-  <h1>Projecten</h1>
+  <h1>{{ view.title }} <small>{{ view.small_title }}</small></h1>
   <div class="text-muted">
     {% if not view.filters.archived %}
       <span>Actieve projecten</span> |

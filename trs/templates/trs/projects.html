@@ -2,7 +2,12 @@
 {% load trs_formatting %}
 
 {% block full-width %}
-  <h1>Projecten</h1>
+  <h1>
+    {{ view.title }}
+    {% if view.small_title %}
+      <small>({{ view.small_title }})</small>
+    {% endif %}
+  </h1>
   <div class="text-muted">
     {% if not view.filters.archived %}
       <span>Actieve projecten</span> |
