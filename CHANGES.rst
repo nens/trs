@@ -2,7 +2,7 @@ Changelog of trs
 ===================================================
 
 
-1.4 (unreleased)
+1.4 (2014-01-22)
 ----------------
 
 - Added extra column 'booked this year' in PersonView. Handy.
