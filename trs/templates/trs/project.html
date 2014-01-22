@@ -41,6 +41,12 @@
         <th>Opdrachtsom</th>
         <td>{{ view.project.contract_amount|money }}</td>
       </tr>
+      {% if view.project.group %}
+        <tr>
+          <th>Groep</th>
+          <td>{{ view.project.group }}</td>
+        </tr>
+      {% endif %}
       <tr>
         <th>Startweek</th>
         <td>{{ view.project.start.friendly|default:"Niet ingevuld" }}</td>

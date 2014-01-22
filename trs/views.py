@@ -24,6 +24,7 @@ from django.views.generic.edit import UpdateView
 from trs import core
 from trs.models import Booking
 from trs.models import BudgetItem
+from trs.models import Group
 from trs.models import Invoice
 from trs.models import Person
 from trs.models import PersonChange
@@ -200,6 +201,10 @@ class BaseMixin(object):
     def gauges_id(self):
         return getattr(settings, 'GAUGES_ID', None)
 
+    @cached_property
+    def group_choices(self):
+        return list(Group.objects.all().values_list('pk', 'name'))
+
 
 class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
     pass
@@ -207,7 +212,20 @@ class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
 
 class PersonsView(BaseView):
 
-    available_filters = {'archived': False}
+    available_filters = {'archived': False,
+                         'group': None}
+
+    @cached_property
+    def title(self):
+        if self.filters['archived']:
+            return 'Gearchiveerde medewerkers'
+        return 'Actieve medewerkers'
+
+    @cached_property
+    def small_title(self):
+        if self.filters['group'] is not None:
+            group = Group.objects.get(pk=self.filters['group'])
+            return "van groep %s" % group.name
 
     @property
     def template_name(self):
@@ -227,7 +245,13 @@ class PersonsView(BaseView):
 
     @cached_property
     def persons(self):
-        return Person.objects.filter(archived=self.filters['archived'])
+        result = Person.objects.filter(archived=self.filters['archived'])
+        group_filter = self.filters['group']
+        if group_filter:
+            if group_filter == 'geen':
+                group_filter = None
+            result = result.filter(group=group_filter)
+        return result
 
     @cached_property
     def lines(self):
@@ -326,13 +350,24 @@ class PersonView(BaseView):
             booked_on__in=self.projects).values(
                 'booked_on').annotate(
                     models.Sum('hours'))
+        booked_this_year_per_project = Booking.objects.filter(
+            booked_by=self.person,
+            booked_on__in=self.projects,
+            year_week__year=this_year_week().year).values(
+                'booked_on').annotate(
+                    models.Sum('hours'))
         booked = {item['booked_on']: round(item['hours__sum'] or 0)
                   for item in booked_per_project}
+        booked_this_year = {item['booked_on']: round(item['hours__sum'] or 0)
+                            for item in booked_this_year_per_project}
 
         for project in self.projects:
             line = {'project': project}
             line['budget'] = budgets.get(project.id, 0)
             line['booked'] = booked.get(project.id, 0)
+            line['booked_this_year'] = booked_this_year.get(project.id, 0)
+            line['booked_previous_years'] = (line['booked'] -
+                                             line['booked_this_year'])
             line['is_overbooked'] = line['booked'] > line['budget']
             line['left_to_book'] = max(0, line['budget'] - line['booked'])
             line['is_project_leader'] = (
@@ -473,11 +508,61 @@ class BookingOverview(PersonView):
 
 
 class ProjectsView(BaseView):
-    available_filters = {'archived': None,
+    available_filters = {'archived': False,
                          'is_subsidized': None,
                          'is_accepted': None,
+                         'startup_meeting_done': None,
+                         'group': None,
+                         'project_leader': None,
+                         'project_manager': None,
                          'ended': None,
                          'started': None}
+
+    @cached_property
+    def title(self):
+        kind_of_projects = 'projecten'
+        if self.filters['is_subsidized']:
+            kind_of_projects = 'subsidieprojecten'
+        before = []
+        if self.filters['archived']:
+            before.append('gearchiveerde')
+        else:
+            before.append('actieve')
+
+        result = ' '.join(before + [kind_of_projects])
+        return result.capitalize()
+
+    @cached_property
+    def small_title(self):
+        after = []
+        if self.filters['is_accepted'] is not None:
+            if self.filters['is_accepted']:
+                after.append('geaccepteerd')
+            else:
+                after.append('nog niet geaccepteerd')
+        if self.filters['startup_meeting_done'] is not None:
+            if self.filters['startup_meeting_done']:
+                after.append('startoverleg geweest')
+            else:
+                after.append('nog geen startoverleg')
+
+        if self.filters['group'] is not None:
+            if self.filters['group'] != 'geen':
+                group = Group.objects.get(pk=self.filters['group'])
+                after.append("van groep %s" % group.name)
+            else:
+                after.append("zonder groep")
+
+        if self.filters['project_leader'] is not None:
+            project_leader = Person.objects.get(
+                pk=self.filters['project_leader'])
+            after.append("waar %s projectleider is" % project_leader.name)
+        if self.filters['project_manager'] is not None:
+            project_manager = Person.objects.get(
+                pk=self.filters['project_manager'])
+            after.append("waar %s projectmanager is" % project_manager.name)
+
+        return ', '.join(after)
 
     @property
     def template_name(self):
@@ -496,27 +581,10 @@ class ProjectsView(BaseView):
             return True
 
     @cached_property
-    def no_filters(self):
-        return not len([value for value in self.filters.values()
-                        if value is not None])
-
-    @cached_property
     def projects(self):
         result = Project.objects.all()
-        # If we don't filter on anything, we want some defaults.
-        if self.no_filters:
-            # Projects should not be archived.
-            self.filters['archived'] = False
-            # Specific change: we don't mind whether projects haven't started
-            # yet or if they're already ended: we only want to filter out
-            # archived projects.
-            # self.filters['ended'] = False
-            # self.filters['started'] = None
-        if self.filters['archived'] is not None:
-            # Normally, don't filter on archived; the 'ended' filter is
-            # enough.
-            result = result.filter(
-                archived=self.filters['archived'])
+        result = result.filter(archived=self.filters['archived'])
+
         if self.filters['ended'] is not None:
             if self.filters['ended']:
                 # Projects that have already ended.
@@ -535,12 +603,29 @@ class ProjectsView(BaseView):
                 # Projects that have not yet started.
                 result = result.filter(
                     start__gt=this_year_week())
+
         if self.filters['is_subsidized'] is not None:
             result = result.filter(
                 is_subsidized=self.filters['is_subsidized'])
         if self.filters['is_accepted'] is not None:
             result = result.filter(
                 is_accepted=self.filters['is_accepted'])
+        if self.filters['startup_meeting_done'] is not None:
+            result = result.filter(
+                startup_meeting_done=self.filters['startup_meeting_done'])
+
+        group_filter = self.filters['group']
+        if group_filter:
+            if group_filter == 'geen':
+                group_filter = None
+            result = result.filter(group=group_filter)
+
+        if self.filters['project_leader'] is not None:
+            result = result.filter(
+                project_leader=self.filters['project_leader'])
+        if self.filters['project_manager'] is not None:
+            result = result.filter(
+                project_manager=self.filters['project_manager'])
 
         if self.can_view_elaborate_version:
             return result
@@ -1000,7 +1085,8 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
     @property
     def fields(self):
         if self.can_edit_and_see_everything:
-            return ['code', 'description', 'internal', 'hidden', 'hourless',
+            return ['code', 'description', 'group',
+                    'internal', 'hidden', 'hourless',
                     'archived',  # Note: archived only on edit view :-)
                     'is_subsidized', 'principal',
                     'contract_amount',
@@ -1054,7 +1140,7 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Project
     title = "Nieuw project"
-    fields = ['code', 'description', 'internal', 'hidden', 'hourless',
+    fields = ['code', 'description', 'group', 'internal', 'hidden', 'hourless',
               'is_subsidized', 'principal',
               'contract_amount',
               'start', 'end', 'project_leader', 'project_manager',
@@ -1208,7 +1294,7 @@ class PersonEditView(LoginAndPermissionsRequiredMixin,
                      BaseMixin):
     template_name = 'trs/edit.html'
     model = Person
-    fields = ['name', 'user', 'is_management', 'archived']
+    fields = ['name', 'user', 'group', 'is_management', 'archived']
 
     @cached_property
     def person(self):
@@ -1238,7 +1324,7 @@ class PersonCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = Person
     title = "Nieuwe medewerker"
-    fields = ['name', 'user', 'is_management']
+    fields = ['name', 'user', 'group', 'is_management']
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -1843,14 +1929,14 @@ class InvoicesView(BaseView):
 
 
 class ChangesOverview(BaseView):
-    template_name = 'trs/home.html'
-    # ^^^ TODO, fix that name.
+    template_name = 'trs/changes.html'
+    available_filters = {'num_weeks': 1,
+                         'total': False}
 
     @cached_property
     def num_weeks(self):
         """Return number of weeks to use for the summaries."""
-        # Optionally add GET query param for this. Default is 2 now.
-        return 2
+        return self.filters['num_weeks']
 
     @cached_property
     def relevant_year_weeks(self):
@@ -1889,14 +1975,51 @@ class ChangesOverview(BaseView):
                    {'hours': change['hours__sum'] or 0,
                     'hourly_tariff': change['hourly_tariff__sum'] or 0}
                    for change in changes}
+        all_work_assignments = self.active_person.work_assignments.filter(
+            assigned_on__in=self.active_person.filtered_assigned_projects()
+        ).values(
+            'assigned_on').annotate(
+                models.Sum('hours'),
+                models.Sum('hourly_tariff'))
+        current_values = {
+            work_assignment['assigned_on']:
+            {'hours': work_assignment['hours__sum'] or 0,
+             'hourly_tariff': work_assignment['hourly_tariff__sum'] or 0}
+            for work_assignment in all_work_assignments}
         for project in self.active_person.filtered_assigned_projects():
             if project.id in changes:
                 change = changes[project.id]
                 change['project'] = project
+                change['current'] = current_values[project.id]
                 result.append(change)
         return result
 
-    # TODO: project_budget_item_changes
+    @cached_property
+    def project_budget_changes(self):
+        start = self.start_week.first_day
+        is_project_leader = models.Q(
+            project__project_leader=self.active_person)
+        is_project_manager = models.Q(
+            project__project_manager=self.active_person)
+        added_after_start = models.Q(added__gte=start)
+        budget_items = BudgetItem.objects.all()
+        if not (self.can_see_everything and self.filters['total']):
+            # Normally restrict it to relevant projects for you, but a manager
+            # can see everything if desired.
+            budget_items = budget_items.filter(
+            is_project_manager | is_project_leader)
+        budget_items = budget_items.filter(
+            added_after_start).select_related(
+                'project')
+        projects = {budget_item.project.id: {
+            'project': budget_item.project,
+            'added': []} for budget_item in budget_items}
+        for budget_item in budget_items:
+            projects[budget_item.project.id]['added'].append(budget_item)
+            # Hm, this can be done simpler, but now it matches the invoice
+            # changes...
+        return projects.values()
+
     @cached_property
     def project_invoice_changes(self):
         start = self.start_week.first_day
@@ -1904,14 +2027,18 @@ class ChangesOverview(BaseView):
             project__project_leader=self.active_person)
         is_project_manager = models.Q(
             project__project_manager=self.active_person)
-        added_after_start = models.Q(date__gt=start)
-        payed_after_start = models.Q(date__gt=start)
+        added_after_start = models.Q(date__gte=start)
+        payed_after_start = models.Q(date__gte=start)
 
-        invoices = Invoice.objects.filter(
-            project__archived=False).filter(
-                is_project_manager | is_project_leader).filter(
-                    added_after_start | payed_after_start).select_related(
-                        'project')
+        invoices = Invoice.objects.all()
+        if not (self.can_see_everything and self.filters['total']):
+            # Normally restrict it to relevant projects for you, but a manager
+            # can see everything if desired.
+            invoices = invoices.filter(
+            is_project_manager | is_project_leader)
+        invoices = invoices.filter(
+                added_after_start | payed_after_start).select_related(
+                    'project')
         projects = {invoice.project.id: {'project': invoice.project,
                                          'added': [],
                                          'payed': []} for invoice in invoices}
@@ -1947,3 +2074,17 @@ class ChangesOverview(BaseView):
             self.active_person.hours_per_week() or 40)
         return {'hours': hours_left,
                 'weeks': weeks_available}
+
+
+class ProjectLeadersAndManagersView(BaseView):
+    template_name = 'trs/pl_pm.html'
+
+    @cached_property
+    def project_leaders(self):
+        return Person.objects.filter(
+            projects_i_lead__archived=False).distinct()
+
+    @cached_property
+    def project_managers(self):
+        return Person.objects.filter(
+            projects_i_manage__archived=False).distinct()

@@ -2,15 +2,23 @@
 {% load trs_formatting %}
 
 {% block full-width %}
-  <h1>Medewerkers</h1>
-  <div class="text-muted">
-    {% if view.filters.archived %}
-      <a href="?archived=false">Toon huidige medewerkers</a> |
-      <span>Gearchiveerde medewerkers</span>
-    {% else %}
-      <span>Huidige medewerkers</span> |
-      <a href="?archived=true">Toon gearchiveerde medewerkers</a>
+  <h1>
+    {{ view.title }}
+    {% if view.small_title %}
+      <small>({{ view.small_title }})</small>
     {% endif %}
+  </h1>
+  <div class="text-muted">
+    Archiefstatus:
+    <a href="?archived=false">actieve medewerkers</a> |
+    <a href="?archived=true">gearchiveerde medewerkers</a>
+  </div>
+  <div class="text-muted">
+    Filter op groep:
+    {% for id, name in view.group_choices %}
+      <a href="?group={{ id }}">{{ name }}</a> |
+    {% endfor %}
+    <a href="?group=geen">zonder groep</a>
   </div>
   <table class="table table-hover table-condensed table-fixed-header">
     <thead class="header">

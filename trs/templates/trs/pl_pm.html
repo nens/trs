@@ -1,0 +1,59 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>Projectleiders en projectmanagers</h1>
+
+  <p>
+    Klik op een projectleider/manager en je krijgt een overzicht van zijn of
+    haar projecten.
+  </p>
+
+  <div class="row">
+    <div class="col-md-6">
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 class="panel-title">Projectleiders</h2>
+        </div>
+        <div class="panel-body">
+
+          <ul>
+            {% for person in view.project_leaders %}
+              <li>
+                <a href="{% url 'trs.projects' %}?project_leader={{ person.pk }}">
+                  {{ person.name }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+
+        </div>
+      </div>
+
+    </div>
+    <div class="col-md-6">
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 class="panel-title">Projectmanagers</h2>
+        </div>
+        <div class="panel-body">
+
+          <ul>
+            {% for person in view.project_managers %}
+              <li>
+                <a href="{% url 'trs.projects' %}?project_leader={{ person.pk }}">
+                  {{ person.name }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+{% endblock %}

@@ -2,17 +2,18 @@
 {% load trs_formatting %}
 
 {% block main-column %}
-  <h1>Projecten</h1>
+  <h1>{{ view.title }} <small>{{ view.small_title }}</small></h1>
   <div class="text-muted">
-    {% if view.no_filters %}
-      <span>Actieve projecten</span>
+    {% if not view.filters.archived %}
+      <span>Actieve projecten</span> |
+      <a href="?archived=true">Gearchiveerde projecten</a>
     {% else %}
       <a href="?">Toon actieve projecten</a>
+      <span>Gearchiveerde projecten</span> |
     {% endif %}
-    |
-    <a href="?archived=true">Gearchiveerd</a>
-    {# The filter list in 'projects.html' is more elaborate #}
   </div>
+  {# The filter list in 'projects.html' is more elaborate #}
+
   <table class="table table-hover table-condensed table-fixed-header">
     <thead class="header">
       <tr>
