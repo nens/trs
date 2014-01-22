@@ -5,7 +5,8 @@ Changelog of trs
 1.5 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- A project leader or manager can see the elaborate manager version of the
+  projects page if he's only looking at his own projects.
 
 
 1.4 (2014-01-22)
