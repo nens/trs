@@ -66,27 +66,27 @@
           </div>
         {% endif %}
 
-        {% for change in view.work_changes %}
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              Verandering aan je werk op
-              {{ change.project.as_widget }}<br>
-              <span class="text-muted">{{ change.project.description }}</span>
-            </div>
-            <div class="panel-body">
-              <div>
-                <b>Toegekende uren:</b>
-                {{ change.current.hours|hours }}
-                ({{ change.hours|hoursdiff }})
-              </div>
-              <div>
-                <b>Uurtarief:</b>
-                {{ change.current.hourly_tariff|money }}
-                ({{ change.hourly_tariff|moneydiff }})
-              </div>
-            </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Verandering aan je werk op projecten
           </div>
-        {% endfor %}
+          <div class="panel-body">
+            <ul>
+              {% for change in view.work_changes %}
+                <li>
+                  {{ change.project.as_widget }}<br>
+                  <span class="text-muted">{{ change.project.description }}</span><br>
+                  <b>Toegekende uren:</b>
+                  {{ change.current.hours|hours }}
+                  ({{ change.hours|hoursdiff }})<br>
+                  <b>Uurtarief:</b>
+                  {{ change.current.hourly_tariff|money }}
+                  ({{ change.hourly_tariff|moneydiff }})
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
 
       </div>
       <div class="col-md-6">
