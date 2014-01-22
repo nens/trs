@@ -2,7 +2,10 @@
 {% load trs_formatting %}
 
 {% block main-column %}
-  <h1>Veranderingen</h1>
+  <h1>
+    Veranderingen
+    <small>vanaf {{ view.start_week.first_day }}</small>
+  </h1>
   <div class="text-muted">
     Periode:
     <a href="?num_weeks=0">Alleen deze week</a> |
@@ -19,10 +22,6 @@
   {% endif %}
 
   {% if view.are_there_changes %}
-    <p>
-      Bij deze de relevante veranderingen vanaf
-      {{ view.start_week.first_day }}
-    </p>
 
     <div class="row">
       <div class="col-md-6">
@@ -97,24 +96,37 @@
           projecten
         </h2>
 
-        {% for change in view.project_budget_changes %}
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              Budgetverandering aan jouw project
-              {{ change.project.as_widget }}<br>
-              <span class="text-muted">{{ change.project.description }}</span>
-            </div>
-            <div class="panel-body">
-              {% if change.budget__sum %}
-                <div>
-                  <b>Budget:</b>
-                  {{ change.budget__sum|moneydiff }}
-                </div>
-              {% endif %}
-            </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Nieuwe kostenposten bij
+            {% if view.filters.total %}alle{% else %}jouw{% endif %}
+            projecten
           </div>
-        {% endfor %}
+          <div class="panel-body">
 
+            <ul>
+              {% for change in view.project_budget_changes %}
+                <li>
+                  {{ change.project.as_widget }}<br>
+                  <span class="text-muted">{{ change.project.description }}</span><br>
+                  {% for budget in change.added %}
+                    <div>
+                      <b>Nieuw:</b>
+                      {{ budget.number }}:
+                      <span class="text-muted">
+                        {{ budget.description }}
+                      </span><br>
+                      <div class="text-right">
+                        &euro;
+                        {{ budget.amount|money_with_decimal }}
+                      </div>
+                    </div>
+                  {% endfor %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
 
         <div class="panel panel-default">
           <div class="panel-heading">

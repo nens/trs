@@ -1998,8 +1998,29 @@ class ChangesOverview(BaseView):
 
     @cached_property
     def project_budget_changes(self):
-        # TODO: project_budget_item_changes
-        pass
+        start = self.start_week.first_day
+        is_project_leader = models.Q(
+            project__project_leader=self.active_person)
+        is_project_manager = models.Q(
+            project__project_manager=self.active_person)
+        added_after_start = models.Q(added__gte=start)
+        budget_items = BudgetItem.objects.all()
+        if not (self.can_see_everything and self.filters['total']):
+            # Normally restrict it to relevant projects for you, but a manager
+            # can see everything if desired.
+            budget_items = budget_items.filter(
+            is_project_manager | is_project_leader)
+        budget_items = budget_items.filter(
+            added_after_start).select_related(
+                'project')
+        projects = {budget_item.project.id: {
+            'project': budget_item.project,
+            'added': []} for budget_item in budget_items}
+        for budget_item in budget_items:
+            projects[budget_item.project.id]['added'].append(budget_item)
+            # Hm, this can be done simpler, but now it matches the invoice
+            # changes...
+        return projects.values()
 
     @cached_property
     def project_invoice_changes(self):
@@ -2008,8 +2029,8 @@ class ChangesOverview(BaseView):
             project__project_leader=self.active_person)
         is_project_manager = models.Q(
             project__project_manager=self.active_person)
-        added_after_start = models.Q(date__gt=start)
-        payed_after_start = models.Q(date__gt=start)
+        added_after_start = models.Q(date__gte=start)
+        payed_after_start = models.Q(date__gte=start)
 
         invoices = Invoice.objects.all()
         if not (self.can_see_everything and self.filters['total']):
