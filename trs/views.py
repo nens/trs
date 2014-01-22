@@ -24,6 +24,7 @@ from django.views.generic.edit import UpdateView
 from trs import core
 from trs.models import Booking
 from trs.models import BudgetItem
+from trs.models import Group
 from trs.models import Invoice
 from trs.models import Person
 from trs.models import PersonChange
@@ -200,6 +201,10 @@ class BaseMixin(object):
     def gauges_id(self):
         return getattr(settings, 'GAUGES_ID', None)
 
+    @cached_property
+    def group_choices(self):
+        return list(Group.objects.all().values_list('pk', 'name'))
+
 
 class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
     pass
@@ -207,7 +212,8 @@ class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
 
 class PersonsView(BaseView):
 
-    available_filters = {'archived': False}
+    available_filters = {'archived': False,
+                         'group': None}
 
     @property
     def template_name(self):
@@ -227,7 +233,13 @@ class PersonsView(BaseView):
 
     @cached_property
     def persons(self):
-        return Person.objects.filter(archived=self.filters['archived'])
+        result = Person.objects.filter(archived=self.filters['archived'])
+        group_filter = self.filters['group']
+        if group_filter:
+            if group_filter == 'geen':
+                group_filter = None
+            result = result.filter(group=group_filter)
+        return result
 
     @cached_property
     def lines(self):
@@ -484,9 +496,11 @@ class BookingOverview(PersonView):
 
 
 class ProjectsView(BaseView):
-    available_filters = {'archived': None,
+    available_filters = {'archived': False,
                          'is_subsidized': None,
                          'is_accepted': None,
+                         'startup_meeting_done': None,
+                         'group': None,
                          'ended': None,
                          'started': None}
 
@@ -507,27 +521,10 @@ class ProjectsView(BaseView):
             return True
 
     @cached_property
-    def no_filters(self):
-        return not len([value for value in self.filters.values()
-                        if value is not None])
-
-    @cached_property
     def projects(self):
         result = Project.objects.all()
-        # If we don't filter on anything, we want some defaults.
-        if self.no_filters:
-            # Projects should not be archived.
-            self.filters['archived'] = False
-            # Specific change: we don't mind whether projects haven't started
-            # yet or if they're already ended: we only want to filter out
-            # archived projects.
-            # self.filters['ended'] = False
-            # self.filters['started'] = None
-        if self.filters['archived'] is not None:
-            # Normally, don't filter on archived; the 'ended' filter is
-            # enough.
-            result = result.filter(
-                archived=self.filters['archived'])
+        result = result.filter(archived=self.filters['archived'])
+
         if self.filters['ended'] is not None:
             if self.filters['ended']:
                 # Projects that have already ended.
@@ -546,12 +543,22 @@ class ProjectsView(BaseView):
                 # Projects that have not yet started.
                 result = result.filter(
                     start__gt=this_year_week())
+
         if self.filters['is_subsidized'] is not None:
             result = result.filter(
                 is_subsidized=self.filters['is_subsidized'])
         if self.filters['is_accepted'] is not None:
             result = result.filter(
                 is_accepted=self.filters['is_accepted'])
+        if self.filters['startup_meeting_done'] is not None:
+            result = result.filter(
+                startup_meeting_done=self.filters['startup_meeting_done'])
+
+        group_filter = self.filters['group']
+        if group_filter:
+            if group_filter == 'geen':
+                group_filter = None
+            result = result.filter(group=group_filter)
 
         if self.can_view_elaborate_version:
             return result

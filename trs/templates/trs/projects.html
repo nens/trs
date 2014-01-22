@@ -4,29 +4,35 @@
 {% block full-width %}
   <h1>Projecten</h1>
   <div class="text-muted">
-    {% if view.no_filters %}
-      <span>Actieve projecten</span>
+    {% if not view.filters.archived %}
+      <span>Actieve projecten</span> |
+      <a href="?archived=true">Gearchiveerde projecten</a>
     {% else %}
       <a href="?">Toon actieve projecten</a>
+      <span>Gearchiveerde projecten</span> |
     {% endif %}
-    |
-    <a href="?archived=true">Gearchiveerd</a> |
   </div>
   {# The filter list in 'projects-simple.html' is less elaborate #}
 
   <div class="text-muted">
-    <a href="?is_subsidized=true&archived=false&ended=false&started=true">
-      Actieve subsidieprojecten
+    Handige filters:
+    <a href="?is_subsidized=true">
+      Subsidieprojecten
     </a> |
-    <a href="?is_subsidized=true">Alle subsidieprojecten</a>
-  </div>
-  <div class="text-muted">
-    <a href="?is_accepted=true&archived=false&ended=false&started=true">
-      Actief en goedgekeurd
+    <a href="?is_accepted=false">
+      Nog niet goedgekeurde projecten
     </a> |
-    <a href="?is_accepted=false&archived=false&ended=false&started=true">
-      Actief en <i>niet</i> goedgekeurd
+    <a href="?startup_meeting_done=false">
+      Startoverleg nog niet geweest
     </a>
+  </div>
+
+  <div class="text-muted">
+    Filter op groep:
+    {% for id, name in view.group_choices %}
+      <a href="?group={{ id }}">{{ name }}</a> |
+    {% endfor %}
+    <a href="?group=geen">zonder groep</a>
   </div>
 
   <table class="table table-hover table-condensed table-fixed-header">
