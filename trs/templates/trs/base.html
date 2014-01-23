@@ -175,23 +175,29 @@
                   </div>
                 </div>
 
-                <div><b>Target?</b></div>
-                <div class="progress"
-                     title="{{ view.sidebar_person_year_info.target_percentage }}% van je target gehaald">
-                  <div class="progress-bar"
-                       style="width: {{ view.sidebar_person_year_info.target_percentage }}%;">
-                  </div>
-                </div>
-                {% if not view.is_custom_year %}
-                  <div>
-                    Hierboven absoluut, hieronder relatief t.o.v. hoever het
-                    jaar gevorderd is.
-                  </div>
+                {% if view.is_custom_year %}
+                  <div><b>Target</b></div>
                   <div class="progress"
-                       title="{{ view.sidebar_person_year_info.relative_target_percentage }}% relatief van je target gehaald">
+                       title="{{ view.sidebar_person_year_info.target_percentage }}% van je target gehaald">
+                    <div class="progress-bar"
+                         style="width: {{ view.sidebar_person_year_info.target_percentage }}%;">
+                    </div>
+                  </div>
+                {% else %}
+                  <div><b>Op weg voor target?</b></div>
+                  <div class="progress"
+                       title="
+Je hebt tot nu toe over hele jaar {{ view.sidebar_person_year_info.target_percentage }}% gehaald,
+als je de huidige lijn doortrekt zou je op
+{{ view.sidebar_person_year_info.relative_target_percentage }}% uit komen.">
                     <div class="progress-bar"
                          style="width: {{ view.sidebar_person_year_info.relative_target_percentage }}%;">
                     </div>
+                  </div>
+                  <div style="width: 100%"
+                       class="text-center">
+                    <span class="glyphicon glyphicon-arrow-up"></span><br>
+                    100%
                   </div>
                 {% endif %}
 
