@@ -190,8 +190,8 @@
 Je hebt tot nu toe over hele jaar {{ view.sidebar_person_year_info.target_percentage }}% gehaald,
 als je de huidige lijn doortrekt zou je op
 {{ view.sidebar_person_year_info.relative_target_percentage }}% uit komen.">
-                    <div class="progress-bar"
-                         style="width: {{ view.sidebar_person_year_info.relative_target_percentage }}%;">
+                    <div class="progress-bar {{ view.sidebar_person_year_info.relative_bar_color }}"
+                         style="width: {{ view.sidebar_person_year_info.relative_bar_percentage }}%;">
                     </div>
                   </div>
                   <div style="width: 100%"

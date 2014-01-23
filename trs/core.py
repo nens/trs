@@ -251,6 +251,20 @@ class PersonYearCombination(object):
             return 100
         return round(self.turnover / self.target * 100 / portion_of_year)
 
+    @cached_property
+    def relative_bar_percentage(self):
+        return round(self.relative_target_percentage / 2)
+
+    @cached_property
+    def relative_bar_color(self):
+        if self.relative_target_percentage >= 100:
+            color = 'success'
+        elif self.relative_target_percentage < 50:
+            color = 'danger'
+        else:
+            color = 'warning'
+        return 'progress-bar-' + color
+
 
 def get_pyc(person, year=None):
     return PersonYearCombination(person, year)
