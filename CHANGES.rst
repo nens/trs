@@ -8,6 +8,9 @@ Changelog of trs
 - A project leader or manager can see the elaborate manager version of the
   projects page if he's only looking at his own projects.
 
+- Added management command to automatically book hours for one year for 3
+  specific users (=management).
+
 
 1.4 (2014-01-22)
 ----------------
