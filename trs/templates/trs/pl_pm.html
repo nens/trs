@@ -43,7 +43,7 @@
           <ul>
             {% for person in view.project_managers %}
               <li>
-                <a href="{% url 'trs.projects' %}?project_leader={{ person.pk }}">
+                <a href="{% url 'trs.projects' %}?project_manager={{ person.pk }}">
                   {{ person.name }}
                 </a>
               </li>
