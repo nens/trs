@@ -223,7 +223,10 @@ class PersonsView(BaseView):
 
     @cached_property
     def small_title(self):
-        if self.filters['group'] is not None:
+        group_filter = self.filters['group']
+        if group_filter is not None:
+            if group_filter == 'geen':
+                group_filter = None
             group = Group.objects.get(pk=self.filters['group'])
             return "van groep %s" % group.name
 
