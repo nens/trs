@@ -15,9 +15,12 @@ class PersonAdmin(admin.ModelAdmin):
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ['code', 'internal', 'hidden', 'hourless', 'archived',
-                    'description']
-    list_filter = ['internal', 'archived']
+    list_display = ['code', 'description', 'group',
+                    'internal',
+                    # 'hidden', 'hourless',
+                    'archived']
+    list_filter = ['internal', 'archived', 'group']
+    list_editable = ['group']
     search_fields = ['code', 'description']
 
 
