@@ -17,4 +17,6 @@ CACHES = {
     }
 }
 
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
+
 from trs_site.productionsettings import *
