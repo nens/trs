@@ -8,9 +8,11 @@ class GroupAdmin(admin.ModelAdmin):
 
 
 class PersonAdmin(admin.ModelAdmin):
-    list_display = ['name', 'archived', 'user', 'is_office_management',
+    list_display = ['name', 'group', 'archived', 'user', 'is_office_management',
                     'is_management']
-    list_editable = ['archived', 'is_office_management']
+    list_editable = ['group', 'archived', 'is_office_management']
+    list_filter = ['archived', 'group', 'is_management',
+                   'is_office_management']
     search_fields = ['name']
 
 
