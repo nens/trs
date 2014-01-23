@@ -11,15 +11,19 @@ class PersonAdmin(admin.ModelAdmin):
     list_display = ['name', 'archived', 'user', 'is_office_management',
                     'is_management']
     list_editable = ['archived', 'is_office_management']
+    search_fields = ['name']
 
 
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ['code', 'internal', 'hidden', 'hourless', 'archived',
                     'description']
+    list_filter = ['internal', 'archived']
+    search_fields = ['code', 'description']
 
 
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = ['number', 'project', 'date', 'description']
+    search_fields = ['number', 'project', 'description']
 
 
 class PersonChangeAdmin(admin.ModelAdmin):
@@ -28,7 +32,7 @@ class PersonChangeAdmin(admin.ModelAdmin):
 
 class BookingAdmin(admin.ModelAdmin):
     list_display = ['year_week', 'hours', 'booked_by', 'booked_on']
-    list_filter = ['booked_by', 'booked_on']
+    list_filter = ['booked_by', 'booked_on', 'year_week__year']
 
 
 class WorkAssignmentAdmin(admin.ModelAdmin):
