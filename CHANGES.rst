@@ -11,6 +11,9 @@ Changelog of trs
 - Added management command to automatically book hours for one year for 3
   specific users (=management).
 
+- Nicer relative target bar. And for the current year you only see the
+  relative one anyway.
+
 
 1.4 (2014-01-22)
 ----------------
