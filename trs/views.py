@@ -227,7 +227,7 @@ class PersonsView(BaseView):
         if group_filter is not None:
             if group_filter == 'geen':
                 group_filter = None
-            group = Group.objects.get(pk=self.filters['group'])
+            group = Group.objects.get(pk=group_filter)
             return "van groep %s" % group.name
 
     @property
