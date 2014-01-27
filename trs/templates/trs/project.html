@@ -85,7 +85,7 @@
       {% endif %}
       {% if view.project.financial_remark %}
         <tr>
-          <th>Financiële opmerkingen van het office management</th>
+          <th>Financiële opmerkingen</th>
           <td>{{ view.project.financial_remark|linebreaksbr }}</td>
         </tr>
       {% endif %}
@@ -372,6 +372,13 @@
           Voeg factuur toe
         </a>
       </div>
+    {% endif %}
+
+    {% if view.project.financial_remark %}
+      <p>
+        <b>Financiële opmerkingen:</b><br>
+        {{ view.project.financial_remark|linebreaksbr }}
+      </p>
     {% endif %}
 
   {% endif %}
