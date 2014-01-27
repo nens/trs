@@ -627,6 +627,8 @@ class BudgetItem(FinancialBase):
                    "afgetrokken."))
     is_reservation = models.BooleanField(
         verbose_name="reservering",
+        help_text=("Bedrag dat nu apart wordt gezet om in de toekomst te " +
+                   "gebruiken extra te verdelen uren + budget."),
         default=False)
 
     class Meta:
