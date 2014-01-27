@@ -7,9 +7,10 @@ from django.core.cache import cache
 from django.db import models
 from django.utils.functional import cached_property
 
-from trs.models import YearWeek
 from trs.models import Booking
+from trs.models import Project
 from trs.models import WorkAssignment
+from trs.models import YearWeek
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        version = 24
+        version = 25
         self.cache_key = 'pycdata-%s-%s-%s-%s' % (
             person.id, person.cache_indicator, year, version)
         has_cached_data = self.get_cache()
@@ -97,6 +98,12 @@ class PersonYearCombination(object):
 
         project_ids = budget.keys()
 
+        contract_amounts = Project.objects.filter(
+            id__in=project_ids).values(
+                'id', 'contract_amount')
+        contract_amounts = {item['id']: item['contract_amount']
+                            for item in contract_amounts}
+
         booked_this_year_per_project = Booking.objects.filter(
             booked_by=self.person,
             year_week__year=self.year,
@@ -124,9 +131,13 @@ class PersonYearCombination(object):
             overbooked = max(0, (booked_till_now - budget[id]))
             overbooked_this_year = min(overbooked, booked_this_year.get(id, 0))
             well_booked_this_year = booked_this_year.get(id, 0) - overbooked_this_year
-            turnover = well_booked_this_year * hourly_tariff[id]
+            tariff = hourly_tariff[id]
+            if not contract_amounts[id]:
+                # Don't count anything money-wise.
+                tariff = 0
+            turnover = well_booked_this_year * tariff
             left_to_book = max(0, (budget[id] - booked_till_now))
-            left_to_turn_over = left_to_book * hourly_tariff[id]
+            left_to_turn_over = left_to_book * tariff
             if is_internal[id]:
                 booked_internal = booked_this_year.get(id, 0)
                 booked_external = 0

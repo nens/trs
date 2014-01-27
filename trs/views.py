@@ -378,8 +378,11 @@ class PersonView(BaseView):
             line['is_project_manager'] = (
                 project.project_manager_id == self.person.id)
             line['hourly_tariff'] = hourly_tariffs.get(project.id, 0)
-            line['turnover'] = (
-                min(line['budget'], line['booked']) * line['hourly_tariff'])
+            if project.contract_amount:
+                line['turnover'] = (
+                    min(line['budget'], line['booked']) * line['hourly_tariff'])
+            else:
+                line['turnover'] = 0
             result.append(line)
         return result
 
@@ -824,12 +827,16 @@ class ProjectView(BaseView):
             line['is_project_manager'] = (
                 self.project.project_manager_id == person.id)
             line['hourly_tariff'] = hourly_tariffs.get(person.id, 0)
+            tariff = line['hourly_tariff']
+            if not self.project.contract_amount:
+                # Don't count anything money-wise.
+                tariff = 0
             line['turnover'] = (
-                min(line['budget'], line['booked']) * line['hourly_tariff'])
+                min(line['budget'], line['booked']) * tariff)
             line['loss'] = (
-                max(0, (line['booked'] - line['budget'])) * line['hourly_tariff'])
-            line['left_to_turn_over'] = line['left_to_book'] * line['hourly_tariff']
-            line['planned_turnover'] = line['budget'] * line['hourly_tariff']
+                max(0, (line['booked'] - line['budget'])) * tariff)
+            line['left_to_turn_over'] = line['left_to_book'] * tariff
+            line['planned_turnover'] = line['budget'] * tariff
             line['desired_hourly_tariff'] = round(person.standard_hourly_tariff(
                 year_week=self.project.start))
             result.append(line)
