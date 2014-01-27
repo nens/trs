@@ -1113,7 +1113,8 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                 result.append('startup_meeting_done')
         if self.active_person == self.project.project_manager:
             if not self.project.is_accepted:
-                result.append('is_accepted')
+                if self.project.contract_amount:
+                    result.append('is_accepted')
         return result
 
     @cached_property
