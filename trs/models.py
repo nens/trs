@@ -428,7 +428,7 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        version = 2
+        version = 4
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, version)
 
@@ -467,6 +467,9 @@ class Project(models.Model):
     def costs(self):
         return self.work_calculation()['costs']
 
+    def reserved(self):
+        return self.work_calculation()['reserved']
+
     def overbooked_percentage(self):
         if not self.overbooked():
             return 0
@@ -499,8 +502,15 @@ class Project(models.Model):
             item['booked_by']: round(item['hours__sum'])
             for item in booked_this_year_per_person}
 
-        costs = -1 * (self.budget_items.all().aggregate(
-            models.Sum('amount'))['amount__sum'] or 0)
+        budget_items = self.budget_items.all().values(
+            'is_reservation').annotate(
+                models.Sum('amount'))
+        # Warning: 'costs' used to be the total of all budget items, now it
+        # excludes the reservations.
+        costs_per_kind = {item['is_reservation']: item['amount__sum'] or 0
+                          for item in budget_items}
+        reserved = -1 * costs_per_kind.get(True, 0)
+        costs = -1 * costs_per_kind.get(False, 0)
 
         overbooked_per_person = {
             id: max(0, (total_booked_per_person.get(id, 0) -
@@ -527,7 +537,8 @@ class Project(models.Model):
                 'turnover': sum(turnover_per_person.values()),
                 'left_to_turn_over': sum(
                     left_to_turn_over_per_person.values()),
-                'costs': costs}
+                'costs': costs,
+                'reserved': reserved}
 
 
 class FinancialBase(models.Model):

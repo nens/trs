@@ -666,25 +666,32 @@ class ProjectsView(BaseView):
             invoice_amount = invoice_amounts.get(project.id, 0)
             turnover = project.turnover()
             costs = project.costs()
+            reserved = project.reserved()
             if project.contract_amount:
                 invoice_amount_percentage = round(
                     invoice_amount / project.contract_amount * 100)
             else:  # Division by zero.
                 invoice_amount_percentage = None
-            if turnover + costs:
+            if turnover + costs + reserved:
                 invoice_versus_turnover_percentage = round(
-                    invoice_amount / (turnover + costs) * 100)
+                    invoice_amount / (turnover + costs + reserved) * 100)
             else:
                 invoice_versus_turnover_percentage = None
             line['contract_amount'] = project.contract_amount
             line['invoice_amount'] = invoice_amount
             line['turnover'] = turnover
             line['costs'] = costs
+            line['reserved'] = reserved
             line['invoice_amount_percentage'] = invoice_amount_percentage
             line['invoice_versus_turnover_percentage'] = (
                 invoice_versus_turnover_percentage)
             result.append(line)
         return result
+
+    @cached_property
+    def totals(self):
+        return {key: sum([line[key] for line in self.lines]) or 0
+                for key in ['turnover', 'costs', 'reserved']}
 
     @cached_property
     def total_invoice_amount_percentage(self):
@@ -1105,7 +1112,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     'startup_meeting_done', 'is_accepted',
                     'remark', 'financial_remark',
                 ]
-        result = ['remark']
+        result = ['remark', 'financial_remark']
         if not self.project.is_accepted:
             result.append('end')
         if self.active_person == self.project.project_leader:

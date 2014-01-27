@@ -60,6 +60,7 @@
         <th class="text-right">Opdracht-<br>som</th>
         <th class="text-right">Omzet</th>
         <th class="text-right">Extra<br>kosten</th>
+        <th class="text-right">Reserve-<br>ringen</th>
         <th class="text-right"
             title="Inclusief nog niet betaalde facturen">Gefactureerd</th>
         <th class="text-right">
@@ -101,6 +102,9 @@
             {{ line.costs|money }}
           </td>
           <td class="text-right">
+            {{ line.reserved|money }}
+          </td>
+          <td class="text-right">
             {{ line.invoice_amount|money_with_decimal }}
           </td>
           <td class="text-right">
@@ -116,5 +120,15 @@
         </tr>
       {% endfor %}
     </tbody>
+    <tfoot>
+      <tr>
+        <th>Totaal</th>
+        <th colspan="3"></th>
+        <th class="text-right">{{ view.totals.turnover|money }}</th>
+        <th class="text-right">{{ view.totals.costs|money }}</th>
+        <th class="text-right">{{ view.totals.reserved|money }}</th>
+        <th colspan="2"></th>
+      </tr>
+    </tfoot>
   </table>
 {% endblock %}
