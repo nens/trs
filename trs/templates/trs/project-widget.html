@@ -5,6 +5,10 @@
   {{ project.code }}
 </a>
 
+{% if not project.internal and not project.contract_amount %}
+  <span title="Geen opdrachtsom, dus niets wordt richting target of omzet meegerekend!"
+        class="text-danger glyphicon glyphicon-warning-sign"></span>
+{% endif %}
 {% if project.archived %}
   <span title="Project is gearchiveerd"
         class="text-muted glyphicon glyphicon-lock"></span>
