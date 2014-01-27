@@ -1,4 +1,6 @@
 <a href="{{ project.get_absolute_url }}"
+   title="Voor {{ project.principal }}
+{{ project.description }}"
    {% if not project.internal %}class="external-project"{% endif %}>
   {{ project.code }}
 </a>
