@@ -26,6 +26,8 @@ Changelog of trs
 
 - Various smaller UI fixes. Like showing new projects at the top.
 
+- Showing list of latest project codes on project create page.
+
 
 1.4 (2014-01-22)
 ----------------
