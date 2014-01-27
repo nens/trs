@@ -46,6 +46,8 @@
           <tr>
             <td>
               <a href="{{ line.project.get_absolute_url }}"
+                 title="Voor {{ line.project.principal }}
+{{ line.project.description }}"
                  {% if not line.project.internal %}class="external-project"{% endif %}>
                 {{ line.project.code }}
               </a>
