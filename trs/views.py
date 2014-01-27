@@ -1153,7 +1153,7 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
               'is_subsidized', 'principal',
               'contract_amount',
               'start', 'end', 'project_leader', 'project_manager',
-              'remark',
+              'remark', 'financial_remark',
     ]
 
     def has_form_permissions(self):
