@@ -402,7 +402,7 @@ class Project(models.Model):
     class Meta:
         verbose_name = "project"
         verbose_name_plural = "projecten"
-        ordering = ('internal', 'code')
+        ordering = ('internal', '-code')
 
     def save(self, *args, **kwargs):
         self.cache_indicator += 1
