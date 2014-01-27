@@ -2,7 +2,7 @@ Changelog of trs
 ===================================================
 
 
-1.5 (unreleased)
+1.5 (2014-01-27)
 ----------------
 
 - A project leader or manager can see the elaborate manager version of the
