@@ -1162,7 +1162,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
 class ProjectCreateView(LoginAndPermissionsRequiredMixin,
                         CreateView,
                         BaseMixin):
-    template_name = 'trs/edit.html'
+    template_name = 'trs/create-project.html'
     model = Project
     title = "Nieuw project"
     fields = ['code', 'description', 'group', 'internal', 'hidden', 'hourless',
@@ -1179,6 +1179,14 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
     def form_valid(self, form):
         messages.success(self.request, "Project aangemaakt")
         return super(ProjectCreateView, self).form_valid(form)
+
+    def latest_projects(self):
+        # Note: they're reverse sorted, so we want the first :-)
+        external = Project.objects.filter(internal=False,
+                                          archived=False)[:3]
+        internal = Project.objects.filter(internal=True,
+                                          archived=False)[:3]
+        return list(external) + list(internal)
 
 
 class InvoiceCreateView(LoginAndPermissionsRequiredMixin,

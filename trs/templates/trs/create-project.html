@@ -1,0 +1,15 @@
+{% extends "trs/edit.html" %}
+{% load trs_formatting %}
+
+{% block extra-edit-content %}
+  <hr>
+  <p>
+    Laatste interne en externe projectnummers (volgens de standaard
+    sortering):
+  </p>
+  <ul>
+    {% for project in view.latest_projects %}
+      <li>{{ project.as_widget }}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
