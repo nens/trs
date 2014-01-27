@@ -741,7 +741,8 @@ class ProjectView(BaseView):
             return False
         if self.can_edit_and_see_everything:
             return True
-        if self.project.project_manager == self.active_person:
+        if self.active_person in [self.project.project_manager,
+                                  self.project.project_leader]:
             return True
 
     @cached_property
