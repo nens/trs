@@ -14,6 +14,18 @@ Changelog of trs
 - Nicer relative target bar. And for the current year you only see the
   relative one anyway.
 
+- A contract amount of zero? Then nothing on that project gets counted as
+  turnover or towards someone's target. Reason: we don't want to fabricate
+  money somewhere in the system.
+
+- Added totals on project page.
+
+- Showing 'costs' and 'reservations' separately on projects page.
+
+- Project leaders can now also edit the project's budget.
+
+- Various smaller UI fixes. Like showing new projects at the top.
+
 
 1.4 (2014-01-22)
 ----------------
