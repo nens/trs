@@ -40,26 +40,39 @@
     <a href="?group=geen">zonder groep</a>
   </div>
 
+  {% if view.can_add_project %}
+    <br>
+    <div>
+      <a href="{% url 'trs.project.new' %}" class="btn btn-default">
+        <span class="glyphicon glyphicon-plus"></span>
+        Voeg nieuw project toe
+      </a>
+    </div>
+  {% endif %}
+
+
   <table class="table table-hover table-condensed table-fixed-header">
     <thead class="header">
       <tr>
         <th>Project</th>
         <th>Omschrijving</th>
-        <th class="text-right">Verliesuren</th>
-        <th class="text-right">Opdrachtsom</th>
+        <th class="text-right">Verlies-<br>uren</th>
+        <th class="text-right">Opdracht-<br>som</th>
         <th class="text-right">Omzet</th>
-        <th class="text-right">Extra kosten</th>
+        <th class="text-right">Extra<br>kosten</th>
         <th class="text-right"
             title="Inclusief nog niet betaalde facturen">Gefactureerd</th>
         <th class="text-right">
           Gefact.<br>
           t.o.v.<br>
-          opdrachtsom
+          opdracht-<br>
+          som
         </th>
         <th class="text-right">
           Gefact.<br>
           t.o.v.<br>
-          omzet + kosten
+          omzet +<br>
+          kosten
         </th>
       </tr>
     </thead>
@@ -70,11 +83,9 @@
             {{ line.project.as_widget }}
           </td>
           <td>
-            <span class="text-muted"
-                  {% if line.project.description|length > 30 %}
-                    title="{{ line.project.description }}"
-                  {% endif %}>
-              {{ line.project.description|truncatechars:30 }}
+            <span class="text-muted with-ellipsis"
+                  title="{{ line.project.description }}">
+              {{ line.project.description }}
             </span>
           </td>
           <td class="text-right {{ line.klass }}">
@@ -106,33 +117,4 @@
       {% endfor %}
     </tbody>
   </table>
-  {% if view.can_add_project %}
-    <hr>
-    <p>
-      <a href="{% url 'trs.project.new' %}" class="btn btn-default">
-        <span class="glyphicon glyphicon-plus"></span>
-        Voeg nieuw project toe
-      </a>
-    </p>
-  {% endif %}
-{% endblock %}
-
-{% block overview-column %}
-  <!-- TODO: this isn't shown anymore -->
-  {% if view.can_see_everything %}
-    <h1>Totaal</h1>
-    <div>Verhouding gefactureerd t.o.v. opdrachtsom:</div>
-    <div style="font-size: 500%">
-      {{ view.total_invoice_amount_percentage.percentage }}%
-    </div>
-    <div>
-      Totaal gefactureerd:
-      {{ view.total_invoice_amount_percentage.invoice_amount|money }}
-    </div>
-    <div>
-      Totaal opdrachtsommen:
-      {{ view.total_invoice_amount_percentage.contract_amount|money }}
-    </div>
-
-  {% endif %}
 {% endblock %}

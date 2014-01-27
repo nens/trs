@@ -51,11 +51,9 @@
               </a>
             </td>
             <td>
-              <span class="text-muted"
-                    {% if line.project.description|length > 30 %}
-                      title="{{ line.project.description }}"
-                    {% endif %}>
-                {{ line.project.description|truncatechars:30 }}
+              <span class="text-muted with-ellipsis"
+                    title="{{ line.project.description }}">
+                {{ line.project.description }}
               </span>
             </td>
             <td class="text-right">{{ line.budget|hours }}</td>

@@ -34,3 +34,8 @@ table .header-fixed {
     top: 0px;
     z-index: 1020; /* 10 less than .navbar-fixed to prevent any overlap */
 }
+
+.with-ellipsis {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
