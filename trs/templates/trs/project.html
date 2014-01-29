@@ -364,7 +364,7 @@
       </table>
     </div>
 
-    {% if view.can_edit_financials %}
+    {% if view.can_edit_project_financials %}
       <div>
         <a href="{% url 'trs.invoice.add' project_pk=view.project.pk %}"
            class="btn btn-default">

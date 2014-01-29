@@ -756,6 +756,13 @@ class ProjectView(BaseView):
             return True
 
     @cached_property
+    def can_edit_project_financials(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
     def can_edit_team(self):
         if self.project.archived:
             return False
