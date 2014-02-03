@@ -1,6 +1,5 @@
 import datetime
 import logging
-import time
 
 from django.contrib import messages
 from django.contrib.auth.models import User

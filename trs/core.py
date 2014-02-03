@@ -130,7 +130,8 @@ class PersonYearCombination(object):
             booked_till_now = booked + booked_before_this_year.get(id, 0)
             overbooked = max(0, (booked_till_now - budget[id]))
             overbooked_this_year = min(overbooked, booked_this_year.get(id, 0))
-            well_booked_this_year = booked_this_year.get(id, 0) - overbooked_this_year
+            well_booked_this_year = (
+                booked_this_year.get(id, 0) - overbooked_this_year)
             tariff = hourly_tariff[id]
             if not contract_amounts[id]:
                 # Don't count anything money-wise.
@@ -176,7 +177,8 @@ class PersonYearCombination(object):
         year_weeks = YearWeek.objects.filter(
             year=self.year).values('week', 'num_days_missing')
         week_numbers = [year_week['week'] for year_week in year_weeks]
-        missing_days = sum([year_week['num_days_missing'] for year_week in year_weeks])
+        missing_days = sum([year_week['num_days_missing']
+                            for year_week in year_weeks])
         self.to_book_this_year = 0
         for week in week_numbers:
             if week in changes_per_week:
@@ -203,13 +205,14 @@ class PersonYearCombination(object):
         self.left_to_turn_over = sum([project['left_to_turn_over']
                                       for project in per_project.values()])
         self.left_to_book_external = sum(
-            [project['left_to_book_external'] for project in per_project.values()])
+            [project['left_to_book_external']
+             for project in per_project.values()])
         self.booked_internal = sum([project['booked_internal']
                                     for project in per_project.values()])
         self.booked_external = sum([project['booked_external']
                                     for project in per_project.values()])
         total_booked = sum([project['booked']
-                                 for project in per_project.values()])
+                            for project in per_project.values()])
         # ^^^ total_booked excludes, like everything here, the 'hourless'
         # projects.
         if total_booked:

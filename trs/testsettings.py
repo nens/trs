@@ -86,7 +86,7 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'logfile',],
+            'handlers': ['console', 'logfile'],
             'propagate': True,
             'level': 'DEBUG',
         },

@@ -11,8 +11,7 @@ CACHES = {
         'LOCATION': 'localhost:11211',
         'TIMEOUT': 60 * 60 * 24 * 29,
         # ^^^ 29 days, memcached has a practical limit at 30 days
-        'OPTIONS': {'MAX_ENTRIES': 50000,
-                },
+        'OPTIONS': {'MAX_ENTRIES': 50000},
         'KEY_PREFIX': 'trs',
     }
 }

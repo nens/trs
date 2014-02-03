@@ -50,7 +50,7 @@ def download_everything():
                  'password': password},
            verify=False)
     export_page = s.get('https://www.trsnens.nl/?page=export',
-          verify=False)
+                        verify=False)
     soup = BeautifulSoup(export_page.content)
     user_export_select = soup.find_all(attrs={'name': 'userId'})[0]
     user_ids = [int(tag['value']) for tag in user_export_select.find_all('option')]

@@ -4,12 +4,12 @@ from trs import models
 
 
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description',]
+    list_display = ['name', 'description']
 
 
 class PersonAdmin(admin.ModelAdmin):
-    list_display = ['name', 'group', 'archived', 'user', 'is_office_management',
-                    'is_management']
+    list_display = ['name', 'group', 'archived', 'user',
+                    'is_office_management', 'is_management']
     list_editable = ['group', 'archived', 'is_office_management']
     list_filter = ['archived', 'group', 'is_management',
                    'is_office_management']

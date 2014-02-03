@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 BIG_PROJECT_SIZE = 200  # hours
 MAX_BAR_HEIGHT = 50  # px
 BAR_WIDTH = 75  # px
+BACK_TEMPLATE = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
 
 
 class LoginAndPermissionsRequiredMixin(object):
@@ -380,7 +381,8 @@ class PersonView(BaseView):
             line['hourly_tariff'] = hourly_tariffs.get(project.id, 0)
             if project.contract_amount:
                 line['turnover'] = (
-                    min(line['budget'], line['booked']) * line['hourly_tariff'])
+                    min(line['budget'],
+                        line['booked']) * line['hourly_tariff'])
             else:
                 line['turnover'] = 0
             result.append(line)
@@ -652,7 +654,8 @@ class ProjectsView(BaseView):
                 'project').annotate(
                     models.Sum('amount_exclusive')).order_by()
         # ^^^ .order_by() is needed to prevent a weird grouping issue. See
-        # https://docs.djangoproject.com/en/1.6/topics/db/aggregation/#interaction-with-default-ordering-or-order-by
+        # https://docs.djangoproject.com/en/1.6/topics/db/aggregation/
+        # #interaction-with-default-ordering-or-order-by
         invoice_amounts = {item['project']: item['amount_exclusive__sum']
                            for item in invoices_per_project}
 
@@ -844,8 +847,8 @@ class ProjectView(BaseView):
                 max(0, (line['booked'] - line['budget'])) * tariff)
             line['left_to_turn_over'] = line['left_to_book'] * tariff
             line['planned_turnover'] = line['budget'] * tariff
-            line['desired_hourly_tariff'] = round(person.standard_hourly_tariff(
-                year_week=self.project.start))
+            line['desired_hourly_tariff'] = round(
+                person.standard_hourly_tariff(year_week=self.project.start))
             result.append(line)
         return result
 
@@ -990,7 +993,9 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def initial(self):
-        """Return initial form values. Turn the decimals into integers already."""
+        """Return initial form values.
+
+        Turn the decimals into integers already."""
         result = {}
         bookings = Booking.objects.filter(
             year_week=self.active_year_week,
@@ -1058,7 +1063,8 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             booked_by=self.active_person).values(
                 'booked_on', 'year_week').annotate(
                     models.Sum('hours'))
-        bookings = {(item['booked_on'], item['year_week']): item['hours__sum'] or 0
+        bookings = {(item['booked_on'], item['year_week']):
+                    item['hours__sum'] or 0
                     for item in booking_table}
         # Idem for budget
         budget_per_project = WorkAssignment.objects.filter(
@@ -1098,7 +1104,8 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             line['budget'] = budgets.get(project.id, 0)
             line['booked_total'] = booked_total.get(project.id, 0)
             line['is_overbooked'] = line['booked_total'] > line['budget']
-            line['left_to_book'] = max(0, line['budget'] - line['booked_total'])
+            line['left_to_book'] = max(
+                0, line['budget'] - line['booked_total'])
             result.append(line)
         return result
 
@@ -1125,7 +1132,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     # Note: the next two are shown only on the edit view!
                     'startup_meeting_done', 'is_accepted',
                     'remark', 'financial_remark',
-                ]
+            ]
         result = ['remark', 'financial_remark']
         if not self.project.is_accepted:
             result.append('end')
@@ -1423,10 +1430,9 @@ class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def back_url(self):
-        template = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
         url = self.project.get_absolute_url()
         text = "Terug naar het project"
-        return mark_safe(template.format(url=url, text=text))
+        return mark_safe(BACK_TEMPLATE.format(url=url, text=text))
 
 
 class DeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
@@ -1440,10 +1446,9 @@ class DeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def back_url(self):
-        template = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
         url = self.project.get_absolute_url()
         text = "Terug naar het project"
-        return mark_safe(template.format(url=url, text=text))
+        return mark_safe(BACK_TEMPLATE.format(url=url, text=text))
 
 
 class TeamMemberDeleteView(DeleteView):
@@ -1538,7 +1543,8 @@ class InvoiceDeleteView(DeleteView):
 
     @cached_property
     def title(self):
-        return "Verwijder factuur %s uit %s" % (self.invoice.number, self.project.code)
+        return "Verwijder factuur %s uit %s" % (self.invoice.number,
+                                                self.project.code)
 
     def form_valid(self, form):
         self.invoice.delete()
@@ -1750,7 +1756,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 work_assignment.save()
                 logger.info("Added work assignment")
         if num_changes:
-            messages.success(self.request, "Teamleden: %s gewijzigd" % num_changes)
+            messages.success(self.request,
+                             "Teamleden: %s gewijzigd" % num_changes)
 
         if self.can_add_team_member:
             new_team_member_id = form.cleaned_data.get('new_team_member')
@@ -1796,10 +1803,9 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def back_url(self):
-        template = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
         url = self.project.get_absolute_url()
         text = "Terug naar het project"
-        return mark_safe(template.format(url=url, text=text))
+        return mark_safe(BACK_TEMPLATE.format(url=url, text=text))
 
 
 class PersonChangeView(LoginAndPermissionsRequiredMixin,
@@ -1879,7 +1885,9 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
 
     @cached_property
     def initial(self):
-        """Return initial form values. Turn the decimals into integers already."""
+        """Return initial form values.
+
+        Turn the decimals into integers already."""
         return {
             'hours_per_week': int(self.person.hours_per_week(
                 year_week=self.chosen_year_week)),
@@ -2050,7 +2058,7 @@ class ChangesOverview(BaseView):
             # Normally restrict it to relevant projects for you, but a manager
             # can see everything if desired.
             budget_items = budget_items.filter(
-            is_project_manager | is_project_leader)
+                is_project_manager | is_project_leader)
         budget_items = budget_items.filter(
             added_after_start).select_related(
                 'project')
@@ -2078,10 +2086,10 @@ class ChangesOverview(BaseView):
             # Normally restrict it to relevant projects for you, but a manager
             # can see everything if desired.
             invoices = invoices.filter(
-            is_project_manager | is_project_leader)
+                is_project_manager | is_project_leader)
         invoices = invoices.filter(
-                added_after_start | payed_after_start).select_related(
-                    'project')
+            added_after_start | payed_after_start).select_related(
+                'project')
         projects = {invoice.project.id: {'project': invoice.project,
                                          'added': [],
                                          'payed': []} for invoice in invoices}
