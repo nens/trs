@@ -5,7 +5,7 @@
   {{ project.code }}
 </a>
 
-{% if not project.internal and not project.contract_amount %}
+{% if not project.internal and not project.contract_amount and not project.contract_amount_ok %}
   <span title="Geen opdrachtsom, dus niets wordt richting target of omzet meegerekend!"
         class="text-danger glyphicon glyphicon-warning-sign"></span>
 {% endif %}

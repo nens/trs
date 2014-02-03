@@ -39,7 +39,16 @@
       </tr>
       <tr>
         <th>Opdrachtsom</th>
-        <td>{{ view.project.contract_amount|money }}</td>
+        <td>
+          {{ view.project.contract_amount|money }}
+          {% if view.project.contract_amount_ok %}
+            <span class="glyphicon glyphicon-ok"
+                  title="Opdrachtsom is goedgekeurd"></span>
+          {% else %}
+            <span class="glyphicon glyphicon-remove"
+                  title="Opdrachtsom is nog niet goedgekeurd"></span>
+          {% endif %}
+        </td>
       </tr>
       {% if view.project.group %}
         <tr>
