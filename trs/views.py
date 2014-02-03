@@ -1578,7 +1578,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     def can_edit_hours(self):
         if self.can_edit_and_see_everything:
             return True
-        if self.project.is_accepted or self.project.startup_meeting_done:
+        if self.project.is_accepted:
             return False
         if self.project.project_leader == self.active_person:
             return True
