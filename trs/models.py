@@ -337,6 +337,10 @@ class Project(models.Model):
         decimal_places=DECIMAL_PLACES,
         default=0,
         verbose_name="opdrachtsom")
+    contract_amount_ok = models.BooleanField(
+        default=False,
+        verbose_name="opdrachtsom in orde",
+        help_text="O.a. om een opdrachtsom van 0 goed te keuren")
     start = models.ForeignKey(
         'YearWeek',
         blank=True,
