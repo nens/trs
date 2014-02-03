@@ -2145,10 +2145,23 @@ class ProjectLeadersAndManagersView(BaseView):
             projects_i_manage__archived=False).distinct()
 
 
-class CSVResponseMixin(object):
+class CsvResponseMixin(object):
 
-    csv_filename = 'export'  # We append .csv automatically.
+    header_line = []
     csv_lines = []
+
+    def title_to_filename(self):
+        name = self.title.lower()
+        # Brute force
+        name = [char for char in name
+                if char in 'abcdefghijklmnopqrstuvwxyz-_ 0123456789']
+        name = ''.join(name)
+        name = name.replace(' ', '_')
+        return name
+
+    @property
+    def csv_filename(self):
+        return self.title_to_filename()
 
     def render_to_response(self, context, **response_kwargs):
         """Return a csv response instead of a rendered template."""
@@ -2157,7 +2170,71 @@ class CSVResponseMixin(object):
         response['Content-Disposition'] = 'attachment; filename="%s"' % filename
 
         writer = csv.writer(response)
+        writer.writerow(self.header_line)
         for line in self.csv_lines:
             # Note: line should be a list of values.
             writer.writerow(line)
         return response
+
+
+class ProjectsCsvView(CsvResponseMixin, ProjectsView):
+    header_line = [
+        'Code',
+        'Omschrijving',
+        'Opdrachtgever',
+        'Groep',
+        'Intern',
+        'Gesubsidieerd',
+        'Gearchiveerd',
+        'Start',
+        'Einde',
+        'PL',
+        'PM',
+        'Opdrachtsom',
+        'Opdrachtsom OK',
+        'Startoverleg',
+        'Geaccepteerd',
+
+        'Gefactureerd',
+        'Omzet',
+        'Overige kosten',
+        'Gereserveerd',
+        'Gefactureerd t.o.v. opdrachtsom',
+        'Gefactureerd t.o.v. omzet + extra kosten',
+
+        'Opmerking',
+        'Financiele opmerking',
+    ]
+
+    @property
+    def csv_lines(self):
+        for line in self.lines:
+            project = line['project']
+            result = [
+                project.code,
+                project.description,
+                project.principal,
+                project.group,
+                project.internal,
+                project.is_subsidized,
+                project.archived,
+                project.start.first_day,
+                project.end.first_day,
+                project.project_leader,
+                project.project_manager,
+                project.contract_amount,
+                project.contract_amount_ok,
+                project.startup_meeting_done,
+                project.is_accepted,
+
+                line['invoice_amount'],
+                line['turnover'],
+                line['costs'],
+                line['reserved'],
+                line['invoice_amount_percentage'],
+                line['invoice_versus_turnover_percentage'],
+
+                project.remark,
+                project.financial_remark,
+            ]
+            yield(result)
