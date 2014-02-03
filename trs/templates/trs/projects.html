@@ -8,6 +8,14 @@
       <small>({{ view.small_title }})</small>
     {% endif %}
   </h1>
+
+  <div style="font-size: 300%"
+       class="text-success">
+    <a href="{% url 'trs.projects.csv' %}?{{ view.request.GET.urlencode }}">
+      <span class="glyphicon glyphicon-download"></span>
+    </a>
+  </div>
+
   <div class="text-muted">
     {% if not view.filters.archived %}
       <span>Actieve projecten</span> |

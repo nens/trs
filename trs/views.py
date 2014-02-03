@@ -2152,6 +2152,8 @@ class CsvResponseMixin(object):
 
     def title_to_filename(self):
         name = self.title.lower()
+        if hasattr(self, 'small_title'):
+            name = name + ' ' + self.small_title.lower()
         # Brute force
         name = [char for char in name
                 if char in 'abcdefghijklmnopqrstuvwxyz-_ 0123456789']
