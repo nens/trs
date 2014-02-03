@@ -379,7 +379,7 @@ class PersonView(BaseView):
             line['is_project_manager'] = (
                 project.project_manager_id == self.person.id)
             line['hourly_tariff'] = hourly_tariffs.get(project.id, 0)
-            if project.contract_amount:
+            if project.contract_amount or project.contract_amount_ok:
                 line['turnover'] = (
                     min(line['budget'],
                         line['booked']) * line['hourly_tariff'])
@@ -673,7 +673,7 @@ class ProjectsView(BaseView):
             turnover = project.turnover()
             costs = project.costs()
             reserved = project.reserved()
-            if project.contract_amount:
+            if project.contract_amount or project.contract_amount_ok:
                 invoice_amount_percentage = round(
                     invoice_amount / project.contract_amount * 100)
             else:  # Division by zero.
@@ -838,7 +838,8 @@ class ProjectView(BaseView):
                 self.project.project_manager_id == person.id)
             line['hourly_tariff'] = hourly_tariffs.get(person.id, 0)
             tariff = line['hourly_tariff']
-            if not self.project.contract_amount:
+            if not (self.project.contract_amount or
+                    self.project.contract_amount_ok):
                 # Don't count anything money-wise.
                 tariff = 0
             line['turnover'] = (
@@ -1127,7 +1128,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     'internal', 'hidden', 'hourless',
                     'archived',  # Note: archived only on edit view :-)
                     'is_subsidized', 'principal',
-                    'contract_amount',
+                    'contract_amount', 'contract_amount_ok',
                     'start', 'end', 'project_leader', 'project_manager',
                     # Note: the next two are shown only on the edit view!
                     'startup_meeting_done', 'is_accepted',
@@ -1141,7 +1142,8 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                 result.append('startup_meeting_done')
         if self.active_person == self.project.project_manager:
             if not self.project.is_accepted:
-                if self.project.contract_amount:
+                if (self.project.contract_amount or
+                    self.project.contract_amount_ok):
                     result.append('is_accepted')
         return result
 
@@ -1181,10 +1183,10 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
     title = "Nieuw project"
     fields = ['code', 'description', 'group', 'internal', 'hidden', 'hourless',
               'is_subsidized', 'principal',
-              'contract_amount',
+              'contract_amount', 'contract_amount_ok',
               'start', 'end', 'project_leader', 'project_manager',
               'remark', 'financial_remark',
-    ]
+        ]
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
