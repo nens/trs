@@ -42,7 +42,7 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        version = 25
+        version = 26
         self.cache_key = 'pycdata-%s-%s-%s-%s' % (
             person.id, person.cache_indicator, year, version)
         has_cached_data = self.get_cache()
@@ -100,9 +100,10 @@ class PersonYearCombination(object):
 
         contract_amounts = Project.objects.filter(
             id__in=project_ids).values(
-                'id', 'contract_amount')
-        contract_amounts = {item['id']: item['contract_amount']
-                            for item in contract_amounts}
+                'id', 'contract_amount', 'contract_amount_ok')
+        contract_amounts = {
+            item['id']: item['contract_amount'] or item['contract_amount_ok']
+            for item in contract_amounts}
 
         booked_this_year_per_project = Booking.objects.filter(
             booked_by=self.person,
