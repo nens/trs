@@ -1,3 +1,4 @@
+import csv
 import datetime
 import logging
 import time
@@ -11,6 +12,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.utils.datastructures import SortedDict
 from django.utils.decorators import method_decorator
@@ -673,7 +675,7 @@ class ProjectsView(BaseView):
             turnover = project.turnover()
             costs = project.costs()
             reserved = project.reserved()
-            if project.contract_amount or project.contract_amount_ok:
+            if project.contract_amount:
                 invoice_amount_percentage = round(
                     invoice_amount / project.contract_amount * 100)
             else:  # Division by zero.
@@ -2141,3 +2143,21 @@ class ProjectLeadersAndManagersView(BaseView):
     def project_managers(self):
         return Person.objects.filter(
             projects_i_manage__archived=False).distinct()
+
+
+class CSVResponseMixin(object):
+
+    csv_filename = 'export'  # We append .csv automatically.
+    csv_lines = []
+
+    def render_to_response(self, context, **response_kwargs):
+        """Return a csv response instead of a rendered template."""
+        response = HttpResponse(mimetype='text/csv')
+        filename = self.csv_filename + '.csv'
+        response['Content-Disposition'] = 'attachment; filename="%s"' % filename
+
+        writer = csv.writer(response)
+        for line in self.csv_lines:
+            # Note: line should be a list of values.
+            writer.writerow(line)
+        return response
