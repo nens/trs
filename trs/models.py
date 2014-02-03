@@ -431,7 +431,7 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        version = 5
+        version = 6
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, version)
 
@@ -527,7 +527,7 @@ class Project(models.Model):
             id: (budget_per_person[id] - well_booked_per_person[id])
             for id in ids}
 
-        if self.contract_amount:
+        if self.contract_amount or self.contract_amount_ok:
             tariff = {id: hourly_tariff_per_person[id]
                       for id in ids}
         else:
