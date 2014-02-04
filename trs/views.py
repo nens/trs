@@ -2171,6 +2171,7 @@ class CsvResponseMixin(object):
         filename = self.csv_filename + '.csv'
         response['Content-Disposition'] = 'attachment; filename="%s"' % filename
 
+        # Ideally, use something like .encode('cp1251') somehow somewhere.
         writer = csv.writer(response, dialect='excel')
         writer.writerow(self.header_line)
         for line in self.csv_lines:
@@ -2247,3 +2248,35 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
                 financial_remark,
             ]
             yield(result)
+
+
+class PersonsCsvView(CsvResponseMixin, PersonsView):
+    header_line = [
+        'Naam',
+        'Nog te boeken',
+        'Buiten budget geboekt',
+        'Extern percentage',
+        'Target percentage',
+        'Target',
+        'Omzet',
+        'Werkvoorraad',
+        'Werkvoorraad als omzet',
+        ]
+
+    @property
+    def csv_lines(self):
+        for line in self.lines:
+            person = line['person']
+            pyc = line['pyc']
+            result = [
+                person.name,
+                person.to_book()['hours'],
+                pyc.overbooked,
+                pyc.billable_percentage,
+                pyc.target_percentage,
+                person.target(),
+                pyc.turnover,
+                pyc.left_to_book_external,
+                pyc.left_to_turn_over,
+                ]
+            yield result

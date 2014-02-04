@@ -7,6 +7,11 @@
     {% if view.small_title %}
       <small>({{ view.small_title }})</small>
     {% endif %}
+    <a class="pull-right"
+       title="Download .csv"
+       href="{% url 'trs.persons.csv' %}?{{ view.request.GET.urlencode }}">
+      <span class="glyphicon glyphicon-download-alt"></span>
+    </a>
   </h1>
   <div class="text-muted">
     Archiefstatus:
