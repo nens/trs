@@ -90,9 +90,11 @@
             {{ line.project.as_widget }}
           </td>
           <td>
-            <span class="text-muted with-ellipsis"
-                  title="{{ line.project.description }}">
-              {{ line.project.description }}
+            <span class="text-muted"
+                  {% if line.project.description|length > 50 %}
+                    title="{{ line.project.description }}"
+                  {% endif %}>
+              {{ line.project.description|truncatechars:50 }}
             </span>
           </td>
           <td class="text-right {{ line.klass }}">
