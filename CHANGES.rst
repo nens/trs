@@ -5,7 +5,12 @@ Changelog of trs
 1.6 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Added csv export of persons and projects overviews.
+
+- Added separate 'contract amount ok' checkbox on projects to allow contract
+  amounts of zero to be accepted.
+
+- Permission fixes (the system was a bit too strict for project leaders).
 
 
 1.5 (2014-01-27)
