@@ -2171,7 +2171,7 @@ class CsvResponseMixin(object):
         filename = self.csv_filename + '.csv'
         response['Content-Disposition'] = 'attachment; filename="%s"' % filename
 
-        writer = csv.writer(response)
+        writer = csv.writer(response, dialect='excel')
         writer.writerow(self.header_line)
         for line in self.csv_lines:
             # Note: line should be a list of values.
@@ -2212,6 +2212,13 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
     def csv_lines(self):
         for line in self.lines:
             project = line['project']
+            remark = ''
+            financial_remark = ''
+            if project.remark:
+                remark = '   '.join(project.remark.splitlines())
+            if project.financial_remark:
+                financial_remark = '   '.join(
+                    project.financial_remark.splitlines())
             result = [
                 project.code,
                 project.description,
@@ -2236,7 +2243,7 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
                 line['invoice_amount_percentage'],
                 line['invoice_versus_turnover_percentage'],
 
-                project.remark,
-                project.financial_remark,
+                remark,
+                financial_remark,
             ]
             yield(result)
