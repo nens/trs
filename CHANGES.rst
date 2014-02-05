@@ -12,6 +12,8 @@ Changelog of trs
 
 - Permission fixes (the system was a bit too strict for project leaders).
 
+- Added csv export of project data.
+
 
 1.5 (2014-01-27)
 ----------------
