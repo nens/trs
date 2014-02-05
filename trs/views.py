@@ -2185,6 +2185,10 @@ class CsvResponseMixin(object):
 
 
 class ProjectsCsvView(CsvResponseMixin, ProjectsView):
+
+    def has_form_permissions(self):
+        return self.can_view_elaborate_version
+
     header_line = [
         'Code',
         'Omschrijving',
@@ -2255,6 +2259,10 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
 
 
 class PersonsCsvView(CsvResponseMixin, PersonsView):
+
+    def has_form_permissions(self):
+        return self.can_view_elaborate_version
+
     header_line = [
         'Naam',
         'Nog te boeken',
@@ -2287,6 +2295,9 @@ class PersonsCsvView(CsvResponseMixin, PersonsView):
 
 
 class ProjectCsvView(CsvResponseMixin, ProjectView):
+
+    def has_form_permissions(self):
+        return self.can_see_project_financials
 
     @cached_property
     def weeks(self):
