@@ -725,6 +725,10 @@ class ProjectView(BaseView):
         return Project.objects.get(pk=self.kwargs['pk'])
 
     @cached_property
+    def title(self):
+        return "Project %s: %s" % (self.project.code, self.project.description)
+
+    @cached_property
     def can_view_team(self):
         if not self.project.hidden:
             # Normally everyone can see it.
@@ -2280,3 +2284,110 @@ class PersonsCsvView(CsvResponseMixin, PersonsView):
                 pyc.left_to_turn_over,
                 ]
             yield result
+
+
+class ProjectCsvView(CsvResponseMixin, ProjectView):
+
+    @cached_property
+    def weeks(self):
+        return YearWeek.objects.filter(
+            first_day__gte=self.project.start.first_day,
+            first_day__lte=self.project.end.first_day)
+
+    @cached_property
+    def bookings_per_week_per_person(self):
+        bookings = Booking.objects.filter(
+            booked_on=self.project,
+            year_week__in=self.weeks).values(
+                'booked_by',
+                'year_week').annotate(
+                    models.Sum('hours'))
+        return {(booking['booked_by'], booking['year_week']):
+                round(booking['hours__sum'])
+                for booking in bookings}
+
+    @property
+    def header_line(self):
+        result = [
+            'Naam',
+            'Uren achter met boeken',
+            'PM/PL',
+            'Toegekende uren',
+            'Tarief',
+            'Kosten',
+            'Geboekt',
+            'Omzet',
+            'Verlies',
+            ''
+        ]
+        result += [week.as_param() for week in self.weeks]
+        return result
+
+    @property
+    def csv_lines(self):
+        for line in self.lines:
+            person = line['person']
+            pl = (person == self.project.project_leader) and 'PL' or ''
+            pm = (person == self.project.project_manager) and 'PM' or ''
+            result = [
+                person.name,
+                person.to_book()['hours'],
+                ' '.join([pl, pm]),
+                line['budget'],
+                line['hourly_tariff'],
+                line['planned_turnover'],
+                line['booked'],
+                line['turnover'],
+                line['loss'],
+                '',
+            ]
+            result += [
+                self.bookings_per_week_per_person.get((person.pk, week.pk), 0)
+                for week in self.weeks]
+
+            yield result
+
+        yield(['Subtotaal',
+               '',
+               '',
+               '',
+               '',
+               self.person_costs,
+               '',
+               self.total_turnover,
+               self.total_loss,
+           ])
+        yield([])
+
+        for budget_item in self.project.budget_items.all():
+            yield([
+                budget_item.description,
+               '',
+               '',
+               '',
+               '',
+                budget_item.amount_as_costs(),
+                budget_item.is_reservation and '(reservering)' or '',
+            ])
+
+        yield(['Totaal',
+               '',
+               '',
+               '',
+               '',
+               self.total_costs,
+           ])
+        yield(['Opdrachtsom',
+               '',
+               '',
+               '',
+               '',
+               self.project.contract_amount,
+           ])
+        yield(['Nog te verdelen',
+               '',
+               '',
+               '',
+               '',
+               self.left_to_dish_out,
+           ])

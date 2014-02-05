@@ -29,6 +29,13 @@
             class="text-muted glyphicon glyphicon-picture"></span>
     {% endif %}
     <small>{{ view.project.description }}</small>
+    {% if view.can_see_project_financials %}
+      <a class="pull-right"
+         title="Download .csv"
+         href="{% url 'trs.project.csv' pk=view.project.id %}">
+        <span class="glyphicon glyphicon-download-alt"></span>
+      </a>
+    {% endif %}
   </h1>
   <table class="table borderless-table table-condensed"
          style="width: auto;">
