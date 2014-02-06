@@ -2320,6 +2320,11 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
     @property
     def header_line(self):
         result = [
+            ['Code', self.project.code],
+            ['Naam', self.project.description],
+            ['Opdrachtgever', self.project.principal],
+        ]
+        actual_line = [
             'Naam',
             'Uren achter met boeken',
             'PM/PL',
@@ -2331,7 +2336,8 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
             'Verlies',
             ''
         ]
-        result += [week.as_param() for week in self.weeks]
+        actual_line += [week.as_param() for week in self.weeks]
+        result.append(actual_line)
         return result
 
     @property
