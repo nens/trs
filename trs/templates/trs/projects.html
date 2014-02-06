@@ -100,10 +100,10 @@
           <td class="text-right {{ line.klass }}">
             {{ line.project.overbooked|hours }}
           </td>
-          <td {% if view.project.contract_amount_ok %}
+          <td {% if view.project.contract_amount or view.project.contract_amount_ok %}
                 class="text-right"
               {% else %}
-                class="text-right text-danger"
+                class="text-right danger"
                 title="Opdrachtsom is nog niet goedgekeurd"
               {% endif %}>
             {{ line.project.contract_amount|money }}
