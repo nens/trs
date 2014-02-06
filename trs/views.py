@@ -2151,6 +2151,7 @@ class ProjectLeadersAndManagersView(BaseView):
 
 class CsvResponseMixin(object):
 
+    prepend_lines = []
     header_line = []
     csv_lines = []
 
@@ -2176,7 +2177,10 @@ class CsvResponseMixin(object):
         response['Content-Disposition'] = 'attachment; filename="%s"' % filename
 
         # Ideally, use something like .encode('cp1251') somehow somewhere.
-        writer = csv.writer(response, dialect='excel')
+        writer = csv.writer(response, delimiter="\t")
+
+        for line in self.prepend_lines:
+            writer.writerow(line)
         writer.writerow(self.header_line)
         for line in self.csv_lines:
             # Note: line should be a list of values.
@@ -2318,13 +2322,16 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
                 for booking in bookings}
 
     @property
+    def prepend_lines(self):
+        return [['Code', self.project.code],
+                ['Naam', self.project.description],
+                ['Opdrachtgever', self.project.principal],
+                [],
+                []]
+
+    @property
     def header_line(self):
         result = [
-            ['Code', self.project.code],
-            ['Naam', self.project.description],
-            ['Opdrachtgever', self.project.principal],
-        ]
-        actual_line = [
             'Naam',
             'Uren achter met boeken',
             'PM/PL',
@@ -2336,8 +2343,7 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
             'Verlies',
             ''
         ]
-        actual_line += [week.as_param() for week in self.weeks]
-        result.append(actual_line)
+        result += [week.as_param() for week in self.weeks]
         return result
 
     @property
