@@ -2177,7 +2177,7 @@ class CsvResponseMixin(object):
         response['Content-Disposition'] = 'attachment; filename="%s"' % filename
 
         # Ideally, use something like .encode('cp1251') somehow somewhere.
-        writer = csv.writer(response, delimiter="\t")
+        writer = csv.writer(response, delimiter=";")
 
         for line in self.prepend_lines:
             writer.writerow(line)
