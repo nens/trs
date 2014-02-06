@@ -2,7 +2,7 @@ Changelog of trs
 ===================================================
 
 
-1.6 (unreleased)
+1.6 (2014-02-06)
 ----------------
 
 - Added csv export of persons and projects overviews.
