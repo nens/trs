@@ -5,7 +5,10 @@ Changelog of trs
 1.7 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fixed caching: project changes increment the assigned persons' cache key
+  now.
+
+- Added fill_cache cronjob that runs every five minutes.
 
 
 1.6 (2014-02-06)
