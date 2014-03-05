@@ -42,7 +42,7 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        version = 26
+        version = 27
         self.cache_key = 'pycdata-%s-%s-%s-%s' % (
             person.id, person.cache_indicator, year, version)
         has_cached_data = self.get_cache()
