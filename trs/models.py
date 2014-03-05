@@ -422,6 +422,8 @@ class Project(models.Model):
                     work_assignment.save(save_assigned_on=False)
                     msg = "%s automatisch toegevoegd aan project" % person
                     messages.info(tls_request, msg)
+        for person in self.assigned_persons():
+            person.save()  # Increment cache key
         return result
 
     def __str__(self):
