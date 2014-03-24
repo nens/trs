@@ -14,6 +14,8 @@
   </div>
   {# The filter list in 'projects.html' is more elaborate #}
 
+  {% include "trs/project-pagination.html" %}
+
   <table class="table table-hover table-condensed table-fixed-header">
     <thead class="header">
       <tr>
@@ -36,5 +38,7 @@
       {% endfor %}
     </tbody>
   </table>
+
+  {% include "trs/project-pagination.html" %}
 
 {% endblock %}
