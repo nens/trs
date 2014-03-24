@@ -5,6 +5,8 @@ Changelog of trs
 1.7 (unreleased)
 ----------------
 
+- Added pagination for project page.
+
 - Fixed caching: project changes increment the assigned persons' cache key
   now.
 
