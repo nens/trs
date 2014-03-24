@@ -2,6 +2,7 @@ import csv
 import datetime
 import logging
 import time
+import urllib
 
 from django import forms
 from django.conf import settings
@@ -10,6 +11,9 @@ from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import PageNotAnInteger
+from django.core.paginator import EmptyPage
+from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import HttpResponse
@@ -109,6 +113,16 @@ class BaseMixin(object):
                     result[key] = from_get
 
         return result
+
+    @cached_property
+    def current_get_params(self):
+        """Return GET params to re-build the current page."""
+        relevant_params = {}
+        for key, default in self.available_filters.items():
+            current = self.filters[key]
+            if current != default:
+                relevant_params[key] = current
+        return urllib.parse.urlencode(relevant_params)
 
     @cached_property
     def today(self):
@@ -643,9 +657,22 @@ class ProjectsView(BaseView):
             result = result.filter(
                 project_manager=self.filters['project_manager'])
 
-        if self.can_view_elaborate_version:
-            return result
-        return result.filter(hidden=False)
+        if not self.can_view_elaborate_version:
+            result = result.filter(hidden=False)
+
+        # Pagination, mostly for the looooooong archive projects list.
+        page = self.request.GET.get('page')
+        paginator = Paginator(result, 500)
+        try:
+            result = paginator.page(page)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            result = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range (e.g. 9999), deliver last page of results.
+            result = paginator.page(paginator.num_pages)
+
+        return result
 
     @cached_property
     def lines(self):
