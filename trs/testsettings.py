@@ -17,6 +17,7 @@ DATABASES = {
 INSTALLED_APPS = [
     'trs',
     'lizard_auth_client',
+    'raven.contrib.django.raven_compat',
     'south',
     'gunicorn',
     'debug_toolbar',

@@ -17,5 +17,8 @@ CACHES = {
 }
 
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
+RAVEN_CONFIG = {
+    'dsn': 'https://bac9c8a84f00417a8460e7c5be2db105:437c6d1c2b744efca09619149038dbf3@sentry.lizard.net/8',
+}
 
 from trs_site.productionsettings import *
