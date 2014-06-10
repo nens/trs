@@ -33,9 +33,7 @@ INSTALLED_APPS = [
     #'django.contrib.sites',
 ]
 
-# Keep middleware classes in sync between dev and prod. Only diff is the lack
-# of debugtoolbarmiddleware in development.
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE_CLASSES = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     # Default stuff below.
     'django.middleware.common.CommonMiddleware',
@@ -46,7 +44,7 @@ MIDDLEWARE_CLASSES = (
     # Defaults above, extra two below.
     # 'trs.middleware.TracebackLoggingMiddleware',
     'tls.TLSRequestMiddleware',
-)
+
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 

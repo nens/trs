@@ -18,18 +18,7 @@ CACHES = {
 
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
 
-# Keep middleware classes in sync between dev and prod. Only diff is the lack
-# of debugtoolbarmiddleware in development.
-MIDDLEWARE_CLASSES = (
-    # Default stuff below.
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    # Defaults above, extra two below.
-    # 'trs.middleware.TracebackLoggingMiddleware',
-    'tls.TLSRequestMiddleware',
-)
+MIDDLEWARE_CLASSES.remove('debug_toolbar.middleware.DebugToolbarMiddleware')
+INSTALLED_APPS.remove['debug_toolbar']
 
 from trs_site.productionsettings import *
