@@ -96,14 +96,24 @@ LOGGING = {
             'level': 'DEBUG',
         },
         'django.db.backends': {
-            'handlers': ['console', 'logfile', 'sentry'],  # Quiet by default!
+            'handlers': ['null'],  # Quiet by default!
             'propagate': False,
-            'level': 'WARN',
+            'level': 'DEBUG',
         },
         'django.request': {
             'handlers': ['console', 'logfile', 'sentry',],
             'propagate': False,
             'level': 'ERROR',  # WARN also shows 404 errors
+        },
+        'raven': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'logfile'],
+            'propagate': False,
+        },
+        'sentry.errors': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'logfile'],
+            'propagate': False,
         },
     }
 }
