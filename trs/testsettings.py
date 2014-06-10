@@ -84,10 +84,14 @@ LOGGING = {
             'filename': os.path.join(BUILDOUT_DIR,
                                      'var', 'log', 'django.log'),
         },
+        'sentry': {
+            'level': 'ERROR',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        },
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'logfile'],
+            'handlers': ['console', 'logfile', 'sentry',],
             'propagate': True,
             'level': 'DEBUG',
         },
@@ -97,7 +101,7 @@ LOGGING = {
             'level': 'DEBUG',
         },
         'django.request': {
-            'handlers': ['console', 'logfile'],
+            'handlers': ['console', 'logfile', 'sentry',],
             'propagate': False,
             'level': 'ERROR',  # WARN also shows 404 errors
         },
