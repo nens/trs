@@ -98,7 +98,7 @@ LOGGING = {
         'django.db.backends': {
             'handlers': ['console', 'logfile', 'sentry'],  # Quiet by default!
             'propagate': False,
-            'level': 'ERROR',
+            'level': 'WARN',
         },
         'django.request': {
             'handlers': ['console', 'logfile', 'sentry',],
