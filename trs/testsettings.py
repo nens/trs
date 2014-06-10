@@ -44,7 +44,7 @@ MIDDLEWARE_CLASSES = [
     # Defaults above, extra two below.
     # 'trs.middleware.TracebackLoggingMiddleware',
     'tls.TLSRequestMiddleware',
-
+]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
