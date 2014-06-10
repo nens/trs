@@ -32,6 +32,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     #'django.contrib.sites',
 ]
+
+# Keep middleware classes in sync between dev and prod. Only diff is the lack
+# of debugtoolbarmiddleware in development.
 MIDDLEWARE_CLASSES = (
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     # Default stuff below.
@@ -104,16 +107,6 @@ LOGGING = {
             'handlers': ['console', 'logfile', 'sentry',],
             'propagate': False,
             'level': 'ERROR',  # WARN also shows 404 errors
-        },
-        'raven': {
-            'level': 'DEBUG',
-            'handlers': ['console', 'logfile'],
-            'propagate': False,
-        },
-        'sentry.errors': {
-            'level': 'DEBUG',
-            'handlers': ['console', 'logfile'],
-            'propagate': False,
         },
     }
 }
