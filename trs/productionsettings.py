@@ -21,6 +21,7 @@ STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStora
 for unwanted_in_production in ['debug_toolbar.middleware.DebugToolbarMiddleware',
                                'debug_toolbar']:
     for where in [MIDDLEWARE_CLASSES, INSTALLED_APPS]:
-        where.remove(unwanted_in_production)
+        if unwanted_in_production in where:
+            where.remove(unwanted_in_production)
 
 from trs_site.productionsettings import *
