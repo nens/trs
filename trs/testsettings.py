@@ -86,7 +86,7 @@ LOGGING = {
                                      'var', 'log', 'django.log'),
         },
         'sentry': {
-            'level': 'ERROR',
+            'level': 'WARN',
             'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         },
     },
