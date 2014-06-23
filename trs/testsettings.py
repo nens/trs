@@ -101,6 +101,11 @@ LOGGING = {
             'propagate': False,
             'level': 'DEBUG',
         },
+        'south': {
+            'handlers': ['console', 'logfile', 'sentry',],
+            'propagate': False,
+            'level': 'INFO',  # Suppress the huge output in tests
+        },
         'django.request': {
             'handlers': ['console', 'logfile', 'sentry',],
             'propagate': False,
