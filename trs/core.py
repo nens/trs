@@ -70,7 +70,6 @@ class PersonYearCombination(object):
     def get_cache(self):
         result = cache.get(self.cache_key)
         if not result:
-            logger.info(cache)
             return False
         for key in self.PYC_KEYS:
             setattr(self, key, result[key])
