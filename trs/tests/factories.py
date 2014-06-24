@@ -22,7 +22,7 @@ class PersonFactory(factory.django.DjangoModelFactory):
 class ProjectFactory(factory.django.DjangoModelFactory):
     FACTORY_FOR = models.Project
 
-    code = 'P1234'
+    code = factory.Sequence(lambda n: 'P%s' % str(1234 + n))
     description = ''
     internal = False
     archived = False
