@@ -48,7 +48,7 @@ class PersonChangeFactory(factory.django.DjangoModelFactory):
     person = factory.SubFactory(PersonFactory)
     hours_per_week = 0
     target = 0
-    year_week = factory.SubFactory(YearWeekFactory)
+    year_week = models.this_year_week()
 
 
 class BookingFactory(factory.django.DjangoModelFactory):
@@ -56,6 +56,8 @@ class BookingFactory(factory.django.DjangoModelFactory):
 
     booked_by = factory.SubFactory(PersonFactory)
     booked_on = factory.SubFactory(ProjectFactory)
+    year_week = models.this_year_week()
+    hours = 2
 
 
 class WorkAssignmentFactory(factory.django.DjangoModelFactory):
@@ -65,6 +67,7 @@ class WorkAssignmentFactory(factory.django.DjangoModelFactory):
     hourly_tariff = 0
     assigned_to = factory.SubFactory(PersonFactory)
     assigned_on = factory.SubFactory(ProjectFactory)
+    year_week = models.this_year_week()
 
 
 class BudgetItemFactory(factory.django.DjangoModelFactory):

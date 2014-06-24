@@ -110,10 +110,10 @@ class BookingViewTestCase(TestCase):
             week=51,
             first_day=REINOUTS_BIRTHDATE)
 
-        def _mock_date(self):
-            return REINOUTS_BIRTHDATE
+        def _mock_date():
+            return year_week
 
-        with mock.patch('trs.views.BaseMixin.today', _mock_date):
+        with mock.patch('trs.views.this_year_week', _mock_date):
             view = views.BookingView(kwargs={})
             self.assertEqual(view.active_year_week, year_week)
 
