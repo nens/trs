@@ -39,7 +39,7 @@ class YearWeekFactory(factory.django.DjangoModelFactory):
     week = factory.Sequence(lambda n: n + 1)
     first_day = factory.Sequence(
         lambda n: (datetime.date(year=2013, month=1, day=7) +
-                  datetime.timedelta(days=7) * n))
+              datetime.timedelta(days=7) * n))
 
 
 class PersonChangeFactory(factory.django.DjangoModelFactory):

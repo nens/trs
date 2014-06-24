@@ -53,9 +53,11 @@ def download_everything():
                         verify=False)
     soup = BeautifulSoup(export_page.content)
     user_export_select = soup.find_all(attrs={'name': 'userId'})[0]
-    user_ids = [int(tag['value']) for tag in user_export_select.find_all('option')]
+    user_ids = [int(tag['value'])
+                for tag in user_export_select.find_all('option')]
     project_export_select = soup.find_all(attrs={'name': 'budgetId'})[0]
-    project_ids = [int(tag['value']) for tag in project_export_select.find_all('option')]
+    project_ids = [int(tag['value'])
+                   for tag in project_export_select.find_all('option')]
     tempdir = tempfile.mkdtemp()
     logger.info("Tempdir: %s", tempdir)
     for user_id in user_ids:
@@ -109,7 +111,8 @@ def download_everything():
         verify=False)
     soup = BeautifulSoup(active_projects_invoices_page.content)
     budget_select = soup.find(id='budgetId')
-    active_budget_ids = [int(tag['value']) for tag in budget_select.find_all('option')]
+    active_budget_ids = [int(tag['value'])
+                         for tag in budget_select.find_all('option')]
 
     archived_projects_invoices_page = s.get(
         'https://www.trsnens.nl/',
@@ -118,7 +121,8 @@ def download_everything():
         verify=False)
     soup = BeautifulSoup(archived_projects_invoices_page.content)
     budget_select = soup.find(id='budgetId')
-    archived_budget_ids = [int(tag['value']) for tag in budget_select.find_all('option')]
+    archived_budget_ids = [int(tag['value'])
+                           for tag in budget_select.find_all('option')]
 
     for budget_id in active_budget_ids:
         page = s.get(
@@ -161,7 +165,6 @@ class Command(BaseCommand):
 
     def disabled_handle(self, *args, **options):
         basedir = download_everything()
-        # basedir = '/var/folders/dl/wpghhqhj2bs9bcnn213f1nqw0000gn/T/tmptxwxhw'
         logger.info("Everything downloaded into %s", basedir)
 
         # Sniffing the dialect

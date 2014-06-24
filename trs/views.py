@@ -191,7 +191,7 @@ class BaseMixin(object):
     def admin_override_active(self):
         # Allow an admin to see everything for debug purposes.
         if self.request.user.is_superuser:
-            if not 'admin_override_active' in self.request.session:
+            if 'admin_override_active' not in self.request.session:
                 self.request.session['admin_override_active'] = False
             if 'all' in self.request.GET:
                 self.request.session['admin_override_active'] = True
@@ -669,7 +669,8 @@ class ProjectsView(BaseView):
             # If page is not an integer, deliver first page.
             result = paginator.page(1)
         except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
+            # If page is out of range (e.g. 9999), deliver last page of
+            # results.
             result = paginator.page(paginator.num_pages)
 
         return result
@@ -1166,7 +1167,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     # Note: the next two are shown only on the edit view!
                     'startup_meeting_done', 'is_accepted',
                     'remark', 'financial_remark',
-            ]
+                    ]
         result = ['remark', 'financial_remark']
         if not self.project.is_accepted:
             result.append('end')
@@ -1219,7 +1220,7 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
               'contract_amount', 'contract_amount_ok',
               'start', 'end', 'project_leader', 'project_manager',
               'remark', 'financial_remark',
-        ]
+    ]
 
     def has_form_permissions(self):
         if self.can_edit_and_see_everything:
@@ -1876,7 +1877,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
 
     @cached_property
     def chosen_year_week(self):
-        if not 'year_week' in self.request.GET:
+        if 'year_week' not in self.request.GET:
             # Return the current week, unless we're at the start of the year.
             if this_year_week().week < 5:
                 return YearWeek.objects.filter(
@@ -2201,7 +2202,8 @@ class CsvResponseMixin(object):
         """Return a csv response instead of a rendered template."""
         response = HttpResponse(mimetype='text/csv')
         filename = self.csv_filename + '.csv'
-        response['Content-Disposition'] = 'attachment; filename="%s"' % filename
+        response[
+            'Content-Disposition'] = 'attachment; filename="%s"' % filename
 
         # Ideally, use something like .encode('cp1251') somehow somewhere.
         writer = csv.writer(response, delimiter=";")
@@ -2412,10 +2414,10 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
         for budget_item in self.project.budget_items.all():
             yield([
                 budget_item.description,
-               '',
-               '',
-               '',
-               '',
+                '',
+                '',
+                '',
+                '',
                 budget_item.amount_as_costs(),
                 budget_item.is_reservation and '(reservering)' or '',
             ])
