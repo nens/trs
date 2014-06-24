@@ -589,7 +589,7 @@ class Invoice(FinancialBase):
         verbose_name="project")
     date = models.DateField(
         verbose_name="factuurdatum",
-        help_text="Formaat: 1972-12-25, jjjj-mm-dd")
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
     number = models.CharField(
         verbose_name="factuurnummer",
         max_length=255)
@@ -611,7 +611,7 @@ class Invoice(FinancialBase):
         blank=True,
         null=True,
         verbose_name="betaald op",
-        help_text="Formaat: 1972-12-25, jjjj-mm-dd")
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
 
     class Meta:
         verbose_name = "factuur"
