@@ -28,7 +28,8 @@ def money_with_decimal(value):
     except:  # Yes, a bare except: filters should not raise exceptions
         return value
 
-    return mark_safe('<tt>%s,%02d</tt>' % (intcomma(whole), 100 * remainder))
+    return mark_safe('<tt>%s,%02d</tt>' % (intcomma(round(whole)),
+                                           round(100 * remainder)))
 
 
 @register.filter
