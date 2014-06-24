@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.template.defaultfilters import date as datelocalizer
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from tls import request as tls_request
@@ -691,7 +692,12 @@ class YearWeek(models.Model):
         ordering = ['year', 'week']
 
     def __str__(self):
-        return "{}  (week {:02d})".format(self.first_day, self.week)
+        # TODO
+        return "{} (week {:02d})".format(self.formatted_first_day, self.week)
+
+    @property
+    def formatted_first_day(self):
+        return datelocalizer(self.first_day, 'j b Y')
 
     def as_param(self):
         """Return string representation for in url parameters."""

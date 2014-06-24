@@ -1915,7 +1915,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         if adjusted:
             msg = ' en '.join(adjusted)
             msg = "%s aangepast" % msg.capitalize()
-            msg += " (ingaande %s)" % self.chosen_year_week.first_day
+            msg += " (ingaande %s)" % self.chosen_year_week.formatted_first_day
             messages.success(self.request, msg)
         else:
             messages.info(self.request, "Niets aan te passen")
