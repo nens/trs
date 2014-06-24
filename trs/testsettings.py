@@ -30,7 +30,6 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    #'django.contrib.sites',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -92,7 +91,7 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'logfile', 'sentry',],
+            'handlers': ['console', 'logfile', 'sentry'],
             'propagate': True,
             'level': 'DEBUG',
         },
@@ -101,8 +100,18 @@ LOGGING = {
             'propagate': False,
             'level': 'DEBUG',
         },
+        'south': {
+            'handlers': ['console', 'logfile', 'sentry'],
+            'propagate': False,
+            'level': 'INFO',  # Suppress the huge output in tests
+        },
+        'factory': {
+            'handlers': ['console'],
+            'propagate': False,
+            'level': 'INFO',  # Suppress the huge output in tests
+        },
         'django.request': {
-            'handlers': ['console', 'logfile', 'sentry',],
+            'handlers': ['console', 'logfile', 'sentry'],
             'propagate': False,
             'level': 'ERROR',  # WARN also shows 404 errors
         },

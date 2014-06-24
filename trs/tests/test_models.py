@@ -1,9 +1,12 @@
 # import unittest  # Note: this is 3.3's unittest2!
+import datetime
+
 from django.test import TestCase
 import mock
 
 from trs import models
 from trs.tests import factories
+from trs.management.commands.update_weeks import ensure_year_weeks_are_present
 
 
 class PersonTestCase(TestCase):
@@ -63,10 +66,12 @@ class PersonTestCase(TestCase):
         self.assertEqual(person.target(), 9000)
 
     def test_assigned_projects1(self):
+        ensure_year_weeks_are_present()
         person = factories.PersonFactory.create()
         self.assertEqual(len(person.assigned_projects()), 0)
 
     def test_assigned_projects2(self):
+        ensure_year_weeks_are_present()
         person = factories.PersonFactory.create()
         project = factories.ProjectFactory.create()
         factories.WorkAssignmentFactory(assigned_to=person,
@@ -95,8 +100,9 @@ class ProjectTestCase(TestCase):
     def test_sorting1(self):
         factories.ProjectFactory.create(code='P1234')
         factories.ProjectFactory.create(code='P0123')
+        # Newest at the top.
         self.assertEqual(models.Project.objects.all()[0].code,
-                         'P0123')
+                         'P1234')
 
     def test_sorting2(self):
         # External comes before internal.
@@ -107,7 +113,7 @@ class ProjectTestCase(TestCase):
         factories.ProjectFactory.create(code='P0001',
                                         internal=False)
         codes = [project.code for project in models.Project.objects.all()]
-        self.assertEqual(codes, ['P0001', 'P1234', 'P0123'])
+        self.assertEqual(codes, ['P1234', 'P0001', 'P0123'])
 
     def test_assigned_persons1(self):
         project = factories.ProjectFactory.create()
@@ -144,8 +150,11 @@ class YearWeekTestCase(TestCase):
         self.assertTrue(year_week2)
 
     def test_representation(self):
-        year_week = factories.YearWeekFactory.create(year=1972, week=51)
-        self.assertEqual(str(year_week), '1972-51')
+        year_week = factories.YearWeekFactory.create(
+            year=1972,
+            week=51,
+            first_day=datetime.date(year=1972, month=12, day=25))
+        self.assertEqual(str(year_week), '1972-12-25  (week 51)')
 
     def test_get_absolute_url(self):
         year_week = factories.YearWeekFactory.create(year=1972, week=51)
@@ -190,17 +199,3 @@ class BudgetItemTestCase(TestCase):
     def test_smoke(self):
         budget_item = factories.BudgetItemFactory.create()
         self.assertTrue(budget_item)
-
-
-class UtilsTestCase(TestCase):
-
-    def setUp(self):
-        self.test_weeks = [factories.YearWeekFactory.create()
-                           for i in range(10)]
-
-    def test_last_four_year_weeks1(self):
-        self.assertEqual(len(models.last_four_year_weeks()), 4)
-
-    def test_last_four_year_weeks2(self):
-        self.assertEqual(list(models.last_four_year_weeks())[-1],
-                         self.test_weeks[8])

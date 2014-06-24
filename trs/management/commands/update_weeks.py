@@ -51,37 +51,42 @@ def year_and_week_from_date(date):
     return year, week
 
 
+def interesting_days(year):
+    """Return all mondays and 1 january."""
+    cal = calendar.Calendar()
+    days = []
+    for month_number in MONTH_NUMBERS:
+        for week in cal.monthdayscalendar(year, month_number):
+            if week[0]:
+                days.append(datetime.date(year, month_number, week[0]))
+    first_of_january = datetime.date(year, 1, 1)
+    third_of_january = datetime.date(year, 1, 3)
+    # ^^ Allow for sat+sun before.
+    if days[0] > third_of_january:
+        # Prepend 1 january.
+        days[0:0] = [first_of_january]
+    return days
+
+
+def ensure_year_weeks_are_present():
+    count = 0
+    for year in range(settings.TRS_START_YEAR, settings.TRS_END_YEAR + 1):
+        for date in interesting_days(year):
+            year, week = year_and_week_from_date(date)
+            obj, added = models.YearWeek.objects.get_or_create(
+                year=year,
+                week=week,
+                first_day=date)
+            if added:
+                count += 1
+    logger.info("Added %s YearWeek objects", count)
+    fix_num_days()
+    logger.info("Adjusted the number of days per week where necessary.")
+
+
 class Command(BaseCommand):
     args = ""
     help = "Add the necessary year/week objects to the database."
 
     def handle(self, *args, **options):
-        count = 0
-        for year in range(settings.TRS_START_YEAR, settings.TRS_END_YEAR + 1):
-            for date in self.interesting_days(year):
-                year, week = year_and_week_from_date(date)
-                obj, added = models.YearWeek.objects.get_or_create(
-                    year=year,
-                    week=week,
-                    first_day=date)
-                if added:
-                    count += 1
-        logger.info("Added %s YearWeek objects", count)
-        fix_num_days()
-        logger.info("Adjusted the number of days per week where necessary.")
-
-    def interesting_days(self, year):
-        """Return all mondays and 1 january."""
-        cal = calendar.Calendar()
-        days = []
-        for month_number in MONTH_NUMBERS:
-            for week in cal.monthdayscalendar(year, month_number):
-                if week[0]:
-                    days.append(datetime.date(year, month_number, week[0]))
-        first_of_january = datetime.date(year, 1, 1)
-        third_of_january = datetime.date(year, 1, 3)
-        # ^^ Allow for sat+sun before.
-        if days[0] > third_of_january:
-            # Prepend 1 january.
-            days[0:0] = [first_of_january]
-        return days
+        ensure_year_weeks_are_present()

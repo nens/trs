@@ -561,7 +561,6 @@ class FinancialBase(models.Model):
         User,
         blank=True,
         null=True,
-        #editable=False,
         verbose_name="toegevoegd door")
     # ^^^ The two above are copied from EventBase.
 
@@ -720,7 +719,6 @@ class EventBase(models.Model):
         User,
         blank=True,
         null=True,
-        #editable=False,
         verbose_name="toegevoegd door")
     year_week = models.ForeignKey(
         YearWeek,

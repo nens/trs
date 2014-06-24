@@ -13,7 +13,7 @@ class TestUpdateWeeks(unittest.TestCase):
     def test_interesting_days1(self):
         # 1 jan 2007 was a monday, so 2007 should be just the mondays.
         # 31 dec 2007 is also a monday, so there are 53 interesting days.
-        result = self.command.interesting_days(2007)
+        result = update_weeks.interesting_days(2007)
         self.assertEqual(len(result), 53)
         self.assertEqual(result[0], datetime.date(2007, 1, 1))
         self.assertEqual(result[52], datetime.date(2007, 12, 31))
@@ -22,7 +22,7 @@ class TestUpdateWeeks(unittest.TestCase):
         # 1 jan 2013 was a tuesday.
         # 7 jan was the first monday.
         # 30 december is the last monday.
-        result = self.command.interesting_days(2013)
+        result = update_weeks.interesting_days(2013)
         self.assertEqual(result[0], datetime.date(2013, 1, 1))
         self.assertEqual(result[1], datetime.date(2013, 1, 7))
         self.assertEqual(result[52], datetime.date(2013, 12, 30))
@@ -32,7 +32,7 @@ class TestUpdateWeeks(unittest.TestCase):
         # 3 jan was the first monday.
         # We're not interested in 1&2 jan, as there would be no working days
         # in that zero-numbered week!
-        result = self.command.interesting_days(2011)
+        result = update_weeks.interesting_days(2011)
         self.assertEqual(result[0], datetime.date(2011, 1, 3))
 
     def test_week_from_date1(self):
