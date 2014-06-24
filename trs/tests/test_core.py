@@ -1,8 +1,6 @@
 from django.core.cache import cache
 from django.test import TestCase
-import mock
 
-from trs import models
 from trs import core
 from trs.tests import factories
 from trs.management.commands.update_weeks import ensure_year_weeks_are_present
