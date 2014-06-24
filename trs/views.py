@@ -215,6 +215,17 @@ class BaseMixin(object):
             return True
 
     @cached_property
+    def is_project_management(self):
+        """If viewing a project, return whether we're manager/leader/boss."""
+        if not hasattr(self, 'project'):
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+        if self.active_person in [self.project.project_manager,
+                                  self.project.project_leader]:
+            return True
+
+    @cached_property
     def gauges_id(self):
         return getattr(settings, 'GAUGES_ID', None)
 
@@ -761,11 +772,7 @@ class ProjectView(BaseView):
         if not self.project.hidden:
             # Normally everyone can see it.
             return True
-        if self.can_edit_and_see_everything:
-            return True
-        if self.project.project_leader == self.active_person:
-            return True
-        if self.project.project_manager == self.active_person:
+        if self.is_project_management:
             return True
 
     @cached_property
@@ -778,18 +785,14 @@ class ProjectView(BaseView):
             return True
         if self.project.archived:
             return False
-        if self.active_person in [self.project.project_leader,
-                                  self.project.project_manager]:
+        if self.is_project_management:
             return True
 
     @cached_property
     def can_edit_financials(self):
         if self.project.archived:
             return False
-        if self.can_edit_and_see_everything:
-            return True
-        if self.active_person in [self.project.project_manager,
-                                  self.project.project_leader]:
+        if self.is_project_management:
             return True
 
     @cached_property
@@ -803,36 +806,19 @@ class ProjectView(BaseView):
     def can_edit_team(self):
         if self.project.archived:
             return False
-        if self.can_edit_and_see_everything:
-            return True
-        if self.project.project_leader == self.active_person:
-            # Whatever happens, a PL can still add persons to the project for
-            # zero hours and a zero tariff.
-            return True
-        if self.project.is_accepted:
-            # Not editable anymore for project managers.
-            return False
-        if self.project.project_manager == self.active_person:
+        if self.is_project_management:
             return True
 
     @cached_property
     def can_see_financials(self):
-        if self.can_see_everything:
+        if self.is_project_management:
             return True
         if self.active_person in self.project.assigned_persons():
-            return True
-        if self.project.project_leader == self.active_person:
-            return True
-        if self.project.project_manager == self.active_person:
             return True
 
     @cached_property
     def can_see_project_financials(self):
-        if self.can_see_everything:
-            return True
-        if self.project.project_leader == self.active_person:
-            return True
-        if self.project.project_manager == self.active_person:
+        if self.is_project_management:
             return True
 
     @cached_property
@@ -1167,10 +1153,9 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     # Note: the next two are shown only on the edit view!
                     'startup_meeting_done', 'is_accepted',
                     'remark', 'financial_remark',
+                    'end',
                     ]
         result = ['remark', 'financial_remark']
-        if not self.project.is_accepted:
-            result.append('end')
         if self.active_person == self.project.project_leader:
             if not self.project.startup_meeting_done:
                 result.append('startup_meeting_done')
@@ -1200,8 +1185,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
             return True
         if self.project.archived:
             return False
-        if self.active_person in [self.project.project_leader,
-                                  self.project.project_manager]:
+        if self.is_project_management:
             return True
 
     def form_valid(self, form):
@@ -1321,10 +1305,7 @@ class BudgetItemCreateView(LoginAndPermissionsRequiredMixin,
     def has_form_permissions(self):
         if self.project.archived:
             return False
-        if self.can_edit_and_see_everything:
-            return True
-        if self.active_person in [self.project.project_manager,
-                                  self.project.project_leader]:
+        if self.is_project_management:
             return True
 
     @cached_property
@@ -1355,10 +1336,7 @@ class BudgetItemEditView(LoginAndPermissionsRequiredMixin,
     def has_form_permissions(self):
         if self.project.archived:
             return False
-        if self.can_edit_and_see_everything:
-            return True
-        if self.active_person in [self.project.project_manager,
-                                  self.project.project_leader]:
+        if self.is_project_management:
             return True
 
     @cached_property
@@ -1494,8 +1472,6 @@ class TeamMemberDeleteView(DeleteView):
             return False
         if self.can_edit_and_see_everything:
             return True
-        if self.project.is_accepted:
-            return False
         if self.project.project_leader == self.active_person:
             return True
         if self.person_has_booked:
@@ -1536,10 +1512,7 @@ class BudgetItemDeleteView(DeleteView):
     def has_form_permissions(self):
         if self.project.archived:
             return False
-        if self.can_edit_and_see_everything:
-            return True
-        if self.active_person in [self.project.project_manager,
-                                  self.project.project_leader]:
+        if self.is_project_management:
             return True
 
     @cached_property
@@ -1601,11 +1574,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     def has_form_permissions(self):
         if self.project.archived:
             return False
-        if self.can_edit_and_see_everything:
-            return True
-        if self.project.project_leader == self.active_person:
-            return True
-        if self.project.project_manager == self.active_person:
+        if self.is_project_management:
             return True
 
     @cached_property
@@ -1620,8 +1589,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     def can_edit_hours(self):
         if self.can_edit_and_see_everything:
             return True
-        if self.project.is_accepted:
-            return False
         if self.project.project_leader == self.active_person:
             return True
 
@@ -1632,7 +1599,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         if self.can_edit_and_see_everything:
             return True
         if self.project.project_leader == self.active_person:
-            return True  # Even if is_accepted is True, btw!
+            return True
 
     @property
     def can_delete_team_member(self):
@@ -1642,21 +1609,12 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             return False
         if self.can_edit_and_see_everything:
             return True
-        if self.project.is_accepted:
-            return False
         if self.project.project_leader == self.active_person:
-            return True  # Even if is_accepted is True, btw!
+            return True
 
     @cached_property
     def can_edit_hourly_tariff(self):
-        if self.can_edit_and_see_everything:
-            return True
-        if self.project.is_accepted:
-            return False
-        if self.project.project_leader == self.active_person:
-            # Yes, PL can edit the tariff too, now.
-            return True
-        if self.project.project_manager == self.active_person:
+        if self.is_project_management:
             return True
 
     def hours_fieldname(self, person):
@@ -1801,13 +1759,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 person = Person.objects.get(id=new_team_member_id)
                 msg = "%s is aan het team toegevoegd" % person.name
                 hourly_tariff = person.standard_hourly_tariff()
-                if self.project.is_accepted:
-                    # Oops, we cannot change the financials of the project,
-                    # but as project leader we *are* always allowed to add
-                    # someone to the project. But... the hourly tariff is zero
-                    # in that case.
-                    hourly_tariff = 0
-                    msg += " (opgepast: voor nultarief)"
                 work_assignment = WorkAssignment(
                     assigned_on=self.project,
                     assigned_to=person,
