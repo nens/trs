@@ -66,7 +66,7 @@ def hoursdiff(value):
         return value
     if rounded > 0:
         return '+%s' % rounded
-    return rounded
+    return str(rounded)
 
 
 @register.filter
