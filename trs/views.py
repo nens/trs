@@ -1116,8 +1116,8 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             line['field'] = fields[project_index]
             if (project.archived or
                 # TODO: figure out proper python3 comparisons... Shame on me.
-                str(project.start) > str(self.active_year_week) or
-                str(project.end) < str(self.active_year_week) or
+                project.start > self.active_year_week or
+                project.end < self.active_year_week or
                 self.active_year_week.year < this_year):
                 line['field'].field.widget.attrs['hidden'] = True
                 line['show_uneditable_value'] = True
