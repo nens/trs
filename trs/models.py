@@ -692,8 +692,11 @@ class YearWeek(models.Model):
         ordering = ['year', 'week']
 
     def __str__(self):
-        # TODO
         return "{} (week {:02d})".format(self.formatted_first_day, self.week)
+
+    def __lt__(self, other):
+        return ("%s %02d" % (self.year, self.week) <
+                "%s %02d" % (other.year, other.week))
 
     @property
     def formatted_first_day(self):

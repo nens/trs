@@ -168,6 +168,17 @@ class YearWeekTestCase(TestCase):
         year_week = factories.YearWeekFactory.create()
         self.assertTrue(year_week.friendly())
 
+    def test_comparison(self):
+        year_week1 = factories.YearWeekFactory(
+            year=2014,
+            week=53,
+            first_day=datetime.date(year=2014, month=12, day=29))
+        year_week2 = factories.YearWeekFactory(
+            year=2014,
+            week=27,
+            first_day=datetime.date(year=2014, month=6, day=20))
+        self.assertLess(year_week2, year_week1)
+
 
 class PersonChangeTestCase(TestCase):
 
