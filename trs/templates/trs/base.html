@@ -58,32 +58,6 @@
             </li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li class="hidden-xs hidden-sm">
-              <p class="navbar-text">{{ view.today }}</p>
-            </li>
-            {% if view.admin_override_active %}
-              <li>
-                <p class="navbar-text">
-                  <a href=".?notall">
-                    ADMIN OVERRIDE
-                  </a>
-                </p>
-              </li>
-            {% endif %}
-            {% if view.active_person %}
-              <li>
-                <p class="navbar-text">
-                  {{ view.active_person.as_widget }}
-                </p>
-              </li>
-            {% else %}
-              <li>
-                <p class="navbar-text"
-                   title="{{ user }} is nog niet bekend i/h systeem">
-                  Nog niet gekoppeld
-                </p>
-              </li>
-            {% endif %}
             {% if user.is_authenticated %}
               <li><a href="{% url 'logout' %}">Log uit</a></li>
             {% else %}
@@ -114,11 +88,27 @@
           </div>
           <div class="col-md-3 col-md-offset-1">
             {% block overview-column %}
+              {% if view.admin_override_active %}
+                <p>
+                  <a href=".?notall">
+                    ADMIN OVERRIDE ACTIVE
+                  </a>
+                </p>
+              {% endif %}
+              {% if not view.active_person %}
+                <div class="alert">
+                  Gebruiker {{ user }} is nog niet bekend i/h systeem.
+                </div>
+              {% endif %}
+
               {% if view.sidebar_person %}
 
                 <h2>
                   {% if view.sidebar_person == view.active_person %}
-                    Jouw voortgang
+                    <a href="{{ view.active_person.get_absolute_url }}">
+                      Jouw
+                    </a>
+                    voortgang
                   {% else %}
                     Voortgang
                     <small>van {{ view.sidebar_person.name }}</small>
