@@ -156,14 +156,6 @@ class YearWeekTestCase(TestCase):
             first_day=datetime.date(year=1972, month=12, day=25))
         self.assertEqual(str(year_week), '25 dec 1972 (week 51)')
 
-    def test_get_absolute_url(self):
-        year_week = factories.YearWeekFactory.create(year=1972, week=51)
-        self.assertEqual(year_week.get_absolute_url(), '/booking/1972-51/')
-
-    def test_as_widget(self):
-        year_week = factories.YearWeekFactory.create()
-        self.assertTrue(year_week.as_widget())
-
     def test_friendly(self):
         year_week = factories.YearWeekFactory.create()
         self.assertTrue(year_week.friendly())

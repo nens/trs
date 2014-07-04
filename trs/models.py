@@ -11,7 +11,6 @@ from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from tls import request as tls_request
 
-# TODO: add setting TRS_ADMIN_USER_CAN_DELETE_PERSONS_AND_PROJECTS
 # TODO: add django-appconf
 
 # Hours are always an integer. You cannot work 2.5 hours. At least, that's
@@ -705,15 +704,6 @@ class YearWeek(models.Model):
     def as_param(self):
         """Return string representation for in url parameters."""
         return "{}-{:02d}".format(self.year, self.week)
-
-    def get_absolute_url(self):
-        """Return link to the booking page for this year/week."""
-        return reverse('trs.booking', kwargs={'year': self.year,
-                                              'week': self.week})
-
-    def as_widget(self):
-        return mark_safe(render_to_string('trs/year-week-widget.html',
-                                          {'year_week': self}))
 
     def friendly(self):
         return mark_safe(render_to_string('trs/year-week-friendly.html',

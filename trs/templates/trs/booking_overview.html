@@ -19,7 +19,7 @@
           {% for line in view.lines %}
             <tr>
               <td>
-                <a href="{{ line.year_week.get_absolute_url }}">
+                <a href="{% url 'trs.booking' pk=view.person.id year=line.year_week.year week=line.year_week.week %}">
                   Week {{ line.year_week.week }}
                 </a>
               </td>
