@@ -23,6 +23,21 @@ DECIMAL_PLACES = 2
 logger = logging.getLogger(__name__)
 
 
+def make_code_sortable(code):
+    # Main goal: make P1234.10 sort numerically compared to P1234.2
+    code = code.lower()
+    if not '.' in code:
+        return code
+    parts = code.split('.')
+    if len(parts) != 2:
+        return code
+    try:
+        number = int(parts[1])
+        return '%s.%02d' % (parts[0], number)
+    except ValueError:
+        return code
+
+
 def this_year_week():
     cache_key = 'this-year-week2'
     cached = cache.get(cache_key)
@@ -302,6 +317,11 @@ class Project(models.Model):
         verbose_name="projectcode",
         unique=True,
         max_length=255)
+    code_for_sorting = models.CharField(
+        editable=False,
+        blank=True,
+        null=True,
+        max_length=255)
     description = models.CharField(
         verbose_name="omschrijving",
         blank=True,
@@ -405,10 +425,11 @@ class Project(models.Model):
     class Meta:
         verbose_name = "project"
         verbose_name_plural = "projecten"
-        ordering = ('internal', '-code')
+        ordering = ('internal', '-code_for_sorting')
 
     def save(self, *args, **kwargs):
         self.cache_indicator += 1
+        self.code_for_sorting = make_code_sortable(self.code)
         result = super(Project, self).save(*args, **kwargs)
         # We need to be saved before adding foreign keys to ourselves.
         if tls_request:

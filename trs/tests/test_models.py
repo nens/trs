@@ -115,6 +115,33 @@ class ProjectTestCase(TestCase):
         codes = [project.code for project in models.Project.objects.all()]
         self.assertEqual(codes, ['P1234', 'P0001', 'P0123'])
 
+    def test_sorting3(self):
+        factories.ProjectFactory.create(code='P1234.10')
+        factories.ProjectFactory.create(code='P1234.2')
+        # Sort .10 before .2 (it is a reverse sort, so normally .2 would come
+        # before .10 as it isn't normally a numerical sort.
+        self.assertEqual(models.Project.objects.all()[0].code,
+                         'P1234.10')
+
+    def test_make_code_sortable1(self):
+        self.assertEqual(models.make_code_sortable('P1234'), 'p1234')
+
+    def test_make_code_sortable2(self):
+        self.assertEqual(models.make_code_sortable('P1234.20.20'),
+                         'p1234.20.20')
+
+    def test_make_code_sortable3(self):
+        self.assertEqual(models.make_code_sortable('P1234.20'),
+                         'p1234.20')
+
+    def test_make_code_sortable4(self):
+        self.assertEqual(models.make_code_sortable('P1234.1'),
+                         'p1234.01')
+
+    def test_make_code_sortable5(self):
+        self.assertEqual(models.make_code_sortable('P1234.a'),
+                         'p1234.a')
+
     def test_assigned_persons1(self):
         project = factories.ProjectFactory.create()
         self.assertEqual(len(project.assigned_persons()), 0)
