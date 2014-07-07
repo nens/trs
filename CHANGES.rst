@@ -28,6 +28,11 @@ Changelog of TRS
 
 - Unified the date formatting.
 
+- Got the tests working again.
+
+- Made the behaviour of "project is accepted" less restrictive: most of the
+  editing is still possible.
+
 
 1.6 (2014-02-06)
 ----------------
