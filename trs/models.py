@@ -462,6 +462,9 @@ class Project(models.Model):
     def __str__(self):
         return self.code
 
+    def code_for_searching(self):
+        return self.code.replace('.', ' ')
+
     def get_absolute_url(self):
         return reverse('trs.project', kwargs={'pk': self.pk})
 

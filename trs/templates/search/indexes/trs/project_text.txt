@@ -1,3 +1,4 @@
+{{ object.code_for_searching }}
 {{ object.code }}
 {{ object.description }}
 {{ object.principal }}
