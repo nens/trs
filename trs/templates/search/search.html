@@ -7,15 +7,34 @@
   <h1>Zoeken</h1>
 
   <form method="get" action=".">
-    <table>
-      {{ form.as_table }}
-      <tr>
-        <td>&nbsp;</td>
-        <td>
-          <input type="submit" value="Search">
-        </td>
-      </tr>
-    </table>
+    {% for error in form.non_field_errors %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endfor %}
+    <fieldset>
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-group row">
+          <label class="col-sm-2">{{ field.label }}</label>
+          <div class="col-sm-5">
+            {% for error in field.errors %}
+              <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+            {{ field|tabindex:forloop.counter }}
+            {% if field.help_text %}
+              <p class="text-muted">{{ field.help_text }}</p>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+      <div class="form-group">
+        <div class="col-sm-offset-3">
+          <input type="submit"
+                 class="btn btn-primary"
+                 tabindex="{{  view.tabindex_submit_button|default:99 }}"
+                 value="Zoek" />
+        </div>
+      </div>
+    </fieldset>
 
     {% if query %}
       <h2>Resultaten</h2>
