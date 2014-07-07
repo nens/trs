@@ -43,3 +43,8 @@ table .header-fixed {
 .project-widget {
     white-space: nowrap;
 }
+
+/* Longer description field in 'new project' form */
+input#id_description {
+    width: 600px;
+}
