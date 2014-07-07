@@ -48,3 +48,9 @@ table .header-fixed {
 input#id_description {
     width: 600px;
 }
+
+/* For search results */
+.highlighted {
+    color: #C09853;
+    background-color: #FCF8E3;
+}

@@ -1,6 +1,7 @@
 {% extends "trs/base.html" %}
 {% load staticfiles %}
 {% load trs_formatting %}
+{% load highlight %}
 
 {% block main-column %}
   <h1>Zoeken</h1>
@@ -26,7 +27,8 @@
             </a>
             <span class="text-muted">
               {{ result.object.description }}
-            </span>
+            </span><br>
+            {% highlight result.text with query max_length 40 %}
           </li>
         {% empty %}
           <li>Geen resultaten gevonden.</li>
