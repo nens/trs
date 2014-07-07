@@ -124,5 +124,6 @@ urlpatterns = patterns(
         views.logout_view,
         name='trs.logout'),
 
+    (r'^search/', include('haystack.urls')),
     (r'^admin/', include(admin.site.urls)),
 )
