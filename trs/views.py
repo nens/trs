@@ -348,7 +348,7 @@ class PersonView(BaseView):
 
     @cached_property
     def all_projects(self):
-        return self.person.filtered_assigned_projects()
+        return self.person.unarchived_assigned_projects()
 
     @cached_property
     def projects(self):

@@ -215,13 +215,25 @@ class Person(models.Model):
 
     @cache_on_model
     def filtered_assigned_projects(self):
+        """Return active projects: unarchived and not over the end date."""
         return Project.objects.filter(
             work_assignments__assigned_to=self,
             archived=False,
             end__gte=this_year_week()).distinct()
 
     @cache_on_model
+    def unarchived_assigned_projects(self):
+        """Return assigned projects that aren't archived.
+
+        Don't look at the start/end date.
+        """
+        return Project.objects.filter(
+            work_assignments__assigned_to=self,
+            archived=False).distinct()
+
+    @cache_on_model
     def assigned_projects(self):
+        """Return all assigned projects."""
         return Project.objects.filter(
             work_assignments__assigned_to=self).distinct()
 
