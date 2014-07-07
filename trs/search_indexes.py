@@ -8,3 +8,15 @@ class ProjectIndex(indexes.SearchIndex, indexes.Indexable):
 
     def get_model(self):
         return models.Project
+
+
+class PersonIndex(indexes.SearchIndex, indexes.Indexable):
+    text = indexes.CharField(document=True, use_template=True)
+
+    def get_model(self):
+        return models.Person
+
+
+#person
+#invoice
+#budgetitem
