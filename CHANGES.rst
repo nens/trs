@@ -1,4 +1,4 @@
-Changelog of trs
+Changelog of TRS
 ===================================================
 
 
@@ -11,6 +11,22 @@ Changelog of trs
   now.
 
 - Added fill_cache cronjob that runs every five minutes.
+
+- Longer description form field for projects.
+
+- Added 'nowrap' for project widget, preventing it from wrapping lines.
+
+- Showing all unarchived projects in person view. Previous version also
+  excluded the projects whose end date had passed.
+
+- Fixed sorting of 'p1233.10' versus 'p1233.2'
+
+- Bookings now visible (for those with the right permissions) per user instead
+  of only for yourself.
+
+- Emptied out the navbar a bit in preparation for a search box.
+
+- Unified the date formatting.
 
 
 1.6 (2014-02-06)
