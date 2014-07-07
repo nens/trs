@@ -5,7 +5,8 @@ Changelog of TRS
 1.8 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Running 'collectstatic' from within the buildout. Now I've finally found the
+  source of my missing js/css problem...
 
 
 1.7 (2014-07-07)
