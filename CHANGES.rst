@@ -2,7 +2,7 @@ Changelog of TRS
 ===================================================
 
 
-1.7 (unreleased)
+1.7 (2014-07-07)
 ----------------
 
 - Added pagination for project page.
