@@ -3,10 +3,10 @@
 {% load trs_formatting %}
 
 {% block main-column %}
-  <h1>Uren boeken</h1>
+  <h1>{{ view.title }}</h1>
   <div class="text-muted">
     Zie
-    <a href="{% url 'trs.booking.overview' pk=view.active_person.id %}">
+    <a href="{% url 'trs.booking.overview' pk=view.person.id %}">
       jaaroverzicht boekingen
     </a>
     als je nog in oude weken moet boeken.
@@ -31,12 +31,19 @@
           {% for year_week in view.year_weeks_to_display %}
             {% if forloop.counter == view.highlight_column %}
               <th class="text-right">
-                <a href="{% url 'trs.booking' %}">
+                <a href="{% url 'trs.booking' pk=view.person.id %}">
                   Huidige<br>week
                 </a>
               </th>
             {% else %}
-              <th class="text-right">{{ year_week.as_widget }}</th>
+              <th class="text-right">
+                <a href="{% url 'trs.booking' pk=view.person.id year=year_week.year week=year_week.week %}">
+                  Week {{ year_week.week }}
+                </a><br>
+                <span class="year-date-hint">
+                  {{ year_week.first_day|date:"j b" }}
+                </span>
+              </th>
             {% endif %}
           {% endfor %}
         </tr>
@@ -96,21 +103,18 @@
                 >{{ total|hours }}</th>
           {% endfor %}
         </tr>
-        <tr>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th colspan="2">
-            <input type="submit"
-                   class="btn btn-primary"
-                   tabindex="{{ view.tabindex_submit_button|default:99 }}"
-                   value="Submit" /></th>
-        </tr>
+        {% if view.person = view.active_person %}
+          {# Only the person himself can book #}
+          <tr>
+            <th colspan="8"></th>
+            <th colspan="2">
+              <input type="submit"
+                     class="btn btn-primary"
+                     tabindex="{{ view.tabindex_submit_button|default:99 }}"
+                     value="Submit" />
+            </th>
+          </tr>
+        {% endif %}
       </tfoot>
     </table>
   </form>

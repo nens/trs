@@ -115,6 +115,33 @@ class ProjectTestCase(TestCase):
         codes = [project.code for project in models.Project.objects.all()]
         self.assertEqual(codes, ['P1234', 'P0001', 'P0123'])
 
+    def test_sorting3(self):
+        factories.ProjectFactory.create(code='P1234.10')
+        factories.ProjectFactory.create(code='P1234.2')
+        # Sort .10 before .2 (it is a reverse sort, so normally .2 would come
+        # before .10 as it isn't normally a numerical sort.
+        self.assertEqual(models.Project.objects.all()[0].code,
+                         'P1234.10')
+
+    def test_make_code_sortable1(self):
+        self.assertEqual(models.make_code_sortable('P1234'), 'p1234')
+
+    def test_make_code_sortable2(self):
+        self.assertEqual(models.make_code_sortable('P1234.20.20'),
+                         'p1234.20.20')
+
+    def test_make_code_sortable3(self):
+        self.assertEqual(models.make_code_sortable('P1234.20'),
+                         'p1234.20')
+
+    def test_make_code_sortable4(self):
+        self.assertEqual(models.make_code_sortable('P1234.1'),
+                         'p1234.01')
+
+    def test_make_code_sortable5(self):
+        self.assertEqual(models.make_code_sortable('P1234.a'),
+                         'p1234.a')
+
     def test_assigned_persons1(self):
         project = factories.ProjectFactory.create()
         self.assertEqual(len(project.assigned_persons()), 0)
@@ -154,19 +181,22 @@ class YearWeekTestCase(TestCase):
             year=1972,
             week=51,
             first_day=datetime.date(year=1972, month=12, day=25))
-        self.assertEqual(str(year_week), '1972-12-25  (week 51)')
-
-    def test_get_absolute_url(self):
-        year_week = factories.YearWeekFactory.create(year=1972, week=51)
-        self.assertEqual(year_week.get_absolute_url(), '/booking/1972-51/')
-
-    def test_as_widget(self):
-        year_week = factories.YearWeekFactory.create()
-        self.assertTrue(year_week.as_widget())
+        self.assertEqual(str(year_week), '25 dec 1972 (week 51)')
 
     def test_friendly(self):
         year_week = factories.YearWeekFactory.create()
         self.assertTrue(year_week.friendly())
+
+    def test_comparison(self):
+        year_week1 = factories.YearWeekFactory(
+            year=2014,
+            week=53,
+            first_day=datetime.date(year=2014, month=12, day=29))
+        year_week2 = factories.YearWeekFactory(
+            year=2014,
+            week=27,
+            first_day=datetime.date(year=2014, month=6, day=20))
+        self.assertLess(year_week2, year_week1)
 
 
 class PersonChangeTestCase(TestCase):

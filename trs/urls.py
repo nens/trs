@@ -87,16 +87,19 @@ urlpatterns = patterns(
     url(r'^booking/$',
         views.BookingView.as_view(),
         name='trs.booking'),
-    url(r'^booking/(?P<year>\d\d\d\d)-(?P<week>\d\d)/$',
+    url(r'^persons/(?P<pk>\d+)/booking/$',
+        views.BookingView.as_view(),
+        name='trs.booking'),
+    url(r'^persons/(?P<pk>\d+)/booking/(?P<year>\d\d\d\d)-(?P<week>\d\d)/$',
         views.BookingView.as_view(),
         name='trs.booking'),
     # The one below is for single-digit week numbers. There's surely a better
     # way to do this with a regex... [Reinout]
-    url(r'^booking/(?P<year>\d\d\d\d)-0(?P<week>\d)/$',
+    url(r'^persons/(?P<pk>\d+)/booking/(?P<year>\d\d\d\d)-0(?P<week>\d)/$',
         views.BookingView.as_view(),
         name='trs.booking'),
     # A PK has no dashes, so it doesn't conflict with the above two regexes.
-    url(r'^booking/(?P<pk>\d+)/$',
+    url(r'^persons/(?P<pk>\d+)/bookingoverview/$',
         views.BookingOverview.as_view(),
         name='trs.booking.overview'),
 

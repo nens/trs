@@ -215,6 +215,17 @@ class BaseMixin(object):
             return True
 
     @cached_property
+    def is_project_management(self):
+        """If viewing a project, return whether we're manager/leader/boss."""
+        if not hasattr(self, 'project'):
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+        if self.active_person in [self.project.project_manager,
+                                  self.project.project_leader]:
+            return True
+
+    @cached_property
     def gauges_id(self):
         return getattr(settings, 'GAUGES_ID', None)
 
@@ -337,7 +348,7 @@ class PersonView(BaseView):
 
     @cached_property
     def all_projects(self):
-        return self.person.filtered_assigned_projects()
+        return self.person.unarchived_assigned_projects()
 
     @cached_property
     def projects(self):
@@ -761,11 +772,7 @@ class ProjectView(BaseView):
         if not self.project.hidden:
             # Normally everyone can see it.
             return True
-        if self.can_edit_and_see_everything:
-            return True
-        if self.project.project_leader == self.active_person:
-            return True
-        if self.project.project_manager == self.active_person:
+        if self.is_project_management:
             return True
 
     @cached_property
@@ -778,18 +785,14 @@ class ProjectView(BaseView):
             return True
         if self.project.archived:
             return False
-        if self.active_person in [self.project.project_leader,
-                                  self.project.project_manager]:
+        if self.is_project_management:
             return True
 
     @cached_property
     def can_edit_financials(self):
         if self.project.archived:
             return False
-        if self.can_edit_and_see_everything:
-            return True
-        if self.active_person in [self.project.project_manager,
-                                  self.project.project_leader]:
+        if self.is_project_management:
             return True
 
     @cached_property
@@ -803,36 +806,19 @@ class ProjectView(BaseView):
     def can_edit_team(self):
         if self.project.archived:
             return False
-        if self.can_edit_and_see_everything:
-            return True
-        if self.project.project_leader == self.active_person:
-            # Whatever happens, a PL can still add persons to the project for
-            # zero hours and a zero tariff.
-            return True
-        if self.project.is_accepted:
-            # Not editable anymore for project managers.
-            return False
-        if self.project.project_manager == self.active_person:
+        if self.is_project_management:
             return True
 
     @cached_property
     def can_see_financials(self):
-        if self.can_see_everything:
+        if self.is_project_management:
             return True
         if self.active_person in self.project.assigned_persons():
-            return True
-        if self.project.project_leader == self.active_person:
-            return True
-        if self.project.project_manager == self.active_person:
             return True
 
     @cached_property
     def can_see_project_financials(self):
-        if self.can_see_everything:
-            return True
-        if self.project.project_leader == self.active_person:
-            return True
-        if self.project.project_manager == self.active_person:
+        if self.is_project_management:
             return True
 
     @cached_property
@@ -958,13 +944,31 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     template_name = 'trs/booking.html'
 
     def has_form_permissions(self):
-        """Per definition, return True.
+        # Warning: this is permission to view the page, not directly
+        # permission to edit someone else's bookings.
+        if self.can_see_everything:
+            return True
+        return self.active_person == self.person
 
-        No permission checks needed. What you get and what you edit are the
-        active_person's hours. And you are yourself! This might change later
-        on when office management gets the option to change someone's hours.
-        """
-        return True
+    @cached_property
+    def person(self):
+        person_id = self.kwargs.get('pk')
+        if person_id is None:
+            return self.active_person
+        return Person.objects.get(pk=person_id)
+
+    @cached_property
+    def title(self):
+        if self.active_person != self.person:
+            return "Boekingen van %s" % self.person
+        return "Uren boeken"
+
+    @cached_property
+    def sidebar_person(self):
+        if self.can_see_everything:
+            return self.person
+        if self.person == self.active_person:
+            return self.person
 
     @cached_property
     def active_year_week(self):
@@ -1001,7 +1005,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         first_week = self.year_weeks_to_display[0]
         latest_week = self.year_weeks_to_display[-1]
         return Project.objects.filter(
-            work_assignments__assigned_to=self.active_person,
+            work_assignments__assigned_to=self.person,
             end__gte=first_week,
             start__lte=latest_week).distinct()
 
@@ -1017,13 +1021,15 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     def get_form_class(self):
         """Return dynamically generated form class."""
         fields = SortedDict()
-        for index, project in enumerate(self.relevant_projects):
-            field_type = forms.IntegerField(
-                min_value=0,
-                max_value=100,
-                widget=forms.TextInput(attrs={'size': 2,
-                                              'tabindex': index + 1}))
-            fields[project.code] = field_type
+        if (self.person == self.active_person):
+            # If not, we cannot edit anything, just view.
+            for index, project in enumerate(self.relevant_projects):
+                field_type = forms.IntegerField(
+                    min_value=0,
+                    max_value=100,
+                    widget=forms.TextInput(attrs={'size': 2,
+                                                  'tabindex': index + 1}))
+                fields[project.code] = field_type
         return type("GeneratedBookingForm", (forms.Form,), fields)
 
     @cached_property
@@ -1034,7 +1040,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         result = {}
         bookings = Booking.objects.filter(
             year_week=self.active_year_week,
-            booked_by=self.active_person,
+            booked_by=self.person,
             booked_on__in=self.relevant_projects).values(
                 'booked_on__code').annotate(
                     models.Sum('hours'))
@@ -1059,7 +1065,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 project = [project for project in self.relevant_projects
                            if project.code == project_code][0]
                 booking = Booking(hours=difference,
-                                  booked_by=self.active_person,
+                                  booked_by=self.person,
                                   booked_on=project,
                                   year_week=self.active_year_week)
                 booking.save()
@@ -1084,7 +1090,10 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def success_url(self):
-        return self.active_year_week.get_absolute_url()
+        return reverse('trs.booking', kwargs={
+            'pk': self.person.id,
+            'year': self.active_year_week.year,
+            'week': self.active_year_week.week})
 
     @cached_property
     def lines(self):
@@ -1095,7 +1104,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         # Prepare booking info as one query.
         booking_table = Booking.objects.filter(
             year_week__in=self.year_weeks_to_display,
-            booked_by=self.active_person).values(
+            booked_by=self.person).values(
                 'booked_on', 'year_week').annotate(
                     models.Sum('hours'))
         bookings = {(item['booked_on'], item['year_week']):
@@ -1103,7 +1112,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                     for item in booking_table}
         # Idem for budget
         budget_per_project = WorkAssignment.objects.filter(
-            assigned_to=self.active_person,
+            assigned_to=self.person,
             assigned_on__in=self.relevant_projects).values(
                 'assigned_on').annotate(
                     models.Sum('hours'))
@@ -1111,7 +1120,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                    for item in budget_per_project}
         # Item for hours worked.
         booked_per_project = Booking.objects.filter(
-            booked_by=self.active_person,
+            booked_by=self.person,
             booked_on__in=self.relevant_projects).values(
                 'booked_on').annotate(
                     models.Sum('hours'))
@@ -1126,14 +1135,18 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 key = 'hours%s' % index
                 line[key] = booked
 
-            # Filtering if we're allowed to book or not.
-            line['field'] = fields[project_index]
-            if (project.archived or
-                # TODO: figure out proper python3 comparisons... Shame on me.
-                str(project.start) > str(self.active_year_week) or
-                str(project.end) < str(self.active_year_week) or
-                self.active_year_week.year < this_year):
-                line['field'].field.widget.attrs['hidden'] = True
+            if fields:
+                line['field'] = fields[project_index]
+                if (project.archived or
+                    project.start > self.active_year_week or
+                    project.end < self.active_year_week or
+                    self.active_year_week.year < this_year):
+                    # Filtering if we're allowed to book or not.
+                    line['field'].field.widget.attrs['hidden'] = True
+                    line['show_uneditable_value'] = True
+            else:
+                # No fields: we're only allowed to view the data, not edit it.
+                line['field'] = ''
                 line['show_uneditable_value'] = True
 
             line['budget'] = budgets.get(project.id, 0)
@@ -1167,10 +1180,9 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     # Note: the next two are shown only on the edit view!
                     'startup_meeting_done', 'is_accepted',
                     'remark', 'financial_remark',
+                    'end',
                     ]
         result = ['remark', 'financial_remark']
-        if not self.project.is_accepted:
-            result.append('end')
         if self.active_person == self.project.project_leader:
             if not self.project.startup_meeting_done:
                 result.append('startup_meeting_done')
@@ -1200,8 +1212,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
             return True
         if self.project.archived:
             return False
-        if self.active_person in [self.project.project_leader,
-                                  self.project.project_manager]:
+        if self.is_project_management:
             return True
 
     def form_valid(self, form):
@@ -1321,10 +1332,7 @@ class BudgetItemCreateView(LoginAndPermissionsRequiredMixin,
     def has_form_permissions(self):
         if self.project.archived:
             return False
-        if self.can_edit_and_see_everything:
-            return True
-        if self.active_person in [self.project.project_manager,
-                                  self.project.project_leader]:
+        if self.is_project_management:
             return True
 
     @cached_property
@@ -1355,10 +1363,7 @@ class BudgetItemEditView(LoginAndPermissionsRequiredMixin,
     def has_form_permissions(self):
         if self.project.archived:
             return False
-        if self.can_edit_and_see_everything:
-            return True
-        if self.active_person in [self.project.project_manager,
-                                  self.project.project_leader]:
+        if self.is_project_management:
             return True
 
     @cached_property
@@ -1494,8 +1499,6 @@ class TeamMemberDeleteView(DeleteView):
             return False
         if self.can_edit_and_see_everything:
             return True
-        if self.project.is_accepted:
-            return False
         if self.project.project_leader == self.active_person:
             return True
         if self.person_has_booked:
@@ -1536,10 +1539,7 @@ class BudgetItemDeleteView(DeleteView):
     def has_form_permissions(self):
         if self.project.archived:
             return False
-        if self.can_edit_and_see_everything:
-            return True
-        if self.active_person in [self.project.project_manager,
-                                  self.project.project_leader]:
+        if self.is_project_management:
             return True
 
     @cached_property
@@ -1601,11 +1601,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     def has_form_permissions(self):
         if self.project.archived:
             return False
-        if self.can_edit_and_see_everything:
-            return True
-        if self.project.project_leader == self.active_person:
-            return True
-        if self.project.project_manager == self.active_person:
+        if self.is_project_management:
             return True
 
     @cached_property
@@ -1620,8 +1616,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     def can_edit_hours(self):
         if self.can_edit_and_see_everything:
             return True
-        if self.project.is_accepted:
-            return False
         if self.project.project_leader == self.active_person:
             return True
 
@@ -1632,7 +1626,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         if self.can_edit_and_see_everything:
             return True
         if self.project.project_leader == self.active_person:
-            return True  # Even if is_accepted is True, btw!
+            return True
 
     @property
     def can_delete_team_member(self):
@@ -1642,21 +1636,12 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             return False
         if self.can_edit_and_see_everything:
             return True
-        if self.project.is_accepted:
-            return False
         if self.project.project_leader == self.active_person:
-            return True  # Even if is_accepted is True, btw!
+            return True
 
     @cached_property
     def can_edit_hourly_tariff(self):
-        if self.can_edit_and_see_everything:
-            return True
-        if self.project.is_accepted:
-            return False
-        if self.project.project_leader == self.active_person:
-            # Yes, PL can edit the tariff too, now.
-            return True
-        if self.project.project_manager == self.active_person:
+        if self.is_project_management:
             return True
 
     def hours_fieldname(self, person):
@@ -1801,13 +1786,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 person = Person.objects.get(id=new_team_member_id)
                 msg = "%s is aan het team toegevoegd" % person.name
                 hourly_tariff = person.standard_hourly_tariff()
-                if self.project.is_accepted:
-                    # Oops, we cannot change the financials of the project,
-                    # but as project leader we *are* always allowed to add
-                    # someone to the project. But... the hourly tariff is zero
-                    # in that case.
-                    hourly_tariff = 0
-                    msg += " (opgepast: voor nultarief)"
                 work_assignment = WorkAssignment(
                     assigned_on=self.project,
                     assigned_to=person,
@@ -1964,7 +1942,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
         if adjusted:
             msg = ' en '.join(adjusted)
             msg = "%s aangepast" % msg.capitalize()
-            msg += " (ingaande %s)" % self.chosen_year_week.first_day
+            msg += " (ingaande %s)" % self.chosen_year_week.formatted_first_day
             messages.success(self.request, msg)
         else:
             messages.info(self.request, "Niets aan te passen")

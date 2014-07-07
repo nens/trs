@@ -334,7 +334,7 @@
         <tbody>
           {% for invoice in view.project.invoices.all %}
             <tr>
-              <td>{{ invoice.date|date:"SHORT_DATE_FORMAT" }}</td>
+              <td>{{ invoice.date|date:"j b Y" }}</td>
               <td>
                 {% if view.can_edit_financials %}
                   <a href="{% url 'trs.invoice.edit' project_pk=view.project.pk pk=invoice.pk %}">
@@ -355,7 +355,7 @@
               <td class="text-right">{{ invoice.amount_exclusive|money_with_decimal }}</td>
               <td class="text-right">{{ invoice.vat|money_with_decimal }}</td>
               <td class="text-right">{{ invoice.amount_inclusive|money_with_decimal }}</td>
-              <td>{{ invoice.payed|date:"SHORT_DATE_FORMAT"|default:'Nee' }}</td>
+              <td>{{ invoice.payed|date:"j b Y"|default:'Nee' }}</td>
             </tr>
           {% empty %}
             <tr>

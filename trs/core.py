@@ -58,7 +58,7 @@ class PersonYearCombination(object):
         self.billable_percentage = self.calc_external_percentage()
         self.unbillable_percentage = 100 - self.billable_percentage
         elapsed = (time.time() - start_time)
-        logger.debug("Re-calculated person/year info for %s in % secs",
+        logger.debug("Re-calculated person/year info for %s in %s secs",
                      self.person, elapsed)
 
     def set_cache(self):

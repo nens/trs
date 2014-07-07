@@ -6,11 +6,11 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.template.defaultfilters import date as datelocalizer
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from tls import request as tls_request
 
-# TODO: add setting TRS_ADMIN_USER_CAN_DELETE_PERSONS_AND_PROJECTS
 # TODO: add django-appconf
 
 # Hours are always an integer. You cannot work 2.5 hours. At least, that's
@@ -21,6 +21,21 @@ MAX_DIGITS = 8
 DECIMAL_PLACES = 2
 
 logger = logging.getLogger(__name__)
+
+
+def make_code_sortable(code):
+    # Main goal: make P1234.10 sort numerically compared to P1234.2
+    code = code.lower()
+    if not '.' in code:
+        return code
+    parts = code.split('.')
+    if len(parts) != 2:
+        return code
+    try:
+        number = int(parts[1])
+        return '%s.%02d' % (parts[0], number)
+    except ValueError:
+        return code
 
 
 def this_year_week():
@@ -200,13 +215,25 @@ class Person(models.Model):
 
     @cache_on_model
     def filtered_assigned_projects(self):
+        """Return active projects: unarchived and not over the end date."""
         return Project.objects.filter(
             work_assignments__assigned_to=self,
             archived=False,
             end__gte=this_year_week()).distinct()
 
     @cache_on_model
+    def unarchived_assigned_projects(self):
+        """Return assigned projects that aren't archived.
+
+        Don't look at the start/end date.
+        """
+        return Project.objects.filter(
+            work_assignments__assigned_to=self,
+            archived=False).distinct()
+
+    @cache_on_model
     def assigned_projects(self):
+        """Return all assigned projects."""
         return Project.objects.filter(
             work_assignments__assigned_to=self).distinct()
 
@@ -301,6 +328,11 @@ class Project(models.Model):
     code = models.CharField(
         verbose_name="projectcode",
         unique=True,
+        max_length=255)
+    code_for_sorting = models.CharField(
+        editable=False,
+        blank=True,
+        null=True,
         max_length=255)
     description = models.CharField(
         verbose_name="omschrijving",
@@ -405,10 +437,11 @@ class Project(models.Model):
     class Meta:
         verbose_name = "project"
         verbose_name_plural = "projecten"
-        ordering = ('internal', '-code')
+        ordering = ('internal', '-code_for_sorting')
 
     def save(self, *args, **kwargs):
         self.cache_indicator += 1
+        self.code_for_sorting = make_code_sortable(self.code)
         result = super(Project, self).save(*args, **kwargs)
         # We need to be saved before adding foreign keys to ourselves.
         if tls_request:
@@ -588,7 +621,7 @@ class Invoice(FinancialBase):
         verbose_name="project")
     date = models.DateField(
         verbose_name="factuurdatum",
-        help_text="Formaat: 1972-12-25, jjjj-mm-dd")
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
     number = models.CharField(
         verbose_name="factuurnummer",
         max_length=255)
@@ -610,7 +643,7 @@ class Invoice(FinancialBase):
         blank=True,
         null=True,
         verbose_name="betaald op",
-        help_text="Formaat: 1972-12-25, jjjj-mm-dd")
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
 
     class Meta:
         verbose_name = "factuur"
@@ -691,20 +724,19 @@ class YearWeek(models.Model):
         ordering = ['year', 'week']
 
     def __str__(self):
-        return "{}  (week {:02d})".format(self.first_day, self.week)
+        return "{} (week {:02d})".format(self.formatted_first_day, self.week)
+
+    def __lt__(self, other):
+        return ("%s %02d" % (self.year, self.week) <
+                "%s %02d" % (other.year, other.week))
+
+    @property
+    def formatted_first_day(self):
+        return datelocalizer(self.first_day, 'j b Y')
 
     def as_param(self):
         """Return string representation for in url parameters."""
         return "{}-{:02d}".format(self.year, self.week)
-
-    def get_absolute_url(self):
-        """Return link to the booking page for this year/week."""
-        return reverse('trs.booking', kwargs={'year': self.year,
-                                              'week': self.week})
-
-    def as_widget(self):
-        return mark_safe(render_to_string('trs/year-week-widget.html',
-                                          {'year_week': self}))
 
     def friendly(self):
         return mark_safe(render_to_string('trs/year-week-friendly.html',
