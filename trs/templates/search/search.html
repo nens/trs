@@ -4,7 +4,6 @@
 {% load highlight %}
 
 {% block full-width %}
-  <h1>Zoeken</h1>
 
   <form method="get" action=".">
     {% for error in form.non_field_errors %}
@@ -12,30 +11,15 @@
     {% endfor %}
     <fieldset>
       {% for field in form %}
-        {% if forloop.counter != 2 %}
-          {# Temp hack: don't show the second field with the person/project selection #}
-          <div class="form-group row">
-            <label class="col-sm-2">{{ field.label }}</label>
+        {% if forloop.counter = 1 %}
+          <div class="row">
+            {# Dirty hack: don't show the second field with the person/project selection #}
             <div class="col-sm-5">
-              {% for error in field.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
-              {% endfor %}
               {{ field|tabindex:forloop.counter }}
-              {% if field.help_text %}
-                <p class="text-muted">{{ field.help_text }}</p>
-              {% endif %}
             </div>
           </div>
         {% endif %}
       {% endfor %}
-      <div class="form-group">
-        <div class="col-sm-offset-3">
-          <input type="submit"
-                 class="btn btn-primary"
-                 tabindex="{{  view.tabindex_submit_button|default:99 }}"
-                 value="Zoek" />
-        </div>
-      </div>
     </fieldset>
 
     {% if query %}
