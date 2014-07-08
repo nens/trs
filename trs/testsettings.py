@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'south',
     'gunicorn',
     'debug_toolbar',
+    'haystack',
     'django.contrib.staticfiles',
     'django_extensions',
     'django_nose',
@@ -146,6 +147,12 @@ SSO_SERVER_PRIVATE_URL = 'http://somewhere:someport/'
 # Don't copy is_staff/is_superuser
 SSO_SYNCED_USER_KEYS = ['first_name', 'last_name', 'email', 'is_active']
 
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'PATH': os.path.join(BUILDOUT_DIR, 'var', 'index'),
+    },
+}
 
 try:
     from .local_testsettings import *

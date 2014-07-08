@@ -12,12 +12,15 @@ long_description = '\n\n'.join([
 install_requires = [
     'Django >= 1.6',
     'Werkzeug',
+    'Whoosh',
     'beautifulsoup4',
     'django-debug-toolbar',
     'django-extensions',
+    'django-haystack',
     'django-tls',
     'gunicorn',
     'lizard-auth-client >= 0.9',
+    'python-dateutil',  # Needed by haystack
     'python3-memcached',
     'raven',
     'requests',

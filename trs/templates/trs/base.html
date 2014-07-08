@@ -58,6 +58,16 @@
             </li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
+            <li>
+              <form class="navbar-form"
+                    method="get"
+                    action="{% url 'haystack_search' %}" >
+                <input type="text"
+                       class="search-query"
+                       name="q"
+                       placeholder="Zoek...">
+              </form>
+            </li>
             {% if user.is_authenticated %}
               <li><a href="{% url 'logout' %}">Log uit</a></li>
             {% else %}
