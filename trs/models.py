@@ -146,6 +146,9 @@ class Person(models.Model):
     cache_indicator_person_change = models.IntegerField(
         default=0,
         verbose_name="cache indicator voor PersonChange veranderingen")
+    last_modified = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="laatst gewijzigd")
 
     class Meta:
         verbose_name = "persoon"
@@ -433,6 +436,9 @@ class Project(models.Model):
     cache_indicator = models.IntegerField(
         default=0,
         verbose_name="cache indicator")
+    last_modified = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="laatst gewijzigd")
 
     class Meta:
         verbose_name = "project"
