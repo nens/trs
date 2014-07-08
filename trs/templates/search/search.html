@@ -43,13 +43,16 @@
       <ul class="search-results">
         {% for result in page.object_list %}
           <li>
-            <a href="{{ result.object.get_absolute_url }}">
-              {{ result.object }}
-            </a>
+            <b>
+              <a href="{{ result.object.get_absolute_url }}">
+                {{ result.object }}
+              </a>
+            </b>
+            {{ result.object.description }}
+            <br>
             <span class="text-muted">
-              {{ result.object.description }}
-            </span><br>
-            {% highlight result.text with query max_length 40 %}
+              {% highlight result.text with query max_length 60 %}
+            </span>
           </li>
         {% empty %}
           <li>Geen resultaten gevonden.</li>
