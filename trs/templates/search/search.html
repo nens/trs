@@ -11,20 +11,22 @@
       <div class="alert alert-danger">{{ error }}</div>
     {% endfor %}
     <fieldset>
-      {% csrf_token %}
       {% for field in form %}
-        <div class="form-group row">
-          <label class="col-sm-2">{{ field.label }}</label>
-          <div class="col-sm-5">
-            {% for error in field.errors %}
-              <div class="alert alert-danger">{{ error }}</div>
-            {% endfor %}
-            {{ field|tabindex:forloop.counter }}
-            {% if field.help_text %}
-              <p class="text-muted">{{ field.help_text }}</p>
-            {% endif %}
+        {% if forloop.first %}
+          {# Temp hack: don't show the second field with the person/project selection #}
+          <div class="form-group row">
+            <label class="col-sm-2">{{ field.label }}</label>
+            <div class="col-sm-5">
+              {% for error in field.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
+              {{ field|tabindex:forloop.counter }}
+              {% if field.help_text %}
+                <p class="text-muted">{{ field.help_text }}</p>
+              {% endif %}
+            </div>
           </div>
-        </div>
+        {% endif %}
       {% endfor %}
       <div class="form-group">
         <div class="col-sm-offset-3">
