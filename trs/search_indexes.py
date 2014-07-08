@@ -5,6 +5,7 @@ from trs import models
 
 class ProjectIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
+    archived = indexes.BooleanField(model_attr='archived')
 
     def get_model(self):
         return models.Project
@@ -19,6 +20,7 @@ class ProjectIndex(indexes.SearchIndex, indexes.Indexable):
 
 class PersonIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
+    archived = indexes.BooleanField(model_attr='archived')
 
     def get_model(self):
         return models.Person

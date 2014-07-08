@@ -2,7 +2,10 @@
 {{ object.code }}
 {{ object.description }}
 {{ object.principal }}
-{{ object.project_leader }}
-{{ object.project_manager }}
 {{ object.remark }}
 {{ object.financial_remark }}
+{% if not object.hidden %}
+  {% for person in object.assigned_persons %}
+    {{ person }}
+  {% endfor %}
+{% endif %}
