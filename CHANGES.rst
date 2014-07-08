@@ -2,7 +2,7 @@ Changelog of TRS
 ===================================================
 
 
-1.8 (unreleased)
+1.8 (2014-07-08)
 ----------------
 
 - Running 'collectstatic' from within the buildout. Now I've finally found the
