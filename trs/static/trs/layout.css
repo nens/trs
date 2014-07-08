@@ -40,7 +40,7 @@ table .header-fixed {
     text-overflow: ellipsis;
 }
 
-.project-widget {
+.project-widget, .date {
     white-space: nowrap;
 }
 

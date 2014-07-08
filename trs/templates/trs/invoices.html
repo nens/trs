@@ -48,7 +48,9 @@
     <tbody>
       {% for invoice in view.invoices %}
       <tr id="{{ invoice.id }}">
-        <td class="text-right">{{ invoice.date|date:"j b Y" }}</td>
+        <td class="text-right">
+          <span class="date">{{ invoice.date|date:"j b Y" }}</span>
+        </td>
         <td>
           {% if not invoice.project.archived %}
             <a href="{% url 'trs.invoice.edit' project_pk=invoice.project.pk pk=invoice.pk %}?from_invoice_overview">
@@ -64,7 +66,11 @@
         <td class="text-right">{{ invoice.amount_exclusive|money_with_decimal }}</td>
         <td class="text-right">{{ invoice.vat|money_with_decimal }}</td>
         <td class="text-right">{{ invoice.amount_inclusive|money_with_decimal }}</td>
-        <td class="text-right">{{ invoice.payed|date:"j b Y"|default:'Nee' }}</td>
+        <td class="text-right">
+          <span class="date">
+            {{ invoice.payed|date:"j b Y"|default:'Nee' }}
+          </span>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
