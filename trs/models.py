@@ -147,7 +147,7 @@ class Person(models.Model):
         default=0,
         verbose_name="cache indicator voor PersonChange veranderingen")
     last_modified = models.DateTimeField(
-        auto_now_add=True,
+        auto_now=True,
         verbose_name="laatst gewijzigd")
 
     class Meta:
@@ -437,7 +437,7 @@ class Project(models.Model):
         default=0,
         verbose_name="cache indicator")
     last_modified = models.DateTimeField(
-        auto_now_add=True,
+        auto_now=True,
         verbose_name="laatst gewijzigd")
 
     class Meta:
