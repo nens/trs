@@ -8,6 +8,9 @@ Changelog of TRS
 - Running 'collectstatic' from within the buildout. Now I've finally found the
   source of my missing js/css problem...
 
+- Added search with 'whoosh' and 'haystack'. Including cronjob to refresh the
+  search index every hour.
+
 
 1.7 (2014-07-07)
 ----------------
