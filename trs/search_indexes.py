@@ -10,6 +10,9 @@ class ProjectIndex(indexes.SearchIndex, indexes.Indexable):
     def get_model(self):
         return models.Project
 
+    def get_updated_field(self):
+        return 'last_modified'
+
     def prepare(self, obj):
         data = super(ProjectIndex, self).prepare(obj)
         if obj.archived:
@@ -24,6 +27,9 @@ class PersonIndex(indexes.SearchIndex, indexes.Indexable):
 
     def get_model(self):
         return models.Person
+
+    def get_updated_field(self):
+        return 'last_modified'
 
     def prepare(self, obj):
         data = super(PersonIndex, self).prepare(obj)
