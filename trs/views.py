@@ -1,3 +1,5 @@
+from collections import OrderedDict
+from copy import deepcopy
 import csv
 import datetime
 import logging
@@ -11,11 +13,12 @@ from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import PermissionDenied
-from django.core.paginator import PageNotAnInteger
 from django.core.paginator import EmptyPage
+from django.core.paginator import PageNotAnInteger
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.utils.datastructures import SortedDict
@@ -92,7 +95,11 @@ def home(request):
 class BaseMixin(object):
     template_name = 'trs/base.html'
     title = "TRS tijdregistratiesysteem"
-    available_filters = {}
+    available_filters = OrderedDict()
+    # key = GET param, value = default.
+    # You can use this to limit the number of filters, too.
+    filter_choices = OrderedDict()
+    # key = GET param, value = (GET value, title, Q object)
 
     @cached_property
     def filters(self):
@@ -240,17 +247,85 @@ class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
 
 class PersonsView(BaseView):
 
-    available_filters = {'archived': False,
-                         'group': None}
+    available_filters = OrderedDict(
+        archived=False,
+        group=None)
+
+    @cached_property
+    def filters_and_choices(self):
+        result = [
+            {'title': 'Status',
+             'param': 'status',
+             'default': 'active',
+             'choices': [
+                 {'value': 'active',
+                  'title': 'huidige medewerkers',
+                  'q': Q(archived=False)},
+                 {'value': 'archived',
+                  'title': 'gearchiveerde medewerkers',
+                  'q': Q(archived=True)},
+             ]},
+            {'title': 'Groep',
+             'param': 'group',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'Geen filter',
+                  'q': Q()}] +
+             [{'value': str(group.id),
+               'title': group.name,
+               'q': Q(group=group.id)}
+              for group in Group.objects.all()] +
+             [{'value': 'geen',
+               'title': 'Zonder groep',
+               'q': Q(group=None)}]},
+        ]
+        return result
+
+    @cached_property
+    def visible_filters(self):
+        filters = deepcopy(self.filters_and_choices)
+
+        # Figure out which params are at non-default values
+        non_default_params = {}
+        for filter in filters:
+            param = filter['param']
+            from_get = self.request.GET.get(param, None)
+            if from_get is None:
+                continue
+            if from_get == filter['default']:
+                continue
+            allowed_values = [choice['value'] for choice in filter['choices']]
+            if from_get not in allowed_values:
+                continue
+            non_default_params[param] = from_get
+
+        # Calculate query string for choices and determine active choices.
+        # Also add queries for the database.
+        for filter in filters:
+            param = filter['param']
+            get_params = deepcopy(non_default_params)
+            filter['active'] = (param in get_params)
+            active_value = get_params.get(param, filter['default'])
+            for choice in filter['choices']:
+                get_params[param] = choice['value']
+                choice['query_string'] = urllib.parse.urlencode(get_params)
+                choice['active'] = (choice['value'] == active_value)
+                if choice['active']:
+                    filter['q'] = choice['q']
+
+        return filters
 
     @cached_property
     def title(self):
+        # TODO
         if self.filters['archived']:
             return 'Gearchiveerde medewerkers'
         return 'Actieve medewerkers'
 
     @cached_property
     def small_title(self):
+        # TODO
         group_filter = self.filters['group']
         if group_filter is not None:
             if group_filter == 'geen':
@@ -276,7 +351,9 @@ class PersonsView(BaseView):
 
     @cached_property
     def persons(self):
-        result = Person.objects.filter(archived=self.filters['archived'])
+        q_objects = [filter['q'] for filter in self.visible_filters]
+        result = Person.objects.filter(*q_objects)
+        # TODO
         group_filter = self.filters['group']
         if group_filter:
             if group_filter == 'geen':
@@ -543,15 +620,16 @@ class BookingOverview(PersonView):
 
 
 class ProjectsView(BaseView):
-    available_filters = {'archived': False,
-                         'is_subsidized': None,
-                         'is_accepted': None,
-                         'startup_meeting_done': None,
-                         'group': None,
-                         'project_leader': None,
-                         'project_manager': None,
-                         'ended': None,
-                         'started': None}
+    available_filters = OrderedDict(
+        archived=False,
+        is_subsidized=None,
+        is_accepted=None,
+        startup_meeting_done=None,
+        group=None,
+        project_leader=None,
+        project_manager=None,
+        ended=None,
+        started=None)
 
     @cached_property
     def title(self):
@@ -1955,8 +2033,9 @@ class OverviewsView(BaseView):
 
 class InvoicesView(BaseView):
     template_name = 'trs/invoices.html'
-    available_filters = {'year': this_year_week().year,
-                         'only_not_payed': False}
+    available_filters = OrderedDict(
+        year=this_year_week().year,
+        only_not_payed=False)
 
     def has_form_permissions(self):
         return self.can_see_everything
@@ -1995,8 +2074,9 @@ class InvoicesView(BaseView):
 
 class ChangesOverview(BaseView):
     template_name = 'trs/changes.html'
-    available_filters = {'num_weeks': 1,
-                         'total': False}
+    available_filters = OrderedDict(
+        num_weeks=1,
+        total=False)
 
     @cached_property
     def num_weeks(self):

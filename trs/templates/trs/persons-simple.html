@@ -8,6 +8,30 @@
       <small>({{ view.small_title }})</small>
     {% endif %}
   </h1>
+
+  {% for visible_filter in view.visible_filters %}
+    <div {% if not visible_filter.active %}class="text-muted"{% endif %}>
+      <span class="filter-title">
+        {{ visible_filter.title }}:
+      </span>
+      {% for choice in visible_filter.choices %}
+        {% if choice.active %}
+          <b class="active-choice">
+            {{ choice.title }}
+          </b>
+        {% else %}
+          <a href="?{{ choice.query_string }}">
+            {{ choice.title }}
+          </a>
+        {% endif %}
+        {% if not forloop.last %}
+          |
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endfor %}
+
+
   <div class="text-muted">
     {% if view.filters.archived %}
       <a href="?archived=false">Toon huidige medewerkers</a> |
