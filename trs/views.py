@@ -95,6 +95,7 @@ class BaseMixin(object):
     template_name = 'trs/base.html'
     title = "TRS tijdregistratiesysteem"
     filters_and_choices = []
+    normally_visible_filters = None
 
     @cached_property
     def current_get_params(self):
@@ -129,6 +130,11 @@ class BaseMixin(object):
             param = filter['param']
             get_params = deepcopy(non_default_params)
             filter['active'] = (param in get_params)
+            if self.normally_visible_filters is None:
+                filter['hidden'] = False
+            else:
+                filter['hidden'] = not (param in self.normally_visible_filters
+                                        or filter['active'])
             active_value = get_params.get(param, filter['default'])
             filter['active_value'] = active_value
             for choice in filter['choices']:
@@ -710,6 +716,27 @@ class ProjectsView(BaseView):
                   'q': Q(end__gte=this_year_week())}]},
 
         ]
+        return result
+
+    @cached_property
+    def normally_visible_filters(self):
+        result = ['status',
+                  'group']
+        if self.can_see_everything:
+            result += [
+                'is_subsidized',
+                'is_accepted',
+                'startup_meeting_done',
+                'started',
+                'ended',
+                ]
+        # Chicken/egg problem.
+        if ('project_leader' in self.request.GET or
+            'project_manager' in self.request.GET):
+            result += [
+                'project_leader',
+                'project_manager',
+            ]
         return result
 
     title = "Projecten"
