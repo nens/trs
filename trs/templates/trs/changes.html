@@ -6,20 +6,8 @@
     Veranderingen
     <small>vanaf {{ view.start_week.formatted_first_day }}</small>
   </h1>
-  <div class="text-muted">
-    Periode:
-    <a href="?num_weeks=0">Alleen deze week</a> |
-    <a href="?num_weeks=1">Ook vorige week</a> |
-    <a href="?num_weeks=4">Volledige maand</a>
-  </div>
 
-  {% if view.can_see_everything %}
-    <div class="text-muted">
-      Projecten filter:
-      <a href="?total=false">Alleen de projecten waar je PL/PM voor bent</a> |
-      <a href="?total=true">Alle projecten</a>
-    </div>
-  {% endif %}
+  {% include "trs/filter-snippet.html" %}
 
   {% if view.are_there_changes %}
 

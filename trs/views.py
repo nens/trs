@@ -2038,9 +2038,6 @@ class OverviewsView(BaseView):
 
 class InvoicesView(BaseView):
     template_name = 'trs/invoices.html'
-    available_filters = OrderedDict(
-        year=this_year_week().year,
-        only_not_payed=False)
 
     @cached_property
     def filters_and_choices(self):
@@ -2105,9 +2102,38 @@ class InvoicesView(BaseView):
 
 class ChangesOverview(BaseView):
     template_name = 'trs/changes.html'
-    available_filters = OrderedDict(
-        num_weeks=1,
-        total=False)
+
+    @cached_property
+    def filters_and_choices(self):
+        result = [
+            {'title': 'Periode',
+             'param': 'num_weeks',
+             'default': '1',
+             'choices': [
+                 {'value': '1',
+                  'title': 'alleen deze week',
+                  'q': Q()},
+                 {'value': '2',
+                  'title': 'ook vorige week',
+                  'q': Q()},
+                 {'value': '4',
+                  'title': 'volledige maand',
+                  'q': Q()},
+             ]},
+
+            {'title': 'Projecten',
+             'param': 'total',
+             'default': 'true',
+             'choices': [
+                 {'value': 'true',
+                  'title': 'alle projecten',
+                  'q': Q()},
+                 {'value': 'false',
+                  'title': 'alleen de projecten waar je PL/PM voor bent',
+                  'q': Q()},
+             ]},
+        ]
+        return result
 
     @cached_property
     def num_weeks(self):

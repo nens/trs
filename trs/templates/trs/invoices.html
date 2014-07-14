@@ -2,17 +2,7 @@
 {% load trs_formatting %}
 
 {% block full-width %}
-  <h1>
-    Overzicht facturen
-    {% if view.year == 'all' %}
-      (allemaal)
-    {% else %}
-      voor {{ view.year }}
-    {% endif %}
-    {% if view.filters.only_not_payed %}
-      (niet-betaalde)
-    {% endif %}
-  </h1>
+  <h1>Overzicht facturen</h1>
   {% for message in messages %}
     <div class="alert alert-{{ message.tags }} alert-dismissable">
       <button type="button"
