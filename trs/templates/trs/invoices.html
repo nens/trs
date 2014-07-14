@@ -23,13 +23,7 @@
     </div>
   {% endfor %}
 
-  <div class="text-muted">
-    {% for year in view.available_years %}
-      <a href="?year={{ year }}">{{ year }}</a> |
-    {% endfor %}
-    <a href="?year=all">Allemaal</a> |
-    <a href="?only_not_payed=true">Niet-betaalde</a>
-  </div>
+  {% include "trs/filter-snippet.html" %}
 
   <table class="table table-condensed table-fixed-header">
     <thead class="header">

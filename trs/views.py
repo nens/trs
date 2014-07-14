@@ -2042,6 +2042,35 @@ class InvoicesView(BaseView):
         year=this_year_week().year,
         only_not_payed=False)
 
+    @cached_property
+    def filters_and_choices(self):
+        result = [
+            {'title': 'Status',
+             'param': 'status',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'alles',
+                  'q': Q()},
+                 {'value': 'false',
+                  'title': 'nog niet betaald',
+                  'q': Q(payed=None)}
+             ]},
+
+            {'title': 'Jaar',
+             'param': 'year',
+             'default': str(this_year_week().year),
+             'choices': [
+                 {'value': str(year),
+                  'title': year,
+                  'q': Q(date__year=year)}
+                 for year in reversed(self.available_years)] + [
+                         {'value': 'all',
+                          'title': 'alle jaren',
+                          'q': Q()}]},
+        ]
+        return result
+
     def has_form_permissions(self):
         return self.can_see_everything
 
@@ -2058,11 +2087,8 @@ class InvoicesView(BaseView):
 
     @cached_property
     def invoices(self):
-        result = Invoice.objects.all()
-        if self.filters['only_not_payed']:
-            result = result.filter(payed=None)
-        elif self.year != 'all':
-            result = result.filter(date__year=self.year)
+        q_objects = [filter['q'] for filter in self.prepared_filters]
+        result = Invoice.objects.filter(*q_objects)
         return result.select_related('project').order_by(
             '-date', '-number')
 
