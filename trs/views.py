@@ -95,41 +95,57 @@ def home(request):
 class BaseMixin(object):
     template_name = 'trs/base.html'
     title = "TRS tijdregistratiesysteem"
-    available_filters = OrderedDict()
-    # key = GET param, value = default.
-    # You can use this to limit the number of filters, too.
-    filter_choices = OrderedDict()
-    # key = GET param, value = (GET value, title, Q object)
-
-    @cached_property
-    def filters(self):
-        result = {}
-        for key, default in self.available_filters.items():
-            result[key] = default
-            from_get = self.request.GET.get(key, None)
-            if from_get is None:
-                continue
-            if from_get == 'true':
-                result[key] = True
-            elif from_get == 'false':
-                result[key] = False
-            else:
-                try:
-                    result[key] = int(from_get)
-                except ValueError:
-                    result[key] = from_get
-
-        return result
+    filters_and_choices = []
 
     @cached_property
     def current_get_params(self):
-        """Return GET params to re-build the current page."""
-        relevant_params = {}
-        for key, default in self.available_filters.items():
-            current = self.filters[key]
-            if current != default:
-                relevant_params[key] = current
-        return urllib.parse.urlencode(relevant_params)
+        params = {}
+        for filter in self.prepared_filters:
+            if filter['active']:
+                params[filter['param']] = filter['active_value']
+
+        return urllib.parse.urlencode(params)
+
+    @cached_property
+    def prepared_filters(self):
+        filters = deepcopy(self.filters_and_choices)
+
+        # Figure out which params are at non-default values
+        non_default_params = {}
+        for filter in filters:
+            param = filter['param']
+            from_get = self.request.GET.get(param, None)
+            if from_get is None:
+                continue
+            if from_get == filter['default']:
+                continue
+            allowed_values = [choice['value'] for choice in filter['choices']]
+            if from_get not in allowed_values:
+                continue
+            non_default_params[param] = from_get
+
+        # Calculate query string for choices and determine active choices.
+        # Also add queries for the database.
+        for filter in filters:
+            param = filter['param']
+            get_params = deepcopy(non_default_params)
+            filter['active'] = (param in get_params)
+            active_value = get_params.get(param, filter['default'])
+            filter['active_value'] = active_value
+            for choice in filter['choices']:
+                get_params[param] = choice['value']
+                choice['query_string'] = urllib.parse.urlencode(get_params)
+                choice['active'] = (choice['value'] == active_value)
+                if choice['active']:
+                    filter['q'] = choice['q']
+
+        return filters
+
+    @cached_property
+    def filters(self):
+        # BBB version of prepared_filters()
+        return {filter['param']: filter['active_value']
+                for filter in self.prepared_filters}
 
     @cached_property
     def today(self):
@@ -247,9 +263,7 @@ class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
 
 class PersonsView(BaseView):
 
-    available_filters = OrderedDict(
-        archived=False,
-        group=None)
+    title = "Medewerkers"
 
     @cached_property
     def filters_and_choices(self):
@@ -282,57 +296,6 @@ class PersonsView(BaseView):
         ]
         return result
 
-    @cached_property
-    def visible_filters(self):
-        filters = deepcopy(self.filters_and_choices)
-
-        # Figure out which params are at non-default values
-        non_default_params = {}
-        for filter in filters:
-            param = filter['param']
-            from_get = self.request.GET.get(param, None)
-            if from_get is None:
-                continue
-            if from_get == filter['default']:
-                continue
-            allowed_values = [choice['value'] for choice in filter['choices']]
-            if from_get not in allowed_values:
-                continue
-            non_default_params[param] = from_get
-
-        # Calculate query string for choices and determine active choices.
-        # Also add queries for the database.
-        for filter in filters:
-            param = filter['param']
-            get_params = deepcopy(non_default_params)
-            filter['active'] = (param in get_params)
-            active_value = get_params.get(param, filter['default'])
-            for choice in filter['choices']:
-                get_params[param] = choice['value']
-                choice['query_string'] = urllib.parse.urlencode(get_params)
-                choice['active'] = (choice['value'] == active_value)
-                if choice['active']:
-                    filter['q'] = choice['q']
-
-        return filters
-
-    @cached_property
-    def title(self):
-        # TODO
-        if self.filters['archived']:
-            return 'Gearchiveerde medewerkers'
-        return 'Actieve medewerkers'
-
-    @cached_property
-    def small_title(self):
-        # TODO
-        group_filter = self.filters['group']
-        if group_filter is not None:
-            if group_filter == 'geen':
-                group_filter = None
-            group = Group.objects.get(pk=group_filter)
-            return "van groep %s" % group.name
-
     @property
     def template_name(self):
         if self.can_view_elaborate_version:
@@ -351,15 +314,8 @@ class PersonsView(BaseView):
 
     @cached_property
     def persons(self):
-        q_objects = [filter['q'] for filter in self.visible_filters]
-        result = Person.objects.filter(*q_objects)
-        # TODO
-        group_filter = self.filters['group']
-        if group_filter:
-            if group_filter == 'geen':
-                group_filter = None
-            result = result.filter(group=group_filter)
-        return result
+        q_objects = [filter['q'] for filter in self.prepared_filters]
+        return Person.objects.filter(*q_objects)
 
     @cached_property
     def lines(self):
@@ -620,62 +576,154 @@ class BookingOverview(PersonView):
 
 
 class ProjectsView(BaseView):
-    available_filters = OrderedDict(
-        archived=False,
-        is_subsidized=None,
-        is_accepted=None,
-        startup_meeting_done=None,
-        group=None,
-        project_leader=None,
-        project_manager=None,
-        ended=None,
-        started=None)
 
     @cached_property
-    def title(self):
-        kind_of_projects = 'projecten'
-        if self.filters['is_subsidized']:
-            kind_of_projects = 'subsidieprojecten'
-        before = []
-        if self.filters['archived']:
-            before.append('gearchiveerde')
-        else:
-            before.append('actieve')
+    def filters_and_choices(self):
+        result = [
+            {'title': 'Status',
+             'param': 'status',
+             'default': 'active',
+             'choices': [
+                 {'value': 'active',
+                  'title': 'huidige projecten',
+                  'q': Q(archived=False)},
+                 {'value': 'archived',
+                  'title': 'gearchiveerde projecten',
+                  'q': Q(archived=True)},
+             ]},
 
-        result = ' '.join(before + [kind_of_projects])
-        return result.capitalize()
+            {'title': 'Subsidie',
+             'param': 'is_subsidized',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'Geen filter',
+                  'q': Q()},
+                 {'value': 'false',
+                  'title': 'geen subsidie',
+                  'q': Q(is_subsidized=False)},
+                 {'value': 'true',
+                  'title': 'subsidieprojecten',
+                  'q': Q(is_subsidized=True)},
+             ]},
+
+            {'title': 'Geaccepteerd',
+             'param': 'is_accepted',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'Geen filter',
+                  'q': Q()},
+                 {'value': 'false',
+                  'title': 'niet',
+                  'q': Q(is_accepted=False)},
+                 {'value': 'true',
+                  'title': 'wel',
+                  'q': Q(is_accepted=True)},
+             ]},
+
+            {'title': 'Startoverleg',
+             'param': 'startup_meeting_done',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'Geen filter',
+                  'q': Q()},
+                 {'value': 'false',
+                  'title': 'nog niet',
+                  'q': Q(is_accepted=False)},
+                 {'value': 'true',
+                  'title': 'wel gehouden',
+                  'q': Q(is_accepted=True)},
+             ]},
+
+            {'title': 'Groep',
+             'param': 'group',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'Geen filter',
+                  'q': Q()}] +
+             [{'value': str(group.id),
+               'title': group.name,
+               'q': Q(group=group.id)}
+              for group in Group.objects.all()] +
+             [{'value': 'geen',
+               'title': 'Zonder groep',
+               'q': Q(group=None)}]},
+
+            {'title': 'Projectleider',
+             'param': 'project_leader',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'Geen filter',
+                  'q': Q()}] +
+             [{'value': str(person.id),
+               'title': person.name,
+               'q': Q(project_leader=person.id)}
+              for person in self.project_leaders] +
+             [{'value': 'geen',
+               'title': 'zonder PL',
+               'q': Q(project_leader=None)}]},
+
+            {'title': 'Projectmanager',
+             'param': 'project_manager',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'Geen filter',
+                  'q': Q()}] +
+             [{'value': str(person.id),
+               'title': person.name,
+               'q': Q(project_manager=person.id)}
+              for person in self.project_managers] +
+             [{'value': 'geen',
+               'title': 'zonder PM',
+               'q': Q(project_manager=None)}]},
+
+            {'title': 'Al gestart',
+             'param': 'started',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'Geen filter',
+                  'q': Q()},
+                 {'value': 'true',
+                  'title': 'ja',
+                  'q': Q(start__lte=this_year_week())},
+                 {'value': 'false',
+                  'title': 'nee',
+                  'q': Q(start__gt=this_year_week())}]},
+
+            {'title': 'Al geeindigd',
+             'param': 'ended',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'Geen filter',
+                  'q': Q()},
+                 {'value': 'true',
+                  'title': 'ja',
+                  'q': Q(end__lt=this_year_week())},
+                 {'value': 'false',
+                  'title': 'nee',
+                  'q': Q(end__gte=this_year_week())}]},
+
+        ]
+        return result
+
+    title = "Projecten"
 
     @cached_property
-    def small_title(self):
-        after = []
-        if self.filters['is_accepted'] is not None:
-            if self.filters['is_accepted']:
-                after.append('geaccepteerd')
-            else:
-                after.append('nog niet geaccepteerd')
-        if self.filters['startup_meeting_done'] is not None:
-            if self.filters['startup_meeting_done']:
-                after.append('startoverleg geweest')
-            else:
-                after.append('nog geen startoverleg')
+    def project_leaders(self):
+        return Person.objects.filter(
+            projects_i_lead__archived=False).distinct()
 
-        if self.filters['group'] is not None:
-            if self.filters['group'] != 'geen':
-                group = Group.objects.get(pk=self.filters['group'])
-                after.append("van groep %s" % group.name)
-            else:
-                after.append("zonder groep")
-
-        if self.filters['project_leader'] is not None:
-            project_leader = Person.objects.get(
-                pk=self.filters['project_leader'])
-            after.append("waar %s projectleider is" % project_leader.name)
-        if self.filters['project_manager'] is not None:
-            project_manager = Person.objects.get(
-                pk=self.filters['project_manager'])
-            after.append("waar %s projectmanager is" % project_manager.name)
-
-        return ', '.join(after)
+    @cached_property
+    def project_managers(self):
+        return Person.objects.filter(
+            projects_i_manage__archived=False).distinct()
 
     @property
     def template_name(self):
@@ -701,51 +749,8 @@ class ProjectsView(BaseView):
 
     @cached_property
     def projects(self):
-        result = Project.objects.all()
-        result = result.filter(archived=self.filters['archived'])
-
-        if self.filters['ended'] is not None:
-            if self.filters['ended']:
-                # Projects that have already ended.
-                result = result.filter(
-                    end__lt=this_year_week())
-            else:
-                # Projects that have not yet ended.
-                result = result.filter(
-                    end__gte=this_year_week())
-        if self.filters['started'] is not None:
-            if self.filters['started']:
-                # Projects that have already started.
-                result = result.filter(
-                    start__lte=this_year_week())
-            else:
-                # Projects that have not yet started.
-                result = result.filter(
-                    start__gt=this_year_week())
-
-        if self.filters['is_subsidized'] is not None:
-            result = result.filter(
-                is_subsidized=self.filters['is_subsidized'])
-        if self.filters['is_accepted'] is not None:
-            result = result.filter(
-                is_accepted=self.filters['is_accepted'])
-        if self.filters['startup_meeting_done'] is not None:
-            result = result.filter(
-                startup_meeting_done=self.filters['startup_meeting_done'])
-
-        group_filter = self.filters['group']
-        if group_filter:
-            if group_filter == 'geen':
-                group_filter = None
-            result = result.filter(group=group_filter)
-
-        if self.filters['project_leader'] is not None:
-            result = result.filter(
-                project_leader=self.filters['project_leader'])
-        if self.filters['project_manager'] is not None:
-            result = result.filter(
-                project_manager=self.filters['project_manager'])
-
+        q_objects = [filter['q'] for filter in self.prepared_filters]
+        result = Project.objects.filter(*q_objects)
         if not self.can_view_elaborate_version:
             result = result.filter(hidden=False)
 
