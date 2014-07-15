@@ -343,6 +343,20 @@ class PersonsView(BaseView):
 class PersonView(BaseView):
     template_name = 'trs/person.html'
 
+    filters_and_choices = [
+        {'title': 'Filter',
+         'param': 'filter',
+         'default': 'active',
+         'choices': [
+             {'value': 'active',
+              'title': 'huidige projecten',
+              'q': Q(archived=False)},
+             {'value': 'all',
+              'title': 'alle projecten (inclusief archief)',
+              'q': Q()},
+         ]},
+    ]
+
     @cached_property
     def person(self):
         return Person.objects.get(pk=self.kwargs['pk'])
@@ -386,7 +400,8 @@ class PersonView(BaseView):
 
     @cached_property
     def all_projects(self):
-        return self.person.unarchived_assigned_projects()
+        q_objects = [filter['q'] for filter in self.prepared_filters]
+        return self.person.assigned_projects().filter(*q_objects)
 
     @cached_property
     def projects(self):
