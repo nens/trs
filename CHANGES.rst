@@ -11,6 +11,8 @@ Changelog of TRS
 - Added option to show all projects (including archived ones) on a person's
   page.
 
+- PL/PM can edit start/end date of projects again.
+
 
 1.8 (2014-07-08)
 ----------------
