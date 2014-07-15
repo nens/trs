@@ -8,15 +8,9 @@
       <small>({{ view.small_title }})</small>
     {% endif %}
   </h1>
-  <div class="text-muted">
-    {% if view.filters.archived %}
-      <a href="?archived=false">Toon huidige medewerkers</a> |
-      <span>Gearchiveerde medewerkers</span>
-    {% else %}
-      <span>Huidige medewerkers</span> |
-      <a href="?archived=true">Toon gearchiveerde medewerkers</a>
-    {% endif %}
-  </div>
+
+  {% include "trs/filter-snippet.html" %}
+
   <table class="table table-hover table-condensed table-fixed-header">
     <thead class="header">
       <tr>
@@ -34,7 +28,7 @@
             {{ line.person.as_widget }}
           </td>
           <td class="text-right">
-            {{ line.pyc.left_to_book|hours }}
+            {{ line.pyc.left_to_book_external|hours }}
           </td>
         </tr>
       {% endfor %}

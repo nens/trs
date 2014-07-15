@@ -14,37 +14,7 @@
     </a>
   </h1>
 
-  <div class="text-muted">
-    {% if not view.filters.archived %}
-      <span>Actieve projecten</span> |
-      <a href="?archived=true">Gearchiveerde projecten</a>
-    {% else %}
-      <a href="?">Toon actieve projecten</a>
-      <span>Gearchiveerde projecten</span> |
-    {% endif %}
-  </div>
-  {# The filter list in 'projects-simple.html' is less elaborate #}
-
-  <div class="text-muted">
-    Handige filters:
-    <a href="?is_subsidized=true">
-      Subsidieprojecten
-    </a> |
-    <a href="?is_accepted=false">
-      Nog niet goedgekeurde projecten
-    </a> |
-    <a href="?startup_meeting_done=false">
-      Startoverleg nog niet geweest
-    </a>
-  </div>
-
-  <div class="text-muted">
-    Filter op groep:
-    {% for id, name in view.group_choices %}
-      <a href="?group={{ id }}">{{ name }}</a> |
-    {% endfor %}
-    <a href="?group=geen">zonder groep</a>
-  </div>
+  {% include "trs/filter-snippet.html" %}
 
   {% if view.can_add_project %}
     <br>

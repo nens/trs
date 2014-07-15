@@ -1,0 +1,23 @@
+{% for filter in view.prepared_filters %}
+  {% if not filter.hidden %}
+    <div {% if not filter.active %}class="text-muted"{% endif %}>
+      <span class="filter-title">
+        {{ filter.title }}:
+      </span>
+      {% for choice in filter.choices %}
+        {% if choice.active %}
+          <b class="active-choice">
+            {{ choice.title }}
+          </b>
+        {% else %}
+          <a href="?{{ choice.query_string }}">
+            {{ choice.title }}
+          </a>
+        {% endif %}
+        {% if not forloop.last %}
+          |
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endfor %}

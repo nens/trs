@@ -13,18 +13,9 @@
       <span class="glyphicon glyphicon-download-alt"></span>
     </a>
   </h1>
-  <div class="text-muted">
-    Archiefstatus:
-    <a href="?archived=false">actieve medewerkers</a> |
-    <a href="?archived=true">gearchiveerde medewerkers</a>
-  </div>
-  <div class="text-muted">
-    Filter op groep:
-    {% for id, name in view.group_choices %}
-      <a href="?group={{ id }}">{{ name }}</a> |
-    {% endfor %}
-    <a href="?group=geen">zonder groep</a>
-  </div>
+
+  {% include "trs/filter-snippet.html" %}
+
   <table class="table table-hover table-condensed table-fixed-header">
     <thead class="header">
       <tr>

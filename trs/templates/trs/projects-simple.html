@@ -3,16 +3,8 @@
 
 {% block main-column %}
   <h1>{{ view.title }} <small>{{ view.small_title }}</small></h1>
-  <div class="text-muted">
-    {% if not view.filters.archived %}
-      <span>Actieve projecten</span> |
-      <a href="?archived=true">Gearchiveerde projecten</a>
-    {% else %}
-      <a href="?">Toon actieve projecten</a>
-      <span>Gearchiveerde projecten</span> |
-    {% endif %}
-  </div>
-  {# The filter list in 'projects.html' is more elaborate #}
+
+  {% include "trs/filter-snippet.html" %}
 
   {% include "trs/project-pagination.html" %}
 
