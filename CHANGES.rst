@@ -2,7 +2,7 @@ Changelog of TRS
 ===================================================
 
 
-1.9 (unreleased)
+1.9 (2014-07-15)
 ----------------
 
 - Added new filter mechanism: easier to combine filters ("archived projects
