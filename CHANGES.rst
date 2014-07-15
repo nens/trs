@@ -5,7 +5,11 @@ Changelog of TRS
 1.9 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Added new filter mechanism: easier to combine filters ("archived projects
+  belonging to group 'software development'"). Including clearer UI.
+
+- Added option to show all projects (including archived ones) on a person's
+  page.
 
 
 1.8 (2014-07-08)
