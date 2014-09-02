@@ -469,7 +469,7 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        version = 6
+        version = 7
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, version)
 
@@ -509,6 +509,9 @@ class Project(models.Model):
     def costs(self):
         return self.work_calculation()['costs']
 
+    def person_costs(self):
+        return self.work_calculation()['person_costs']
+
     def reserved(self):
         return self.work_calculation()['reserved']
 
@@ -518,6 +521,13 @@ class Project(models.Model):
         if not self.hour_budget():  # Division by zero
             return 100
         return round(self.overbooked() / self.hour_budget() * 100)
+
+    def left_to_dish_out(self):
+        return (self.contract_amount - self.person_costs() -
+                self.reserved() - self.costs())
+
+    def budget_ok(self):
+        return self.left_to_dish_out() == 0
 
     @cache_on_model
     def work_calculation(self):
@@ -574,6 +584,8 @@ class Project(models.Model):
         left_to_turn_over_per_person = {
             id: (left_to_book_per_person[id] * tariff[id])
             for id in ids}
+        person_costs = sum([tariff[id] * budget_per_person[id]
+                            for id in ids])
 
         return {'budget': sum(budget_per_person.values()),
                 'overbooked': sum(overbooked_per_person.values()),
@@ -582,6 +594,7 @@ class Project(models.Model):
                 'turnover': sum(turnover_per_person.values()),
                 'left_to_turn_over': sum(
                     left_to_turn_over_per_person.values()),
+                'person_costs': person_costs,
                 'costs': costs,
                 'reserved': reserved}
 

@@ -1018,10 +1018,6 @@ class ProjectView(BaseView):
         return budget + self.person_costs
 
     @cached_property
-    def left_to_dish_out(self):
-        return self.project.contract_amount - self.total_costs
-
-    @cached_property
     def amount_left(self):
         return self.subtotal - self.total_turnover - self.total_turnover_left
 
@@ -1921,10 +1917,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         return budget + self.person_costs
 
     @cached_property
-    def left_to_dish_out(self):
-        return self.project.contract_amount - self.total_costs
-
-    @cached_property
     def success_url(self):
         return reverse('trs.project.team', kwargs={'pk': self.project.pk})
 
@@ -2585,5 +2577,5 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
                '',
                '',
                '',
-               self.left_to_dish_out,
+               self.project.left_to_dish_out,
            ])
