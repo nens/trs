@@ -105,7 +105,13 @@
 
   {% if view.can_view_team %}
     {% if view.can_see_project_financials %}
-      <h2 id="budget">Projectbegroting</h2>
+      <h2 id="budget">
+        Projectbegroting
+        {% if not view.project.budget_ok %}
+          <span class="text-danger glyphicon glyphicon-warning-sign"
+                title="Budget is niet goed verdeeld"></span>
+        {% endif %}
+      </h2>
     {% else %}
       <h2>Projectteam</h2>
     {% endif %}
