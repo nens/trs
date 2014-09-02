@@ -178,6 +178,7 @@ class Person(models.Model):
     def get_absolute_url(self):
         return reverse('trs.person', kwargs={'pk': self.pk})
 
+    @cache_on_model
     def as_widget(self):
         return mark_safe(render_to_string('trs/person-widget.html',
                                           {'person': self}))
@@ -476,6 +477,7 @@ class Project(models.Model):
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, version)
 
+    @cache_on_model
     def as_widget(self):
         return mark_safe(render_to_string('trs/project-widget.html',
                                           {'project': self}))
