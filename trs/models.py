@@ -395,14 +395,12 @@ class Project(models.Model):
         blank=True,
         null=True,
         verbose_name="projectleider",
-        help_text="verantwoordelijke voor de uren op het project",
         related_name="projects_i_lead")
     project_manager = models.ForeignKey(
         Person,
         blank=True,
         null=True,
         verbose_name="projectmanager",
-        help_text="verantwoordelijke voor het budget van het project",
         related_name="projects_i_manage")
     group = models.ForeignKey(
         Group,
@@ -412,12 +410,11 @@ class Project(models.Model):
         related_name="projects")
     is_accepted = models.BooleanField(
         verbose_name="goedgekeurd",
-        help_text=("Project is goedgekeurd door PM en PL en kan qua team " +
-                   "en budgetverdeling niet meer gewijzigd worden."),
+        help_text=("Project is goedgekeurd door PM en PL en zou qua team " +
+                   "en budgetverdeling niet meer gewijzigd moeten worden."),
         default=False)
     startup_meeting_done = models.BooleanField(
         verbose_name="startoverleg heeft plaatsgevonden",
-        help_text=("Dit kan eenmalig door de projectleider aangevinkt worden"),
         default=False)
     is_subsidized = models.BooleanField(
         verbose_name="subsidieproject",
