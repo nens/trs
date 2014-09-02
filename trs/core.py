@@ -42,7 +42,7 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        version = 27
+        version = 28
         self.cache_key = 'pycdata-%s-%s-%s-%s' % (
             person.id, person.cache_indicator, year, version)
         has_cached_data = self.get_cache()
@@ -98,13 +98,6 @@ class PersonYearCombination(object):
 
         project_ids = budget.keys()
 
-        contract_amounts = Project.objects.filter(
-            id__in=project_ids).values(
-                'id', 'contract_amount', 'contract_amount_ok')
-        contract_amounts = {
-            item['id']: item['contract_amount'] or item['contract_amount_ok']
-            for item in contract_amounts}
-
         booked_this_year_per_project = Booking.objects.filter(
             booked_by=self.person,
             year_week__year=self.year,
@@ -134,9 +127,6 @@ class PersonYearCombination(object):
             well_booked_this_year = (
                 booked_this_year.get(id, 0) - overbooked_this_year)
             tariff = hourly_tariff[id]
-            if not contract_amounts[id]:
-                # Don't count anything money-wise.
-                tariff = 0
             turnover = well_booked_this_year * tariff
             left_to_book = max(0, (budget[id] - booked_till_now))
             left_to_turn_over = left_to_book * tariff

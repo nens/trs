@@ -71,12 +71,7 @@
           <td class="text-right {{ line.klass }}">
             {{ line.project.overbooked|hours }}
           </td>
-          <td {% if line.project.contract_amount or line.project.contract_amount_ok %}
-                class="text-right"
-              {% else %}
-                class="text-right danger"
-                title="Opdrachtsom is nog niet goedgekeurd"
-              {% endif %}>
+          <td class="text-right">
             {{ line.project.contract_amount|money }}
           </td>
           <td class="text-right">

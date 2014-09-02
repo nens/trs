@@ -373,10 +373,6 @@ class Project(models.Model):
         decimal_places=DECIMAL_PLACES,
         default=0,
         verbose_name="opdrachtsom")
-    contract_amount_ok = models.BooleanField(
-        default=False,
-        verbose_name="opdrachtsom in orde",
-        help_text="O.a. om een opdrachtsom van 0 goed te keuren")
     start = models.ForeignKey(
         'YearWeek',
         blank=True,
@@ -570,12 +566,8 @@ class Project(models.Model):
             id: (budget_per_person[id] - well_booked_per_person[id])
             for id in ids}
 
-        if self.contract_amount or self.contract_amount_ok:
-            tariff = {id: hourly_tariff_per_person[id]
-                      for id in ids}
-        else:
-            # Don't count anything money-wise.
-            tariff = {id: 0 for id in ids}
+        tariff = {id: hourly_tariff_per_person[id]
+                  for id in ids}
         turnover_per_person = {
             id: (well_booked_per_person[id] * tariff[id])
             for id in ids}
