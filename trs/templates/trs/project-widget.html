@@ -34,17 +34,4 @@
     <span title="Project is al ge&euml;indigd"
           class="text-muted glyphicon glyphicon-time"></span>
   {% endif %}
-  {% if view.can_see_everything %}
-    {% if project.overbooked_percentage > 5 %}
-      <span
-        {% if project.overbooked_percentage > 30 %}
-          class="text-danger"
-        {% else %}
-          class="text-warning"
-        {% endif %}>
-        <span title="Project is al {{ project.overbooked_percentage }}% over budget"
-              class="glyphicon glyphicon-warning-sign"></span>
-      </span>
-    {% endif %}
-  {% endif %}
 </span>
