@@ -1909,11 +1909,9 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             if new_team_member_id:
                 person = Person.objects.get(id=new_team_member_id)
                 msg = "%s is aan het team toegevoegd" % person.name
-                hourly_tariff = person.standard_hourly_tariff()
                 work_assignment = WorkAssignment(
                     assigned_on=self.project,
-                    assigned_to=person,
-                    hourly_tariff=hourly_tariff)
+                    assigned_to=person)
                 work_assignment.save()
                 logger.info(msg)
                 messages.success(self.request, msg)
