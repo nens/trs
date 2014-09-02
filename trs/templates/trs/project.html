@@ -8,14 +8,6 @@
       <span title="Project is gearchiveerd"
             class="text-muted glyphicon glyphicon-lock"></span>
     {% endif %}
-    {% if view.project.startup_meeting_done %}
-      <span title="Startoverleg heeft plaatsgevonden"
-            class="text-muted glyphicon glyphicon-ok"></span>
-    {% endif %}
-    {% if view.project.is_accepted %}
-      <span title="Project is goedgekeurd door de PM"
-            class="text-success glyphicon glyphicon-ok"></span>
-    {% endif %}
     {% if view.project.is_subsidized %}
       <span title="Subsidieproject"
             class="text-muted glyphicon glyphicon-usd"></span>
@@ -48,13 +40,6 @@
         <th>Opdrachtsom</th>
         <td>
           {{ view.project.contract_amount|money }}
-          {% if view.project.contract_amount_ok %}
-            <span class="glyphicon glyphicon-ok"
-                  title="Opdrachtsom is goedgekeurd"></span>
-          {% else %}
-            <span class="glyphicon glyphicon-remove"
-                  title="Opdrachtsom is nog niet goedgekeurd"></span>
-          {% endif %}
         </td>
       </tr>
       {% if view.project.group %}
@@ -120,7 +105,13 @@
 
   {% if view.can_view_team %}
     {% if view.can_see_project_financials %}
-      <h2>Projectbegroting</h2>
+      <h2 id="budget">
+        Projectbegroting
+        {% if not view.project.budget_ok %}
+          <span class="text-danger glyphicon glyphicon-warning-sign"
+                title="Budget is niet goed verdeeld"></span>
+        {% endif %}
+      </h2>
     {% else %}
       <h2>Projectteam</h2>
     {% endif %}
@@ -271,7 +262,7 @@
               <th>Nog te verdelen</th>
               <th colspan="3"></th>
               <th class="text-right">
-                {{ view.left_to_dish_out|money }}
+                {{ view.project.left_to_dish_out|money }}
               </th>
               <th colspan="4"></th>
             </tr>

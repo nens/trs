@@ -459,12 +459,9 @@ class PersonView(BaseView):
             line['is_project_manager'] = (
                 project.project_manager_id == self.person.id)
             line['hourly_tariff'] = hourly_tariffs.get(project.id, 0)
-            if project.contract_amount or project.contract_amount_ok:
-                line['turnover'] = (
-                    min(line['budget'],
-                        line['booked']) * line['hourly_tariff'])
-            else:
-                line['turnover'] = 0
+            line['turnover'] = (
+                min(line['budget'],
+                    line['booked']) * line['hourly_tariff'])
             result.append(line)
         return result
 
@@ -851,8 +848,8 @@ class ProjectsView(BaseView):
             line['contract_amount'] = project.contract_amount
             line['invoice_amount'] = invoice_amount
             line['turnover'] = turnover
-            line['costs'] = costs
-            line['reserved'] = reserved
+            line['person_costs'] = project.person_costs()
+            line['other_costs'] = costs + reserved
             line['invoice_amount_percentage'] = invoice_amount_percentage
             line['invoice_versus_turnover_percentage'] = (
                 invoice_versus_turnover_percentage)
@@ -862,7 +859,7 @@ class ProjectsView(BaseView):
     @cached_property
     def totals(self):
         return {key: sum([line[key] for line in self.lines]) or 0
-                for key in ['turnover', 'costs', 'reserved']}
+                for key in ['turnover', 'person_costs', 'other_costs']}
 
     @cached_property
     def total_invoice_amount_percentage(self):
@@ -982,10 +979,6 @@ class ProjectView(BaseView):
                 self.project.project_manager_id == person.id)
             line['hourly_tariff'] = hourly_tariffs.get(person.id, 0)
             tariff = line['hourly_tariff']
-            if not (self.project.contract_amount or
-                    self.project.contract_amount_ok):
-                # Don't count anything money-wise.
-                tariff = 0
             line['turnover'] = (
                 min(line['budget'], line['booked']) * tariff)
             line['loss'] = (
@@ -1023,10 +1016,6 @@ class ProjectView(BaseView):
             models.Sum('amount'))['amount__sum'] or 0
         budget = -1 * budget
         return budget + self.person_costs
-
-    @cached_property
-    def left_to_dish_out(self):
-        return self.project.contract_amount - self.total_costs
 
     @cached_property
     def amount_left(self):
@@ -1299,7 +1288,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     'internal', 'hidden', 'hourless',
                     'archived',  # Note: archived only on edit view :-)
                     'is_subsidized', 'principal',
-                    'contract_amount', 'contract_amount_ok',
+                    'contract_amount',
                     'start', 'end', 'project_leader', 'project_manager',
                     # Note: the next two are shown only on the edit view!
                     'startup_meeting_done', 'is_accepted',
@@ -1312,9 +1301,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                 result.append('startup_meeting_done')
         if self.active_person == self.project.project_manager:
             if not self.project.is_accepted:
-                if (self.project.contract_amount or
-                    self.project.contract_amount_ok):
-                    result.append('is_accepted')
+                result.append('is_accepted')
         return result
 
     @cached_property
@@ -1352,7 +1339,7 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
     title = "Nieuw project"
     fields = ['code', 'description', 'group', 'internal', 'hidden', 'hourless',
               'is_subsidized', 'principal',
-              'contract_amount', 'contract_amount_ok',
+              'contract_amount',
               'start', 'end', 'project_leader', 'project_manager',
               'remark', 'financial_remark',
     ]
@@ -1909,11 +1896,9 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             if new_team_member_id:
                 person = Person.objects.get(id=new_team_member_id)
                 msg = "%s is aan het team toegevoegd" % person.name
-                hourly_tariff = person.standard_hourly_tariff()
                 work_assignment = WorkAssignment(
                     assigned_on=self.project,
-                    assigned_to=person,
-                    hourly_tariff=hourly_tariff)
+                    assigned_to=person)
                 work_assignment.save()
                 logger.info(msg)
                 messages.success(self.request, msg)
@@ -1930,10 +1915,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             models.Sum('amount'))['amount__sum'] or 0
         budget = -1 * budget
         return budget + self.person_costs
-
-    @cached_property
-    def left_to_dish_out(self):
-        return self.project.contract_amount - self.total_costs
 
     @cached_property
     def success_url(self):
@@ -2430,7 +2411,6 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
                 project.project_leader,
                 project.project_manager,
                 project.contract_amount,
-                project.contract_amount_ok,
                 project.startup_meeting_done,
                 project.is_accepted,
 
@@ -2597,5 +2577,5 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
                '',
                '',
                '',
-               self.left_to_dish_out,
+               self.project.left_to_dish_out,
            ])

@@ -178,6 +178,7 @@ class Person(models.Model):
     def get_absolute_url(self):
         return reverse('trs.person', kwargs={'pk': self.pk})
 
+    @cache_on_model
     def as_widget(self):
         return mark_safe(render_to_string('trs/person-widget.html',
                                           {'person': self}))
@@ -372,10 +373,6 @@ class Project(models.Model):
         decimal_places=DECIMAL_PLACES,
         default=0,
         verbose_name="opdrachtsom")
-    contract_amount_ok = models.BooleanField(
-        default=False,
-        verbose_name="opdrachtsom in orde",
-        help_text="O.a. om een opdrachtsom van 0 goed te keuren")
     start = models.ForeignKey(
         'YearWeek',
         blank=True,
@@ -395,14 +392,12 @@ class Project(models.Model):
         blank=True,
         null=True,
         verbose_name="projectleider",
-        help_text="verantwoordelijke voor de uren op het project",
         related_name="projects_i_lead")
     project_manager = models.ForeignKey(
         Person,
         blank=True,
         null=True,
         verbose_name="projectmanager",
-        help_text="verantwoordelijke voor het budget van het project",
         related_name="projects_i_manage")
     group = models.ForeignKey(
         Group,
@@ -412,12 +407,11 @@ class Project(models.Model):
         related_name="projects")
     is_accepted = models.BooleanField(
         verbose_name="goedgekeurd",
-        help_text=("Project is goedgekeurd door PM en PL en kan qua team " +
-                   "en budgetverdeling niet meer gewijzigd worden."),
+        help_text=("Project is goedgekeurd door PM en PL en zou qua team " +
+                   "en budgetverdeling niet meer gewijzigd moeten worden."),
         default=False)
     startup_meeting_done = models.BooleanField(
         verbose_name="startoverleg heeft plaatsgevonden",
-        help_text=("Dit kan eenmalig door de projectleider aangevinkt worden"),
         default=False)
     is_subsidized = models.BooleanField(
         verbose_name="subsidieproject",
@@ -475,10 +469,11 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        version = 6
+        version = 9
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, version)
 
+    @cache_on_model
     def as_widget(self):
         return mark_safe(render_to_string('trs/project-widget.html',
                                           {'project': self}))
@@ -514,6 +509,9 @@ class Project(models.Model):
     def costs(self):
         return self.work_calculation()['costs']
 
+    def person_costs(self):
+        return self.work_calculation()['person_costs']
+
     def reserved(self):
         return self.work_calculation()['reserved']
 
@@ -523,6 +521,13 @@ class Project(models.Model):
         if not self.hour_budget():  # Division by zero
             return 100
         return round(self.overbooked() / self.hour_budget() * 100)
+
+    def left_to_dish_out(self):
+        return (self.contract_amount - self.person_costs() -
+                self.reserved() - self.costs())
+
+    def budget_ok(self):
+        return self.left_to_dish_out() == 0
 
     @cache_on_model
     def work_calculation(self):
@@ -571,18 +576,16 @@ class Project(models.Model):
             id: (budget_per_person[id] - well_booked_per_person[id])
             for id in ids}
 
-        if self.contract_amount or self.contract_amount_ok:
-            tariff = {id: hourly_tariff_per_person[id]
-                      for id in ids}
-        else:
-            # Don't count anything money-wise.
-            tariff = {id: 0 for id in ids}
+        tariff = {id: hourly_tariff_per_person[id]
+                  for id in ids}
         turnover_per_person = {
             id: (well_booked_per_person[id] * tariff[id])
             for id in ids}
         left_to_turn_over_per_person = {
             id: (left_to_book_per_person[id] * tariff[id])
             for id in ids}
+        person_costs = sum([tariff[id] * budget_per_person[id]
+                            for id in ids])
 
         return {'budget': sum(budget_per_person.values()),
                 'overbooked': sum(overbooked_per_person.values()),
@@ -591,6 +594,7 @@ class Project(models.Model):
                 'turnover': sum(turnover_per_person.values()),
                 'left_to_turn_over': sum(
                     left_to_turn_over_per_person.values()),
+                'person_costs': person_costs,
                 'costs': costs,
                 'reserved': reserved}
 

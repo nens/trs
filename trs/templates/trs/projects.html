@@ -35,9 +35,10 @@
         <th>Omschrijving</th>
         <th class="text-right">Verlies-<br>uren</th>
         <th class="text-right">Opdracht-<br>som</th>
+        <th class="text-right">&nbsp;</th>
         <th class="text-right">Omzet</th>
-        <th class="text-right">Extra<br>kosten</th>
-        <th class="text-right">Reserve-<br>ringen</th>
+        <th class="text-right">Personele<br>kosten</th>
+        <th class="text-right">Overige<br>kosten</th>
         <th class="text-right"
             title="Inclusief nog niet betaalde facturen">Gefactureerd</th>
         <th class="text-right">
@@ -71,22 +72,25 @@
           <td class="text-right {{ line.klass }}">
             {{ line.project.overbooked|hours }}
           </td>
-          <td {% if line.project.contract_amount or line.project.contract_amount_ok %}
-                class="text-right"
-              {% else %}
-                class="text-right danger"
-                title="Opdrachtsom is nog niet goedgekeurd"
-              {% endif %}>
+          <td class="text-right">
             {{ line.project.contract_amount|money }}
+          </td>
+          <td class="text-right">
+            {% if not line.project.budget_ok %}
+              <a href="{{ line.project.get_absolute_url }}#budget">
+                <span class="text-danger glyphicon glyphicon-warning-sign"
+                      title="Budget is niet goed verdeeld"></span>
+              </a>
+            {% endif %}
           </td>
           <td class="text-right">
             {{ line.turnover|money }}
           </td>
           <td class="text-right">
-            {{ line.costs|money }}
+            {{ line.person_costs|money }}
           </td>
           <td class="text-right">
-            {{ line.reserved|money }}
+            {{ line.other_costs|money }}
           </td>
           <td class="text-right">
             {{ line.invoice_amount|money_with_decimal }}
@@ -107,10 +111,10 @@
     <tfoot>
       <tr>
         <th>Totaal</th>
-        <th colspan="3"></th>
+        <th colspan="4"></th>
         <th class="text-right">{{ view.totals.turnover|money }}</th>
-        <th class="text-right">{{ view.totals.costs|money }}</th>
-        <th class="text-right">{{ view.totals.reserved|money }}</th>
+        <th class="text-right">{{ view.totals.person_costs|money }}</th>
+        <th class="text-right">{{ view.totals.other_costs|money }}</th>
         <th colspan="2"></th>
       </tr>
     </tfoot>
