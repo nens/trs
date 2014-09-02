@@ -5,7 +5,17 @@ Changelog of TRS
 1.10 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Changed cost-related columns in project overview, incuding a new column 'is
+  the budget OK?'.
+
+- Added check whether the budget of a project is OK (the amount of money left
+  to dish out should be zero). In consequence, removed the check whether there
+  is a correct contract amount.
+
+- New team members start out with a tariff of 0 instead of having their normal
+  tariff pre-filled-in.
+
+- Speed improvement by caching the person and project widgets.
 
 
 1.9 (2014-07-15)
