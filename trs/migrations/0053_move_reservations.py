@@ -15,7 +15,7 @@ class Migration(DataMigration):
             project = budget_item.project
             project.reservation = budget_item.amount * -1
             budget_item.delete()
-            print("Moved reservation for %s to %s" % (project.reservation, project))
+            print("Moved reservation for %s to %s" % (project.reservation, project.code))
 
     def backwards(self, orm):
         "Write your backwards methods here."
