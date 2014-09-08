@@ -834,22 +834,22 @@ class ProjectsView(BaseView):
             invoice_amount = invoice_amounts.get(project.id, 0)
             turnover = project.turnover()
             costs = project.costs()
-            reserved = project.reserved()
+            reservation = project.reservation
             if project.contract_amount:
                 invoice_amount_percentage = round(
                     invoice_amount / project.contract_amount * 100)
             else:  # Division by zero.
                 invoice_amount_percentage = None
-            if turnover + costs + reserved:
+            if turnover + costs + reservation:
                 invoice_versus_turnover_percentage = round(
-                    invoice_amount / (turnover + costs + reserved) * 100)
+                    invoice_amount / (turnover + costs + reservation) * 100)
             else:
                 invoice_versus_turnover_percentage = None
             line['contract_amount'] = project.contract_amount
             line['invoice_amount'] = invoice_amount
             line['turnover'] = turnover
             line['person_costs'] = project.person_costs()
-            line['other_costs'] = costs + reserved
+            line['other_costs'] = costs + reservation
             line['invoice_amount_percentage'] = invoice_amount_percentage
             line['invoice_versus_turnover_percentage'] = (
                 invoice_versus_turnover_percentage)
@@ -1438,7 +1438,7 @@ class BudgetItemCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = BudgetItem
     title = "Nieuw begrotingsitem"
-    fields = ['description', 'amount', 'is_reservation']
+    fields = ['description', 'amount']
 
     def has_form_permissions(self):
         if self.project.archived:
@@ -1465,7 +1465,7 @@ class BudgetItemEditView(LoginAndPermissionsRequiredMixin,
                          BaseMixin):
     template_name = 'trs/edit.html'
     model = BudgetItem
-    fields = ['description', 'amount', 'is_reservation']
+    fields = ['description', 'amount']
 
     @property
     def title(self):
@@ -2379,7 +2379,7 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
         'Gefactureerd',
         'Omzet',
         'Overige kosten',
-        'Gereserveerd',
+        'Gereserveerd voor personele kosten',
         'Gefactureerd t.o.v. opdrachtsom',
         'Gefactureerd t.o.v. omzet + extra kosten',
 
@@ -2417,7 +2417,7 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
                 line['invoice_amount'],
                 line['turnover'],
                 line['costs'],
-                line['reserved'],
+                project.reservation,
                 line['invoice_amount_percentage'],
                 line['invoice_versus_turnover_percentage'],
 
@@ -2555,7 +2555,7 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
                 '',
                 '',
                 budget_item.amount_as_costs(),
-                budget_item.is_reservation and '(reservering)' or '',
+                '',
             ])
 
         yield(['Totaal',

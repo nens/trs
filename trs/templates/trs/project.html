@@ -267,10 +267,6 @@
                     {% else %}
                       {{ budget_item.description }}
                     {% endif %}
-                    {% if budget_item.is_reservation %}
-                      <span class="text-muted glyphicon glyphicon-calendar"
-                            title="Gereserveerd voor toekomstig werk"></span>
-                    {% endif %}
                   </td>
                   <td>
                     {% if view.can_edit_financials %}

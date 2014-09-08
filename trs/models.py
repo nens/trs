@@ -373,6 +373,11 @@ class Project(models.Model):
         decimal_places=DECIMAL_PLACES,
         default=0,
         verbose_name="opdrachtsom")
+    reservation = models.DecimalField(
+        max_digits=12,
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="reservering voor personele kosten")
     start = models.ForeignKey(
         'YearWeek',
         blank=True,
@@ -512,9 +517,6 @@ class Project(models.Model):
     def person_costs(self):
         return self.work_calculation()['person_costs']
 
-    def reserved(self):
-        return self.work_calculation()['reserved']
-
     def overbooked_percentage(self):
         if not self.overbooked():
             return 0
@@ -524,7 +526,7 @@ class Project(models.Model):
 
     def left_to_dish_out(self):
         return (self.contract_amount - self.person_costs() -
-                self.reserved() - self.costs())
+                self.reservation - self.costs())
 
     def budget_ok(self):
         return self.left_to_dish_out() == 0
@@ -554,15 +556,8 @@ class Project(models.Model):
             item['booked_by']: round(item['hours__sum'])
             for item in booked_this_year_per_person}
 
-        budget_items = self.budget_items.all().values(
-            'is_reservation').annotate(
-                models.Sum('amount'))
-        # Warning: 'costs' used to be the total of all budget items, now it
-        # excludes the reservations.
-        costs_per_kind = {item['is_reservation']: item['amount__sum'] or 0
-                          for item in budget_items}
-        reserved = -1 * costs_per_kind.get(True, 0)
-        costs = -1 * costs_per_kind.get(False, 0)
+        costs = -1 * self.budget_items.all().aggregate(
+            models.Sum('amount'))['amount__sum']
 
         overbooked_per_person = {
             id: max(0, (total_booked_per_person.get(id, 0) -
@@ -595,8 +590,7 @@ class Project(models.Model):
                 'left_to_turn_over': sum(
                     left_to_turn_over_per_person.values()),
                 'person_costs': person_costs,
-                'costs': costs,
-                'reserved': reserved}
+                'costs': costs}
 
 
 class FinancialBase(models.Model):
@@ -693,11 +687,6 @@ class BudgetItem(FinancialBase):
         help_text=("Opgepast: positieve bedragen verhogen ons budget, " +
                    "negatieve verlagen het. Het wordt dus niet automatisch " +
                    "afgetrokken."))
-    is_reservation = models.BooleanField(
-        verbose_name="reservering",
-        help_text=("Bedrag dat nu apart wordt gezet om in de toekomst te " +
-                   "gebruiken extra te verdelen uren + budget."),
-        default=False)
 
     class Meta:
         verbose_name = "begrotingsitem"
