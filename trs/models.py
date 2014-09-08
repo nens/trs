@@ -163,13 +163,13 @@ class Person(models.Model):
         return self.name
 
     def cache_key(self, for_what, year_week=None):
-        cache_version = 8
+        cache_version = 9
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-%s-%s-%s-%s' % (
             self.id, self.cache_indicator, for_what, week_id, cache_version)
 
     def person_change_cache_key(self, for_what, year_week=None):
-        cache_version = 4
+        cache_version = 5
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-pc%s-%s-%s-%s' % (
             self.id, self.cache_indicator_person_change, for_what, week_id,
@@ -474,9 +474,9 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        version = 9
+        cache_version = 10
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
-                                        for_what, version)
+                                        for_what, cache_version)
 
     @cache_on_model
     def as_widget(self):
