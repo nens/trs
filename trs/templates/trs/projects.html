@@ -38,6 +38,7 @@
         <th class="text-right">&nbsp;</th>
         <th class="text-right">Omzet</th>
         <th class="text-right">Personele<br>kosten</th>
+        <th class="text-right">Reservering</th>
         <th class="text-right">Overige<br>kosten</th>
         <th class="text-right"
             title="Inclusief nog niet betaalde facturen">Gefactureerd</th>
@@ -90,6 +91,9 @@
             {{ line.person_costs|money }}
           </td>
           <td class="text-right">
+            {{ line.reservation|money }}
+          </td>
+          <td class="text-right">
             {{ line.other_costs|money }}
           </td>
           <td class="text-right">
@@ -114,6 +118,7 @@
         <th colspan="4"></th>
         <th class="text-right">{{ view.totals.turnover|money }}</th>
         <th class="text-right">{{ view.totals.person_costs|money }}</th>
+        <th class="text-right">{{ view.totals.reservation|money }}</th>
         <th class="text-right">{{ view.totals.other_costs|money }}</th>
         <th colspan="2"></th>
       </tr>

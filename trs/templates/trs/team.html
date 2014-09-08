@@ -58,8 +58,12 @@
           </tr>
         {% endfor %}
         <tr>
+          <td colspan="6">Reservering</td>
+          <th class="text-right">{{ view.project.reservation|money }}</th>
+        </tr>
+        <tr>
           <td colspan="6">Subtotaal (personele kosten)</td>
-          <th class="text-right">{{ view.person_costs|money }}</th>
+          <th class="text-right">{{ view.person_costs_incl_reservation|money }}</th>
         </tr>
 
 

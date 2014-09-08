@@ -849,6 +849,7 @@ class ProjectsView(BaseView):
             line['invoice_amount'] = invoice_amount
             line['turnover'] = turnover
             line['person_costs'] = project.person_costs()
+            line['reservation'] = project.reservation
             line['other_costs'] = costs + reservation
             line['invoice_amount_percentage'] = invoice_amount_percentage
             line['invoice_versus_turnover_percentage'] = (
@@ -859,7 +860,8 @@ class ProjectsView(BaseView):
     @cached_property
     def totals(self):
         return {key: sum([line[key] for line in self.lines]) or 0
-                for key in ['turnover', 'person_costs', 'other_costs']}
+                for key in ['turnover', 'person_costs', 'reservation',
+                            'other_costs']}
 
     @cached_property
     def total_invoice_amount_percentage(self):
@@ -1007,15 +1009,16 @@ class ProjectView(BaseView):
         return sum([line['left_to_turn_over'] for line in self.lines])
 
     @cached_property
-    def person_costs(self):
-        return sum([line['planned_turnover'] for line in self.lines])
+    def person_costs_incl_reservation(self):
+        person_costs = sum([line['planned_turnover'] for line in self.lines])
+        return person_costs + self.project.reservation
 
     @cached_property
     def total_costs(self):
         budget = self.project.budget_items.all().aggregate(
             models.Sum('amount'))['amount__sum'] or 0
         budget = -1 * budget
-        return budget + self.person_costs
+        return budget + self.person_costs_incl_reservation
 
     @cached_property
     def amount_left(self):
@@ -1906,15 +1909,16 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         return super(TeamEditView, self).form_valid(form)
 
     @cached_property
-    def person_costs(self):
-        return sum([line['costs'] for line in self.lines])
+    def person_costs_incl_reservation(self):
+        person_costs = sum([line['planned_turnover'] for line in self.lines])
+        return person_costs + self.project.reservation
 
     @cached_property
     def total_costs(self):
         budget = self.project.budget_items.all().aggregate(
             models.Sum('amount'))['amount__sum'] or 0
         budget = -1 * budget
-        return budget + self.person_costs
+        return budget + self.person_costs_incl_reservation
 
     @cached_property
     def success_url(self):
