@@ -165,16 +165,32 @@
               <th></th>
               <th class="text-right">Kosten</th>
               <th class="text-right">Inkomsten</th>
-              <th class="text-right">Toegekend</th>
-              <th class="text-right">Tarief</th>
-              <th class="text-right">&nbsp;&nbsp;&nbsp;</th>
-              <th class="text-right">Geboekt</th>
-              <th class="text-right">Omzet</th>
-              <th class="text-right">Verlies</th>
+              <th colspan="5"></th>
             </tr>
           </thead>
 
           <tbody>
+            <tr>
+              <th>Opdrachtsom</th>
+              <td class="text-right"
+                  colspan="3">
+                {{ view.project.contract_amount|money }}
+              <td colspan="3"></td>
+              </td>
+            </tr>
+          </tbody
+
+          <tbody>
+            <tr>
+              <th>Projectteam</th>
+              <th colspan="3"></th>
+              <th class="text-right">Toegekend</th>
+              <th class="text-right">Geboekt</th>
+              <th class="text-right">Tarief</th>
+              <th class="text-right">Omzet</th>
+              <th class="text-right">Verlies</th>
+            </tr>
+
             {% for line in view.lines %}
               <tr>
                 <td>
@@ -204,6 +220,10 @@
                 </td>
 
                 <td class="text-right">{{ line.budget|hours }}</td>
+                <td class="text-right
+                           {% if line.is_overbooked %}danger{% endif %}">
+                  {{ line.booked|hours }}
+                </td>
                 {% if line.hourly_tariff >= line.desired_hourly_tariff %}
                   <td class="text-right">
                     {{ line.hourly_tariff|money }}
@@ -215,98 +235,84 @@
                     </span>
                   </td>
                 {% endif %}
-                <td class="text-right">&nbsp;&nbsp;&nbsp;</td>
-                <td class="text-right
-                           {% if line.is_overbooked %}danger{% endif %}">
-                  {{ line.booked|hours }}
-                </td>
                 <td class="text-right">{{ line.turnover|money }}</td>
                 <td class="text-right">{{ line.loss|money }}</td>
               </tr>
             {% endfor %}
-            <tr>
-              <th>
-                {% if view.can_see_project_financials %}
+            {% if view.can_see_project_financials %}
+              <tr>
+                <th>
                   Subtotaal
-                {% else %}
-                  Totaal
-                {% endif %}
-              </th>
-              <td class="text-right"></td>
-              <th class="text-right">{{ view.person_costs|money }}</th>
-              <td class="text-right">{# costs #}</td>
-              <td colspan="2"></td>
-              <td class="text-right">&nbsp;&nbsp;&nbsp;</td>
-              <td class="text-right"></td>
-              <th class="text-right">{{ view.total_turnover|money }}</th>
-              <th class="text-right">{{ view.total_loss|money }}</th>
-            </tr>
+                </th>
+                <td class="text-right"></td>
+                <th class="text-right">{{ view.person_costs|money }}</th>
+                <td class="text-right">{# costs #}</td>
+                <td colspan="2"></td>
+                <td class="text-right"></td>
+                <th class="text-right">{{ view.total_turnover|money }}</th>
+                <th class="text-right">{{ view.total_loss|money }}</th>
+              </tr>
+            {% endif %}
           </tbody>
 
-          <tbody>
-            {% for budget_item in view.project.budget_items.all %}
-              <tr>
-                <td>
-                  {% if view.can_edit_financials %}
-                    <a href="{% url 'trs.budget_item.edit' project_pk=view.project.pk pk=budget_item.pk %}">
+          {% if view.can_see_project_financials %}
+            <tbody>
+              {% for budget_item in view.project.budget_items.all %}
+                <tr>
+                  <td>
+                    {% if view.can_edit_financials %}
+                      <a href="{% url 'trs.budget_item.edit' project_pk=view.project.pk pk=budget_item.pk %}">
+                        {{ budget_item.description }}
+                      </a>
+                    {% else %}
                       {{ budget_item.description }}
-                    </a>
-                  {% else %}
-                    {{ budget_item.description }}
-                  {% endif %}
-                  {% if budget_item.is_reservation %}
-                    <span class="text-muted glyphicon glyphicon-calendar"
-                          title="Gereserveerd voor toekomstig werk"></span>
-                  {% endif %}
-                </td>
-                <td>
-                  {% if view.can_edit_financials %}
-                    <a href="{% url 'trs.project.budget-item-delete' pk=view.project.pk budget_item_pk=budget_item.pk %}">
-                      <span class="glyphicon glyphicon-minus-sign text-danger"></span>
-                    </a>
-                  {% endif %}
-                </td>
-                <td class="text-right">{{ budget_item.amount_as_costs|money }}</td>
-                <td class="text-right">{# costs #}</td>
-                <td colspan="6"></td>
-              </tr>
-            {% empty %}
+                    {% endif %}
+                    {% if budget_item.is_reservation %}
+                      <span class="text-muted glyphicon glyphicon-calendar"
+                            title="Gereserveerd voor toekomstig werk"></span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if view.can_edit_financials %}
+                      <a href="{% url 'trs.project.budget-item-delete' pk=view.project.pk budget_item_pk=budget_item.pk %}">
+                        <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                      </a>
+                    {% endif %}
+                  </td>
+                  <td class="text-right">{{ budget_item.amount_as_costs|money }}</td>
+                  <td class="text-right">{# costs #}</td>
+                  <td colspan="5"></td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="9">
+                    <i>Er zijn geen begrotingsitems toegevoegd.</i>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot>
               <tr>
-                <td colspan="10">
-                  <i>Er zijn geen begrotingsitems toegevoegd.</i>
-                </td>
+                <th>Totaal</th>
+                <th></th>
+                <th class="text-right">
+                  {{ view.total_costs|money }}
+                </th>
+                <th class="text-right">
+                  {# inkomsten #}
+                </th>
+                <th colspan="4"></th>
               </tr>
-            {% endfor %}
-          </tbody>
-          <tfoot>
-            <tr>
-              <th>Totaal</th>
-              <th></th>
-              <th class="text-right">
-                {{ view.total_costs|money }}
-              </th>
-              <th class="text-right">
-                {# inkomsten #}
-              </th>
-              <th colspan="5"></th>
-            </tr>
-            <tr>
-              <td>Opdrachtsom</td>
-              <td class="text-right"
-                  colspan="3">
-                {{ view.project.contract_amount|money }}
-              <td colspan="4"></td>
-              </td>
-            </tr>
-            <tr>
-              <th>Nog te verdelen</th>
-              <th colspan="2"></th>
-              <th class="text-right">
-                {{ view.project.left_to_dish_out|money }}
-              </th>
-              <th colspan="5"></th>
-            </tr>
-          </tfoot>
+              <tr>
+                <th>Nog te verdelen</th>
+                <th colspan="2"></th>
+                <th class="text-right">
+                  {{ view.project.left_to_dish_out|money }}
+                </th>
+                <th colspan="4"></th>
+              </tr>
+            </tfoot>
+          {% endif %}
 
         </table>
       </div>
