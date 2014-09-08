@@ -104,7 +104,51 @@
   {% endif %}
 
   {% if view.can_view_team %}
+    {% if not view.can_see_project_financials %}
+      <h2>Projectteam</h2>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th></th>
+              <th></th>
+              <th class="text-right">Toegekend</th>
+              <th class="text-right">&nbsp;&nbsp;&nbsp;</th>
+              <th class="text-right">Geboekt</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for line in view.lines %}
+              <tr>
+                <td>
+                  {{ line.person.as_widget }}
+                </td>
+                <td>
+                  {% if line.is_project_leader %}
+                    <span title="Projectleider: gaat over de uren">PL</span>
+                    &nbsp;
+                  {% endif %}
+                  {% if line.is_project_manager %}
+                    <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
+                  {% endif %}
+                </td>
+                <td class="text-right">{{ line.budget|hours }}</td>
+                <td class="text-right">&nbsp;&nbsp;&nbsp;</td>
+                <td class="text-right
+                           {% if line.is_overbooked %}danger{% endif %}">
+                  {{ line.booked|hours }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+
+        </table>
+      </div>
+
+    {% endif %}
     {% if view.can_see_project_financials %}
+
       <h2 id="budget">
         Projectbegroting
         {% if not view.project.budget_ok %}
@@ -112,54 +156,45 @@
                 title="Budget is niet goed verdeeld"></span>
         {% endif %}
       </h2>
-    {% else %}
-      <h2>Projectteam</h2>
-    {% endif %}
-    <div class="table-responsive">
-      <table class="table table-hover">
-        <thead>
-          <tr>
-            <th></th>
-            <th></th>
-            <th class="text-right">Toegekend</th>
-            {% if view.can_see_financials %}
+
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th></th>
+              <th></th>
+              <th class="text-right">Toegekend</th>
               <th class="text-right">Tarief</th>
               <th class="text-right">Kosten</th>
-            {% endif %}
-            <th class="text-right">&nbsp;&nbsp;&nbsp;</th>
-            <th class="text-right">Geboekt</th>
-            {% if view.can_see_financials %}
+              <th class="text-right">&nbsp;&nbsp;&nbsp;</th>
+              <th class="text-right">Geboekt</th>
               <th class="text-right">Omzet</th>
               <th class="text-right">Verlies</th>
-            {% endif %}
-          </tr>
-        </thead>
+            </tr>
+          </thead>
 
-        <tbody>
-          {% for line in view.lines %}
-            <tr>
-              <td>
-                {{ line.person.as_widget }}
-                {% if view.can_see_financials %}
+          <tbody>
+            {% for line in view.lines %}
+              <tr>
+                <td>
+                  {{ line.person.as_widget }}
                   {% if line.person.to_book.friendly %}
                     <span class="badge"
                           title="Achter met boeken: {{ line.person.to_book.friendly }}">
                       {{ line.person.to_book.short }}
                     <span>
                   {% endif %}
-                {% endif %}
-              </td>
-              <td>
-                {% if line.is_project_leader %}
-                  <span title="Projectleider: gaat over de uren">PL</span>
-                  &nbsp;
-                {% endif %}
-                {% if line.is_project_manager %}
-                  <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
-                {% endif %}
-              </td>
-              <td class="text-right">{{ line.budget|hours }}</td>
-              {% if view.can_see_financials %}
+                </td>
+                <td>
+                  {% if line.is_project_leader %}
+                    <span title="Projectleider: gaat over de uren">PL</span>
+                    &nbsp;
+                  {% endif %}
+                  {% if line.is_project_manager %}
+                    <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
+                  {% endif %}
+                </td>
+                <td class="text-right">{{ line.budget|hours }}</td>
                 {% if line.hourly_tariff >= line.desired_hourly_tariff %}
                   <td class="text-right">
                     {{ line.hourly_tariff|money }}
@@ -174,19 +209,15 @@
                 <td class="text-right">
                   {{ line.planned_turnover|money }}
                 </td>
-              {% endif %}
-              <td class="text-right">&nbsp;&nbsp;&nbsp;</td>
-              <td class="text-right
-                         {% if line.is_overbooked %}danger{% endif %}">
-                {{ line.booked|hours }}
-              </td>
-              {% if view.can_see_financials %}
+                <td class="text-right">&nbsp;&nbsp;&nbsp;</td>
+                <td class="text-right
+                           {% if line.is_overbooked %}danger{% endif %}">
+                  {{ line.booked|hours }}
+                </td>
                 <td class="text-right">{{ line.turnover|money }}</td>
                 <td class="text-right">{{ line.loss|money }}</td>
-              {% endif %}
-            </tr>
-          {% endfor %}
-          {% if view.can_see_financials %}
+              </tr>
+            {% endfor %}
             <tr>
               <th>
                 {% if view.can_see_project_financials %}
@@ -202,10 +233,8 @@
               <th class="text-right">{{ view.total_turnover|money }}</th>
               <th class="text-right">{{ view.total_loss|money }}</th>
             </tr>
-          {% endif %}
-        </tbody>
+          </tbody>
 
-        {% if view.can_see_project_financials %}
           <tbody>
             {% for budget_item in view.project.budget_items.all %}
               <tr>
@@ -267,10 +296,13 @@
               <th colspan="4"></th>
             </tr>
           </tfoot>
-        {% endif %}
 
-      </table>
-    </div>
+        </table>
+      </div>
+
+    {% endif %}
+
+
 
     <div>
       {% if view.can_edit_team %}
