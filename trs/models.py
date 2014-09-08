@@ -556,8 +556,8 @@ class Project(models.Model):
             item['booked_by']: round(item['hours__sum'])
             for item in booked_this_year_per_person}
 
-        costs = -1 * self.budget_items.all().aggregate(
-            models.Sum('amount'))['amount__sum']
+        costs = -1 * (self.budget_items.all().aggregate(
+            models.Sum('amount'))['amount__sum'] or 0)
 
         overbooked_per_person = {
             id: max(0, (total_booked_per_person.get(id, 0) -
