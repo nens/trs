@@ -556,7 +556,7 @@ class Project(models.Model):
             item['booked_by']: round(item['hours__sum'])
             for item in booked_this_year_per_person}
 
-        costs = -1 * (self.budget_items.all().aggregate(
+        costs = (self.budget_items.all().aggregate(
             models.Sum('amount'))['amount__sum'] or 0)
 
         overbooked_per_person = {
@@ -688,20 +688,16 @@ class BudgetItem(FinancialBase):
         decimal_places=DECIMAL_PLACES,
         default=0,
         verbose_name="bedrag exclusief",
-        help_text=("Opgepast: positieve bedragen verhogen ons budget, " +
-                   "negatieve verlagen het. Het wordt dus niet automatisch " +
-                   "afgetrokken."))
+        help_text=("Dit zijn kosten, dus een positief getal wordt van het "
+                   "projectbudget afgetrokken. "
+                   "(Dit is in sept 2014 veranderd!)"))
 
     class Meta:
-        verbose_name = "begrotingsitem"
-        verbose_name_plural = "begrotingsitems"
+        verbose_name = "projectkostenpost"
+        verbose_name_plural = "projectkostenposten"
 
     def __str__(self):
         return self.description
-
-    def amount_as_costs(self):
-        # The value should be inversed  when used as costs.
-        return -1 * self.amount
 
     def get_absolute_url(self):
         return reverse('trs.budget_item.edit', kwargs={

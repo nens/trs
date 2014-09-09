@@ -1015,10 +1015,9 @@ class ProjectView(BaseView):
 
     @cached_property
     def total_costs(self):
-        budget = self.project.budget_items.all().aggregate(
+        costs = self.project.budget_items.all().aggregate(
             models.Sum('amount'))['amount__sum'] or 0
-        budget = -1 * budget
-        return budget + self.person_costs_incl_reservation
+        return costs + self.person_costs_incl_reservation
 
     @cached_property
     def total_income(self):
@@ -1919,10 +1918,9 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def total_costs(self):
-        budget = self.project.budget_items.all().aggregate(
+        costs = self.project.budget_items.all().aggregate(
             models.Sum('amount'))['amount__sum'] or 0
-        budget = -1 * budget
-        return budget + self.person_costs_incl_reservation
+        return costs + self.person_costs_incl_reservation
 
     @cached_property
     def success_url(self):
@@ -2562,7 +2560,7 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
                 '',
                 '',
                 '',
-                budget_item.amount_as_costs(),
+                budget_item.amount,
                 '',
             ])
 

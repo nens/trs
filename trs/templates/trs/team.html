@@ -116,8 +116,8 @@
           {% for budget_item in view.project.budget_items.all %}
             <tr>
               <td>{{ budget_item.description }}</td>
-              <td class="text-right">{{ budget_item.amount_as_costs|money }}</td>
-              <td></td>
+              <td class="text-right">{{ budget_item.amount|money }}</td>
+              <td class="text-right">TODO IF NEGATIVE</td>
             </tr>
           {% empty %}
             <tr>
