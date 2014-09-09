@@ -194,6 +194,7 @@
             {% for line in view.lines %}
               <tr>
                 <td>
+                  &nbsp;&nbsp;&nbsp;
                   {{ line.person.as_widget }}
                 </td>
                 <td>
@@ -246,7 +247,6 @@
                     colspan="2">
                   {{ view.project.reservation|money }}
                 <td colspan="6"></td>
-                </td>
               </tr>
 
               <tr>
@@ -266,9 +266,14 @@
 
           {% if view.can_see_project_financials %}
             <tbody>
+              <tr>
+                <th>Overige kosten</th>
+                <td colspan="7"></td>
+              </tr>
               {% for budget_item in view.project.budget_items.all %}
                 <tr>
                   <td>
+                    &nbsp;&nbsp;&nbsp;
                     {% if view.can_edit_financials %}
                       <a href="{% url 'trs.budget_item.edit' project_pk=view.project.pk pk=budget_item.pk %}">
                         {{ budget_item.description }}
@@ -304,7 +309,7 @@
                   {{ view.total_costs|money }}
                 </th>
                 <th class="text-right">
-                  {# inkomsten #}
+                  {{ view.total_income|money }}
                 </th>
                 <th colspan="4"></th>
               </tr>

@@ -1021,6 +1021,10 @@ class ProjectView(BaseView):
         return budget + self.person_costs_incl_reservation
 
     @cached_property
+    def total_income(self):
+        return self.project.contract_amount
+
+    @cached_property
     def amount_left(self):
         return self.subtotal - self.total_turnover - self.total_turnover_left
 
