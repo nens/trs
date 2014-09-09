@@ -163,7 +163,7 @@ class Person(models.Model):
         return self.name
 
     def cache_key(self, for_what, year_week=None):
-        cache_version = 9
+        cache_version = 10
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-%s-%s-%s-%s' % (
             self.id, self.cache_indicator, for_what, week_id, cache_version)
@@ -474,7 +474,7 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        cache_version = 10
+        cache_version = 12
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, cache_version)
 
@@ -514,6 +514,9 @@ class Project(models.Model):
     def costs(self):
         return self.work_calculation()['costs']
 
+    def income(self):
+        return self.work_calculation()['income']
+
     def person_costs(self):
         return self.work_calculation()['person_costs']
 
@@ -525,7 +528,8 @@ class Project(models.Model):
         return round(self.overbooked() / self.hour_budget() * 100)
 
     def left_to_dish_out(self):
-        return (self.contract_amount - self.person_costs() -
+        return (self.contract_amount + self.income()
+                - self.person_costs() -
                 self.reservation - self.costs())
 
     def budget_ok(self):
@@ -556,8 +560,13 @@ class Project(models.Model):
             item['booked_by']: round(item['hours__sum'])
             for item in booked_this_year_per_person}
 
-        costs = (self.budget_items.all().aggregate(
-            models.Sum('amount'))['amount__sum'] or 0)
+        costs = 0
+        income = 0
+        for budget_item in self.budget_items.all():
+            if budget_item.amount > 0:
+                costs += budget_item.amount
+            else:
+                income += budget_item.amount * -1
 
         overbooked_per_person = {
             id: max(0, (total_booked_per_person.get(id, 0) -
@@ -590,7 +599,8 @@ class Project(models.Model):
                 'left_to_turn_over': sum(
                     left_to_turn_over_per_person.values()),
                 'person_costs': person_costs,
-                'costs': costs}
+                'costs': costs,
+                'income': income}
 
 
 class FinancialBase(models.Model):
@@ -698,6 +708,9 @@ class BudgetItem(FinancialBase):
 
     def __str__(self):
         return self.description
+
+    def amount_as_income(self):
+        return self.amount * -1
 
     def get_absolute_url(self):
         return reverse('trs.budget_item.edit', kwargs={

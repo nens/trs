@@ -834,15 +834,16 @@ class ProjectsView(BaseView):
             invoice_amount = invoice_amounts.get(project.id, 0)
             turnover = project.turnover()
             costs = project.costs()
+            income = project.income()
             reservation = project.reservation
             if project.contract_amount:
                 invoice_amount_percentage = round(
                     invoice_amount / project.contract_amount * 100)
             else:  # Division by zero.
                 invoice_amount_percentage = None
-            if turnover + costs + reservation:
+            if turnover + costs + reservation - income:
                 invoice_versus_turnover_percentage = round(
-                    invoice_amount / (turnover + costs + reservation) * 100)
+                    invoice_amount / (turnover + costs + reservation - income) * 100)
             else:
                 invoice_versus_turnover_percentage = None
             line['contract_amount'] = project.contract_amount
@@ -850,7 +851,7 @@ class ProjectsView(BaseView):
             line['turnover'] = turnover
             line['person_costs'] = project.person_costs()
             line['reservation'] = project.reservation
-            line['other_costs'] = costs + reservation
+            line['other_costs'] = costs + reservation - income
             line['invoice_amount_percentage'] = invoice_amount_percentage
             line['invoice_versus_turnover_percentage'] = (
                 invoice_versus_turnover_percentage)
@@ -1015,13 +1016,11 @@ class ProjectView(BaseView):
 
     @cached_property
     def total_costs(self):
-        costs = self.project.budget_items.all().aggregate(
-            models.Sum('amount'))['amount__sum'] or 0
-        return costs + self.person_costs_incl_reservation
+        return self.project.costs() + self.person_costs_incl_reservation
 
     @cached_property
     def total_income(self):
-        return self.project.contract_amount
+        return self.project.contract_amount + self.project.income()
 
     @cached_property
     def amount_left(self):
@@ -1918,9 +1917,11 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def total_costs(self):
-        costs = self.project.budget_items.all().aggregate(
-            models.Sum('amount'))['amount__sum'] or 0
-        return costs + self.person_costs_incl_reservation
+        return self.project.costs() + self.person_costs_incl_reservation
+
+    @cached_property
+    def total_income(self):
+        return self.project.contract_amount + self.project.income()
 
     @cached_property
     def success_url(self):

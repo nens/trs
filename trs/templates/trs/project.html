@@ -289,8 +289,13 @@
                       </a>
                     {% endif %}
                   </td>
-                  <td class="text-right">{{ budget_item.amount|money }}</td>
-                  <td class="text-right">TODO IF NEGATIVE</td>
+                  {% if budget_item.amount > 0 %}
+                    <td class="text-right">{{ budget_item.amount|money }}</td>
+                    <td class="text-right"></td>
+                  {% else %}
+                    <td class="text-right"></td>
+                    <td class="text-right">{{ budget_item.amount_as_income|money }}</td>
+                  {% endif %}
                   <td colspan="5">
                     {% if budget_item.is_third_party_cost %}
                       <span class="text-muted">kosten derden</span>
