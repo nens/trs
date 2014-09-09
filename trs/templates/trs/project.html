@@ -291,7 +291,11 @@
                   </td>
                   <td class="text-right">{{ budget_item.amount_as_costs|money }}</td>
                   <td class="text-right">{# costs #}</td>
-                  <td colspan="5"></td>
+                  <td colspan="5">
+                    {% if budget_item.is_third_party_cost %}
+                      <span class="text-muted">kosten derden</span>
+                    {% endif %}
+                  </td>
                 </tr>
               {% empty %}
                 <tr>

@@ -679,6 +679,10 @@ class BudgetItem(FinancialBase):
         verbose_name="omschrijving",
         blank=True,
         max_length=255)
+    is_third_party_cost = models.BooleanField(
+        verbose_name="dit zijn kosten derden",
+        help_text="Dit is een 'omgekeerde factuur' die wij moeten betalen",
+        default=False)
     amount = models.DecimalField(
         max_digits=12,  # We don't mind a metric ton of hard cash.
         decimal_places=DECIMAL_PLACES,
