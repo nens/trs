@@ -110,14 +110,19 @@
         <tbody>
           <tr>
             <td>Personele kosten</td>
-            <td class="text-right">{{ view.person_costs|money }}</td>
+            <td class="text-right">{{ view.person_costs_incl_reservation|money }}</td>
             <td class="text-right"></td>
           </tr>
           {% for budget_item in view.project.budget_items.all %}
             <tr>
               <td>{{ budget_item.description }}</td>
-              <td class="text-right">{{ budget_item.amount|money }}</td>
-              <td class="text-right">TODO IF NEGATIVE</td>
+              {% if budget_item.amount > 0 %}
+                <td class="text-right">{{ budget_item.amount|money }}</td>
+                <td class="text-right"></td>
+              {% else %}
+                <td class="text-right"></td>
+                <td class="text-right">{{ budget_item.amount_as_income|money }}</td>
+              {% endif %}
             </tr>
           {% empty %}
             <tr>

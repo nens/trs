@@ -1912,7 +1912,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def person_costs_incl_reservation(self):
-        person_costs = sum([line['planned_turnover'] for line in self.lines])
+        person_costs = sum([line['costs'] for line in self.lines])
         return person_costs + self.project.reservation
 
     @cached_property
