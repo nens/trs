@@ -701,6 +701,13 @@ class BudgetItem(FinancialBase):
         help_text=("Dit zijn kosten, dus een positief getal wordt van het "
                    "projectbudget afgetrokken. "
                    "(Dit is in sept 2014 veranderd!)"))
+    to_project = models.ForeignKey(
+        Project,
+        blank=True,
+        null=True,
+        related_name="budget_transfers",
+        verbose_name="overboeken naar ander project",
+        help_text="optioneel: project waarnaar het bedrag wordt overgemaakt")
 
     class Meta:
         verbose_name = "projectkostenpost"
