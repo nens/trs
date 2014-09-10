@@ -281,6 +281,9 @@
                     {% else %}
                       {{ budget_item.description }}
                     {% endif %}
+                    {% if budget_item.to_project %}
+                      naar {{ budget_item.to_project.as_widget }}
+                    {% endif %}
                   </td>
                   <td>
                     {% if view.can_edit_financials %}
