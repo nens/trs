@@ -59,7 +59,12 @@
         {% endfor %}
         <tr>
           <td colspan="6">Reservering</td>
-          <th class="text-right">{{ view.project.reservation|money }}</th>
+          <th class="text-right">
+              {% for error in view.reservation_field.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
+            {{ view.reservation_field }}
+          </th>
         </tr>
         <tr>
           <td colspan="6">Subtotaal (personele kosten)</td>

@@ -1294,14 +1294,13 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     'archived',  # Note: archived only on edit view :-)
                     'is_subsidized', 'principal',
                     'contract_amount',
-                    'reservation',
                     'start', 'end', 'project_leader', 'project_manager',
                     # Note: the next two are shown only on the edit view!
                     'startup_meeting_done', 'is_accepted',
                     'remark', 'financial_remark',
                     'end',
                     ]
-        result = ['remark', 'financial_remark', 'start', 'end', 'reservation']
+        result = ['remark', 'financial_remark', 'start', 'end']
         if self.active_person == self.project.project_leader:
             if not self.project.startup_meeting_done:
                 result.append('startup_meeting_done')
@@ -1788,6 +1787,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         tabindex = 1
         budgets, hourly_tariffs = self.budgets_and_tariffs
 
+        # WorkAssignment fields
         for index, person in enumerate(self.project.assigned_persons()):
             if person.archived:
                 continue
@@ -1807,6 +1807,15 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                                                   'tabindex': tabindex}))
                 fields[self.hourly_tariff_fieldname(person)] = field_type
                 tabindex += 1
+
+        # Reservation field
+        fields['reservation'] = forms.IntegerField(
+            min_value=0,
+            initial=int(self.project.reservation),
+            widget=forms.TextInput(attrs={'size': 4,
+                                          'tabindex': tabindex}))
+        tabindex += 1
+
         if self.can_add_team_member:
             # New team member field
             name = 'new_team_member'
@@ -1867,6 +1876,13 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         if self.can_add_team_member:
             return self.bound_form_fields[-1]
 
+    @cached_property
+    def reservation_field(self):
+        if self.can_add_team_member:
+            return self.bound_form_fields[-2]
+        else:
+            return self.bound_form_fields[-1]
+
     def form_valid(self, form):
         num_changes = 0
         budgets, hourly_tariffs = self.budgets_and_tariffs
@@ -1896,6 +1912,13 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         if num_changes:
             messages.success(self.request,
                              "Teamleden: %s gewijzigd" % num_changes)
+
+        reservation = form.cleaned_data.get('reservation')
+        if self.project.reservation != reservation:
+            self.project.reservation = reservation
+            self.project.save()
+            msg = "Reservering is op %s gezet" % reservation
+            messages.success(self.request, msg)
 
         if self.can_add_team_member:
             new_team_member_id = form.cleaned_data.get('new_team_member')
