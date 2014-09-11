@@ -2610,3 +2610,30 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
                '',
                self.project.left_to_dish_out,
            ])
+
+
+class ReservationsOverview(BaseView):
+    template_name = 'trs/reservations.html'
+
+    filters_and_choices = [
+        {'title': 'Filter',
+         'param': 'filter',
+         'default': 'active',
+         'choices': [
+             {'value': 'active',
+              'title': 'huidige projecten',
+              'q': Q(archived=False)},
+             {'value': 'all',
+              'title': 'alle projecten (inclusief archief)',
+              'q': Q()},
+         ]},
+    ]
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @cached_property
+    def projects(self):
+        q_objects = [filter['q'] for filter in self.prepared_filters]
+        return Project.objects.filter(*q_objects).filter(
+            reservation__gt=0)

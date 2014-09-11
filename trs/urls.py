@@ -116,6 +116,9 @@ urlpatterns = patterns(
     url(r'^overviews/changes/$',
         views.ChangesOverview.as_view(),
         name='trs.overviews.changes'),
+    url(r'^overviews/reservations/$',
+        views.ReservationsOverview.as_view(),
+        name='trs.overviews.reservations'),
 
     url(r'^locallogin/$',
         views.LoginView.as_view(),
