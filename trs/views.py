@@ -851,7 +851,7 @@ class ProjectsView(BaseView):
             line['turnover'] = turnover
             line['person_costs'] = project.person_costs()
             line['reservation'] = project.reservation
-            line['other_costs'] = costs + reservation - income
+            line['other_costs'] = costs - income
             line['invoice_amount_percentage'] = invoice_amount_percentage
             line['invoice_versus_turnover_percentage'] = (
                 invoice_versus_turnover_percentage)
@@ -1294,13 +1294,14 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     'archived',  # Note: archived only on edit view :-)
                     'is_subsidized', 'principal',
                     'contract_amount',
+                    'reservation',
                     'start', 'end', 'project_leader', 'project_manager',
                     # Note: the next two are shown only on the edit view!
                     'startup_meeting_done', 'is_accepted',
                     'remark', 'financial_remark',
                     'end',
                     ]
-        result = ['remark', 'financial_remark', 'start', 'end']
+        result = ['remark', 'financial_remark', 'start', 'end', 'reservation']
         if self.active_person == self.project.project_leader:
             if not self.project.startup_meeting_done:
                 result.append('startup_meeting_done')
