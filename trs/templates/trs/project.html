@@ -1,7 +1,7 @@
 {% extends "trs/base.html" %}
 {% load trs_formatting %}
 
-{% block main-column %}
+{% block full-width %}
   <h1>
     {{ view.project.code }}
     {% if view.project.archived %}
@@ -242,7 +242,7 @@
             {% endfor %}
             {% if view.can_see_project_financials %}
               <tr>
-                <th>Reservering</th>
+                <td>&nbsp;&nbsp;&nbsp;Reservering</td>
                 <td class="text-right"
                     colspan="2">
                   {{ view.project.reservation|money }}
@@ -305,13 +305,29 @@
                     {% endif %}
                   </td>
                 </tr>
-              {% empty %}
+              {% endfor %}
+
+              {% for budget_item in view.project.budget_transfers.all %}
                 <tr>
-                  <td colspan="9">
-                    <i>Er zijn geen begrotingsitems toegevoegd.</i>
+                  <td>
+                    &nbsp;&nbsp;&nbsp;
+                    {{ budget_item.description }}
+                    van {{ budget_item.project.as_widget }}
+                  </td>
+                  <td>
+                  </td>
+                  {% if budget_item.amount < 0 %}
+                    <td class="text-right">{{ budget_item.amount_as_income|money }}</td>
+                    <td class="text-right"></td>
+                  {% else %}
+                    <td class="text-right"></td>
+                    <td class="text-right">{{ budget_item.amount|money }}</td>
+                  {% endif %}
+                  <td colspan="5">
                   </td>
                 </tr>
               {% endfor %}
+
             </tbody>
             <tfoot>
               <tr>
