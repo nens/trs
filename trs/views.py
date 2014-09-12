@@ -1444,7 +1444,7 @@ class BudgetItemCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = BudgetItem
     title = "Nieuw begrotingsitem"
-    fields = ['description', 'amount', 'is_third_party_cost']
+    fields = ['description', 'amount', 'is_third_party_cost', 'to_project']
 
     def has_form_permissions(self):
         if self.project.archived:
@@ -1471,7 +1471,7 @@ class BudgetItemEditView(LoginAndPermissionsRequiredMixin,
                          BaseMixin):
     template_name = 'trs/edit.html'
     model = BudgetItem
-    fields = ['description', 'amount', 'is_third_party_cost']
+    fields = ['description', 'amount', 'is_third_party_cost', 'to_project']
 
     @property
     def title(self):
