@@ -17,6 +17,28 @@ Changelog of TRS
 
 - Speed improvement by caching the person and project widgets.
 
+- Project page is wider now: more room for the budget table.
+
+- Budget transfers between projects are now done explicitly by linking to the
+  the project you transfer budget to. No more mismatched amounts. Note: there
+  is a data migration that automatically fixes 70% of the current budget
+  transfers).
+
+- Budget items are now treated as costs. So a positive number counts as a cost
+  to the project. This should remove lots of confusion. (Note: there is a data
+  migration that automatically fixes the current numbers).
+
+- The project budget table now has a separate colum for costs and one for
+  income. Clearer that way, previously a budget transfer from another project
+  would show up as a "negative cost"...
+
+- Costs can be tagged as "third party costs".
+
+- Reservation for future work is done with a specific attribute on the project
+  instead of with a generic budget item.
+
+- Added overview pages for 3th party costs and for budget reservations.
+
 
 1.9 (2014-07-15)
 ----------------
