@@ -10,6 +10,7 @@
     <thead>
       <tr>
         <th>Project</th>
+        <th></th>
         <th>Omschrijving</th>
         <th class="text-right">Bedrag</th>
       </tr>
@@ -22,6 +23,16 @@
             {% if forloop.first %}
               <td rowspan="{{ project.list|length }}">
                 {{ project.grouper.as_widget }}
+              </td>
+              <td rowspan="{{ project.list|length }}">
+                <span class="text-muted"
+                      style="white-space: nowrap;"
+                      {% if project.grouper.description|length > 35 %}
+                        title="{{ project.grouper.description }}"
+                      {% endif %}>
+                  &nbsp;
+                  {{ project.grouper.description|truncatechars:35 }}
+                </span>
               </td>
             {% endif %}
             <td>
