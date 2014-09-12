@@ -1,0 +1,41 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>Kosten derden</h1>
+
+  {% include "trs/filter-snippet.html" %}
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th>Omschrijving</th>
+        <th class="text-right">Bedrag</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% regroup view.budget_items by project as project_list %}
+      {% for project in project_list %}
+        {% for budget_item in project.list %}
+          <tr>
+            {% if forloop.first %}
+              <td rowspan="{{ project.list|length }}">
+                {{ project.grouper.as_widget }}
+              </td>
+            {% endif %}
+            <td>
+              <a href="{% url 'trs.budget_item.edit' project_pk=project.grouper.pk pk=budget_item.pk %}">
+                {{ budget_item.description }}
+              </a>
+            </td>
+            <td class="text-right">
+              {{ budget_item.amount|money }}
+            </td>
+          </tr>
+        {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

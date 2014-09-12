@@ -2637,3 +2637,31 @@ class ReservationsOverview(BaseView):
         q_objects = [filter['q'] for filter in self.prepared_filters]
         return Project.objects.filter(*q_objects).filter(
             reservation__gt=0)
+
+
+class ThirdPartyCostsOverview(BaseView):
+    template_name = 'trs/third_party_costs.html'
+
+    filters_and_choices = [
+        {'title': 'Filter',
+         'param': 'filter',
+         'default': 'active',
+         'choices': [
+             {'value': 'active',
+              'title': 'huidige projecten',
+              'q': Q(project__archived=False)},
+             {'value': 'all',
+              'title': 'alle projecten (inclusief archief)',
+              'q': Q()},
+         ]},
+    ]
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @cached_property
+    def budget_items(self):
+        q_objects = [filter['q'] for filter in self.prepared_filters]
+        return BudgetItem.objects.filter(*q_objects).filter(
+            is_third_party_cost=True)
+        #.select_related('project')
