@@ -29,6 +29,19 @@
       </a>
     {% endif %}
   </h1>
+
+  {# We use the full-width block, so we miss the regular messages part. #}
+  {# So we need to add it ourselves. #}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissable">
+      <button type="button"
+              class="close"
+              data-dismiss="alert"
+              aria-hidden="true">&times;</button>
+      {{ message }}
+    </div>
+  {% endfor %}
+
   <table class="table borderless-table table-condensed"
          style="width: auto;">
     <tbody>
