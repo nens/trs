@@ -849,7 +849,8 @@ class ProjectsView(BaseView):
             line['contract_amount'] = project.contract_amount
             line['invoice_amount'] = invoice_amount
             line['turnover'] = turnover
-            line['person_costs'] = project.person_costs()
+            line['person_costs_incl_reservation'] = (project.person_costs() +
+                                                     project.reservation)
             line['reservation'] = project.reservation
             line['other_costs'] = costs - income
             line['invoice_amount_percentage'] = invoice_amount_percentage
@@ -861,7 +862,7 @@ class ProjectsView(BaseView):
     @cached_property
     def totals(self):
         return {key: sum([line[key] for line in self.lines]) or 0
-                for key in ['turnover', 'person_costs', 'reservation',
+                for key in ['turnover', 'person_costs_incl_reservation', 'reservation',
                             'other_costs']}
 
     @cached_property
