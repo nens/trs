@@ -1727,7 +1727,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def title(self):
-        return "Projectteam voor %s bewerken" % self.project.code
+        return "Personele kosten voor %s bewerken" % self.project.code
 
     @cached_property
     def can_edit_hours(self):
