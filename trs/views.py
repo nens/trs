@@ -2404,14 +2404,13 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
         'PL',
         'PM',
         'Opdrachtsom',
-        'Opdrachtsom OK',
         'Startoverleg',
         'Geaccepteerd',
 
         'Gefactureerd',
         'Omzet',
+        'Personele kosten incl reservering',
         'Overige kosten',
-        'Gereserveerd voor personele kosten',
         'Gefactureerd t.o.v. opdrachtsom',
         'Gefactureerd t.o.v. omzet + extra kosten',
 
@@ -2448,8 +2447,8 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
 
                 line['invoice_amount'],
                 line['turnover'],
-                line['costs'],
-                project.reservation,
+                line['person_costs_incl_reservation'],
+                line['other_costs'],
                 line['invoice_amount_percentage'],
                 line['invoice_versus_turnover_percentage'],
 
