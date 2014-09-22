@@ -163,13 +163,13 @@ class Person(models.Model):
         return self.name
 
     def cache_key(self, for_what, year_week=None):
-        cache_version = 8
+        cache_version = 10
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-%s-%s-%s-%s' % (
             self.id, self.cache_indicator, for_what, week_id, cache_version)
 
     def person_change_cache_key(self, for_what, year_week=None):
-        cache_version = 4
+        cache_version = 5
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-pc%s-%s-%s-%s' % (
             self.id, self.cache_indicator_person_change, for_what, week_id,
@@ -373,6 +373,11 @@ class Project(models.Model):
         decimal_places=DECIMAL_PLACES,
         default=0,
         verbose_name="opdrachtsom")
+    reservation = models.DecimalField(
+        max_digits=12,
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="reservering voor personele kosten")
     start = models.ForeignKey(
         'YearWeek',
         blank=True,
@@ -469,9 +474,9 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        version = 9
+        cache_version = 13
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
-                                        for_what, version)
+                                        for_what, cache_version)
 
     @cache_on_model
     def as_widget(self):
@@ -509,11 +514,11 @@ class Project(models.Model):
     def costs(self):
         return self.work_calculation()['costs']
 
+    def income(self):
+        return self.work_calculation()['income']
+
     def person_costs(self):
         return self.work_calculation()['person_costs']
-
-    def reserved(self):
-        return self.work_calculation()['reserved']
 
     def overbooked_percentage(self):
         if not self.overbooked():
@@ -523,8 +528,9 @@ class Project(models.Model):
         return round(self.overbooked() / self.hour_budget() * 100)
 
     def left_to_dish_out(self):
-        return (self.contract_amount - self.person_costs() -
-                self.reserved() - self.costs())
+        return (self.contract_amount + self.income()
+                - self.person_costs() -
+                self.reservation - self.costs())
 
     def budget_ok(self):
         return self.left_to_dish_out() == 0
@@ -554,15 +560,18 @@ class Project(models.Model):
             item['booked_by']: round(item['hours__sum'])
             for item in booked_this_year_per_person}
 
-        budget_items = self.budget_items.all().values(
-            'is_reservation').annotate(
-                models.Sum('amount'))
-        # Warning: 'costs' used to be the total of all budget items, now it
-        # excludes the reservations.
-        costs_per_kind = {item['is_reservation']: item['amount__sum'] or 0
-                          for item in budget_items}
-        reserved = -1 * costs_per_kind.get(True, 0)
-        costs = -1 * costs_per_kind.get(False, 0)
+        costs = 0
+        income = 0
+        for budget_item in self.budget_items.all():
+            if budget_item.amount > 0:
+                costs += budget_item.amount
+            else:
+                income += budget_item.amount * -1
+        for budget_item in self.budget_transfers.all():
+            if budget_item.amount > 0:
+                income += budget_item.amount
+            else:
+                costs += budget_item.amount * -1
 
         overbooked_per_person = {
             id: max(0, (total_booked_per_person.get(id, 0) -
@@ -596,7 +605,7 @@ class Project(models.Model):
                     left_to_turn_over_per_person.values()),
                 'person_costs': person_costs,
                 'costs': costs,
-                'reserved': reserved}
+                'income': income}
 
 
 class FinancialBase(models.Model):
@@ -690,25 +699,26 @@ class BudgetItem(FinancialBase):
         decimal_places=DECIMAL_PLACES,
         default=0,
         verbose_name="bedrag exclusief",
-        help_text=("Opgepast: positieve bedragen verhogen ons budget, " +
-                   "negatieve verlagen het. Het wordt dus niet automatisch " +
-                   "afgetrokken."))
-    is_reservation = models.BooleanField(
-        verbose_name="reservering",
-        help_text=("Bedrag dat nu apart wordt gezet om in de toekomst te " +
-                   "gebruiken extra te verdelen uren + budget."),
-        default=False)
+        help_text=("Dit zijn kosten, dus een positief getal wordt van het "
+                   "projectbudget afgetrokken. "
+                   "(Dit is in sept 2014 veranderd!)"))
+    to_project = models.ForeignKey(
+        Project,
+        blank=True,
+        null=True,
+        related_name="budget_transfers",
+        verbose_name="overboeken naar ander project",
+        help_text="optioneel: project waarnaar het bedrag wordt overgemaakt")
 
     class Meta:
-        verbose_name = "begrotingsitem"
-        verbose_name_plural = "begrotingsitems"
+        verbose_name = "projectkostenpost"
+        verbose_name_plural = "projectkostenposten"
 
     def __str__(self):
         return self.description
 
-    def amount_as_costs(self):
-        # The value should be inversed  when used as costs.
-        return -1 * self.amount
+    def amount_as_income(self):
+        return self.amount * -1
 
     def get_absolute_url(self):
         return reverse('trs.budget_item.edit', kwargs={

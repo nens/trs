@@ -834,22 +834,25 @@ class ProjectsView(BaseView):
             invoice_amount = invoice_amounts.get(project.id, 0)
             turnover = project.turnover()
             costs = project.costs()
-            reserved = project.reserved()
+            income = project.income()
+            reservation = project.reservation
             if project.contract_amount:
                 invoice_amount_percentage = round(
                     invoice_amount / project.contract_amount * 100)
             else:  # Division by zero.
                 invoice_amount_percentage = None
-            if turnover + costs + reserved:
+            if turnover + costs + reservation - income:
                 invoice_versus_turnover_percentage = round(
-                    invoice_amount / (turnover + costs + reserved) * 100)
+                    invoice_amount / (turnover + costs + reservation - income) * 100)
             else:
                 invoice_versus_turnover_percentage = None
             line['contract_amount'] = project.contract_amount
             line['invoice_amount'] = invoice_amount
             line['turnover'] = turnover
-            line['person_costs'] = project.person_costs()
-            line['other_costs'] = costs + reserved
+            line['person_costs_incl_reservation'] = (project.person_costs() +
+                                                     project.reservation)
+            line['reservation'] = project.reservation
+            line['other_costs'] = costs - income
             line['invoice_amount_percentage'] = invoice_amount_percentage
             line['invoice_versus_turnover_percentage'] = (
                 invoice_versus_turnover_percentage)
@@ -859,7 +862,8 @@ class ProjectsView(BaseView):
     @cached_property
     def totals(self):
         return {key: sum([line[key] for line in self.lines]) or 0
-                for key in ['turnover', 'person_costs', 'other_costs']}
+                for key in ['turnover', 'person_costs_incl_reservation', 'reservation',
+                            'other_costs']}
 
     @cached_property
     def total_invoice_amount_percentage(self):
@@ -1007,15 +1011,17 @@ class ProjectView(BaseView):
         return sum([line['left_to_turn_over'] for line in self.lines])
 
     @cached_property
-    def person_costs(self):
-        return sum([line['planned_turnover'] for line in self.lines])
+    def person_costs_incl_reservation(self):
+        person_costs = sum([line['planned_turnover'] for line in self.lines])
+        return person_costs + self.project.reservation
 
     @cached_property
     def total_costs(self):
-        budget = self.project.budget_items.all().aggregate(
-            models.Sum('amount'))['amount__sum'] or 0
-        budget = -1 * budget
-        return budget + self.person_costs
+        return self.project.costs() + self.person_costs_incl_reservation
+
+    @cached_property
+    def total_income(self):
+        return self.project.contract_amount + self.project.income()
 
     @cached_property
     def amount_left(self):
@@ -1438,7 +1444,7 @@ class BudgetItemCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = BudgetItem
     title = "Nieuw begrotingsitem"
-    fields = ['description', 'amount', 'is_reservation']
+    fields = ['description', 'amount', 'to_project']
 
     def has_form_permissions(self):
         if self.project.archived:
@@ -1465,7 +1471,7 @@ class BudgetItemEditView(LoginAndPermissionsRequiredMixin,
                          BaseMixin):
     template_name = 'trs/edit.html'
     model = BudgetItem
-    fields = ['description', 'amount', 'is_reservation']
+    fields = ['description', 'amount', 'to_project']
 
     @property
     def title(self):
@@ -1721,7 +1727,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def title(self):
-        return "Projectteam voor %s bewerken" % self.project.code
+        return "Personele kosten voor %s bewerken" % self.project.code
 
     @cached_property
     def can_edit_hours(self):
@@ -1782,6 +1788,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         tabindex = 1
         budgets, hourly_tariffs = self.budgets_and_tariffs
 
+        # WorkAssignment fields
         for index, person in enumerate(self.project.assigned_persons()):
             if person.archived:
                 continue
@@ -1801,6 +1808,15 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                                                   'tabindex': tabindex}))
                 fields[self.hourly_tariff_fieldname(person)] = field_type
                 tabindex += 1
+
+        # Reservation field
+        fields['reservation'] = forms.IntegerField(
+            min_value=0,
+            initial=int(self.project.reservation),
+            widget=forms.TextInput(attrs={'size': 4,
+                                          'tabindex': tabindex}))
+        tabindex += 1
+
         if self.can_add_team_member:
             # New team member field
             name = 'new_team_member'
@@ -1861,6 +1877,13 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         if self.can_add_team_member:
             return self.bound_form_fields[-1]
 
+    @cached_property
+    def reservation_field(self):
+        if self.can_add_team_member:
+            return self.bound_form_fields[-2]
+        else:
+            return self.bound_form_fields[-1]
+
     def form_valid(self, form):
         num_changes = 0
         budgets, hourly_tariffs = self.budgets_and_tariffs
@@ -1891,6 +1914,13 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             messages.success(self.request,
                              "Teamleden: %s gewijzigd" % num_changes)
 
+        reservation = form.cleaned_data.get('reservation')
+        if self.project.reservation != reservation:
+            self.project.reservation = reservation
+            self.project.save()
+            msg = "Reservering is op %s gezet" % reservation
+            messages.success(self.request, msg)
+
         if self.can_add_team_member:
             new_team_member_id = form.cleaned_data.get('new_team_member')
             if new_team_member_id:
@@ -1906,15 +1936,17 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         return super(TeamEditView, self).form_valid(form)
 
     @cached_property
-    def person_costs(self):
-        return sum([line['costs'] for line in self.lines])
+    def person_costs_incl_reservation(self):
+        person_costs = sum([line['costs'] for line in self.lines])
+        return person_costs + self.project.reservation
 
     @cached_property
     def total_costs(self):
-        budget = self.project.budget_items.all().aggregate(
-            models.Sum('amount'))['amount__sum'] or 0
-        budget = -1 * budget
-        return budget + self.person_costs
+        return self.project.costs() + self.person_costs_incl_reservation
+
+    @cached_property
+    def total_income(self):
+        return self.project.contract_amount + self.project.income()
 
     @cached_property
     def success_url(self):
@@ -2372,14 +2404,13 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
         'PL',
         'PM',
         'Opdrachtsom',
-        'Opdrachtsom OK',
         'Startoverleg',
         'Geaccepteerd',
 
         'Gefactureerd',
         'Omzet',
+        'Personele kosten incl reservering',
         'Overige kosten',
-        'Gereserveerd',
         'Gefactureerd t.o.v. opdrachtsom',
         'Gefactureerd t.o.v. omzet + extra kosten',
 
@@ -2416,8 +2447,8 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
 
                 line['invoice_amount'],
                 line['turnover'],
-                line['costs'],
-                line['reserved'],
+                line['person_costs_incl_reservation'],
+                line['other_costs'],
                 line['invoice_amount_percentage'],
                 line['invoice_versus_turnover_percentage'],
 
@@ -2503,6 +2534,7 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
             'Toegekende uren',
             'Tarief',
             'Kosten',
+            'Inkomsten',
             'Geboekt',
             'Omzet',
             'Verlies',
@@ -2524,6 +2556,7 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
                 line['budget'],
                 line['hourly_tariff'],
                 line['planned_turnover'],
+                '',
                 line['booked'],
                 line['turnover'],
                 line['loss'],
@@ -2535,12 +2568,21 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
 
             yield result
 
+        yield(['Reservering',
+               '',
+               '',
+               '',
+               '',
+               self.project.reservation,
+           ])
+
         yield(['Subtotaal',
                '',
                '',
                '',
                '',
-               self.person_costs,
+               self.person_costs_incl_reservation,
+               '',
                '',
                self.total_turnover,
                self.total_loss,
@@ -2554,28 +2596,59 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
                 '',
                 '',
                 '',
-                budget_item.amount_as_costs(),
-                budget_item.is_reservation and '(reservering)' or '',
+                (budget_item.amount > 0) and budget_item.amount or '',
+                (budget_item.amount <= 0) and budget_item.amount_as_income() or '',
             ])
 
-        yield(['Totaal',
-               '',
-               '',
-               '',
-               '',
-               self.total_costs,
-           ])
         yield(['Opdrachtsom',
+               '',
                '',
                '',
                '',
                '',
                self.project.contract_amount,
            ])
+        yield(['Totaal',
+               '',
+               '',
+               '',
+               '',
+               self.total_costs,
+               self.total_income,
+           ])
+
         yield(['Nog te verdelen',
                '',
                '',
                '',
                '',
-               self.project.left_to_dish_out,
+               '',
+               self.project.left_to_dish_out(),
            ])
+
+
+class ReservationsOverview(BaseView):
+    template_name = 'trs/reservations.html'
+
+    filters_and_choices = [
+        {'title': 'Filter',
+         'param': 'filter',
+         'default': 'active',
+         'choices': [
+             {'value': 'active',
+              'title': 'huidige projecten',
+              'q': Q(archived=False)},
+             {'value': 'all',
+              'title': 'alle projecten (inclusief archief)',
+              'q': Q()},
+         ]},
+    ]
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @cached_property
+    def projects(self):
+        q_objects = [filter['q'] for filter in self.prepared_filters]
+        return Project.objects.filter(*q_objects).filter(
+            reservation__gt=0)

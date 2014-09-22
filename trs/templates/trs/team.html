@@ -58,8 +58,17 @@
           </tr>
         {% endfor %}
         <tr>
+          <td colspan="6">Reservering</td>
+          <th class="text-right">
+              {% for error in view.reservation_field.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
+            {{ view.reservation_field }}
+          </th>
+        </tr>
+        <tr>
           <td colspan="6">Subtotaal (personele kosten)</td>
-          <th class="text-right">{{ view.person_costs|money }}</th>
+          <th class="text-right">{{ view.person_costs_incl_reservation|money }}</th>
         </tr>
 
 
@@ -100,28 +109,25 @@
           <tr>
             <th>Omschrijving</th>
             <th class="text-right">Kosten</th>
-            <th class="text-right">Opdrachtsom</th>
+            <th class="text-right">Inkomsten</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>Personele kosten</td>
-            <td class="text-right">{{ view.person_costs|money }}</td>
+            <td>Opdrachtsom</td>
+            <td class="text-right"></td>
+            <td class="text-right">{{ view.project.contract_amount|money }}</td>
+          </tr>
+          <tr>
+            <td>Personele kosten incl. reservering</td>
+            <td class="text-right">{{ view.person_costs_incl_reservation|money }}</td>
             <td class="text-right"></td>
           </tr>
-          {% for budget_item in view.project.budget_items.all %}
-            <tr>
-              <td>{{ budget_item.description }}</td>
-              <td class="text-right">{{ budget_item.amount_as_costs|money }}</td>
-              <td></td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="3">
-                <i>Er zijn geen begrotingsitems toegevoegd.</i>
-              </td>
-            </tr>
-          {% endfor %}
+          <tr>
+            <td>Overige kosten incl. overschrijvingen</td>
+            <td class="text-right">{{ view.project.costs|money }}</td>
+            <td class="text-right">{{ view.project.income|money }}</td>
+          </tr>
         </tbody>
         <tfoot>
           <tr>
@@ -129,12 +135,9 @@
             <th class="text-right">
               {{ view.total_costs|money }}
             </th>
-            <th></th>
-          </tr>
-          <tr>
-            <td>Opdrachtsom</td>
-            <td class="text-right"></td>
-            <td class="text-right">{{ view.project.contract_amount|money }}</td>
+            <th class="text-right">
+              {{ view.total_income|money }}
+            </th>
           </tr>
           <tr>
             <th>Nog te verdelen</th>
