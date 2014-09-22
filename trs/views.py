@@ -1444,7 +1444,7 @@ class BudgetItemCreateView(LoginAndPermissionsRequiredMixin,
     template_name = 'trs/edit.html'
     model = BudgetItem
     title = "Nieuw begrotingsitem"
-    fields = ['description', 'amount', 'is_third_party_cost', 'to_project']
+    fields = ['description', 'amount', 'to_project']
 
     def has_form_permissions(self):
         if self.project.archived:
@@ -1471,7 +1471,7 @@ class BudgetItemEditView(LoginAndPermissionsRequiredMixin,
                          BaseMixin):
     template_name = 'trs/edit.html'
     model = BudgetItem
-    fields = ['description', 'amount', 'is_third_party_cost', 'to_project']
+    fields = ['description', 'amount', 'to_project']
 
     @property
     def title(self):
@@ -2638,31 +2638,3 @@ class ReservationsOverview(BaseView):
         q_objects = [filter['q'] for filter in self.prepared_filters]
         return Project.objects.filter(*q_objects).filter(
             reservation__gt=0)
-
-
-class ThirdPartyCostsOverview(BaseView):
-    template_name = 'trs/third_party_costs.html'
-
-    filters_and_choices = [
-        {'title': 'Filter',
-         'param': 'filter',
-         'default': 'active',
-         'choices': [
-             {'value': 'active',
-              'title': 'huidige projecten',
-              'q': Q(project__archived=False)},
-             {'value': 'all',
-              'title': 'alle projecten (inclusief archief)',
-              'q': Q()},
-         ]},
-    ]
-
-    def has_form_permissions(self):
-        return self.can_see_everything
-
-    @cached_property
-    def budget_items(self):
-        q_objects = [filter['q'] for filter in self.prepared_filters]
-        return BudgetItem.objects.filter(*q_objects).filter(
-            is_third_party_cost=True)
-        #.select_related('project')
