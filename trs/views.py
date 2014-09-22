@@ -2534,6 +2534,7 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
             'Toegekende uren',
             'Tarief',
             'Kosten',
+            'Inkomsten',
             'Geboekt',
             'Omzet',
             'Verlies',
@@ -2555,6 +2556,7 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
                 line['budget'],
                 line['hourly_tariff'],
                 line['planned_turnover'],
+                '',
                 line['booked'],
                 line['turnover'],
                 line['loss'],
@@ -2566,12 +2568,21 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
 
             yield result
 
+        yield(['Reservering',
+               '',
+               '',
+               '',
+               '',
+               self.project.reservation,
+           ])
+
         yield(['Subtotaal',
                '',
                '',
                '',
                '',
-               self.person_costs,
+               self.person_costs_incl_reservation,
+               '',
                '',
                self.total_turnover,
                self.total_loss,
@@ -2585,30 +2596,34 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
                 '',
                 '',
                 '',
-                budget_item.amount,
-                '',
+                (budget_item.amount > 0) and budget_item.amount or '',
+                (budget_item.amount <= 0) and budget_item.amount_as_income() or '',
             ])
 
-        yield(['Totaal',
-               '',
-               '',
-               '',
-               '',
-               self.total_costs,
-           ])
         yield(['Opdrachtsom',
+               '',
                '',
                '',
                '',
                '',
                self.project.contract_amount,
            ])
+        yield(['Totaal',
+               '',
+               '',
+               '',
+               '',
+               self.total_costs,
+               self.total_income,
+           ])
+
         yield(['Nog te verdelen',
                '',
                '',
                '',
                '',
-               self.project.left_to_dish_out,
+               '',
+               self.project.left_to_dish_out(),
            ])
 
 
