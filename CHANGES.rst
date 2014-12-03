@@ -39,6 +39,10 @@ Changelog of TRS
 
 - Added overview pages for 3th party costs and for budget reservations.
 
+- Staticfiles cronjob runs every night, now. Somehow it is needed.
+
+- Added some columns to the csv export of persons.
+
 
 1.9 (2014-07-15)
 ----------------
