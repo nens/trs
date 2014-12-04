@@ -13,6 +13,27 @@ Time registration system ("TRS")
 basically, booking our hours and managing projects.
 
 
+Extra ubuntu packages
+---------------------
+
+python3
+python3-dev
+
+
+
+
+Local development installation
+------------------------------
+
+Grab the sqlite db from the server::
+
+    $ scp 110-ws-d05.external-nens.local:/srv/trs.lizard.net/var/db/trs.db var/db/
+
+Bootstrap with python3::
+
+    $ python3 bootstrap.py && bin/buildout
+
+
 Server installation
 -------------------
 
