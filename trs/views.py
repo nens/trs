@@ -2092,7 +2092,8 @@ class OverviewsView(BaseView):
 
 class InvoicesView(BaseView):
     template_name = 'trs/invoices.html'
-
+    normally_visible_filters = ['status', 'year']
+    
     @cached_property
     def filters_and_choices(self):
         result = [
@@ -2107,7 +2108,6 @@ class InvoicesView(BaseView):
                   'title': 'nog niet betaald',
                   'q': Q(payed=None)}
              ]},
-
             {'title': 'Jaar',
              'param': 'year',
              'default': str(this_year_week().year),
@@ -2119,7 +2119,52 @@ class InvoicesView(BaseView):
                          {'value': 'all',
                           'title': 'alle jaren',
                           'q': Q()}]},
+            {'title': 'Maand',
+             'param': 'month',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'alles',
+                  'q': Q()},
+                 {'value': '1',
+                  'title': 'jan',
+                  'q': Q(date__month=1)},
+                 {'value': '2',
+                  'title': 'feb',
+                  'q': Q(date__month=2)},
+                 {'value': '3',
+                  'title': 'mrt',
+                  'q': Q(date__month=3)},
+                 {'value': '4',
+                  'title': 'apr',
+                  'q': Q(date__month=4)},
+                 {'value': '5',
+                  'title': 'mei',
+                  'q': Q(date__month=5)},
+                 {'value': '6',
+                  'title': 'jun',
+                  'q': Q(date__month=6)},
+                 {'value': '7',
+                  'title': 'jul',
+                  'q': Q(date__month=7)},
+                 {'value': '8',
+                  'title': 'aug',
+                  'q': Q(date__month=8)},
+                 {'value': '9',
+                  'title': 'sep',
+                  'q': Q(date__month=9)},
+                 {'value': '10',
+                  'title': 'okt',
+                  'q': Q(date__month=10)},
+                 {'value': '11',
+                  'title': 'nov',
+                  'q': Q(date__month=11)},
+                 {'value': '12',
+                  'title': 'dec',
+                  'q': Q(date__month=12)},
+             ]},
         ]
+
         return result
 
     def has_form_permissions(self):
