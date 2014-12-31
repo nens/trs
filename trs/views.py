@@ -1,4 +1,6 @@
+from collections import defaultdict
 from copy import deepcopy
+from decimal import Decimal
 import csv
 import datetime
 import logging
@@ -2198,6 +2200,52 @@ class InvoicesView(BaseView):
         return sum([invoice.amount_inclusive or 0
                     for invoice in self.invoices])
 
+
+class InvoicesPerMonthOverview(BaseView):
+    template_name = 'trs/invoices-per-month.html'
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @cached_property
+    def years(self):
+        this_year = this_year_week().year
+        return sorted([this_year - i for i in range(5)])
+
+    @cached_property
+    def months(self):
+        return range(1, 13)
+
+    @cached_property
+    def years_and_months(self):
+        invoices = Invoice.objects.all().values(
+            'date', 'amount_exclusive')
+        result = {year: {month: Decimal(0) for month in self.months}
+                  for year in self.years}
+        for invoice in invoices:
+            year = invoice['date'].year
+            month = invoice['date'].month
+            if year not in self.years:
+                continue
+            result[year][month] += invoice['amount_exclusive']
+        return result        
+
+    @cached_property
+    def rows(self):
+        result = []
+        base_url = (reverse('trs.overviews.invoices') +
+                    '?year=%s&month=%s')
+        for month in self.months:
+            row = {'month': month,
+                   'amounts': []}
+            for year in self.years:
+                value = self.years_and_months[year][month]
+                url = base_url % (year, month)
+                row['amounts'].append({'value': value,
+                                       'url': url})
+            result.append(row)
+        return result
+    
 
 class ChangesOverview(BaseView):
     template_name = 'trs/changes.html'

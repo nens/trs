@@ -119,6 +119,9 @@ urlpatterns = patterns(
     url(r'^overviews/reservations/$',
         views.ReservationsOverview.as_view(),
         name='trs.overviews.reservations'),
+    url(r'^overviews/invoices_per_month/$',
+        views.InvoicesPerMonthOverview.as_view(),
+        name='trs.overviews.invoices_per_month'),
 
     url(r'^locallogin/$',
         views.LoginView.as_view(),
