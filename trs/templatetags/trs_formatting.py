@@ -23,8 +23,12 @@ def money_with_decimal(value):
     """Return monetary value, rounded and nicely formatted. Fixed width font.
     """
     try:
+        is_negative = (value < 0)
+        value = abs(value)
         whole = value // 1
         remainder = value % 1
+        if is_negative:
+            whole = whole * -1
     except:  # Yes, a bare except: filters should not raise exceptions
         return value
 

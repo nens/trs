@@ -19,6 +19,11 @@ class MoneyTestCase(TestCase):
         value = 12.34
         self.assertEqual(money(value), '<tt>12</tt>')
 
+    def test_negative_formatting(self):
+        value = -12.34
+        self.assertEqual(money(value), '<tt>-12</tt>')
+
+
 class MoneyDiffTestCase(TestCase):
 
     def test_wrong_type(self):
@@ -43,6 +48,10 @@ class MoneyWithDecimalTestCase(TestCase):
     def test_formatting(self):
         value = 12.35
         self.assertEqual(money_with_decimal(value), '<tt>12,35</tt>')
+
+    def test_negative_formatting(self):
+        value = -12.35
+        self.assertEqual(money_with_decimal(value), '<tt>-12,35</tt>')
 
 
 class HoursTestCase(TestCase):
