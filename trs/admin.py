@@ -27,8 +27,10 @@ class ProjectAdmin(admin.ModelAdmin):
 
 
 class InvoiceAdmin(admin.ModelAdmin):
-    list_display = ['number', 'project', 'date', 'description']
+    list_display = ['number', 'project', 'date', 'description',
+                    'amount_exclusive']
     search_fields = ['number', 'project', 'description']
+    ordering = ('-date', '-number',)  # Reverse from the normal display
 
 
 class PersonChangeAdmin(admin.ModelAdmin):
