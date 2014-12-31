@@ -53,6 +53,10 @@ class MoneyWithDecimalTestCase(TestCase):
         value = -12.35
         self.assertEqual(money_with_decimal(value), '<tt>-12,35</tt>')
 
+    def test_negative_formatting2(self):
+        value = -3309.60
+        self.assertEqual(money_with_decimal(value), '<tt>-3.309,60</tt>')
+
 
 class HoursTestCase(TestCase):
 
