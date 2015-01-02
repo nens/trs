@@ -1260,8 +1260,9 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 line['field'] = fields[project_index]
                 if (project.archived or
                     project.start > self.active_year_week or
-                    project.end < self.active_year_week or
-                    self.active_year_week.year < this_year):
+                    project.end < self.active_year_week
+                    # or self.active_year_week.year < this_year
+                ):
                     # Filtering if we're allowed to book or not.
                     line['field'].field.widget.attrs['hidden'] = True
                     line['show_uneditable_value'] = True
