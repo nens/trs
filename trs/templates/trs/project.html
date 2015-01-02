@@ -49,6 +49,16 @@
         <th>Opdrachtgever</th>
         <td>{{ view.project.principal }}</td>
       </tr>
+      {% if view.show_bid_and_confirmation_dates %}
+	<tr>
+	  <th>Offerte verzonden</th>
+	  <td>{{ view.project.bid_send_date|default:"Nog niet" }}</td>
+	</tr>
+	<tr>
+	  <th>Opdrachtbevestiging binnen</th>
+	  <td>{{ view.project.confirmation_date|default:"Nog niet" }}</td>
+	</tr>
+      {% endif %}
       <tr>
         <th>Opdrachtsom</th>
         <td>

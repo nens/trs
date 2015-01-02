@@ -374,12 +374,12 @@ class Project(models.Model):
         default=0,
         verbose_name="opdrachtsom")
     bid_send_date = models.DateField(
-        verbose_name="offerte verzonden op",
+        verbose_name="offerte verzonden",
         blank=True,
         null=True,
         help_text="Formaat: 25-12-1972, dd-mm-jjjj")
     confirmation_date = models.DateField(
-        verbose_name="opdrachtbevestiging binnen op",
+        verbose_name="opdrachtbevestiging binnen",
         blank=True,
         null=True,
         help_text="Formaat: 25-12-1972, dd-mm-jjjj")

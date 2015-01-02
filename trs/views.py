@@ -949,6 +949,30 @@ class ProjectView(BaseView):
             return True
 
     @cached_property
+    def show_bid_and_confirmation_dates(self):
+        """Should we show the bid_send_date and confirmation_date?
+
+        These are new fields and we won't show them for older projects
+        as that just clutters up the interface. So... for pre-2015
+        projects *with* a contract amount we'll hide them if they're
+        not filled in.
+
+        For internal projects, we'll also ignore them.
+        """
+        if self.project.internal:
+            return False
+        if self.project.bid_send_date or self.project.confirmation_date:
+            return True
+        if self.project.start.year < 2015 and self.project.contract_amount:
+            # Old project with already a contract amount set. Keep it that way.
+            return False
+        if self.project.archived:
+            # Don't bother about archived old projects.
+            return False
+        return True
+
+
+    @cached_property
     def lines(self):
         result = []
         # Budget query.
