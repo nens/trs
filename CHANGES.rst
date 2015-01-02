@@ -2,7 +2,7 @@ Changelog of TRS
 ===================================================
 
 
-1.10 (unreleased)
+1.10 (2015-01-02)
 -----------------
 
 - Showing bid and confirmation dates in the interface. Added a bit of
