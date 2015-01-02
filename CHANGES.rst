@@ -5,6 +5,11 @@ Changelog of TRS
 1.10 (unreleased)
 -----------------
 
+- Showing bid and confirmation dates in the interface. Added a bit of
+  filtering, though, so that the dates don't show up unecessarily as
+  not-filled-in. I filter out archived projects and pre-2015 projects
+  that already have a contract amount set, for instance.
+
 - Changed cost-related columns in project overview, incuding a new column 'is
   the budget OK?'.
 
