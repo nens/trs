@@ -1297,6 +1297,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     'internal', 'hidden', 'hourless',
                     'archived',  # Note: archived only on edit view :-)
                     'is_subsidized', 'principal',
+                    'bid_send_date', 'confirmation_date',
                     'contract_amount',
                     'start', 'end', 'project_leader', 'project_manager',
                     # Note: the next two are shown only on the edit view!
@@ -1348,6 +1349,7 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin,
     title = "Nieuw project"
     fields = ['code', 'description', 'group', 'internal', 'hidden', 'hourless',
               'is_subsidized', 'principal',
+              'bid_send_date', 'confirmation_date',
               'contract_amount',
               'start', 'end', 'project_leader', 'project_manager',
               'remark', 'financial_remark',
