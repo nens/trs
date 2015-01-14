@@ -16,9 +16,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Hardcoded year, change this every year.
-        year = 2014
+        year = 2015
         # Hardcoded project ID, change this every year.
-        bedrijfsvoering = 4262
+        bedrijfsvoering = 4613
         # Hardcoded user IDs.
         bastiaan = 3
         fons = 6
