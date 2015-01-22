@@ -39,6 +39,7 @@ from trs.models import Invoice
 from trs.models import Person
 from trs.models import PersonChange
 from trs.models import Project
+from trs.models import WbsoProject
 from trs.models import WorkAssignment
 from trs.models import YearWeek
 from trs.models import this_year_week
@@ -2122,7 +2123,7 @@ class OverviewsView(BaseView):
 class InvoicesView(BaseView):
     template_name = 'trs/invoices.html'
     normally_visible_filters = ['status', 'year']
-    
+
     @cached_property
     def filters_and_choices(self):
         result = [
@@ -2255,7 +2256,7 @@ class InvoicesPerMonthOverview(BaseView):
             if year not in self.years:
                 continue
             result[year][month] += invoice['amount_exclusive']
-        return result        
+        return result
 
     @cached_property
     def rows(self):
@@ -2272,7 +2273,7 @@ class InvoicesPerMonthOverview(BaseView):
                                        'url': url})
             result.append(row)
         return result
-    
+
 
 class ChangesOverview(BaseView):
     template_name = 'trs/changes.html'
@@ -2776,3 +2777,14 @@ class ReservationsOverview(BaseView):
         q_objects = [filter['q'] for filter in self.prepared_filters]
         return Project.objects.filter(*q_objects).filter(
             reservation__gt=0)
+
+
+class WbsoProjectsOverview(BaseView):
+    template_name = 'trs/wbso_projects.html'
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @cached_property
+    def wbso_projects(self):
+        return WbsoProject.objects.all()

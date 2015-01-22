@@ -1,0 +1,38 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>WBSO projecten</h1>
+
+  {% include "trs/filter-snippet.html" %}
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Titel</th>
+        <th>Startdatum</th>
+        <th>Einddatum</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for wbso_project in view.wbso_projects %}
+        <tr>
+          <td>
+            {{ wbso_project.number }}
+          </td>
+          <td>
+            {{ wbso_project.title }}
+          </td>
+          <td>
+            {{ wbso_project.start_date }}
+          </td>
+          <td>
+            {{ wbso_project.end_date }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

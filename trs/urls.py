@@ -122,6 +122,9 @@ urlpatterns = patterns(
     url(r'^overviews/invoices_per_month/$',
         views.InvoicesPerMonthOverview.as_view(),
         name='trs.overviews.invoices_per_month'),
+    url(r'^overviews/wbso_projects/$',
+        views.WbsoProjectsOverview.as_view(),
+        name='trs.overviews.wbso_projects'),
 
     url(r'^locallogin/$',
         views.LoginView.as_view(),
