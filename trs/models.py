@@ -420,6 +420,12 @@ class Project(models.Model):
         null=True,
         verbose_name="groep",
         related_name="projects")
+    wbso_project = models.ForeignKey(
+        'WbsoProject',
+        blank=True,
+        null=True,
+        related_name="wbso_projects",
+        verbose_name="WBSO project")
     is_accepted = models.BooleanField(
         verbose_name="goedgekeurd",
         help_text=("Project is goedgekeurd door PM en PL en zou qua team " +
