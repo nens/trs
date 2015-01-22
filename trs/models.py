@@ -646,7 +646,7 @@ class WbsoProject(models.Model):
         verbose_name_plural = "WBSO projecten"
 
     def __str__(self):
-        return self.title
+        return '%s: %s' % (self.number, self.title)
 
 
 class FinancialBase(models.Model):
