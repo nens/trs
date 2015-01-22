@@ -426,6 +426,11 @@ class Project(models.Model):
         null=True,
         related_name="wbso_projects",
         verbose_name="WBSO project")
+    wbso_percentage = models.IntegerField(
+        blank=True,
+        null=True,
+        verbose_name="WBSO percentage",
+        help_text="Percentage dat meetelt voor de WBSO (0-100)")
     is_accepted = models.BooleanField(
         verbose_name="goedgekeurd",
         help_text=("Project is goedgekeurd door PM en PL en zou qua team " +
