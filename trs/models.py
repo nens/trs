@@ -645,6 +645,9 @@ class WbsoProject(models.Model):
         verbose_name = "WBSO project"
         verbose_name_plural = "WBSO projecten"
 
+    def __str__(self):
+        return self.title
+
 
 class FinancialBase(models.Model):
     added = models.DateTimeField(
