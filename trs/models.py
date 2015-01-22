@@ -636,6 +636,8 @@ class WbsoProject(models.Model):
 
     class Meta:
         ordering = ['number']
+        verbose_name = "WBSO project"
+        verbose_name_plural = "WBSO projecten"
 
 
 class FinancialBase(models.Model):
