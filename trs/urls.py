@@ -103,6 +103,10 @@ urlpatterns = patterns(
         views.BookingOverview.as_view(),
         name='trs.booking.overview'),
 
+    url(r'^overviews/wbso_projects/(?P<pk>\d+)/$',
+        views.WbsoProjectView.as_view(),
+        name='trs.wbso_project'),
+
     # Overviews
     url(r'^overviews/$',
         views.OverviewsView.as_view(),

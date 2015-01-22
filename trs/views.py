@@ -2788,3 +2788,18 @@ class WbsoProjectsOverview(BaseView):
     @cached_property
     def wbso_projects(self):
         return WbsoProject.objects.all()
+
+
+class WbsoProjectView(BaseView):
+    template_name = 'trs/wbso_project.html'
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @cached_property
+    def wbso_project(self):
+        return WbsoProject.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def projects(self):
+        return self.wbso_project.projects.all()

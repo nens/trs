@@ -424,7 +424,7 @@ class Project(models.Model):
         'WbsoProject',
         blank=True,
         null=True,
-        related_name="wbso_projects",
+        related_name="projects",
         verbose_name="WBSO project")
     wbso_percentage = models.IntegerField(
         blank=True,

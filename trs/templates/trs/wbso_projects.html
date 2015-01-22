@@ -1,7 +1,7 @@
 {% extends "trs/base.html" %}
 {% load trs_formatting %}
 
-{% block main-column %}
+{% block full-width %}
   <h1>WBSO projecten</h1>
 
   {% include "trs/filter-snippet.html" %}
@@ -22,7 +22,9 @@
             {{ wbso_project.number }}
           </td>
           <td>
-            {{ wbso_project.title }}
+            <a href="{% url 'trs.wbso_project' pk=wbso_project.pk %}">
+              {{ wbso_project.title }}
+            </a>
           </td>
           <td>
             {{ wbso_project.start_date }}
