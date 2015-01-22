@@ -2,7 +2,14 @@
 {% load trs_formatting %}
 
 {% block full-width %}
-  <h1>WBSO projecten</h1>
+  <h1>
+    WBSO projecten
+    <a class="pull-right"
+       title="Download .csv"
+       href="{% url 'trs.wbso.csv' %}">
+      <span class="glyphicon glyphicon-download-alt"></span>
+    </a>
+  </h1>
 
   {% include "trs/filter-snippet.html" %}
 

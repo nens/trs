@@ -4,6 +4,12 @@
 {% block full-width %}
   <h1>WBSO project {{ view.wbso_project }}</h1>
 
+  <p class="text-muted">
+    <a href="{% url 'trs.overviews.wbso_projects' %}">
+      &larr; Terug naar overzicht WBSO projecten
+    </a>
+  </p>
+
   {% include "trs/filter-snippet.html" %}
 
   <table class="table">

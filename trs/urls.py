@@ -106,6 +106,10 @@ urlpatterns = patterns(
     url(r'^overviews/wbso_projects/(?P<pk>\d+)/$',
         views.WbsoProjectView.as_view(),
         name='trs.wbso_project'),
+    url(r'^overviews/wbso_projects/csv/$',
+        views.WbsoCsvView.as_view(),
+        name='trs.wbso.csv'),
+
 
     # Overviews
     url(r'^overviews/$',
