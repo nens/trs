@@ -618,6 +618,26 @@ class Project(models.Model):
                 'income': income}
 
 
+class WbsoProject(models.Model):
+    number = models.IntegerField(
+        verbose_name="Nummer",
+        help_text="Gebruikt voor sortering",
+        max_length=255)
+    title = models.CharField(
+        verbose_name="titel",
+        unique=True,
+        max_length=255)
+    start_date = models.DateField(
+        verbose_name="startdatum",
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
+    end_date = models.DateField(
+        verbose_name="einddatum",
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
+
+    class Meta:
+        ordering = ['number']
+
+
 class FinancialBase(models.Model):
     added = models.DateTimeField(
         auto_now_add=True,
