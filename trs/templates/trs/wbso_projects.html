@@ -1,0 +1,52 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block full-width %}
+  <h1>
+    WBSO projecten
+    <a class="pull-right"
+       title="Download .csv"
+       href="{% url 'trs.wbso.csv' %}">
+      <span class="glyphicon glyphicon-download-alt"></span>
+    </a>
+  </h1>
+
+  {% include "trs/filter-snippet.html" %}
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Titel</th>
+        <th>Startdatum</th>
+        <th>Einddatum</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for wbso_project in view.wbso_projects %}
+        <tr>
+          <td>
+            {{ wbso_project.number }}
+          </td>
+          <td>
+            <a href="{% url 'trs.wbso_project' pk=wbso_project.pk %}">
+              {{ wbso_project.title }}
+            </a>
+          </td>
+          <td>
+            {{ wbso_project.start_date }}
+          </td>
+          <td>
+            {{ wbso_project.end_date }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="text-muted">
+    Aanmaken WBSO projecten moet
+    voorlopig <a href="/admin/trs/wbsoproject/">via de /admin</a>.
+  </p>
+
+{% endblock %}

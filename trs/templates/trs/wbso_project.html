@@ -1,0 +1,45 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block full-width %}
+  <h1>WBSO project {{ view.wbso_project }}</h1>
+
+  <p class="text-muted">
+    <a href="{% url 'trs.overviews.wbso_projects' %}">
+      &larr; Terug naar overzicht WBSO projecten
+    </a>
+  </p>
+
+  {% include "trs/filter-snippet.html" %}
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th colspan="2">Project</th>
+        <th>Percentage</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for project in view.projects %}
+        <tr>
+          <td>
+            {{ project.as_widget }}
+          </td>
+          <td>
+            <span class="text-muted"
+                  style="white-space: nowrap;"
+                  {% if project.description|length > 35 %}
+              title="{{ project.description }}"
+              {% endif %}>
+              {{ project.description|truncatechars:35 }}
+            </span>
+          </td>
+          <td>
+            {{ project.wbso_percentage }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

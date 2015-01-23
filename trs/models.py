@@ -420,6 +420,17 @@ class Project(models.Model):
         null=True,
         verbose_name="groep",
         related_name="projects")
+    wbso_project = models.ForeignKey(
+        'WbsoProject',
+        blank=True,
+        null=True,
+        related_name="projects",
+        verbose_name="WBSO project")
+    wbso_percentage = models.IntegerField(
+        blank=True,
+        null=True,
+        verbose_name="WBSO percentage",
+        help_text="Percentage dat meetelt voor de WBSO (0-100)")
     is_accepted = models.BooleanField(
         verbose_name="goedgekeurd",
         help_text=("Project is goedgekeurd door PM en PL en zou qua team " +
@@ -616,6 +627,31 @@ class Project(models.Model):
                 'person_costs': person_costs,
                 'costs': costs,
                 'income': income}
+
+
+class WbsoProject(models.Model):
+    number = models.IntegerField(
+        verbose_name="Nummer",
+        help_text="Gebruikt voor sortering",
+        max_length=255)
+    title = models.CharField(
+        verbose_name="titel",
+        unique=True,
+        max_length=255)
+    start_date = models.DateField(
+        verbose_name="startdatum",
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
+    end_date = models.DateField(
+        verbose_name="einddatum",
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
+
+    class Meta:
+        ordering = ['number']
+        verbose_name = "WBSO project"
+        verbose_name_plural = "WBSO projecten"
+
+    def __str__(self):
+        return '%s: %s' % (self.number, self.title)
 
 
 class FinancialBase(models.Model):

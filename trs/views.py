@@ -39,6 +39,7 @@ from trs.models import Invoice
 from trs.models import Person
 from trs.models import PersonChange
 from trs.models import Project
+from trs.models import WbsoProject
 from trs.models import WorkAssignment
 from trs.models import YearWeek
 from trs.models import this_year_week
@@ -2122,7 +2123,7 @@ class OverviewsView(BaseView):
 class InvoicesView(BaseView):
     template_name = 'trs/invoices.html'
     normally_visible_filters = ['status', 'year']
-    
+
     @cached_property
     def filters_and_choices(self):
         result = [
@@ -2255,7 +2256,7 @@ class InvoicesPerMonthOverview(BaseView):
             if year not in self.years:
                 continue
             result[year][month] += invoice['amount_exclusive']
-        return result        
+        return result
 
     @cached_property
     def rows(self):
@@ -2272,7 +2273,7 @@ class InvoicesPerMonthOverview(BaseView):
                                        'url': url})
             result.append(row)
         return result
-    
+
 
 class ChangesOverview(BaseView):
     template_name = 'trs/changes.html'
@@ -2776,3 +2777,118 @@ class ReservationsOverview(BaseView):
         q_objects = [filter['q'] for filter in self.prepared_filters]
         return Project.objects.filter(*q_objects).filter(
             reservation__gt=0)
+
+
+class WbsoProjectsOverview(BaseView):
+    template_name = 'trs/wbso_projects.html'
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @cached_property
+    def wbso_projects(self):
+        return WbsoProject.objects.all()
+
+
+class WbsoProjectView(BaseView):
+    template_name = 'trs/wbso_project.html'
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @cached_property
+    def wbso_project(self):
+        return WbsoProject.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def projects(self):
+        return self.wbso_project.projects.all()
+
+
+class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
+
+    @cached_property
+    def half_years(self):
+        """Return half years from 1 jan 2014 till now.
+
+        Also return year_week objects."""
+        result = []
+        years = range(2014, this_year_week().year + 1)
+        for year in years:
+            jan1 = datetime.date(year, 1, 1)
+            jul1 = datetime.date(year, 7, 1)
+            dec31 = datetime.date(year, 12, 31)
+            first_half = YearWeek.objects.filter(
+                first_day__gte=jan1,
+                first_day__lt=jul1).values_list('id', flat=True)
+            second_half = YearWeek.objects.filter(
+                first_day__gte=jul1,
+                year=year).values_list('id', flat=True)
+            result.append(["eerste helft %s" % year,
+                           first_half])
+            result.append(["tweede helft %s" % year,
+                           second_half])
+        return result
+
+    @cached_property
+    def weeks(self):
+        """Return weeks from 1 jan 2014 till now."""
+        start = datetime.date(2014, 1, 1)
+        return YearWeek.objects.filter(
+                first_day__gte=start,
+                first_day__lt=datetime.date.today())
+
+    @cached_property
+    def bookings_per_week_per_person_per_wbso_project(self):
+        return Booking.objects.filter(
+            booked_on__wbso_project__id__gt=0,
+            year_week__in=self.weeks).values(
+                'booked_by__name',
+                'year_week',
+                'booked_on__wbso_percentage',
+                'booked_on__wbso_project').annotate(
+                    models.Sum('hours'))
+
+    @property
+    def prepend_lines(self):
+        num_projects = len(self.found_wbso_projects)
+        first_line = ['']
+        for text, year_weeks in self.half_years:
+            first_line.append(text)
+            for i in range(num_projects - 1):
+                first_line.append('')
+        return [first_line]
+
+    @cached_property
+    def found_persons(self):
+        persons = [item['booked_by__name'] for item in
+                   self.bookings_per_week_per_person_per_wbso_project]
+        return list(set(persons))
+
+    @cached_property
+    def found_wbso_projects(self):
+        wbso_projects = [item['booked_on__wbso_project'] for item in
+                         self.bookings_per_week_per_person_per_wbso_project]
+        return list(set(wbso_projects))
+
+    @property
+    def header_line(self):
+        result = ['Naam']
+        for text, year_weeks in self.half_years:
+            result += self.found_wbso_projects
+        return result
+
+    @property
+    def csv_lines(self):
+        for person in self.found_persons:
+            line = [person]
+            for text, year_weeks in self.half_years:
+                for wbso_project in self.found_wbso_projects:
+                    hours = [
+                        round(item['hours__sum'] * item['booked_on__wbso_percentage'] / 100)
+                        for item in self.bookings_per_week_per_person_per_wbso_project
+                        if item['booked_by__name'] == person and
+                        item['year_week'] in year_weeks and
+                        item['booked_on__wbso_project'] == wbso_project]
+                    line.append(sum(hours))
+            yield line

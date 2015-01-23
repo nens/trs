@@ -17,13 +17,20 @@ class PersonAdmin(admin.ModelAdmin):
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ['code', 'description', 'group',
+    list_display = ['code',
+                    'description',
+                    'group',
+                    'wbso_project',
                     'internal',
-                    # 'hidden', 'hourless',
                     'archived']
-    list_filter = ['internal', 'archived', 'group']
-    list_editable = ['group']
+    list_filter = ['internal', 'archived', 'group', 'wbso_project']
+    list_editable = ['group', 'wbso_project']
     search_fields = ['code', 'description']
+
+
+class WbsoProjectAdmin(admin.ModelAdmin):
+    list_display = ['number', 'title', 'start_date', 'end_date']
+    search_fields = ['title']
 
 
 class InvoiceAdmin(admin.ModelAdmin):
@@ -58,6 +65,7 @@ class YearWeekAdmin(admin.ModelAdmin):
 admin.site.register(models.Group, GroupAdmin)
 admin.site.register(models.Person, PersonAdmin)
 admin.site.register(models.Project, ProjectAdmin)
+admin.site.register(models.WbsoProject, WbsoProjectAdmin)
 admin.site.register(models.Invoice, InvoiceAdmin)
 admin.site.register(models.PersonChange, PersonChangeAdmin)
 admin.site.register(models.Booking, BookingAdmin)

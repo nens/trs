@@ -103,6 +103,14 @@ urlpatterns = patterns(
         views.BookingOverview.as_view(),
         name='trs.booking.overview'),
 
+    url(r'^overviews/wbso_projects/(?P<pk>\d+)/$',
+        views.WbsoProjectView.as_view(),
+        name='trs.wbso_project'),
+    url(r'^overviews/wbso_projects/csv/$',
+        views.WbsoCsvView.as_view(),
+        name='trs.wbso.csv'),
+
+
     # Overviews
     url(r'^overviews/$',
         views.OverviewsView.as_view(),
@@ -122,6 +130,9 @@ urlpatterns = patterns(
     url(r'^overviews/invoices_per_month/$',
         views.InvoicesPerMonthOverview.as_view(),
         name='trs.overviews.invoices_per_month'),
+    url(r'^overviews/wbso_projects/$',
+        views.WbsoProjectsOverview.as_view(),
+        name='trs.overviews.wbso_projects'),
 
     url(r'^locallogin/$',
         views.LoginView.as_view(),
