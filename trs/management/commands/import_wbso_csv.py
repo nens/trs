@@ -28,7 +28,7 @@ def get_or_create_wbso_project(wbso_number):
 
 class Command(BaseCommand):
     args = ".csv file"
-    help = "Pre-fill the cache. Takes a horrid long time."
+    help = "Import WBSO input csv file with projects and percentages"
 
     def handle(self, *args, **options):
         filename = args[0]
