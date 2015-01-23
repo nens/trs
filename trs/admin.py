@@ -21,10 +21,11 @@ class ProjectAdmin(admin.ModelAdmin):
                     'description',
                     'group',
                     'wbso_project',
+                    'wbso_percentage',
                     'internal',
                     'archived']
     list_filter = ['internal', 'archived', 'group', 'wbso_project']
-    list_editable = ['group', 'wbso_project']
+    list_editable = ['group', 'wbso_project', 'wbso_percentage']
     search_fields = ['code', 'description']
 
 
