@@ -2820,10 +2820,10 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
             dec31 = datetime.date(year, 12, 31)
             first_half = YearWeek.objects.filter(
                 first_day__gte=jan1,
-                first_day__lt=jul1)
+                first_day__lt=jul1).values_list('id', flat=True)
             second_half = YearWeek.objects.filter(
                 first_day__gte=jul1,
-                year=year)
+                year=year).values_list('id', flat=True)
             result.append(["eerste helft %s" % year,
                            first_half])
             result.append(["tweede helft %s" % year,
@@ -2845,6 +2845,7 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
             year_week__in=self.weeks).values(
                 'booked_by__name',
                 'year_week',
+                'booked_on__wbso_percentage',
                 'booked_on__wbso_project').annotate(
                     models.Sum('hours'))
 
@@ -2884,7 +2885,7 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
             for text, year_weeks in self.half_years:
                 for wbso_project in self.found_wbso_projects:
                     hours = [
-                        item['hours__sum']
+                        round(item['hours__sum'] * item['booked_on__wbso_percentage'] / 100)
                         for item in self.bookings_per_week_per_person_per_wbso_project
                         if item['booked_by__name'] == person and
                         item['year_week'] in year_weeks and
