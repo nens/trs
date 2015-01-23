@@ -32,7 +32,7 @@ class ProjectAdmin(admin.ModelAdmin):
 class WbsoProjectAdmin(admin.ModelAdmin):
     list_display = ['number', 'title', 'start_date', 'end_date']
     search_fields = ['title']
-    list_editable = ['number', 'title',]
+    list_editable = ['title',]
 
 
 class InvoiceAdmin(admin.ModelAdmin):
