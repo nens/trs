@@ -5,7 +5,8 @@ Changelog of TRS
 1.11 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- If a budget item transfers money to another project, that project's cache
+  key is now also updated.
 
 
 1.10 (2015-01-02)
