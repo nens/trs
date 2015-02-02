@@ -771,6 +771,11 @@ class BudgetItem(FinancialBase):
             'pk': self.pk,
             'project_pk': self.project.pk})
 
+    def save(self, *args, **kwargs):
+        if self.to_project:
+            self.to_project.save()  # Increment cache key.
+        return super(BudgetItem, self).save(*args, **kwargs)
+
 
 class YearWeek(models.Model):
     # This ought to be automatically generated.
