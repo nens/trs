@@ -948,6 +948,9 @@ class ProjectView(BaseView):
     def can_see_project_financials(self):
         if self.is_project_management:
             return True
+        if self.active_person in self.project.assigned_persons():
+            # Since 2 feb 2015.
+            return True
 
     @cached_property
     def show_bid_and_confirmation_dates(self):
