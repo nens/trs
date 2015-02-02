@@ -8,6 +8,8 @@ Changelog of TRS
 - If a budget item transfers money to another project, that project's cache
   key is now also updated.
 
+- Project members can see all financial data on the project.
+
 
 1.10 (2015-01-02)
 -----------------
