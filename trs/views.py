@@ -2755,6 +2755,103 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
            ])
 
 
+class ProjectPersonsCsvView(CsvResponseMixin, ProjectView):
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @property
+    def csv_filename(self):
+        return self.title_to_filename() + '_subsidie'
+
+    @cached_property
+    def weeks(self):
+        return YearWeek.objects.filter(
+            first_day__gte=self.project.start.first_day,
+            first_day__lte=self.project.end.first_day)
+
+    @cached_property
+    def bookings_per_week_per_person_per_project(self):
+        bookings = Booking.objects.filter(
+            year_week__in=self.weeks).values(
+                'booked_by',
+                'booked_on',
+                'year_week').annotate(
+                    models.Sum('hours'))
+        return {(booking['booked_by'],
+                 booking['booked_on'],
+                 booking['year_week']):
+                round(booking['hours__sum'])
+                for booking in bookings}
+
+    @property
+    def prepend_lines(self):
+        return [['Code', self.project.code],
+                ['Naam', self.project.description],
+                ['Opdrachtgever', self.project.principal],
+                [],
+                []]
+
+    @property
+    def header_line(self):
+        result = [
+            'Project',
+            'Omschrijving',
+            'Projectleider',
+            'Begindatum',
+            'Einddatum',
+            # 'Budget',
+            # 'Besteed',
+            # 'Tarief',
+            # 'Omzet',
+            ''
+        ]
+        result += [week.as_param() for week in self.weeks]
+        return result
+
+    @property
+    def csv_lines(self):
+        relevant_persons = self.project.assigned_persons()
+        relevant_project_ids = [
+            booked_on for (booked_by, booked_on, year_week) in
+            self.bookings_per_week_per_person_per_project.keys()]
+        relevant_projects = Project.objects.filter(id__in=set(relevant_project_ids))
+        for person in relevant_persons:
+            yield ['']
+            yield ['']
+            yield [person]
+            yield ['']
+            for relevant_project in relevant_projects:
+                line = [relevant_project.code,
+                        relevant_project.description,
+                        relevant_project.project_leader,
+                        relevant_project.start,
+                        relevant_project.end,
+                        # '',
+                        # '',
+                        # '',
+                        # '',
+                        '',
+                ]
+                bookings = [self.bookings_per_week_per_person_per_project.get(
+                    (person.id, relevant_project.id, week.id), 0)
+                         for week in self.weeks]
+                if not sum(bookings):
+                    # Nothing booked on this project, omitting it.
+                    continue
+                line += bookings
+                yield line
+            totals_line = 6 * ['']
+            for week in self.weeks:
+                bookings = [
+                    booking for
+                    (person_id, project_id, week_id), booking in
+                    self.bookings_per_week_per_person_per_project.items()
+                    if person_id == person.id and week_id == week.id]
+                totals_line.append(sum(bookings))
+            yield totals_line
+
+
 class ReservationsOverview(BaseView):
     template_name = 'trs/reservations.html'
 

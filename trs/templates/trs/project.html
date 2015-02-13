@@ -28,6 +28,15 @@
         <span class="glyphicon glyphicon-download-alt"></span>
       </a>
     {% endif %}
+    {% if view.project.is_subsidized %}
+      {% if view.can_see_everything %}
+        <a class="pull-right"
+           title="Download subsidie-verantwoordings-.csv"
+           href="{% url 'trs.project.persons.csv' pk=view.project.id %}">
+          <span class="glyphicon text-muted glyphicon-download-alt"></span>
+        </a>
+      {% endif %}
+    {% endif %}
   </h1>
 
   {# We use the full-width block, so we miss the regular messages part. #}

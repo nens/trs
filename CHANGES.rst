@@ -10,6 +10,10 @@ Changelog of TRS
 
 - Project members can see all financial data on the project.
 
+- Added an extra csv download for subsidized project: a list of all project
+  members plus their bookings on other projects during the subsidized
+  project's duration.
+
 
 1.10 (2015-01-02)
 -----------------
