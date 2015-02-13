@@ -299,10 +299,10 @@
                     &nbsp;&nbsp;&nbsp;
                     {% if view.can_edit_financials %}
                       <a href="{% url 'trs.budget_item.edit' project_pk=view.project.pk pk=budget_item.pk %}">
-                        {{ budget_item.description }}
+                        {{ budget_item.description|default:'Niet ingevuld' }}
                       </a>
                     {% else %}
-                      {{ budget_item.description }}
+                      {{ budget_item.description|default:'Niet ingevuld' }}
                     {% endif %}
                     {% if budget_item.to_project %}
                       naar {{ budget_item.to_project.as_widget }}
