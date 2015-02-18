@@ -2,7 +2,7 @@ Changelog of TRS
 ===================================================
 
 
-1.11 (unreleased)
+1.11 (2015-02-18)
 -----------------
 
 - If a budget item transfers money to another project, that project's cache
