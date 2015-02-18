@@ -272,6 +272,18 @@ class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
 class PersonsView(BaseView):
 
     title = "Medewerkers"
+    normally_visible_filters = ['status', 'group']
+
+    @cached_property
+    def available_years(self):
+        years_booked_in = list(Booking.objects.filter().values(
+                'year_week__year').distinct().values_list(
+                    'year_week__year', flat=True))
+        current_year = this_year_week().year
+        if current_year not in years_booked_in:
+            # Corner case if no one has booked yet in this year :-)
+            years_booked_in.append(current_year)
+        return years_booked_in
 
     @cached_property
     def filters_and_choices(self):
@@ -286,6 +298,9 @@ class PersonsView(BaseView):
                  {'value': 'archived',
                   'title': 'gearchiveerde medewerkers',
                   'q': Q(archived=True)},
+                 {'value': 'all',
+                  'title': 'Geen filter',
+                  'q': Q()},
              ]},
             {'title': 'Groep',
              'param': 'group',
@@ -301,6 +316,14 @@ class PersonsView(BaseView):
              [{'value': 'geen',
                'title': 'Zonder groep',
                'q': Q(group=None)}]},
+            {'title': 'Jaar',
+             'param': 'year',
+             'default': str(this_year_week().year),
+             'choices': [
+                 {'value': str(year),
+                  'title': year,
+                  'q': Q()}
+                 for year in reversed(self.available_years)]},
         ]
         return result
 
@@ -327,7 +350,8 @@ class PersonsView(BaseView):
 
     @cached_property
     def lines(self):
-        return [{'person': person, 'pyc': core.get_pyc(person)}
+        year = self.filters.get('year')
+        return [{'person': person, 'pyc': core.get_pyc(person, year=year)}
                 for person in self.persons]
 
     @cached_property
