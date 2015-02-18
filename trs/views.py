@@ -299,7 +299,7 @@ class PersonsView(BaseView):
                   'title': 'gearchiveerde medewerkers',
                   'q': Q(archived=True)},
                  {'value': 'all',
-                  'title': 'Geen filter',
+                  'title': 'geen filter',
                   'q': Q()},
              ]},
 
@@ -2151,6 +2151,11 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
 
 class OverviewsView(BaseView):
     template_name = 'trs/overviews.html'
+
+
+    @cached_property
+    def previous_year(self):
+        return this_year_week().year - 1
 
 
 class InvoicesView(BaseView):
