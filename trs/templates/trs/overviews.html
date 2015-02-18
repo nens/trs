@@ -21,6 +21,16 @@
           Overzicht WBSO projecten
         </a>
       </li>
+      <li>
+        <a href="{% url 'trs.overviews.reservations' %}">
+          Overzicht reserveringen op projecten
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'trs.persons' %}?status=all&year={{ view.previous_year }}">
+          Medewerkeroverzicht vorig jaar
+        </a>
+      </li>
     {% endif %}
     <li>
       <a href="{% url 'trs.overviews.changes' %}">
@@ -30,11 +40,6 @@
     <li>
       <a href="{% url 'trs.overviews.pl_pm' %}">
         Overzicht projectleiders en projectmanagers
-      </a>
-    </li>
-    <li>
-      <a href="{% url 'trs.overviews.reservations' %}">
-        Overzicht reserveringen op projecten
       </a>
     </li>
   </ul>
