@@ -14,6 +14,9 @@ Changelog of TRS
   members plus their bookings on other projects during the subsidized
   project's duration.
 
+- Added a filter for the persons overview page to show a specific year's data
+  instead of that of the current year.
+
 
 1.10 (2015-01-02)
 -----------------
