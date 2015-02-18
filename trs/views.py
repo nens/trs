@@ -302,6 +302,7 @@ class PersonsView(BaseView):
                   'title': 'Geen filter',
                   'q': Q()},
              ]},
+
             {'title': 'Groep',
              'param': 'group',
              'default': 'all',
@@ -316,6 +317,7 @@ class PersonsView(BaseView):
              [{'value': 'geen',
                'title': 'Zonder groep',
                'q': Q(group=None)}]},
+
             {'title': 'Jaar',
              'param': 'year',
              'default': str(this_year_week().year),
@@ -349,9 +351,13 @@ class PersonsView(BaseView):
         return Person.objects.filter(*q_objects)
 
     @cached_property
+    def selected_year(self):
+        return self.filters.get('year')
+
+    @cached_property
     def lines(self):
-        year = self.filters.get('year')
-        return [{'person': person, 'pyc': core.get_pyc(person, year=year)}
+        return [{'person': person, 'pyc': core.get_pyc(
+            person, year=self.selected_year)}
                 for person in self.persons]
 
     @cached_property
