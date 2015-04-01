@@ -205,6 +205,16 @@ class BaseMixin(object):
         return self.active_person
 
     @cached_property
+    def april(self):
+        try:
+            modifier = self.sidebar_person.id % 13
+            minutes = 30 + 2 * modifier
+            return "12:%s" % minutes
+        except:
+            # Don't die for a joke.
+            pass
+
+    @cached_property
     def sidebar_person_year_info(self):
         if not self.sidebar_person:
             return
