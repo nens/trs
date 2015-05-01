@@ -2,6 +2,10 @@
 {% load trs_formatting %}
 
 {% block full-width %}
+
+  <div class="modal fade" id="remarksmodal">
+  </div>
+
   <h1>
     {{ view.project.code }}
     {% if view.project.archived %}
@@ -110,18 +114,36 @@
           {% endif %}
         </td>
       </tr>
-      {% if view.project.remark %}
-        <tr>
-          <th>Opmerkingen</th>
-          <td>{{ view.project.remark|linebreaksbr }}</td>
-        </tr>
-      {% endif %}
-      {% if view.project.financial_remark %}
-        <tr>
-          <th>Financiële opmerkingen</th>
-          <td>{{ view.project.financial_remark|linebreaksbr }}</td>
-        </tr>
-      {% endif %}
+      <tr>
+        <th>
+          {% if view.can_edit_project %}
+            <a data-toggle="modal"
+               href="{% url 'trs.project.editremarks' pk=view.project.pk %}"
+               data-target="#remarksmodal">
+              <span class="glyphicon glyphicon-pencil"></span>
+              Opmerkingen
+            </a>
+          {% else %}
+            Opmerkingen
+          {% endif %}
+        </th>
+        <td>{{ view.project.remark|linebreaksbr }}</td>
+      </tr>
+      <tr>
+        <th>
+          {% if view.can_edit_project %}
+            <a data-toggle="modal"
+               href="{% url 'trs.project.editremarks' pk=view.project.pk %}"
+               data-target="#remarksmodal">
+              <span class="glyphicon glyphicon-pencil"></span>
+              Financiële opmerkingen
+            </a>
+          {% else %}
+            Financiële opmerkingen
+          {% endif %}
+        </th>
+        <td>{{ view.project.financial_remark|linebreaksbr }}</td>
+      </tr>
     </tbody>
   </table>
 

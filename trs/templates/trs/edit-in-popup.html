@@ -1,0 +1,60 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block whole-page %}
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ view.title }}</h4>
+      </div>
+      <div class="modal-body">
+
+        <form action="{{ view.edit_action|default:'.' }}"
+              method="post"
+              role="form"
+              class="form-horizontal">
+          {% for error in form.non_field_errors %}
+            <div class="alert alert-danger">{{ error }}</div>
+          {% endfor %}
+          <fieldset>
+            {% csrf_token %}
+
+            {% for field in form %}
+              <div class="form-group">
+                <label class="col-sm-3">{{ field.label }}</label>
+                <div class="col-sm-5">
+                  {% for error in field.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                  {% endfor %}
+
+                  {{ field|tabindex:forloop.counter }}
+                  {% if field.help_text %}
+                    <p class="text-muted">{{ field.help_text }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+
+            <div class="form-group">
+              <div class="col-sm-offset-3">
+                <input type="submit"
+                       class="btn btn-primary"
+                       tabindex="{{  view.tabindex_submit_button|default:99 }}"
+                       value="Submit" />
+              </div>
+            </div>
+
+          </fieldset>
+        </form>
+
+        {% block extra-edit-content %}
+        {% endblock %}
+
+      </div>
+    </div>
+  </div>
+{% endblock %}

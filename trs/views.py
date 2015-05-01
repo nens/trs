@@ -1399,6 +1399,15 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
         return super(ProjectEditView, self).form_valid(form)
 
 
+class ProjectRemarksEditView(ProjectEditView):
+    template_name = 'trs/edit-in-popup.html'
+    fields = ['remark', 'financial_remark']
+
+    def edit_action(self):
+        return reverse('trs.project.editremarks',
+                       kwargs={'pk': self.project.id})
+
+
 class ProjectCreateView(LoginAndPermissionsRequiredMixin,
                         CreateView,
                         BaseMixin):
