@@ -5,7 +5,8 @@ Changelog of TRS
 1.12 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Removed 'nog te verdelen' row from the project template.
+
 
 
 1.11 (2015-02-18)
