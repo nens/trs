@@ -78,6 +78,23 @@
           </div><!-- /.navbar-collapse -->
         </nav>
 
+        <nav id="selection-pager" class="hidden">
+          <ul class="pager">
+            <li class="previous"><a href="#"><span aria-hidden="true">&larr;</span>
+                Naam vorige project</a></li>
+
+            <li>
+              <a href="#">
+                <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                Stoppen met bladeren
+              </a>
+            </li>
+
+            <li class="next"><a href="#">Newer <span aria-hidden="true">&rarr;</span></a></li>
+          </ul>
+        </nav>
+
+
         {% block full-width %}
 
           <div class="row">
@@ -236,6 +253,11 @@
 
     {% endblock %}
 
+    {% if view.for_selection_pager %}
+      <script type="text/javascript">
+        var selection_pager = {{ view.for_selection_pager | safe }};
+      </script>
+    {% endif %}
     <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
     <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'trs/table-fixed-header.js' %}"></script>

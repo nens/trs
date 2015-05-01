@@ -98,6 +98,7 @@ class BaseMixin(object):
     title = "TRS tijdregistratiesysteem"
     filters_and_choices = []
     normally_visible_filters = None
+    results_for_selection_pager = None
 
     @cached_property
     def current_get_params(self):
@@ -147,6 +148,14 @@ class BaseMixin(object):
                     filter['q'] = choice['q']
 
         return filters
+
+    @cached_property
+    def for_selection_pager(self):
+        if not self.results_for_selection_pager:
+            return
+        return [{'name': str(result),
+                 'url': result.get_absolute_url()}
+                for result in self.results_for_selection_pager]
 
     @cached_property
     def filters(self):
@@ -625,6 +634,9 @@ class BookingOverview(PersonView):
 
 
 class ProjectsView(BaseView):
+    @cached_property
+    def results_for_selection_pager(self):
+        return self.projects
 
     @cached_property
     def filters_and_choices(self):
