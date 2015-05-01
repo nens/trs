@@ -1,4 +1,3 @@
-from collections import defaultdict
 from copy import deepcopy
 from decimal import Decimal
 import csv
@@ -1306,7 +1305,6 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         booked_total = {item['booked_on']: round(item['hours__sum'] or 0)
                         for item in booked_per_project}
 
-        this_year = this_year_week().year
         for project_index, project in enumerate(self.relevant_projects):
             line = {'project': project}
             for index, year_week in enumerate(self.year_weeks_to_display):
@@ -2961,7 +2959,6 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
         for year in years:
             jan1 = datetime.date(year, 1, 1)
             jul1 = datetime.date(year, 7, 1)
-            dec31 = datetime.date(year, 12, 31)
             first_half = YearWeek.objects.filter(
                 first_day__gte=jan1,
                 first_day__lt=jul1).values_list('id', flat=True)
