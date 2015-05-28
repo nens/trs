@@ -78,22 +78,17 @@
           </div><!-- /.navbar-collapse -->
         </nav>
 
-        <nav id="selection-pager" class="hidden">
-          <ul class="pager">
-            <li class="previous"><a href="#"><span aria-hidden="true">&larr;</span>
-                Naam vorige project</a></li>
+        <div id="selection-pager" class="collapse">
+          <div id="enable-selection-pager" class="collapse">
+            <a href="#" class="button">Bewaar huidige filter</a>
+          </div>
+          <div id="disable-selection-pager" class="collapse">
+            <a href="#" class="button">Stop met onderstaande selectie</a>
+          </div>
+          <ul id="selection-pager-contents">
 
-            <li>
-              <a href="#">
-                <span class="glyphicon glyphicon-minus-sign text-danger"></span>
-                Stoppen met bladeren
-              </a>
-            </li>
-
-            <li class="next"><a href="#">Newer <span aria-hidden="true">&rarr;</span></a></li>
           </ul>
-        </nav>
-
+        </div>
 
         {% block full-width %}
 
@@ -253,11 +248,13 @@
 
     {% endblock %}
 
-    {% if view.for_selection_pager %}
-      <script type="text/javascript">
-        var selection_pager = {{ view.for_selection_pager | safe }};
-      </script>
-    {% endif %}
+    <script type="text/javascript">
+      {% if view.for_selection_pager %}
+        var for_selection_pager = {{ view.for_selection_pager | safe }};
+      {% else %}
+        var for_selection_pager = null;
+      {% endif %}
+    </script>
     <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
     <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'trs/table-fixed-header.js' %}"></script>

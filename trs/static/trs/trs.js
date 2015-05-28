@@ -31,4 +31,44 @@ $(document).ready(function () {
         window.form_changed = false;
     });
     $('.table-fixed-header').fixedHeader();
+
+    var selection_pager = JSON.parse(localStorage.getItem('selection_pager'));
+    if (for_selection_pager) {
+        $("#selection-pager").show();
+        $("#enable-selection-pager").show();
+    }
+    if (selection_pager) {
+        $("#selection-pager").show();
+        $("#disable-selection-pager").show();
+    }
+
+    $("#enable-selection-pager a").click(function(e) {
+        localStorage.setItem('selection_pager', JSON.stringify(for_selection_pager));
+        document.location.reload();
+    });
+    $("#disable-selection-pager a").click(function(e) {
+        localStorage.removeItem('selection_pager');
+        document.location.reload();
+    });
+    if (selection_pager) {
+        var selection_pager_contents = '';
+        $.each(selection_pager, function(index, item) {
+            if (window.location.pathname == item['url']) {
+                extra = ' class="selected" ';
+            } else {
+                extra = '';
+            }
+            selection_pager_contents += (
+                '<li><a href="' +
+                    item['url'] +
+                    '"' +
+                    extra +
+                    '>' +
+                    item['name'] +
+                    '</a></li>')
+        });
+        console.log(selection_pager_contents);
+        $('#selection-pager-contents').html(selection_pager_contents);
+    }
+
 });

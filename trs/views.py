@@ -151,6 +151,8 @@ class BaseMixin(object):
 
     @cached_property
     def for_selection_pager(self):
+        if not self.can_see_everything:
+            return
         if not self.results_for_selection_pager:
             return
         return [{'name': str(result),
@@ -281,6 +283,10 @@ class PersonsView(BaseView):
 
     title = "Medewerkers"
     normally_visible_filters = ['status', 'group']
+
+    @cached_property
+    def results_for_selection_pager(self):
+        return self.persons
 
     @cached_property
     def available_years(self):
