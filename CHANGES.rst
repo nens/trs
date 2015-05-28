@@ -7,6 +7,10 @@ Changelog of TRS
 
 - Removed 'nog te verdelen' row from the project template.
 
+- Added editing of the two remark fields on projects with a popup.
+
+- If you can see everything, you can now save a project/person filter as a
+  "sidebar" on the right hand side of the screen.
 
 
 1.11 (2015-02-18)
