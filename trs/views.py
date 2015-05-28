@@ -2188,6 +2188,10 @@ class InvoicesView(BaseView):
     normally_visible_filters = ['status', 'year']
 
     @cached_property
+    def results_for_selection_pager(self):
+        return self.invoices
+
+    @cached_property
     def filters_and_choices(self):
         result = [
             {'title': 'Status',
