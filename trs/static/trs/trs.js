@@ -22,10 +22,8 @@ function configureSelectionPager() {
     var selection_pager_start_url = localStorage.getItem(
         'selection_pager_start_url');
 
-    if (for_selection_pager || selection_pager) {
-        $("#selection-pager").show();
-    }
     if (selection_pager) {
+        $("#selection-pager").show();
         $("#disable-selection-pager").show();
     }
     if (for_selection_pager) {

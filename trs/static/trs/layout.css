@@ -71,3 +71,13 @@ input#id_description {
 #selection-pager .selected {
     font-weight: bold;
 }
+
+#enable-selection-pager {
+    position: absolute;
+    top: 72px;
+    right: 4px;
+    width: 180px;
+    text-align: right;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 1000;
+}
