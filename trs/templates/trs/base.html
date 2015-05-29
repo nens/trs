@@ -80,14 +80,26 @@
 
         <div id="selection-pager" class="collapse">
           <div id="enable-selection-pager" class="collapse">
-            <a href="#" class="button">Bewaar huidige filter</a>
+            <a href="#" class="button">
+              <span class="glyphicon glyphicon-th-list"></span>
+              Begin bladeren
+            </a>
           </div>
-          <div id="disable-selection-pager" class="collapse">
-            <a href="#" class="button">Stop met onderstaande selectie</a>
+          <div id="enable-selection-pager-refresh" class="collapse">
+            <a href="#" class="button">
+              <span class="glyphicon glyphicon-th-list"></span>
+              Ververs lijst
+            </a>
           </div>
           <ul id="selection-pager-contents">
-
+            <!-- Filled by trs.js when needed -->
           </ul>
+          <div id="disable-selection-pager" class="collapse">
+            <a href="#" class="button">
+              <span class="glyphicon glyphicon-remove"></span>
+              Stop bladeren
+            </a>
+          </div>
         </div>
 
         {% block full-width %}

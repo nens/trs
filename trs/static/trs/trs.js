@@ -22,19 +22,25 @@ function configureSelectionPager() {
     var selection_pager_start_url = localStorage.getItem(
         'selection_pager_start_url');
 
+    if (for_selection_pager || selection_pager) {
+        $("#selection-pager").show();
+    }
+    if (selection_pager) {
+        $("#disable-selection-pager").show();
+    }
     if (for_selection_pager) {
         // for_selection_pager is defined in base.html for pagers where there
         // is such a list available for the selection pager.
-        $("#selection-pager").show();
-        $("#enable-selection-pager").show();
-    }
-    if (selection_pager) {
-        $("#selection-pager").show();
-        $("#disable-selection-pager").show();
+        if (selection_pager) {
+            $("#enable-selection-pager-refresh").show();
+        } else {
+            $("#enable-selection-pager").show();
+        }
     }
 
-    $("#enable-selection-pager a").click(function(e) {
-        localStorage.setItem('selection_pager',
+    $("#enable-selection-pager a, #enable-selection-pager-refresh a").click(
+        function(e) {
+            localStorage.setItem('selection_pager',
                              JSON.stringify(for_selection_pager));
         localStorage.setItem('selection_pager_start_url',
                              document.location.href);
