@@ -52,9 +52,14 @@ function configureSelectionPager() {
     });
     if (selection_pager) {
         var selection_pager_contents = '';
+        var selection_pager_next;
         $.each(selection_pager, function(index, item) {
             if (window.location.pathname + window.location.search == item.url) {
+                // This is the selected item.
                 extra = ' class="selected" ';
+                if (selection_pager[index + 1]) {
+                    selection_pager_next = selection_pager[index + 1].url;
+                }
             } else {
                 extra = '';
             }
@@ -68,6 +73,10 @@ function configureSelectionPager() {
                     '</a></li>');
         });
         $('#selection-pager-contents').html(selection_pager_contents);
+        if (selection_pager_next) {
+            $("#selection-pager-next").show();
+            $("#selection-pager-next a").attr('href', selection_pager_next);
+        }
     }
 }
 
