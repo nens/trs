@@ -79,26 +79,34 @@
         </nav>
 
         <div id="selection-pager" class="collapse">
-          <div id="enable-selection-pager" class="collapse">
-            <a href="#" class="button">
-              <span class="glyphicon glyphicon-th-list"></span>
-              Begin bladeren
-            </a>
-          </div>
-          <div id="enable-selection-pager-refresh" class="collapse">
-            <a href="#" class="button">
-              <span class="glyphicon glyphicon-th-list"></span>
-              Ververs lijst
-            </a>
-          </div>
-          <ul id="selection-pager-contents">
-            <!-- Filled by trs.js when needed -->
-          </ul>
-          <div id="disable-selection-pager" class="collapse">
-            <a href="#" class="button">
-              <span class="glyphicon glyphicon-remove"></span>
-              Stop bladeren
-            </a>
+          <div class="panel panel-default">
+
+            <div id="enable-selection-pager" class="panel-heading collapse">
+              <a href="#" class="button">
+                <span class="glyphicon glyphicon-th-list"></span>
+                Begin bladeren
+              </a>
+            </div>
+            <div id="enable-selection-pager-refresh" class="panel-heading collapse">
+              <a href="#" class="button">
+                <span class="glyphicon glyphicon-th-list"></span>
+                Ververs lijst
+              </a>
+            </div>
+
+            <div class="panel-body">
+              <ul id="selection-pager-contents" class="list-unstyled">
+                <!-- Filled by trs.js when needed -->
+              </ul>
+            </div>
+
+            <div id="disable-selection-pager" class="panel-footer collapse">
+              <a href="#">
+                <span class="glyphicon glyphicon-remove"></span>
+                Stop bladeren
+              </a>
+            </div>
+
           </div>
         </div>
 
