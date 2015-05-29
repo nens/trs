@@ -9,8 +9,8 @@ Changelog of TRS
 
 - Added editing of the two remark fields on projects with a popup.
 
-- If you can see everything, you can now save a project/person filter as a
-  "sidebar" on the right hand side of the screen.
+- You can now enable a project/person filter as a "sidebar" on the right hand
+  side of the screen if you're viewing a person/project/person list.
 
 
 1.11 (2015-02-18)
