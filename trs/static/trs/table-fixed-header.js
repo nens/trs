@@ -10,17 +10,17 @@
 
 $.fn.fixedHeader = function (options) {
  var config = {
-   topOffset: 00,
+   topOffset: 0,
    bgColor: '#fff'
  };
  if (options){ $.extend(config, options); }
 
  return this.each( function() {
-  var o = $(this);
+     var o = $(this);
 
-  var $win = $(window)
-    , $head = $('thead.header', o)
-    , isFixed = 0;
+     var $win = $(window),
+         $head = $('thead.header', o),
+         isFixed = 0;
   var headTop = $head.length && $head.offset().top - config.topOffset;
 
   function processScroll() {
@@ -37,8 +37,8 @@ $.fn.fixedHeader = function (options) {
 
   // hack sad times - holdover until rewrite for 2.1
   $head.on('click', function () {
-    if (!isFixed) setTimeout(function () {  $win.scrollTop($win.scrollTop() - 47) }, 10);
-  })
+      if (!isFixed) setTimeout(function () {  $win.scrollTop($win.scrollTop() - 47); }, 10);
+  });
 
   $head.clone().removeClass('header').addClass('header-copy header-fixed').appendTo(o);
   var ww = [];

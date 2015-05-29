@@ -1,4 +1,3 @@
-from collections import defaultdict
 from copy import deepcopy
 from decimal import Decimal
 import csv
@@ -99,6 +98,7 @@ class BaseMixin(object):
     title = "TRS tijdregistratiesysteem"
     filters_and_choices = []
     normally_visible_filters = None
+    results_for_selection_pager = None
 
     @cached_property
     def current_get_params(self):
@@ -148,6 +148,14 @@ class BaseMixin(object):
                     filter['q'] = choice['q']
 
         return filters
+
+    @cached_property
+    def for_selection_pager(self):
+        if not self.results_for_selection_pager:
+            return
+        return [{'name': str(result),
+                 'url': result.get_absolute_url() + '?from_selection_pager'}
+                for result in self.results_for_selection_pager]
 
     @cached_property
     def filters(self):
@@ -273,6 +281,10 @@ class PersonsView(BaseView):
 
     title = "Medewerkers"
     normally_visible_filters = ['status', 'group']
+
+    @cached_property
+    def results_for_selection_pager(self):
+        return self.persons
 
     @cached_property
     def available_years(self):
@@ -626,6 +638,9 @@ class BookingOverview(PersonView):
 
 
 class ProjectsView(BaseView):
+    @cached_property
+    def results_for_selection_pager(self):
+        return self.projects
 
     @cached_property
     def filters_and_choices(self):
@@ -1306,7 +1321,6 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         booked_total = {item['booked_on']: round(item['hours__sum'] or 0)
                         for item in booked_per_project}
 
-        this_year = this_year_week().year
         for project_index, project in enumerate(self.relevant_projects):
             line = {'project': project}
             for index, year_week in enumerate(self.year_weeks_to_display):
@@ -1497,12 +1511,16 @@ class InvoiceEditView(LoginAndPermissionsRequiredMixin,
     def edit_action(self):
         if 'from_invoice_overview' in self.request.GET:
             return '.?from_invoice_overview'
+        if 'from_selection_pager' in self.request.GET:
+            return '.?from_selection_pager'
 
     @cached_property
     def success_url(self):
         if 'from_invoice_overview' in self.request.GET:
             params = '?year=%s#%s' % (self.invoice.date.year, self.invoice.id)
             return reverse('trs.overviews.invoices') + params
+        if 'from_selection_pager' in self.request.GET:
+            return '.?from_selection_pager'
         return reverse('trs.project', kwargs={'pk': self.project.pk})
 
     def form_valid(self, form):
@@ -2170,6 +2188,10 @@ class OverviewsView(BaseView):
 class InvoicesView(BaseView):
     template_name = 'trs/invoices.html'
     normally_visible_filters = ['status', 'year']
+
+    @cached_property
+    def results_for_selection_pager(self):
+        return self.invoices
 
     @cached_property
     def filters_and_choices(self):
@@ -2961,7 +2983,6 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
         for year in years:
             jan1 = datetime.date(year, 1, 1)
             jul1 = datetime.date(year, 7, 1)
-            dec31 = datetime.date(year, 12, 31)
             first_half = YearWeek.objects.filter(
                 first_day__gte=jan1,
                 first_day__lt=jul1).values_list('id', flat=True)

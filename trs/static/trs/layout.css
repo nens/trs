@@ -54,3 +54,30 @@ input#id_description {
     color: #C09853;
     background-color: #FCF8E3;
 }
+
+
+/* Selection pager. Absolute positioned to the right. Your screen should be wide enough. */
+
+#selection-pager {
+    position: absolute;
+    top: 72px;
+    right: 0px;
+    width: 180px;
+    text-overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 1000;
+}
+
+#selection-pager .selected {
+    font-weight: bold;
+}
+
+#enable-selection-pager {
+    position: absolute;
+    top: 72px;
+    right: 4px;
+    width: 180px;
+    text-align: right;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 1000;
+}

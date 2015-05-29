@@ -78,6 +78,46 @@
           </div><!-- /.navbar-collapse -->
         </nav>
 
+        <div id="enable-selection-pager" class="collapse">
+          <a href="#">
+            <span class="glyphicon glyphicon-th-list"
+                  title="Blader door de selectie die links staat"></span>
+            Bladeren
+          </a>
+        </div>
+
+        <div id="selection-pager" class="collapse">
+          <div class="panel panel-default">
+
+            <div id="enable-selection-pager-refresh" class="panel-heading collapse">
+              <a href="#">
+                <span class="glyphicon glyphicon-th-list"></span>
+                Vervang lijst
+              </a>
+            </div>
+            <div id="selection-pager-next" class="panel-heading collapse">
+              <a href="#">
+                <span class="glyphicon glyphicon-arrow-right"></span>
+                Volgende
+              </a>
+            </div>
+
+            <div class="panel-body">
+              <ul id="selection-pager-contents" class="list-unstyled">
+                <!-- Filled by trs.js when needed -->
+              </ul>
+            </div>
+
+            <div id="disable-selection-pager" class="panel-footer collapse">
+              <a href="#">
+                <span class="glyphicon glyphicon-remove"></span>
+                Stop bladeren
+              </a>
+            </div>
+
+          </div>
+        </div>
+
         {% block full-width %}
 
           <div class="row">
@@ -236,6 +276,13 @@
 
     {% endblock %}
 
+    <script type="text/javascript">
+      {% if view.for_selection_pager %}
+        var for_selection_pager = {{ view.for_selection_pager | safe }};
+      {% else %}
+        var for_selection_pager = null;
+      {% endif %}
+    </script>
     <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
     <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'trs/table-fixed-header.js' %}"></script>

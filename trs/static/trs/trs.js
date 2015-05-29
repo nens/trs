@@ -16,6 +16,71 @@ function SumTotalHours() {
     $('#hour-total').text(total);
 }
 
+
+function configureSelectionPager() {
+    var selection_pager = JSON.parse(localStorage.getItem('selection_pager'));
+    var selection_pager_start_url = localStorage.getItem(
+        'selection_pager_start_url');
+
+    if (selection_pager) {
+        $("#selection-pager").show();
+        $("#disable-selection-pager").show();
+    }
+    if (for_selection_pager) {
+        // for_selection_pager is defined in base.html for pagers where there
+        // is such a list available for the selection pager.
+        if (selection_pager) {
+            $("#enable-selection-pager-refresh").show();
+        } else {
+            $("#enable-selection-pager").show();
+        }
+    }
+
+    $("#enable-selection-pager a, #enable-selection-pager-refresh a").click(
+        function(e) {
+            e.preventDefault();
+            localStorage.setItem('selection_pager',
+                                 JSON.stringify(for_selection_pager));
+            localStorage.setItem('selection_pager_start_url',
+                                 document.location.href);
+            document.location.reload();
+        });
+    $("#disable-selection-pager a").click(function(e) {
+        e.preventDefault();
+        localStorage.removeItem('selection_pager');
+        document.location.href = selection_pager_start_url;
+    });
+    if (selection_pager) {
+        var selection_pager_contents = '';
+        var selection_pager_next;
+        $.each(selection_pager, function(index, item) {
+            if (window.location.pathname + window.location.search == item.url) {
+                // This is the selected item.
+                extra = ' class="selected" ';
+                if (selection_pager[index + 1]) {
+                    selection_pager_next = selection_pager[index + 1].url;
+                }
+            } else {
+                extra = '';
+            }
+            selection_pager_contents += (
+                '<li><a href="' +
+                    item.url +
+                    '"' +
+                    extra +
+                    '>' +
+                    item.name +
+                    '</a></li>');
+        });
+        $('#selection-pager-contents').html(selection_pager_contents);
+        if (selection_pager_next) {
+            $("#selection-pager-next").show();
+            $("#selection-pager-next a").attr('href', selection_pager_next);
+        }
+    }
+}
+
+
 $(document).ready(function () {
     window.form_changed = false;
     $(".hour-for-total input").keyup(function() {
@@ -31,4 +96,5 @@ $(document).ready(function () {
         window.form_changed = false;
     });
     $('.table-fixed-header').fixedHeader();
+    configureSelectionPager();
 });
