@@ -53,19 +53,19 @@ function configureSelectionPager() {
     if (selection_pager) {
         var selection_pager_contents = '';
         $.each(selection_pager, function(index, item) {
-            if (window.location.pathname == item['url']) {
+            if (window.location.pathname == item.url) {
                 extra = ' class="selected" ';
             } else {
                 extra = '';
             }
             selection_pager_contents += (
                 '<li><a href="' +
-                    item['url'] +
+                    item.url +
                     '"' +
                     extra +
                     '>' +
-                    item['name'] +
-                    '</a></li>')
+                    item.name +
+                    '</a></li>');
         });
         $('#selection-pager-contents').html(selection_pager_contents);
     }
