@@ -2944,6 +2944,10 @@ class ReservationsOverview(BaseView):
         return Project.objects.filter(*q_objects).filter(
             reservation__gt=0)
 
+    @cached_property
+    def total_reservations(self):
+        return sum([project.reservation for project in self.projects])
+
 
 class WbsoProjectsOverview(BaseView):
     template_name = 'trs/wbso_projects.html'

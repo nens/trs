@@ -30,10 +30,17 @@
               {{ project.description|truncatechars:35 }}
             </span>
           </td>
-          <td class="text-right">{{ project.reservation }}</td>
+          <td class="text-right">{{ project.reservation | money }}</td>
         </tr>
       {% endfor %}
     </tbody>
+    <tfoot>
+      <tr>
+        <th>Totaal</th>
+        <th></th>
+        <th class="text-right">{{ view.total_reservations | money }}</th>
+      </tr>
+    </tfoot>
   </table>
 
 {% endblock %}
