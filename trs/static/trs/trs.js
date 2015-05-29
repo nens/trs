@@ -40,13 +40,15 @@ function configureSelectionPager() {
 
     $("#enable-selection-pager a, #enable-selection-pager-refresh a").click(
         function(e) {
+            e.preventDefault();
             localStorage.setItem('selection_pager',
-                             JSON.stringify(for_selection_pager));
-        localStorage.setItem('selection_pager_start_url',
-                             document.location.href);
-        document.location.reload();
-    });
+                                 JSON.stringify(for_selection_pager));
+            localStorage.setItem('selection_pager_start_url',
+                                 document.location.href);
+            document.location.reload();
+        });
     $("#disable-selection-pager a").click(function(e) {
+        e.preventDefault();
         localStorage.removeItem('selection_pager');
         document.location.href = selection_pager_start_url;
     });
