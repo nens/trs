@@ -154,7 +154,7 @@ class BaseMixin(object):
         if not self.results_for_selection_pager:
             return
         return [{'name': str(result),
-                 'url': result.get_absolute_url()}
+                 'url': result.get_absolute_url() + '?from_selection_pager'}
                 for result in self.results_for_selection_pager]
 
     @cached_property
@@ -1511,12 +1511,16 @@ class InvoiceEditView(LoginAndPermissionsRequiredMixin,
     def edit_action(self):
         if 'from_invoice_overview' in self.request.GET:
             return '.?from_invoice_overview'
+        if 'from_selection_pager' in self.request.GET:
+            return '.?from_selection_pager'
 
     @cached_property
     def success_url(self):
         if 'from_invoice_overview' in self.request.GET:
             params = '?year=%s#%s' % (self.invoice.date.year, self.invoice.id)
             return reverse('trs.overviews.invoices') + params
+        if 'from_selection_pager' in self.request.GET:
+            return '.?from_selection_pager'
         return reverse('trs.project', kwargs={'pk': self.project.pk})
 
     def form_valid(self, form):
