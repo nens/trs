@@ -67,7 +67,6 @@ function configureSelectionPager() {
                     item['name'] +
                     '</a></li>')
         });
-        console.log(selection_pager_contents);
         $('#selection-pager-contents').html(selection_pager_contents);
     }
 }
