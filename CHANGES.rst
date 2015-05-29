@@ -7,10 +7,13 @@ Changelog of TRS
 
 - Removed 'nog te verdelen' row from the project template.
 
-- Added editing of the two remark fields on projects with a popup.
+- Added quick editing of the two remark fields on projects with a popup.
 
 - You can now enable a project/person filter as a "sidebar" on the right hand
-  side of the screen if you're viewing a person/project/person list.
+  side of the screen if you're viewing a person/project/person list. Including
+  easy browsing through that list.
+
+- Added sum of all reservations to the reservations overview.
 
 
 1.11 (2015-02-18)
