@@ -53,7 +53,7 @@ function configureSelectionPager() {
     if (selection_pager) {
         var selection_pager_contents = '';
         $.each(selection_pager, function(index, item) {
-            if (window.location.pathname == item.url) {
+            if (window.location.pathname + window.location.search == item.url) {
                 extra = ' class="selected" ';
             } else {
                 extra = '';
