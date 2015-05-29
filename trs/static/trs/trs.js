@@ -54,7 +54,8 @@ function configureSelectionPager() {
         var selection_pager_contents = '';
         var selection_pager_next;
         $.each(selection_pager, function(index, item) {
-            if (window.location.pathname + window.location.search == item.url) {
+            base_url = item.url.split('?')[0];
+            if (window.location.pathname == base_url) {
                 // This is the selected item.
                 extra = ' class="selected" ';
                 if (selection_pager[index + 1]) {
