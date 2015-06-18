@@ -38,6 +38,7 @@
         <td>
           {% if not invoice.project.archived %}
             <a href="{% url 'trs.invoice.edit' project_pk=invoice.project.pk pk=invoice.pk %}?from_invoice_overview">
+              <span class="glyphicon glyphicon-pencil"></span>
               {{ invoice.number }}
             </a>
           {% else %}
