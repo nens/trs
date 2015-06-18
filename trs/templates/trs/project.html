@@ -382,7 +382,7 @@
               {% if view.project.payables.all %}
                 <tr>
                   <th>Kosten derden</th>
-                  <td colspan="7"></td>
+                  <td colspan="8"></td>
                 </tr>
                 {% for payable in view.project.payables.all %}
                   <tr>
@@ -427,7 +427,7 @@
                 <th class="text-right">
                   {{ view.total_income|money }}
                 </th>
-                <th colspan="4"></th>
+                <th colspan="5"></th>
               </tr>
             </tfoot>
           {% endif %}
