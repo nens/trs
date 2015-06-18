@@ -2452,6 +2452,71 @@ class InvoicesPerMonthOverview(BaseView):
         return result
 
 
+class PayablesView(BaseView):
+    template_name = 'trs/payables.html'
+    normally_visible_filters = ['status', 'year']
+
+    @cached_property
+    def results_for_selection_pager(self):
+        return self.payables
+
+    @cached_property
+    def filters_and_choices(self):
+        result = [
+            {'title': 'Status',
+             'param': 'status',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'alles',
+                  'q': Q()},
+                 {'value': 'false',
+                  'title': 'nog niet uitbetaald',
+                  'q': Q(payed=None)}
+             ]},
+            {'title': 'Jaar',
+             'param': 'year',
+             'default': str(this_year_week().year),
+             'choices': [
+                 {'value': str(year),
+                  'title': year,
+                  'q': Q(date__year=year)}
+                 for year in reversed(self.available_years)] + [
+                         {'value': 'all',
+                          'title': 'alle jaren',
+                          'q': Q()}]},
+        ]
+
+        return result
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @cached_property
+    def year(self):
+        return self.filters['year']
+
+    @cached_property
+    def available_years(self):
+        first_date = Payable.objects.all().first().date
+        first_year = first_date.year
+        last_date = Payable.objects.all().last().date
+        last_year = last_date.year
+        return list(range(first_year, last_year + 1))
+
+    @cached_property
+    def payables(self):
+        q_objects = [filter['q'] for filter in self.prepared_filters]
+        result = Payable.objects.filter(*q_objects)
+        return result.select_related('project').order_by(
+            '-date', '-number')
+
+    @cached_property
+    def total(self):
+        return sum([payable.amount or 0
+                    for payable in self.payables])
+
+
 class ChangesOverview(BaseView):
     template_name = 'trs/changes.html'
 

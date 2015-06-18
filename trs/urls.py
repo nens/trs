@@ -148,6 +148,9 @@ urlpatterns = patterns(
     url(r'^overviews/wbso_projects/$',
         views.WbsoProjectsOverview.as_view(),
         name='trs.overviews.wbso_projects'),
+    url(r'^overviews/payables/$',
+        views.PayablesView.as_view(),
+        name='trs.overviews.payables'),
 
     url(r'^locallogin/$',
         views.LoginView.as_view(),

@@ -1,0 +1,71 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block full-width %}
+  <h1>Overzicht kosten derden</h1>
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissable">
+      <button type="button"
+              class="close"
+              data-dismiss="alert"
+              aria-hidden="true">&times;</button>
+      {{ message }}
+    </div>
+  {% endfor %}
+
+  {% include "trs/filter-snippet.html" %}
+
+  <table class="table table-condensed table-fixed-header">
+    <thead class="header">
+      <tr>
+        <th class="text-right">Te betalen op</th>
+        <th>Kosten derden nummer</th>
+        <th>Project</th>
+        <th>Opdrachtgever</th>
+        <th>Omschrijving</th>
+        <th class="text-right">Bedrag</th>
+        <th class="text-right">Betaald</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for payable in view.payables %}
+      <tr id="{{ payable.id }}">
+        <td class="text-right">
+          <span class="date">{{ payable.date|date:"j b Y" }}</span>
+        </td>
+        <td>
+          {% if not payable.project.archived %}
+            <a href="{% url 'trs.payable.edit' project_pk=payable.project.pk pk=payable.pk %}?from_payable_overview">
+              <span class="glyphicon glyphicon-pencil"></span>
+              {{ payable.number }}
+            </a>
+          {% else %}
+            {{ payable.number }}
+          {% endif %}
+        </td>
+        <td>{{ payable.project.as_widget }}</td>
+        <td>{{ payable.project.principal }}</td>
+        <td>{{ payable.description }}</td>
+        <td class="text-right">{{ payable.amount|money_with_decimal }}</td>
+        <td class="text-right">
+          <span class="date">
+            {{ payable.payed|date:"j b Y"|default:'Nee' }}
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th>Totaal</th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th class="text-right">{{ view.total|money_with_decimal }}</th>
+        <th></th>
+      </tr>
+    </tfoot>
+  </table>
+
+{% endblock %}
