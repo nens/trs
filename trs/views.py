@@ -1594,7 +1594,7 @@ class PayableCreateView(LoginAndPermissionsRequiredMixin,
     model = Payable
     title = "Nieuwe kosten derden"
     fields = ['date', 'number', 'description',
-              'amount_exclusive', 'vat', 'payed']
+              'amount', 'payed']
 
     def has_form_permissions(self):
         if self.project.archived:
@@ -1619,10 +1619,12 @@ class PayableCreateView(LoginAndPermissionsRequiredMixin,
 class PayableEditView(LoginAndPermissionsRequiredMixin,
                       UpdateView,
                       BaseMixin):
-    template_name = 'trs/edit-payable.html'
+    template_name = 'trs/edit.html'
+    # ^^^ Note: thise might need to become like edit-invoice.html, with its
+    # extra project info.
     model = Payable
     fields = ['date', 'number', 'description',
-              'amount_exclusive', 'vat', 'payed']
+              'amount', 'payed']
 
     @property
     def title(self):
@@ -1872,6 +1874,36 @@ class InvoiceDeleteView(DeleteView):
             self.request,
             "%s verwijderd uit %s" % (self.invoice.number, self.project.code))
         return super(InvoiceDeleteView, self).form_valid(form)
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
+
+
+class PayableDeleteView(DeleteView):
+
+    def has_form_permissions(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def payable(self):
+        return Payable.objects.get(pk=self.kwargs['payable_pk'])
+
+    @cached_property
+    def title(self):
+        return "Verwijder kosten derden %s uit %s" % (
+            self.payable.number, self.project.code)
+
+    def form_valid(self, form):
+        self.payable.delete()
+        self.project.save()  # Increment cache key.
+        messages.success(
+            self.request,
+            "%s verwijderd uit %s" % (self.payable.number, self.project.code))
+        return super(PayableDeleteView, self).form_valid(form)
 
     @cached_property
     def success_url(self):

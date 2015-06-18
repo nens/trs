@@ -95,6 +95,9 @@ urlpatterns = patterns(
     url(r'^projects/(?P<project_pk>\d+)/payables/(?P<pk>\d+)/$',
         views.PayableEditView.as_view(),
         name='trs.payable.edit'),
+    url(r'^projects/(?P<pk>\d+)/payable-delete/(?P<payable_pk>\d+)/$',
+        views.PayableDeleteView.as_view(),
+        name='trs.project.payable-delete'),
 
     url(r'^booking/$',
         views.BookingView.as_view(),

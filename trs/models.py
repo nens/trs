@@ -746,16 +746,13 @@ class Payable(FinancialBase):
         verbose_name="omschrijving",
         blank=True,
         max_length=255)
-    amount_exclusive = models.DecimalField(
+    amount = models.DecimalField(
         max_digits=12,  # We don't mind a metric ton of hard cash.
         decimal_places=DECIMAL_PLACES,
         default=0,
-        verbose_name="bedrag exclusief")
-    vat = models.DecimalField(
-        max_digits=12,
-        decimal_places=DECIMAL_PLACES,
-        default=0,
-        verbose_name="btw")
+        verbose_name="bedrag exclusief",
+        help_text=("Dit zijn kosten, dus een positief getal wordt van het "
+                   "projectbudget afgetrokken. "))
     payed = models.DateField(
         blank=True,
         null=True,
@@ -769,6 +766,9 @@ class Payable(FinancialBase):
 
     def __str__(self):
         return self.number
+
+    def amount_as_income(self):
+        return self.amount * -1
 
     def get_absolute_url(self):
         return reverse('trs.payable.edit', kwargs={

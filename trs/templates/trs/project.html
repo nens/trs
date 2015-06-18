@@ -346,7 +346,7 @@
                       </a>
                     {% endif %}
                   </td>
-                  {% if budget_item.amount > 0 %}
+                  {% if budget_item.amount >= 0 %}
                     <td class="text-right">{{ budget_item.amount|money }}</td>
                     <td class="text-right"></td>
                   {% else %}
@@ -378,6 +378,43 @@
                   </td>
                 </tr>
               {% endfor %}
+
+              {% if view.project.payables.all %}
+                <tr>
+                  <th>Kosten derden</th>
+                  <td colspan="7"></td>
+                </tr>
+                {% for payable in view.project.payables.all %}
+                  <tr>
+                    <td>
+                      &nbsp;&nbsp;&nbsp;
+                      {% if view.can_edit_financials %}
+                        <a href="{% url 'trs.payable.edit' project_pk=view.project.pk pk=payable.pk %}">
+                          {{ payable.description|default:'Niet ingevuld' }}
+                        </a>
+                      {% else %}
+                        {{ payable.description|default:'Niet ingevuld' }}
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if view.can_edit_financials %}
+                        <a href="{% url 'trs.project.payable-delete' pk=view.project.pk payable_pk=payable.pk %}">
+                          <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                        </a>
+                      {% endif %}
+                    </td>
+                    {% if payable.amount >= 0 %}
+                      <td class="text-right">{{ payable.amount|money }}</td>
+                      <td class="text-right"></td>
+                    {% else %}
+                      <td class="text-right"></td>
+                      <td class="text-right">{{ payable.amount_as_income|money }}</td>
+                    {% endif %}
+                    <td colspan="5">
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% endif %}
 
             </tbody>
             <tfoot>
@@ -416,6 +453,14 @@
            class="btn btn-default">
           <span class="glyphicon glyphicon-plus"></span>
           Voeg kostenpost toe
+        </a>
+        &nbsp;&nbsp;
+      {% endif %}
+      {% if view.can_edit_financials %}
+        <a href="{% url 'trs.payable.add' project_pk=view.project.pk %}"
+           class="btn btn-default">
+          <span class="glyphicon glyphicon-plus"></span>
+          Voeg kosten derden toe
         </a>
       {% endif %}
     </div>
