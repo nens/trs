@@ -2465,7 +2465,7 @@ class PayablesView(BaseView):
         result = [
             {'title': 'Status',
              'param': 'status',
-             'default': 'all',
+             'default': 'false',
              'choices': [
                  {'value': 'all',
                   'title': 'alles',
