@@ -495,7 +495,7 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        cache_version = 13
+        cache_version = 14
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, cache_version)
 
@@ -589,10 +589,17 @@ class Project(models.Model):
             else:
                 income += budget_item.amount * -1
         for budget_item in self.budget_transfers.all():
+            # budget_transfers are the reverse of budget_items, pointing at
+            # us, so these count as incomes rather than costs.
             if budget_item.amount > 0:
                 income += budget_item.amount
             else:
                 costs += budget_item.amount * -1
+        for payable in self.payables.all():
+            if payable.amount > 0:
+                costs += payable.amount
+            else:
+                income += payable.amount
 
         overbooked_per_person = {
             id: max(0, (total_booked_per_person.get(id, 0) -
