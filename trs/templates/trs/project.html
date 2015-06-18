@@ -381,7 +381,11 @@
 
               <tr>
                 <th>Kosten derden</th>
-                <td colspan="8"></td>
+                <td colspan="3"></td>
+                <th class="text-right">Nummer</th>
+                <th class="text-right">Te betalen op</th>
+                <th class="text-right">Betaald op</th>
+                <td colspan="2"></td>
               </tr>
               {% for payable in view.project.payables.all %}
                 <tr>
@@ -409,8 +413,12 @@
                     <td class="text-right"></td>
                     <td class="text-right">{{ payable.amount_as_income|money }}</td>
                   {% endif %}
-                  <td colspan="5">
+                  <td class="text-right">{{ payable.number }}</td>
+                  <td class="text-right">{{ payable.date|date:"j b Y" }}</td>
+                  <td class="text-right">
+                    {{ payable.payed|date:"j b Y"|default:'Nee' }}
                   </td>
+                  <td colspan="2"></td>
                 </tr>
               {% endfor %}
 
