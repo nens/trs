@@ -5,7 +5,8 @@ Changelog of TRS
 1.13 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Added 'Payable' class: money we have to pay other parties (NL: "kosten
+  derden").
 
 
 1.12 (2015-05-29)
