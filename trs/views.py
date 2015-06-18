@@ -35,6 +35,7 @@ from trs.models import Booking
 from trs.models import BudgetItem
 from trs.models import Group
 from trs.models import Invoice
+from trs.models import Payable
 from trs.models import Person
 from trs.models import PersonChange
 from trs.models import Project
@@ -1584,6 +1585,81 @@ class BudgetItemEditView(LoginAndPermissionsRequiredMixin,
     def form_valid(self, form):
         messages.success(self.request, "Begrotingsitem aangepast")
         return super(BudgetItemEditView, self).form_valid(form)
+
+
+class PayableCreateView(LoginAndPermissionsRequiredMixin,
+                        CreateView,
+                        BaseMixin):
+    template_name = 'trs/edit.html'
+    model = Payable
+    title = "Nieuwe kosten derden"
+    fields = ['date', 'number', 'description',
+              'amount_exclusive', 'vat', 'payed']
+
+    def has_form_permissions(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['project_pk'])
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
+
+    def form_valid(self, form):
+        form.instance.project = self.project
+        messages.success(self.request, "Kosten derden toegevoegd")
+        return super(PayableCreateView, self).form_valid(form)
+
+
+class PayableEditView(LoginAndPermissionsRequiredMixin,
+                      UpdateView,
+                      BaseMixin):
+    template_name = 'trs/edit-payable.html'
+    model = Payable
+    fields = ['date', 'number', 'description',
+              'amount_exclusive', 'vat', 'payed']
+
+    @property
+    def title(self):
+        return "Aanpassen kosten derden voor %s" % self.project.code
+
+    def has_form_permissions(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['project_pk'])
+
+    @cached_property
+    def payable(self):
+        return Payable.objects.get(pk=self.kwargs['pk'])
+
+    def edit_action(self):
+        if 'from_payable_overview' in self.request.GET:
+            return '.?from_payable_overview'
+        if 'from_selection_pager' in self.request.GET:
+            return '.?from_selection_pager'
+
+    @cached_property
+    def success_url(self):
+        if 'from_payable_overview' in self.request.GET:
+            params = '?year=%s#%s' % (self.payable.date.year, self.payable.id)
+            return reverse('trs.overviews.payables') + params
+        if 'from_selection_pager' in self.request.GET:
+            return '.?from_selection_pager'
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
+
+    def form_valid(self, form):
+        messages.success(self.request, "Kosten derden aangepast")
+        return super(PayableEditView, self).form_valid(form)
 
 
 class PersonEditView(LoginAndPermissionsRequiredMixin,

@@ -731,6 +731,55 @@ class Invoice(FinancialBase):
         return self.amount_exclusive + self.vat
 
 
+class Payable(FinancialBase):
+    project = models.ForeignKey(
+        Project,
+        related_name="payables",
+        verbose_name="project")
+    date = models.DateField(
+        verbose_name="te betalen op",
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
+    number = models.CharField(
+        verbose_name="kosten-derden-nummer",
+        max_length=255)
+    description = models.CharField(
+        verbose_name="omschrijving",
+        blank=True,
+        max_length=255)
+    amount_exclusive = models.DecimalField(
+        max_digits=12,  # We don't mind a metric ton of hard cash.
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="bedrag exclusief")
+    vat = models.DecimalField(
+        max_digits=12,
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="btw")
+    payed = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="overgemaakt op",
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
+
+    class Meta:
+        verbose_name = "kosten derden"
+        verbose_name_plural = "kosten derden"
+        ordering = ('date', 'number',)
+
+    def __str__(self):
+        return self.number
+
+    def get_absolute_url(self):
+        return reverse('trs.payable.edit', kwargs={
+            'pk': self.pk,
+            'project_pk': self.project.pk})
+
+    @property
+    def amount_inclusive(self):
+        return self.amount_exclusive + self.vat
+
+
 class BudgetItem(FinancialBase):
     project = models.ForeignKey(
         Project,
