@@ -35,6 +35,7 @@ from trs.models import Booking
 from trs.models import BudgetItem
 from trs.models import Group
 from trs.models import Invoice
+from trs.models import Payable
 from trs.models import Person
 from trs.models import PersonChange
 from trs.models import Project
@@ -1586,6 +1587,83 @@ class BudgetItemEditView(LoginAndPermissionsRequiredMixin,
         return super(BudgetItemEditView, self).form_valid(form)
 
 
+class PayableCreateView(LoginAndPermissionsRequiredMixin,
+                        CreateView,
+                        BaseMixin):
+    template_name = 'trs/edit.html'
+    model = Payable
+    title = "Nieuwe kosten derden"
+    fields = ['date', 'number', 'description',
+              'amount', 'payed']
+
+    def has_form_permissions(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['project_pk'])
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
+
+    def form_valid(self, form):
+        form.instance.project = self.project
+        messages.success(self.request, "Kosten derden toegevoegd")
+        return super(PayableCreateView, self).form_valid(form)
+
+
+class PayableEditView(LoginAndPermissionsRequiredMixin,
+                      UpdateView,
+                      BaseMixin):
+    template_name = 'trs/edit.html'
+    # ^^^ Note: thise might need to become like edit-invoice.html, with its
+    # extra project info.
+    model = Payable
+    fields = ['date', 'number', 'description',
+              'amount', 'payed']
+
+    @property
+    def title(self):
+        return "Aanpassen kosten derden voor %s" % self.project.code
+
+    def has_form_permissions(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['project_pk'])
+
+    @cached_property
+    def payable(self):
+        return Payable.objects.get(pk=self.kwargs['pk'])
+
+    def edit_action(self):
+        if 'from_payable_overview' in self.request.GET:
+            return '.?from_payable_overview'
+        if 'from_selection_pager' in self.request.GET:
+            return '.?from_selection_pager'
+
+    @cached_property
+    def success_url(self):
+        if 'from_payable_overview' in self.request.GET:
+            params = '?year=%s#%s' % (self.payable.date.year, self.payable.id)
+            return reverse('trs.overviews.payables') + params
+        if 'from_selection_pager' in self.request.GET:
+            return '.?from_selection_pager'
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
+
+    def form_valid(self, form):
+        messages.success(self.request, "Kosten derden aangepast")
+        return super(PayableEditView, self).form_valid(form)
+
+
 class PersonEditView(LoginAndPermissionsRequiredMixin,
                      UpdateView,
                      BaseMixin):
@@ -1796,6 +1874,36 @@ class InvoiceDeleteView(DeleteView):
             self.request,
             "%s verwijderd uit %s" % (self.invoice.number, self.project.code))
         return super(InvoiceDeleteView, self).form_valid(form)
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project', kwargs={'pk': self.project.pk})
+
+
+class PayableDeleteView(DeleteView):
+
+    def has_form_permissions(self):
+        if self.project.archived:
+            return False
+        if self.can_edit_and_see_everything:
+            return True
+
+    @cached_property
+    def payable(self):
+        return Payable.objects.get(pk=self.kwargs['payable_pk'])
+
+    @cached_property
+    def title(self):
+        return "Verwijder kosten derden %s uit %s" % (
+            self.payable.number, self.project.code)
+
+    def form_valid(self, form):
+        self.payable.delete()
+        self.project.save()  # Increment cache key.
+        messages.success(
+            self.request,
+            "%s verwijderd uit %s" % (self.payable.number, self.project.code))
+        return super(PayableDeleteView, self).form_valid(form)
 
     @cached_property
     def success_url(self):
@@ -2342,6 +2450,71 @@ class InvoicesPerMonthOverview(BaseView):
                                        'url': url})
             result.append(row)
         return result
+
+
+class PayablesView(BaseView):
+    template_name = 'trs/payables.html'
+    normally_visible_filters = ['status', 'year']
+
+    @cached_property
+    def results_for_selection_pager(self):
+        return self.payables
+
+    @cached_property
+    def filters_and_choices(self):
+        result = [
+            {'title': 'Status',
+             'param': 'status',
+             'default': 'false',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'alles',
+                  'q': Q()},
+                 {'value': 'false',
+                  'title': 'nog niet uitbetaald',
+                  'q': Q(payed=None)}
+             ]},
+            {'title': 'Jaar',
+             'param': 'year',
+             'default': str(this_year_week().year),
+             'choices': [
+                 {'value': str(year),
+                  'title': year,
+                  'q': Q(date__year=year)}
+                 for year in reversed(self.available_years)] + [
+                         {'value': 'all',
+                          'title': 'alle jaren',
+                          'q': Q()}]},
+        ]
+
+        return result
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @cached_property
+    def year(self):
+        return self.filters['year']
+
+    @cached_property
+    def available_years(self):
+        first_date = Payable.objects.all().first().date
+        first_year = first_date.year
+        last_date = Payable.objects.all().last().date
+        last_year = last_date.year
+        return list(range(first_year, last_year + 1))
+
+    @cached_property
+    def payables(self):
+        q_objects = [filter['q'] for filter in self.prepared_filters]
+        result = Payable.objects.filter(*q_objects)
+        return result.select_related('project').order_by(
+            '-date', '-number')
+
+    @cached_property
+    def total(self):
+        return sum([payable.amount or 0
+                    for payable in self.payables])
 
 
 class ChangesOverview(BaseView):

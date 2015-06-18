@@ -495,7 +495,7 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        cache_version = 13
+        cache_version = 14
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, cache_version)
 
@@ -589,10 +589,17 @@ class Project(models.Model):
             else:
                 income += budget_item.amount * -1
         for budget_item in self.budget_transfers.all():
+            # budget_transfers are the reverse of budget_items, pointing at
+            # us, so these count as incomes rather than costs.
             if budget_item.amount > 0:
                 income += budget_item.amount
             else:
                 costs += budget_item.amount * -1
+        for payable in self.payables.all():
+            if payable.amount > 0:
+                costs += payable.amount
+            else:
+                income += payable.amount
 
         overbooked_per_person = {
             id: max(0, (total_booked_per_person.get(id, 0) -
@@ -723,6 +730,55 @@ class Invoice(FinancialBase):
 
     def get_absolute_url(self):
         return reverse('trs.invoice.edit', kwargs={
+            'pk': self.pk,
+            'project_pk': self.project.pk})
+
+    @property
+    def amount_inclusive(self):
+        return self.amount_exclusive + self.vat
+
+
+class Payable(FinancialBase):
+    project = models.ForeignKey(
+        Project,
+        related_name="payables",
+        verbose_name="project")
+    date = models.DateField(
+        verbose_name="te betalen op",
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
+    number = models.CharField(
+        verbose_name="kosten-derden-nummer",
+        max_length=255)
+    description = models.CharField(
+        verbose_name="omschrijving",
+        blank=True,
+        max_length=255)
+    amount = models.DecimalField(
+        max_digits=12,  # We don't mind a metric ton of hard cash.
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="bedrag exclusief",
+        help_text=("Dit zijn kosten, dus een positief getal wordt van het "
+                   "projectbudget afgetrokken. "))
+    payed = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="overgemaakt op",
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
+
+    class Meta:
+        verbose_name = "kosten derden"
+        verbose_name_plural = "kosten derden"
+        ordering = ('date', 'number',)
+
+    def __str__(self):
+        return self.number
+
+    def amount_as_income(self):
+        return self.amount * -1
+
+    def get_absolute_url(self):
+        return reverse('trs.payable.edit', kwargs={
             'pk': self.pk,
             'project_pk': self.project.pk})
 
