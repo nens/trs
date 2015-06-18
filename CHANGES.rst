@@ -2,7 +2,7 @@ Changelog of TRS
 ===================================================
 
 
-1.13 (unreleased)
+1.13 (2015-06-18)
 -----------------
 
 - Added 'Payable' class: money we have to pay other parties (NL: "kosten
