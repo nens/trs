@@ -379,42 +379,40 @@
                 </tr>
               {% endfor %}
 
-              {% if view.project.payables.all %}
+              <tr>
+                <th>Kosten derden</th>
+                <td colspan="8"></td>
+              </tr>
+              {% for payable in view.project.payables.all %}
                 <tr>
-                  <th>Kosten derden</th>
-                  <td colspan="8"></td>
-                </tr>
-                {% for payable in view.project.payables.all %}
-                  <tr>
-                    <td>
-                      &nbsp;&nbsp;&nbsp;
-                      {% if view.can_edit_financials %}
-                        <a href="{% url 'trs.payable.edit' project_pk=view.project.pk pk=payable.pk %}">
-                          {{ payable.description|default:'Niet ingevuld' }}
-                        </a>
-                      {% else %}
+                  <td>
+                    &nbsp;&nbsp;&nbsp;
+                    {% if view.can_edit_financials %}
+                      <a href="{% url 'trs.payable.edit' project_pk=view.project.pk pk=payable.pk %}">
                         {{ payable.description|default:'Niet ingevuld' }}
-                      {% endif %}
-                    </td>
-                    <td>
-                      {% if view.can_edit_financials %}
-                        <a href="{% url 'trs.project.payable-delete' pk=view.project.pk payable_pk=payable.pk %}">
-                          <span class="glyphicon glyphicon-minus-sign text-danger"></span>
-                        </a>
-                      {% endif %}
-                    </td>
-                    {% if payable.amount >= 0 %}
-                      <td class="text-right">{{ payable.amount|money }}</td>
-                      <td class="text-right"></td>
+                      </a>
                     {% else %}
-                      <td class="text-right"></td>
-                      <td class="text-right">{{ payable.amount_as_income|money }}</td>
+                      {{ payable.description|default:'Niet ingevuld' }}
                     {% endif %}
-                    <td colspan="5">
-                    </td>
-                  </tr>
-                {% endfor %}
-              {% endif %}
+                  </td>
+                  <td>
+                    {% if view.can_edit_financials %}
+                      <a href="{% url 'trs.project.payable-delete' pk=view.project.pk payable_pk=payable.pk %}">
+                        <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                      </a>
+                    {% endif %}
+                  </td>
+                  {% if payable.amount >= 0 %}
+                    <td class="text-right">{{ payable.amount|money }}</td>
+                    <td class="text-right"></td>
+                  {% else %}
+                    <td class="text-right"></td>
+                    <td class="text-right">{{ payable.amount_as_income|money }}</td>
+                  {% endif %}
+                  <td colspan="5">
+                  </td>
+                </tr>
+              {% endfor %}
 
             </tbody>
             <tfoot>
