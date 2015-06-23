@@ -744,10 +744,10 @@ class Payable(FinancialBase):
         related_name="payables",
         verbose_name="project")
     date = models.DateField(
-        verbose_name="te betalen op",
+        verbose_name="factuurdatum",
         help_text="Formaat: 25-12-1972, dd-mm-jjjj")
     number = models.CharField(
-        verbose_name="kosten-derden-nummer",
+        verbose_name="factuurnummer",
         max_length=255)
     description = models.CharField(
         verbose_name="omschrijving",
@@ -759,7 +759,7 @@ class Payable(FinancialBase):
         default=0,
         verbose_name="bedrag exclusief",
         help_text=("Dit zijn kosten, dus een positief getal wordt van het "
-                   "projectbudget afgetrokken. "))
+                   "projectbudget afgetrokken. Bedrag is ex btw."))
     payed = models.DateField(
         blank=True,
         null=True,
