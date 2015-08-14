@@ -1837,8 +1837,11 @@ class BudgetItemDeleteView(DeleteView):
             self.budget_item.description, self.project.code)
 
     def form_valid(self, form):
+        possible_second_project = self.budget_item.to_project
         self.budget_item.delete()
         self.project.save()  # Increment cache key.
+        if possible_second_project:
+            possible_second_project.save()  # Increment cache key
         messages.success(
             self.request,
             "%s verwijderd uit %s" % (self.budget_item.description,
