@@ -4,7 +4,7 @@ cache:
   directories:
     - egg
 python:
-  - "3.3"
+  - 3.5
 install:
   - ln -s development.cfg buildout.cfg
   - python bootstrap.py
