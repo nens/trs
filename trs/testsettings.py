@@ -144,8 +144,6 @@ SSO_SERVER_PUBLIC_URL = 'http://sso.lizard.net/'
 # URL used for server-to-server communication
 # Note: needs a trailing slash
 SSO_SERVER_PRIVATE_URL = 'http://somewhere:someport/'
-# Don't copy is_staff/is_superuser
-SSO_SYNCED_USER_KEYS = ['first_name', 'last_name', 'email', 'is_active']
 
 HAYSTACK_CONNECTIONS = {
     'default': {
