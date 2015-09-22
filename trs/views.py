@@ -3,6 +3,7 @@ from decimal import Decimal
 import csv
 import datetime
 import logging
+import statistics
 import time
 import urllib
 
@@ -776,6 +777,21 @@ class ProjectsView(BaseView):
                   'title': 'nee',
                   'q': Q(end__gte=this_year_week())}]},
 
+            {'title': 'Rapportcijfers',
+             'param': 'ratings',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'Geen filter',
+                  'q': Q()},
+                 {'value': 'both',
+                  'title': 'allebei ingevuld',
+                  'q': (Q(rating_projectteam__gte=1) &
+                        Q(rating_customer__gte=1))},
+                 {'value': 'todo',
+                  'title': 'nog niet compleet',
+                  'q': (Q(rating_projectteam=None) |
+                        Q(rating_customer=None))}]}
         ]
         return result
 
@@ -790,6 +806,7 @@ class ProjectsView(BaseView):
                 'startup_meeting_done',
                 'started',
                 'ended',
+                'ratings',
                 ]
         # Chicken/egg problem.
         if ('project_leader' in self.request.GET or
@@ -996,7 +1013,8 @@ class ProjectView(BaseView):
             return True
         if self.active_person in self.project.assigned_persons():
             # Since 2 feb 2015.
-            return True
+            if not self.project.hidden:
+                return True
 
     @cached_property
     def show_bid_and_confirmation_dates(self):
@@ -1376,9 +1394,13 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     # Note: the next two are shown only on the edit view!
                     'startup_meeting_done', 'is_accepted',
                     'remark', 'financial_remark',
+                    'rating_projectteam', 'rating_projectteam_reason',
+                    'rating_customer', 'rating_customer_reason',
                     'end',
                     ]
-        result = ['remark', 'financial_remark', 'start', 'end']
+        result = ['remark', 'financial_remark', 'start', 'end',
+                  'rating_projectteam', 'rating_projectteam_reason',
+                  'rating_customer', 'rating_customer_reason']
         if self.active_person == self.project.project_leader:
             if not self.project.startup_meeting_done:
                 result.append('startup_meeting_done')
@@ -2290,7 +2312,6 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
 class OverviewsView(BaseView):
     template_name = 'trs/overviews.html'
 
-
     @cached_property
     def previous_year(self):
         return this_year_week().year - 1
@@ -2772,6 +2793,8 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
         'Opdrachtsom',
         'Startoverleg',
         'Geaccepteerd',
+        'Cijfer team',
+        'Cijfer klant',
 
         'Gefactureerd',
         'Omzet',
@@ -2810,6 +2833,8 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
                 project.contract_amount,
                 project.startup_meeting_done,
                 project.is_accepted,
+                project.rating_projectteam,
+                project.rating_customer,
 
                 line['invoice_amount'],
                 line['turnover'],
@@ -3123,6 +3148,46 @@ class ReservationsOverview(BaseView):
     @cached_property
     def total_reservations(self):
         return sum([project.reservation for project in self.projects])
+
+
+class RatingsOverview(BaseView):
+    template_name = 'trs/ratings.html'
+
+    filters_and_choices = [
+        {'title': 'Filter',
+         'param': 'filter',
+         'default': 'all',
+         'choices': [
+             {'value': 'all',
+              'title': 'alle projecten (inclusief archief)',
+              'q': Q()},
+             {'value': 'active',
+              'title': 'lopende projecten',
+              'q': Q(archived=False)},
+         ]},
+    ]
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @cached_property
+    def projects(self):
+        q_objects = [filter['q'] for filter in self.prepared_filters]
+        at_least_one_rating = (Q(rating_projectteam__gte=1) |
+                               Q(rating_customer__gte=1))
+        return Project.objects.filter(*q_objects).filter(at_least_one_rating)
+
+    @cached_property
+    def average_rating_projectteam(self):
+        return statistics.mean(
+            [project.rating_projectteam for project in self.projects
+             if project.rating_projectteam])
+
+    @cached_property
+    def average_rating_customer(self):
+        return statistics.mean(
+            [project.rating_customer for project in self.projects
+             if project.rating_customer])
 
 
 class WbsoProjectsOverview(BaseView):

@@ -2,6 +2,7 @@
 import datetime
 
 from django.test import TestCase
+from django.forms import ModelForm
 import mock
 
 from trs import models
@@ -229,3 +230,30 @@ class BudgetItemTestCase(TestCase):
     def test_smoke(self):
         budget_item = factories.BudgetItemFactory.create()
         self.assertTrue(budget_item)
+
+    def test_representation(self):
+        budget_item = factories.BudgetItemFactory.create(description='Pay me')
+        self.assertEqual(str(budget_item), 'Pay me')
+
+    def test_get_absolute_url(self):
+        budget_item = factories.BudgetItemFactory.create()
+        self.assertTrue(budget_item.get_absolute_url())
+
+    def test_amount_as_income(self):
+        budget_item = factories.BudgetItemFactory.create(
+            description="From project partner",
+            amount=-20)
+        # A budget item is a cost item. So negative numbers should be inverted
+        # and listed in a different column.
+        self.assertEquals(budget_item.amount_as_income(), 20)
+
+
+class GroupTestCase(TestCase):
+
+    def test_smoke(self):
+        group = factories.GroupFactory.create()
+        self.assertTrue(group)
+
+    def test_representation(self):
+        group = factories.GroupFactory.create(name='Hard-working')
+        self.assertEqual(str(group), 'Hard-working')

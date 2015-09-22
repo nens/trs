@@ -5,7 +5,23 @@ Changelog of TRS
 1.14 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Various version updates and test setup fixes to get the tests running on
+  travis-ci.org again.
+
+- Added ratings for both customers and projectteam. Including an accompagnying
+  reason/comment field. And including an overview page.
+
+- We require python 3.4 now as we use the new "statistics" module.
+
+- Fixed bug that members of a hidden project (like sickness projects) *could*
+  download the full ``.csv`` file with all other peoples' info...
+
+- Fixed bug that the project-is-ended state would be cached. This state
+  changes without the project itself changing, so the cached value would stay
+  the same. Now we just calculate it every time.
+
+- Added opbeat.com configuration for the nice performance metrics it
+  provides.
 
 
 1.13 (2015-06-18)

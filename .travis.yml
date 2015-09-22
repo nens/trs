@@ -2,9 +2,11 @@ language: python
 sudo: false
 cache:
   directories:
-    - egg
+    - eggs
+    - bower_components
+    - downloads
 python:
-  - "3.3"
+  - 3.4
 install:
   - ln -s development.cfg buildout.cfg
   - python bootstrap.py

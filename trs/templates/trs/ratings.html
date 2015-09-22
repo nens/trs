@@ -1,0 +1,50 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block full-width %}
+  <h1>
+    Overzicht rapportcijfers
+  </h1>
+
+  {% include "trs/filter-snippet.html" %}
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th>Omschrijving</th>
+        <th>Cijfer projectteam</th>
+        <th>Cijfer klant</th>
+        <th>Opdrachtgever</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for project in view.projects %}
+        <tr>
+          <td>{{ project.as_widget }}</td>
+          <td>
+            <span class="text-muted">{{ project.description }}</span>
+          </td>
+          <td>
+            {{ project.rating_projectteam|default:'-' }}
+          </td>
+          <td>
+            {{ project.rating_customer|default:'-' }}
+          </td>
+          <td>
+            {{ project.principal }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="2">Gemiddelde</th>
+        <th>{{ view.average_rating_projectteam }}</th>
+        <th>{{ view.average_rating_customer }}</th>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+
+{% endblock %}

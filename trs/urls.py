@@ -151,6 +151,9 @@ urlpatterns = patterns(
     url(r'^overviews/payables/$',
         views.PayablesView.as_view(),
         name='trs.overviews.payables'),
+    url(r'^overviews/ratings/$',
+        views.RatingsOverview.as_view(),
+        name='trs.overviews.ratings'),
 
     url(r'^locallogin/$',
         views.LoginView.as_view(),

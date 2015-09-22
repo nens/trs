@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
+from django.core.validators import MaxValueValidator
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.template.defaultfilters import date as datelocalizer
 from django.template.loader import render_to_string
@@ -453,6 +455,28 @@ class Project(models.Model):
         help_text="Bedoeld voor het office management",
         blank=True,
         null=True)
+
+    rating_projectteam = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1),
+                    MaxValueValidator(10)],
+        verbose_name="rapportcijfer v/h projectteam")
+    rating_projectteam_reason = models.TextField(
+        verbose_name="Evt. onderbouwing rapportcijfer v/h projectteam",
+        blank=True,
+        null=True)
+    rating_customer = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1),
+                    MaxValueValidator(10)],
+        verbose_name="rapportcijfer v/d klant")
+    rating_customer_reason = models.TextField(
+        verbose_name="Evt. onderbouwing rapportcijfer v/d klant",
+        blank=True,
+        null=True)
+
     cache_indicator = models.IntegerField(
         default=0,
         verbose_name="cache indicator")
@@ -510,7 +534,6 @@ class Project(models.Model):
             return False
         return self.start.first_day > this_year_week().first_day
 
-    @cache_on_model
     def already_ended(self):
         if not self.end:
             return False

@@ -53,10 +53,7 @@ class PersonChangeFactory(factory.django.DjangoModelFactory):
     person = factory.SubFactory(PersonFactory)
     hours_per_week = 0
     target = 0
-
-    @factory.lazy_attribute
-    def year_week(self):
-        return models.this_year_week()
+    year_week = None
 
 
 class BookingFactory(factory.django.DjangoModelFactory):
@@ -66,10 +63,7 @@ class BookingFactory(factory.django.DjangoModelFactory):
     booked_by = factory.SubFactory(PersonFactory)
     booked_on = factory.SubFactory(ProjectFactory)
     hours = 2
-
-    @factory.lazy_attribute
-    def year_week(self):
-        return models.this_year_week()
+    year_week = None
 
 
 class WorkAssignmentFactory(factory.django.DjangoModelFactory):
@@ -80,14 +74,20 @@ class WorkAssignmentFactory(factory.django.DjangoModelFactory):
     hourly_tariff = 0
     assigned_to = factory.SubFactory(PersonFactory)
     assigned_on = factory.SubFactory(ProjectFactory)
-
-    @factory.lazy_attribute
-    def year_week(self):
-        return models.this_year_week()
+    year_week = None
 
 
 class BudgetItemFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.BudgetItem
 
+    description = ''
+    amount = 0.0
     project = factory.SubFactory(ProjectFactory)
+
+
+class GroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Group
+
+    name = 'A nice group of people'
