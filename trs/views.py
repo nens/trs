@@ -776,6 +776,21 @@ class ProjectsView(BaseView):
                   'title': 'nee',
                   'q': Q(end__gte=this_year_week())}]},
 
+            {'title': 'Rapportcijfers',
+             'param': 'ratings',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'Geen filter',
+                  'q': Q()},
+                 {'value': 'both',
+                  'title': 'allebei ingevuld',
+                  'q': (Q(rating_projectteam__gte=1) &
+                        Q(rating_customer__gte=1))},
+                 {'value': 'todo',
+                  'title': 'nog niet compleet',
+                  'q': (Q(rating_projectteam=None) |
+                        Q(rating_customer=None))}]}
         ]
         return result
 
@@ -790,6 +805,7 @@ class ProjectsView(BaseView):
                 'startup_meeting_done',
                 'started',
                 'ended',
+                'ratings',
                 ]
         # Chicken/egg problem.
         if ('project_leader' in self.request.GET or
