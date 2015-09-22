@@ -36,6 +36,11 @@
           Medewerkeroverzicht vorig jaar
         </a>
       </li>
+      <li>
+        <a href="{% url 'trs.overviews.ratings' %}">
+          Overzicht rapportcijfers
+        </a>
+      </li>
     {% endif %}
     <li>
       <a href="{% url 'trs.overviews.changes' %}">
@@ -45,11 +50,6 @@
     <li>
       <a href="{% url 'trs.overviews.pl_pm' %}">
         Overzicht projectleiders en projectmanagers
-      </a>
-    </li>
-    <li>
-      <a href="{% url 'trs.overviews.ratings' %}">
-        Overzicht rapportcijfers
       </a>
     </li>
   </ul>
