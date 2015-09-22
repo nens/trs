@@ -1013,7 +1013,8 @@ class ProjectView(BaseView):
             return True
         if self.active_person in self.project.assigned_persons():
             # Since 2 feb 2015.
-            return True
+            if not self.project.hidden:
+                return True
 
     @cached_property
     def show_bid_and_confirmation_dates(self):
