@@ -81,6 +81,8 @@ class BudgetItemFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.BudgetItem
 
+    description = ''
+    amount = 0.0
     project = factory.SubFactory(ProjectFactory)
 
 

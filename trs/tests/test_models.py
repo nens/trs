@@ -230,6 +230,22 @@ class BudgetItemTestCase(TestCase):
         budget_item = factories.BudgetItemFactory.create()
         self.assertTrue(budget_item)
 
+    def test_representation(self):
+        budget_item = factories.BudgetItemFactory.create(description='Pay me')
+        self.assertEqual(str(budget_item), 'Pay me')
+
+    def test_get_absolute_url(self):
+        budget_item = factories.BudgetItemFactory.create()
+        self.assertTrue(budget_item.get_absolute_url())
+
+    def test_amount_as_income(self):
+        budget_item = factories.BudgetItemFactory.create(
+            description="From project partner",
+            amount=-20)
+        # A budget item is a cost item. So negative numbers should be inverted
+        # and listed in a different column.
+        self.assertEquals(budget_item.amount_as_income(), 20)
+
 
 class GroupTestCase(TestCase):
 
