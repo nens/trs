@@ -2792,6 +2792,8 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
         'Opdrachtsom',
         'Startoverleg',
         'Geaccepteerd',
+        'Cijfer team',
+        'Cijfer klant',
 
         'Gefactureerd',
         'Omzet',
@@ -2830,6 +2832,8 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
                 project.contract_amount,
                 project.startup_meeting_done,
                 project.is_accepted,
+                project.rating_projectteam,
+                project.rating_customer,
 
                 line['invoice_amount'],
                 line['turnover'],
