@@ -3,6 +3,7 @@ from decimal import Decimal
 import csv
 import datetime
 import logging
+import statistics
 import time
 import urllib
 
@@ -2310,7 +2311,6 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin,
 class OverviewsView(BaseView):
     template_name = 'trs/overviews.html'
 
-
     @cached_property
     def previous_year(self):
         return this_year_week().year - 1
@@ -3147,6 +3147,46 @@ class ReservationsOverview(BaseView):
     @cached_property
     def total_reservations(self):
         return sum([project.reservation for project in self.projects])
+
+
+class RatingsOverview(BaseView):
+    template_name = 'trs/ratings.html'
+
+    filters_and_choices = [
+        {'title': 'Filter',
+         'param': 'filter',
+         'default': 'all',
+         'choices': [
+             {'value': 'all',
+              'title': 'alle projecten (inclusief archief)',
+              'q': Q()},
+             {'value': 'active',
+              'title': 'lopende projecten',
+              'q': Q(archived=False)},
+         ]},
+    ]
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @cached_property
+    def projects(self):
+        q_objects = [filter['q'] for filter in self.prepared_filters]
+        at_least_one_rating = (Q(rating_projectteam__gte=1) |
+                               Q(rating_customer__gte=1))
+        return Project.objects.filter(*q_objects).filter(at_least_one_rating)
+
+    @cached_property
+    def average_rating_projectteam(self):
+        return statistics.mean(
+            [project.rating_projectteam for project in self.projects
+             if project.rating_projectteam])
+
+    @cached_property
+    def average_rating_customer(self):
+        return statistics.mean(
+            [project.rating_customer for project in self.projects
+             if project.rating_customer])
 
 
 class WbsoProjectsOverview(BaseView):
