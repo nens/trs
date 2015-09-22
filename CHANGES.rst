@@ -20,6 +20,9 @@ Changelog of TRS
   changes without the project itself changing, so the cached value would stay
   the same. Now we just calculate it every time.
 
+- Added opbeat.com configuration for the nice performance metrics it
+  provides.
+
 
 1.13 (2015-06-18)
 -----------------
