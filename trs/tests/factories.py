@@ -7,20 +7,23 @@ from trs import models
 
 
 class UserFactory(factory.django.DjangoModelFactory):
-    FACTORY_FOR = User
+    class Meta:
+        model = User
 
     username = factory.Sequence(lambda n: 'user{0}'.format(n))
 
 
 class PersonFactory(factory.django.DjangoModelFactory):
-    FACTORY_FOR = models.Person
+    class Meta:
+        model = models.Person
 
     name = 'Reinout'
     user = factory.SubFactory(UserFactory)
 
 
 class ProjectFactory(factory.django.DjangoModelFactory):
-    FACTORY_FOR = models.Project
+    class Meta:
+        model = models.Project
 
     code = factory.Sequence(lambda n: 'P%s' % str(1234 + n))
     description = ''
@@ -32,7 +35,8 @@ class ProjectFactory(factory.django.DjangoModelFactory):
 
 
 class YearWeekFactory(factory.django.DjangoModelFactory):
-    FACTORY_FOR = models.YearWeek
+    class Meta:
+        model = models.YearWeek
 
     year = 2013
     # Start in week 2, which starts 7 jan 2013.
@@ -43,7 +47,8 @@ class YearWeekFactory(factory.django.DjangoModelFactory):
 
 
 class PersonChangeFactory(factory.django.DjangoModelFactory):
-    FACTORY_FOR = models.PersonChange
+    class Meta:
+        model = models.PersonChange
 
     person = factory.SubFactory(PersonFactory)
     hours_per_week = 0
@@ -52,7 +57,8 @@ class PersonChangeFactory(factory.django.DjangoModelFactory):
 
 
 class BookingFactory(factory.django.DjangoModelFactory):
-    FACTORY_FOR = models.Booking
+    class Meta:
+        model = models.Booking
 
     booked_by = factory.SubFactory(PersonFactory)
     booked_on = factory.SubFactory(ProjectFactory)
@@ -61,7 +67,8 @@ class BookingFactory(factory.django.DjangoModelFactory):
 
 
 class WorkAssignmentFactory(factory.django.DjangoModelFactory):
-    FACTORY_FOR = models.WorkAssignment
+    class Meta:
+        model = models.WorkAssignment
 
     hours = 0
     hourly_tariff = 0
@@ -71,6 +78,7 @@ class WorkAssignmentFactory(factory.django.DjangoModelFactory):
 
 
 class BudgetItemFactory(factory.django.DjangoModelFactory):
-    FACTORY_FOR = models.BudgetItem
+    class Meta:
+        model = models.BudgetItem
 
     project = factory.SubFactory(ProjectFactory)
