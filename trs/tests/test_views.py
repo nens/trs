@@ -138,3 +138,32 @@ class BookingViewTestCase(TestCase):
                                          'week': current_year_week.week})
         self.assertEqual(list(view.year_weeks_to_display),
                          [year_week2, year_week3, year_week4, year_week5])
+
+
+class RatingsOveriewTestCase(TestCase):
+
+    def setUp(self):
+        self.project1 = factories.ProjectFactory.create()
+        self.project2 = factories.ProjectFactory.create()
+        self.project3 = factories.ProjectFactory.create()
+        self.project4 = factories.ProjectFactory.create()
+        # One with both, one with one rating each, one without any.
+        self.project1.rating_projectteam = 8
+        self.project2.rating_projectteam = 7
+        self.project2.rating_customer = 3
+        self.project3.rating_customer = 5
+        self.project1.save()
+        self.project2.save()
+        self.project3.save()
+
+        request = RequestFactory().get('/')
+        self.view = views.RatingsOverview(request=request)
+
+    def test_projects(self):
+        self.assertEquals(len(self.view.projects), 3)
+
+    def test_average1(self):
+        self.assertEquals(self.view.average_rating_projectteam, 7.5)
+
+    def test_average2(self):
+        self.assertEquals(self.view.average_rating_customer, 4)
