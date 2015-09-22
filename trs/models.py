@@ -534,7 +534,6 @@ class Project(models.Model):
             return False
         return self.start.first_day > this_year_week().first_day
 
-    @cache_on_model
     def already_ended(self):
         if not self.end:
             return False
