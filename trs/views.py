@@ -1376,9 +1376,13 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
                     # Note: the next two are shown only on the edit view!
                     'startup_meeting_done', 'is_accepted',
                     'remark', 'financial_remark',
+                    'rating_projectteam', 'rating_projectteam_reason',
+                    'rating_customer', 'rating_customer_reason',
                     'end',
                     ]
-        result = ['remark', 'financial_remark', 'start', 'end']
+        result = ['remark', 'financial_remark', 'start', 'end',
+                  'rating_projectteam', 'rating_projectteam_reason',
+                  'rating_customer', 'rating_customer_reason']
         if self.active_person == self.project.project_leader:
             if not self.project.startup_meeting_done:
                 result.append('startup_meeting_done')
