@@ -114,6 +114,46 @@
           {% endif %}
         </td>
       </tr>
+
+      {% if view.project.rating_projectteam %}
+        <tr>
+          <th>
+            Rapportcijfer v/h projectteam
+          </th>
+          <td>
+            {{ view.project.rating_projectteam }}
+          </td>
+        </tr>
+        {% if view.project.rating_projectteam_reason %}
+          <tr>
+            <td>
+            </td>
+            <td>
+              {{ view.project.rating_projectteam_reason|linebreaksbr }}
+            </td>
+          </tr>
+        {% endif %}
+      {% endif %}
+      {% if view.project.rating_customer %}
+        <tr>
+          <th>
+            Rapportcijfer v/d klant
+          </th>
+          <td>
+            {{ view.project.rating_customer }}
+          </td>
+        </tr>
+        {% if view.project.rating_customer_reason %}
+          <tr>
+            <td>
+            </td>
+            <td>
+              {{ view.project.rating_customer_reason|linebreaksbr }}
+            </td>
+          </tr>
+        {% endif %}
+      {% endif %}
+
       <tr>
         <th>
           {% if view.can_edit_project %}
