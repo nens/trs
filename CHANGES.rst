@@ -5,7 +5,8 @@ Changelog of TRS
 1.14 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Various version updates and test setup fixes to get the tests running on
+  travis-ci.org again.
 
 
 1.13 (2015-06-18)
