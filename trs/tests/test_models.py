@@ -229,3 +229,14 @@ class BudgetItemTestCase(TestCase):
     def test_smoke(self):
         budget_item = factories.BudgetItemFactory.create()
         self.assertTrue(budget_item)
+
+
+class GroupTestCase(TestCase):
+
+    def test_smoke(self):
+        group = factories.GroupFactory.create()
+        self.assertTrue(group)
+
+    def test_representation(self):
+        group = factories.GroupFactory.create(name='Hard-working')
+        self.assertEqual(str(group), 'Hard-working')
