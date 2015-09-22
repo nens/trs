@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     'trs',
     'lizard_auth_client',
     'raven.contrib.django.raven_compat',
+    'opbeat.contrib.django',
     'south',
     'gunicorn',
     'debug_toolbar',
@@ -34,6 +35,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE_CLASSES = [
+    'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     # Default stuff below.
     'django.middleware.common.CommonMiddleware',
