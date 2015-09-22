@@ -8,6 +8,11 @@ Changelog of TRS
 - Various version updates and test setup fixes to get the tests running on
   travis-ci.org again.
 
+- Added ratings for both customers and projectteam. Including an accompagnying
+  reason/comment field. And including an overview page.
+
+- We require python 3.4 now as we use the new "statistics" module.
+
 
 1.13 (2015-06-18)
 -----------------
