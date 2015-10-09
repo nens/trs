@@ -23,6 +23,8 @@ Changelog of TRS
 - Added opbeat.com configuration for the nice performance metrics it
   provides.
 
+- Added two columns to project csv export.
+
 
 1.13 (2015-06-18)
 -----------------
