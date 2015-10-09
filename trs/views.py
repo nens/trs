@@ -2798,6 +2798,8 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
 
         'Gefactureerd',
         'Omzet',
+        'Geboekte uren',
+        'Verliesuren',
         'Personele kosten incl reservering',
         'Overige kosten',
         'Gefactureerd t.o.v. opdrachtsom',
@@ -2838,6 +2840,8 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
 
                 line['invoice_amount'],
                 line['turnover'],
+                project.hour_budget(),
+                project.overbooked(),
                 line['person_costs_incl_reservation'],
                 line['other_costs'],
                 line['invoice_amount_percentage'],
