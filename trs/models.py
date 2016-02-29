@@ -549,11 +549,20 @@ class Project(models.Model):
     def overbooked(self):
         return self.work_calculation()['overbooked']
 
+    def well_booked(self):
+        return self.work_calculation()['well_booked']
+
     def left_to_book(self):
         return self.work_calculation()['left_to_book']
 
+    def person_loss(self):
+        return self.work_calculation()['person_loss']
+
     def turnover(self):
         return self.work_calculation()['turnover']
+
+    def left_to_turn_over(self):
+        return self.work_calculation()['left_to_turn_over']
 
     def costs(self):
         return self.work_calculation()['costs']
@@ -624,6 +633,7 @@ class Project(models.Model):
             else:
                 income += payable.amount
 
+        # The next three are in hours.
         overbooked_per_person = {
             id: max(0, (total_booked_per_person.get(id, 0) -
                         budget_per_person[id]))
@@ -638,6 +648,10 @@ class Project(models.Model):
 
         tariff = {id: hourly_tariff_per_person[id]
                   for id in ids}
+        # The next four are in money.
+        loss_per_person = {
+            id: (overbooked_per_person[id] * tariff[id])
+            for id in ids}
         turnover_per_person = {
             id: (well_booked_per_person[id] * tariff[id])
             for id in ids}
@@ -651,6 +665,7 @@ class Project(models.Model):
                 'overbooked': sum(overbooked_per_person.values()),
                 'well_booked': sum(well_booked_per_person.values()),
                 'left_to_book': sum(left_to_book_per_person.values()),
+                'person_loss': sum(loss_per_person.values()),
                 'turnover': sum(turnover_per_person.values()),
                 'left_to_turn_over': sum(
                     left_to_turn_over_per_person.values()),

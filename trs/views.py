@@ -919,6 +919,12 @@ class ProjectsView(BaseView):
                                                      project.reservation)
             line['reservation'] = project.reservation
             line['other_costs'] = costs - income
+            line['well_booked'] = project.well_booked()
+            line['overbooked'] = project.overbooked()
+            line['left_to_book'] = project.left_to_book()
+            line['person_loss'] = project.person_loss()
+            line['left_to_turn_over'] = project.left_to_turn_over()
+
             line['invoice_amount_percentage'] = invoice_amount_percentage
             line['invoice_versus_turnover_percentage'] = (
                 invoice_versus_turnover_percentage)
@@ -945,6 +951,22 @@ class ProjectsView(BaseView):
             percentage = None
         result['percentage'] = percentage
         return result
+
+
+class ProjectsLossView(ProjectsView):
+
+    @property
+    def template_name(self):
+        if self.can_view_elaborate_version:
+            return 'trs/projects_loss.html'
+        return 'trs/projects-simple.html'
+
+    @cached_property
+    def totals(self):
+        return {key: sum([line[key] for line in self.lines]) or 0
+                for key in ['well_booked', 'overbooked', 'left_to_book',
+                            'turnover', 'person_loss', 'left_to_turn_over',
+                            'reservation']}
 
 
 class ProjectView(BaseView):
