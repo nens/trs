@@ -25,6 +25,9 @@ Changelog of TRS
 
 - Added two columns to project csv export.
 
+- Added overview page which makes "booking into the red" more visible, both
+  for hours and for money.
+
 
 1.13 (2015-06-18)
 -----------------
