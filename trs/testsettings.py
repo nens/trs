@@ -17,7 +17,6 @@ INSTALLED_APPS = [
     'trs',
     'lizard_auth_client',
     'raven.contrib.django.raven_compat',
-    'opbeat.contrib.django',
     'south',
     'gunicorn',
     'debug_toolbar',
