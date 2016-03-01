@@ -21,7 +21,9 @@ class PersonYearCombination(object):
     PYC_KEYS = [
         'target',
         'turnover',
+        'loss',
         'overbooked',
+        'overbooked_external',
         'left_to_book_external',
         'well_booked',
         'booked_internal',
@@ -42,7 +44,7 @@ class PersonYearCombination(object):
         if year is None:
             year = datetime.date.today().year
         self.year = year
-        cache_version = 29
+        cache_version = 31
         self.cache_key = 'pycdata-%s-%s-%s-%s' % (
             person.id, person.cache_indicator, year, cache_version)
         has_cached_data = self.get_cache()
@@ -128,6 +130,7 @@ class PersonYearCombination(object):
                 booked_this_year.get(id, 0) - overbooked_this_year)
             tariff = hourly_tariff[id]
             turnover = well_booked_this_year * tariff
+            loss = overbooked_this_year * tariff
             left_to_book = max(0, (budget[id] - booked_till_now))
             left_to_turn_over = left_to_book * tariff
             if is_internal[id]:
@@ -137,17 +140,21 @@ class PersonYearCombination(object):
                 # ^^^ TODO: later on we might want to deal with internal
                 # projects that are in fact proper projects and count their
                 # left-to-book hours.
+                overbooked_external = 0
             else:
                 booked_internal = 0
                 booked_external = booked_this_year.get(id, 0)
                 left_to_book_external = left_to_book
+                overbooked_external = overbooked_this_year
 
             project_info = {
                 'booked': booked,
                 'overbooked': overbooked_this_year,
+                'overbooked_external': overbooked_external,
                 'well_booked': well_booked_this_year,
                 'left_to_book_external': left_to_book_external,
                 'turnover': turnover,
+                'loss': loss,
                 'left_to_turn_over': left_to_turn_over,
                 'booked_internal': booked_internal,
                 'booked_external': booked_external,
@@ -189,10 +196,14 @@ class PersonYearCombination(object):
 
         self.overbooked = sum([project['overbooked']
                                for project in per_project.values()])
+        self.overbooked_external = sum([project['overbooked_external']
+                                        for project in per_project.values()])
         self.well_booked = sum([project['well_booked']
                                 for project in per_project.values()])
         self.turnover = sum([project['turnover']
                              for project in per_project.values()])
+        self.loss = sum([project['loss']
+                         for project in per_project.values()])
         self.left_to_turn_over = sum([project['left_to_turn_over']
                                       for project in per_project.values()])
         self.left_to_book_external = sum(

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from copy import deepcopy
 from decimal import Decimal
 import csv
@@ -2804,10 +2805,12 @@ class CsvResponseMixin(object):
 
     def render_to_response(self, context, **response_kwargs):
         """Return a csv response instead of a rendered template."""
-        response = HttpResponse(mimetype='text/csv')
+        # response = HttpResponse(mimetype='text/csv')  TODO TEMP HACK
+        response = HttpResponse(mimetype='text/plain')
         filename = self.csv_filename + '.csv'
-        response[
-            'Content-Disposition'] = 'attachment; filename="%s"' % filename
+        # response[
+        #     'Content-Disposition'] = 'attachment; filename="%s"' % filename
+        # TODO TEMP HACK
 
         # Ideally, use something like .encode('cp1251') somehow somewhere.
         writer = csv.writer(response, delimiter=";")
@@ -3354,3 +3357,169 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
                         item['booked_on__wbso_project'] == wbso_project]
                     line.append(sum(hours))
             yield line
+
+
+class FinancialOverview(BaseView):
+    template_name = 'trs/financial_overview.html'
+    title = 'Overzicht financiën (als .csv)'
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    def download_links(self):
+        yield {'name': 'Gehele bedrijf',
+               'url': reverse('trs.financial.csv')}
+        for pk, name in Group.objects.all().values_list('pk', 'name'):
+            yield {'name': name,
+                   'url': reverse('trs.financial.csv', kwargs={'pk': pk})}
+
+
+
+class FinancialCsvView(CsvResponseMixin, ProjectsView):
+
+    title = "Overzicht financien"
+
+    @property
+    def header_line(self):
+        return [self.title]
+
+    @cached_property
+    def group(self):
+        if 'pk' in self.kwargs:
+            return Group.objects.get(id=self.kwargs['pk'])
+        return
+
+    @property
+    def projects(self):
+        if self.group:
+            return Project.objects.filter(group=self.group)
+        else:
+            return Project.objects.all()
+
+    @cached_property
+    def for_who(self):
+        if self.group:
+            return self.group.name
+        else:
+            return "het gehele bedrijf"
+
+    @cached_property
+    def info_from_bookings(self):
+        """Return info extracted from this year's bookings"""
+        # First grab the persons that booked this year.
+        relevant_person_ids = Booking.objects.filter(
+            year_week__year=self.year).values_list(
+            'booked_by', flat=True).distinct()
+        relevant_persons = Person.objects.filter(
+            id__in=relevant_person_ids)
+        if self.group:
+            relevant_persons = relevant_persons.filter(group=self.group)
+        pycs = [core.get_pyc(person=person, year=self.year)
+                for person in relevant_persons]
+        return {'turnover': sum([pyc.turnover for pyc in pycs]),
+                'left_to_book_external': sum(
+                    [pyc.left_to_book_external for pyc in pycs]),
+                'booked_external': sum(
+                    [pyc.booked_external for pyc in pycs]),
+                'left_to_turn_over': sum(
+                    [pyc.left_to_turn_over for pyc in pycs]),
+                'overbooked_external': sum([pyc.overbooked_external for pyc in pycs]),
+                'loss': sum([pyc.loss for pyc in pycs]),
+            }
+
+    @property
+    def reservations_total(self):
+        return round(self.projects.aggregate(
+            models.Sum('reservation'))['reservation__sum'])
+
+    def invoice_table(self):
+        """For this year and two years hence, return invoiced amount per month
+
+        Per month, we need 6 values, 2 per year: the invoiced amount in that
+        month plus the cumulative amount in that year till that month.
+
+        Warning: as a side-effect, we set ``self.total_invoiced_this_year``.
+
+        """
+        years = [self.year - 2, self.year -1, self.year]
+        months = [i + 1 for i in range(12)]
+        invoices = Invoice.objects.all()
+        if self.group:
+            invoices = invoices.filter(project__group=self.group)
+        # For both defaultdicts, the first key is year, the second the month.
+        invoiced_per_year_month = defaultdict(dict)
+        cumulative_per_year_month = defaultdict(dict)
+        for year in years:
+            cumulative = 0
+            for month in months:
+                invoiced = invoices.filter(
+                    date__year=year, date__month=month).aggregate(
+                        models.Sum('amount_exclusive'))[
+                            'amount_exclusive__sum'] or 0
+                cumulative += invoiced
+                invoiced_per_year_month[year][month] = invoiced
+                cumulative_per_year_month[year][month] = cumulative
+
+        yield ["", "", self.year - 2, "", self.year - 1, "", self.year]
+        for month, month_name in enumerate(
+                ['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni',
+                 'Juli', 'Augustus', 'September', 'Oktober', 'November',
+                 'December'], start=1):
+            row = ["", month_name]
+            for year in years:
+                row.append(invoiced_per_year_month[year][month])
+                row.append(cumulative_per_year_month[year][month])
+            yield row
+
+        totals = ["", "Totaal"]
+        for year in years:
+            totals.append(cumulative_per_year_month[year][12])
+            totals.append("")
+        yield totals
+
+        # A bit hacky to set it here...
+        self.total_invoiced_this_year = cumulative_per_year_month[
+            self.year][12]
+
+    @property
+    def total_payables(self):
+        """Return sum of payables ('kosten derden') with a date of this year
+        """
+        return Payable.objects.filter(
+            project__in=self.projects,
+            date__year=self.year).aggregate(
+                models.Sum('amount'))['amount__sum'] or 0
+
+    @property
+    def csv_lines(self):
+        yield ["", "Datum uitdraai:", self.today.strftime("%d-%m-%Y")]
+        yield ["", "Voor:", self.for_who]
+        yield []
+        yield ["1. GEREALISEERDE OMZET"]
+        yield []
+        yield ["", "", "Uren", "geld"]
+        yield ["", "Gerealiseerde omzet dit jaar",
+               self.info_from_bookings['booked_external'],
+               self.info_from_bookings['turnover']]
+        yield ["", "Werkvoorraad",
+               self.info_from_bookings['left_to_book_external'],
+               self.info_from_bookings['left_to_turn_over']]
+        yield ["", "Totaal reserveringen", "", self.reservations_total]
+        yield ["", "Verliesuren dit jaar",
+               self.info_from_bookings['overbooked_external'],
+               self.info_from_bookings['loss']]
+        yield []
+        yield ["2. GEFACTUREERDE OMZET"]
+        yield []
+        for row in self.invoice_table():
+            yield row
+        yield []
+        yield ["", "Gefactureerde omzet dit jaar",
+               self.total_invoiced_this_year]
+        yield ["", "Kosten derden",
+               self.total_payables]
+        yield ["", "Omzetdoelstelling",
+               "TODO"]
+        yield ["", "Verschil voor dit jaar",
+               "TODO"]
+        yield []

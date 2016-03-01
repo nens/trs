@@ -1,0 +1,18 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block full-width %}
+  <h1>{{ view.title }}</h1>
+
+  <ul>
+    {% for download_link in view.download_links %}
+      <li>
+        <a href="{{ download_link.url }}">
+          {{ download_link.name }}
+          <span class="glyphicon glyphicon-download-alt"></span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+
+{% endblock %}
