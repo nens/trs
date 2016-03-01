@@ -18,6 +18,11 @@
     {% for error in form.errors %}
       <div class="alert alert-danger">{{ error }}</div>
     {% endfor %}
+    {% if view.editing_for_someone_else %}
+      <div class="alert alert-danger">
+        Pas, op: als je hier iets aanpast, pas je andermans boekingen aan!
+      </div>
+    {% endif %}
     <table id="booking-table"
            class="table table-hover table-condensed table-fixed-header">
       <thead class="header">
@@ -103,8 +108,7 @@
                 >{{ total|hours }}</th>
           {% endfor %}
         </tr>
-        {% if view.person = view.active_person %}
-          {# Only the person himself can book #}
+        {% if view.has_edit_permissions %}
           <tr>
             <th colspan="8"></th>
             <th colspan="2">

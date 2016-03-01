@@ -1179,11 +1179,31 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     template_name = 'trs/booking.html'
 
     def has_form_permissions(self):
-        # Warning: this is permission to view the page, not directly
+        # Warning: this is used as "permission to view the page", not directly
         # permission to edit someone else's bookings.
         if self.can_see_everything:
             return True
         return self.active_person == self.person
+
+    def has_edit_permissions(self):
+        # Warning: this is the permission to actually edit your own or someone
+        # else's bookings.
+        if self.can_edit_and_see_everything:
+            return True
+        return self.active_person == self.person
+
+    @cached_property
+    def editing_for_someone_else(self):
+        if not self.has_edit_permissions():
+            # Not editing.
+            return False
+        if self.active_person == self.person:
+            # Editing for myself.
+            return False
+        else:
+            # Yes, editing for someone else!
+            # Used to print dire warnings.
+            return True
 
     @cached_property
     def person(self):
@@ -1256,7 +1276,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     def get_form_class(self):
         """Return dynamically generated form class."""
         fields = SortedDict()
-        if (self.person == self.active_person):
+        if self.has_edit_permissions:
             # If not, we cannot edit anything, just view.
             for index, project in enumerate(self.relevant_projects):
                 field_type = forms.IntegerField(
@@ -1312,7 +1332,13 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 indicator = '+%s' % total_difference
             else:  # 0
                 indicator = "alleen verschoven"
-            messages.success(self.request, "Uren aangepast (%s)." % indicator)
+            if self.editing_for_someone_else:
+                messages.warning(
+                    self.request,
+                    "Uren van iemand anders aangepast (%s)." % indicator)
+            else:
+                messages.success(self.request,
+                                 "Uren aangepast (%s)." % indicator)
         else:
             messages.info(self.request, "Niets aan de uren gewijzigd.")
         elapsed = (time.time() - start_time)
