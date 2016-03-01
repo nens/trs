@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import monkeypatch_setuptools
 from setuptools import setup
 
 version = '1.14.dev0'
