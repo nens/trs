@@ -153,16 +153,6 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': 'localhost:11211',
-        'TIMEOUT': 60 * 60 * 1,
-        'OPTIONS': {'MAX_ENTRIES': 50000},
-        'KEY_PREFIX': 'trs',
-    }
-}
-
 try:
     from .local_testsettings import *
 except ImportError:
