@@ -1,6 +1,5 @@
 import os
 
-
 SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
 BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, '..'))
 STATIC_ROOT = os.path.join(BUILDOUT_DIR, 'var', 'static')
@@ -18,7 +17,6 @@ INSTALLED_APPS = [
     'trs',
     'lizard_auth_client',
     'raven.contrib.django.raven_compat',
-    'opbeat.contrib.django',
     'south',
     'gunicorn',
     'debug_toolbar',

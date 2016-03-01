@@ -919,6 +919,12 @@ class ProjectsView(BaseView):
                                                      project.reservation)
             line['reservation'] = project.reservation
             line['other_costs'] = costs - income
+            line['well_booked'] = project.well_booked()
+            line['overbooked'] = project.overbooked()
+            line['left_to_book'] = project.left_to_book()
+            line['person_loss'] = project.person_loss()
+            line['left_to_turn_over'] = project.left_to_turn_over()
+
             line['invoice_amount_percentage'] = invoice_amount_percentage
             line['invoice_versus_turnover_percentage'] = (
                 invoice_versus_turnover_percentage)
@@ -945,6 +951,22 @@ class ProjectsView(BaseView):
             percentage = None
         result['percentage'] = percentage
         return result
+
+
+class ProjectsLossView(ProjectsView):
+
+    @property
+    def template_name(self):
+        if self.can_view_elaborate_version:
+            return 'trs/projects_loss.html'
+        return 'trs/projects-simple.html'
+
+    @cached_property
+    def totals(self):
+        return {key: sum([line[key] for line in self.lines]) or 0
+                for key in ['well_booked', 'overbooked', 'left_to_book',
+                            'turnover', 'person_loss', 'left_to_turn_over',
+                            'reservation']}
 
 
 class ProjectView(BaseView):
@@ -1157,11 +1179,31 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     template_name = 'trs/booking.html'
 
     def has_form_permissions(self):
-        # Warning: this is permission to view the page, not directly
+        # Warning: this is used as "permission to view the page", not directly
         # permission to edit someone else's bookings.
         if self.can_see_everything:
             return True
         return self.active_person == self.person
+
+    def has_edit_permissions(self):
+        # Warning: this is the permission to actually edit your own or someone
+        # else's bookings.
+        if self.can_edit_and_see_everything:
+            return True
+        return self.active_person == self.person
+
+    @cached_property
+    def editing_for_someone_else(self):
+        if not self.has_edit_permissions():
+            # Not editing.
+            return False
+        if self.active_person == self.person:
+            # Editing for myself.
+            return False
+        else:
+            # Yes, editing for someone else!
+            # Used to print dire warnings.
+            return True
 
     @cached_property
     def person(self):
@@ -1234,7 +1276,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     def get_form_class(self):
         """Return dynamically generated form class."""
         fields = SortedDict()
-        if (self.person == self.active_person):
+        if self.has_edit_permissions:
             # If not, we cannot edit anything, just view.
             for index, project in enumerate(self.relevant_projects):
                 field_type = forms.IntegerField(
@@ -1290,7 +1332,13 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 indicator = '+%s' % total_difference
             else:  # 0
                 indicator = "alleen verschoven"
-            messages.success(self.request, "Uren aangepast (%s)." % indicator)
+            if self.editing_for_someone_else:
+                messages.warning(
+                    self.request,
+                    "Uren van iemand anders aangepast (%s)." % indicator)
+            else:
+                messages.success(self.request,
+                                 "Uren aangepast (%s)." % indicator)
         else:
             messages.info(self.request, "Niets aan de uren gewijzigd.")
         elapsed = (time.time() - start_time)

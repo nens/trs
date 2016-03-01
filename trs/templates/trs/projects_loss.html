@@ -1,0 +1,122 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block full-width %}
+  <h1>
+    {{ view.title }}
+    {% if view.small_title %}
+      <small>({{ view.small_title }})</small>
+    {% endif %}
+    <a class="pull-right"
+       title="Download .csv"
+       href="{% url 'trs.projects.csv' %}?{{ view.request.GET.urlencode }}">
+      <span class="glyphicon glyphicon-download-alt"></span>
+    </a>
+  </h1>
+
+  {% include "trs/filter-snippet.html" %}
+
+  {% if view.can_add_project %}
+    <br>
+    <div>
+      <a href="{% url 'trs.project.new' %}" class="btn btn-default">
+        <span class="glyphicon glyphicon-plus"></span>
+        Voeg nieuw project toe
+      </a>
+    </div>
+  {% endif %}
+
+  {% include "trs/project-pagination.html" %}
+
+  <table class="table table-hover table-condensed table-fixed-header">
+    <thead class="header">
+      <tr>
+        <th colspan="2" class="column-separator-right"></th>
+        <th colspan="3" class="text-center column-separator-right">Uren</th>
+        <th colspan="5" class="text-center">Geld</th>
+      </tr>
+      <tr>
+        <th>Project</th>
+        <th class="column-separator-right">Omschrijving</th>
+        <th class="text-right">Binnen<br>budget</th>
+        <th class="text-right">Verlies-<br>uren</th>
+        <th class="text-right column-separator-right">Werk-<br>voorraad</th>
+        <th class="text-right">Omzet</th>
+        <th class="text-right">Budget-<br>overschijding</th>
+        <th class="text-right column-separator-right">Nog om te<br>zetten</th>
+        <th class="text-right">Reservering</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in view.lines %}
+        <tr>
+          <td style="white-space: nowrap;">
+            {{ line.project.as_widget }}
+          </td>
+          <td class="column-separator-right">
+            <span class="text-muted"
+                  {% if 50 < line.project.description|length %}
+                    title="{{ line.project.description }}"
+                  {% endif %}>
+              {{ line.project.description|truncatechars:50 }}
+            </span>
+          </td>
+
+          <td class="text-right">
+            {{ line.well_booked|hours }}
+          </td>
+          <td class="text-right {{ line.klass }}">
+            {{ line.overbooked|hours }}
+          </td>
+          <td class="text-right column-separator-right">
+            {{ line.left_to_book|hours }}
+          </td>
+
+          <td class="text-right">
+            {{ line.turnover|money }}
+          </td>
+          <td class="text-right">
+            {{ line.person_loss|money }}
+          </td>
+          <td class="text-right column-separator-right">
+            {{ line.left_to_turn_over|money }}
+          </td>
+          <td class="text-right">
+            {{ line.reservation|money }}
+          </td>
+
+          <td class="text-right">
+            {% if not line.project.budget_ok %}
+              <a href="{{ line.project.get_absolute_url }}#budget">
+                <span class="text-danger glyphicon glyphicon-warning-sign"
+                      title="Budget is niet goed verdeeld"></span>
+              </a>
+            {% endif %}
+          </td>
+
+        </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th>Totaal</th>
+        <th class="column-separator-right"></th>
+
+        <th class="text-right">{{ view.totals.well_booked|hours }}</th>
+        <th class="text-right">{{ view.totals.overbooked|hours }}</th>
+        <th class="text-right column-separator-right">{{ view.totals.left_to_book|hours }}</th>
+
+        <th class="text-right">{{ view.totals.turnover|money }}</th>
+        <th class="text-right">{{ view.totals.person_loss|money }}</th>
+        <th class="text-right column-separator-right">{{ view.totals.left_to_turn_over|money }}</th>
+
+        <th class="text-right">{{ view.totals.reservation|money }}</th>
+        <th></th>
+      </tr>
+    </tfoot>
+  </table>
+
+  {% include "trs/project-pagination.html" %}
+
+{% endblock %}
