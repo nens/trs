@@ -28,6 +28,8 @@ Changelog of TRS
 - Added overview page which makes "booking into the red" more visible, both
   for hours and for money.
 
+- Made other persons' bookings editable for those that can edit everything.
+
 
 1.13 (2015-06-18)
 -----------------
