@@ -28,6 +28,11 @@ table.borderless-table th {
     border-top: 0 ! important;
 }
 
+.column-separator-right {
+    border-right: 1px solid #ddd;
+    padding-right: 1em !important;
+}
+
 /* Modified css from https://gist.github.com/i-scorpion/2948136/ for fixed thead */
 table .header-fixed {
     position: fixed;

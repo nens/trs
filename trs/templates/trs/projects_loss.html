@@ -31,19 +31,19 @@
   <table class="table table-hover table-condensed table-fixed-header">
     <thead class="header">
       <tr>
-        <th colspan="2"></th>
-        <th colspan="3" class="text-center">Uren</th>
-        <th colspan="4" class="text-center">Geld</th>
+        <th colspan="2" class="column-separator-right"></th>
+        <th colspan="3" class="text-center column-separator-right">Uren</th>
+        <th colspan="5" class="text-center">Geld</th>
       </tr>
       <tr>
         <th>Project</th>
-        <th>Omschrijving</th>
+        <th class="column-separator-right">Omschrijving</th>
         <th class="text-right">Binnen<br>budget</th>
         <th class="text-right">Verlies-<br>uren</th>
-        <th class="text-right">Werk-<br>voorraad</th>
+        <th class="text-right column-separator-right">Werk-<br>voorraad</th>
         <th class="text-right">Omzet</th>
         <th class="text-right">Budget-<br>overschijding</th>
-        <th class="text-right">Nog om te<br>zetten</th>
+        <th class="text-right column-separator-right">Nog om te<br>zetten</th>
         <th class="text-right">Reservering</th>
         <th></th>
       </tr>
@@ -54,9 +54,9 @@
           <td style="white-space: nowrap;">
             {{ line.project.as_widget }}
           </td>
-          <td>
+          <td class="column-separator-right">
             <span class="text-muted"
-                  {% if line.project.description|length > 50 %}
+                  {% if 50 < line.project.description|length %}
                     title="{{ line.project.description }}"
                   {% endif %}>
               {{ line.project.description|truncatechars:50 }}
@@ -69,7 +69,7 @@
           <td class="text-right {{ line.klass }}">
             {{ line.overbooked|hours }}
           </td>
-          <td class="text-right">
+          <td class="text-right column-separator-right">
             {{ line.left_to_book|hours }}
           </td>
 
@@ -79,7 +79,7 @@
           <td class="text-right">
             {{ line.person_loss|money }}
           </td>
-          <td class="text-right">
+          <td class="text-right column-separator-right">
             {{ line.left_to_turn_over|money }}
           </td>
           <td class="text-right">
@@ -101,15 +101,16 @@
     <tfoot>
       <tr>
         <th>Totaal</th>
-        <th></th>
+        <th class="column-separator-right"></th>
 
         <th class="text-right">{{ view.totals.well_booked|hours }}</th>
         <th class="text-right">{{ view.totals.overbooked|hours }}</th>
-        <th class="text-right">{{ view.totals.left_to_book|hours }}</th>
+        <th class="text-right column-separator-right">{{ view.totals.left_to_book|hours }}</th>
 
         <th class="text-right">{{ view.totals.turnover|money }}</th>
         <th class="text-right">{{ view.totals.person_loss|money }}</th>
-        <th class="text-right">{{ view.totals.left_to_turn_over|money }}</th>
+        <th class="text-right column-separator-right">{{ view.totals.left_to_turn_over|money }}</th>
+
         <th class="text-right">{{ view.totals.reservation|money }}</th>
         <th></th>
       </tr>
