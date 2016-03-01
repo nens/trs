@@ -1,6 +1,5 @@
 import os
 
-
 SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
 BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, '..'))
 STATIC_ROOT = os.path.join(BUILDOUT_DIR, 'var', 'static')
@@ -152,6 +151,16 @@ HAYSTACK_CONNECTIONS = {
         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
         'PATH': os.path.join(BUILDOUT_DIR, 'var', 'index'),
     },
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': 'localhost:11211',
+        'TIMEOUT': 60 * 60 * 1,
+        'OPTIONS': {'MAX_ENTRIES': 50000},
+        'KEY_PREFIX': 'trs',
+    }
 }
 
 try:
