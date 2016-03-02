@@ -3393,16 +3393,6 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
             return Group.objects.get(id=self.kwargs['pk'])
         return
 
-    @cached_property
-    def target(self):
-        if self.group:
-            return self.group.target
-        else:
-            # The target of the whole company is the sum of all groups'
-            # targets.
-            return Group.objects.all().aggregate(
-                models.Sum('target'))['target__sum']
-
     @property
     def projects(self):
         if self.group:
@@ -3538,6 +3528,16 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
             project__in=self.projects,
             date__year=self.year).aggregate(
                 models.Sum('amount'))['amount__sum'] or 0
+
+    @cached_property
+    def target(self):
+        if self.group:
+            return self.group.target
+        else:
+            # The target of the whole company is the sum of all groups'
+            # targets.
+            return Group.objects.all().aggregate(
+                models.Sum('target'))['target__sum']
 
     @cached_property
     def project_counts(self):
