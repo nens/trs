@@ -3400,6 +3400,13 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
         else:
             return Project.objects.all()
 
+    @property
+    def persons(self):
+        if self.group:
+            return Person.objects.filter(group=self.group)
+        else:
+            return Person.objects.all()
+
     @cached_property
     def for_who(self):
         if self.group:
@@ -3575,11 +3582,7 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
 
     def fte(self):
         """Return number of FTEs"""
-        if self.group:
-            persons = self.group.persons.all()
-        else:
-            persons = Person.objects.all()
-        persons = persons.filter(archived=False).select_related(
+        persons = self.persons.filter(archived=False).select_related(
             'person_changes')
         total_hours_per_week = sum([person.hours_per_week()
                                     for person in persons])
@@ -3591,13 +3594,9 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
             description='Ziekte').filter(archived=False)
         if not sickness_projects:
             return "Geen project met naam 'Ziekte' gevonden"
-        if self.group:
-            persons = self.group.persons.all()
-        else:
-            persons = Person.objects.all()
 
         sick_hours = Booking.objects.filter(
-            booked_by__in=persons,
+            booked_by__in=self.persons,
             booked_on__in=sickness_projects,
             year_week__year=self.year).aggregate(
                 models.Sum('hours'))['hours__sum']
@@ -3605,11 +3604,7 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
         return round(sick_hours / 8)
 
     def days_to_book(self):
-        if self.group:
-            persons = self.group.persons.all()
-        else:
-            persons = Person.objects.all()
-        persons = persons.filter(archived=False).select_related(
+        persons = self.persons.filter(archived=False).select_related(
             'bookings')
         hours_to_book = sum([person.to_book()['hours'] for person in persons])
         return round(hours_to_book / 8)
