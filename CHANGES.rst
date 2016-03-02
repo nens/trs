@@ -2,7 +2,7 @@ Changelog of TRS
 ===================================================
 
 
-1.14 (unreleased)
+1.14 (2016-03-02)
 -----------------
 
 - Various version updates and test setup fixes to get the tests running on
