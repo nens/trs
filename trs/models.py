@@ -94,6 +94,11 @@ class Group(models.Model):
         verbose_name="omschrijving",
         blank=True,
         max_length=255)
+    target = models.DecimalField(
+        max_digits=12,
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="omzetdoelstelling")
 
     class Meta:
         verbose_name = "groep"

@@ -167,3 +167,36 @@ class RatingsOveriewTestCase(TestCase):
 
     def test_average2(self):
         self.assertEquals(self.view.average_rating_customer, 4)
+
+
+class FinancialOverviewTestCase(TestCase):
+
+    def setUp(self):
+        factories.GroupFactory.create()
+        factories.GroupFactory.create()
+
+    def test_smoke(self):
+        ensure_year_weeks_are_present()
+        request = RequestFactory().get('/')
+        view = views.FinancialOverview(request=request)
+        self.assertEquals(len(list(view.download_links())), 3)
+
+
+class FinancialCsvViewTestCase(TestCase):
+
+    def setUp(self):
+        self.group = factories.GroupFactory.create()
+
+    def test_smoke(self):
+        ensure_year_weeks_are_present()
+        request = RequestFactory().get('/')
+        view = views.FinancialCsvView(request=request,
+                                      kwargs={})
+        self.assertTrue(list(view.csv_lines))
+
+    def test_smoke_with_group(self):
+        ensure_year_weeks_are_present()
+        request = RequestFactory().get('/')
+        view = views.FinancialCsvView(request=request,
+                                      kwargs={'pk': self.group.id})
+        self.assertTrue(list(view.csv_lines))

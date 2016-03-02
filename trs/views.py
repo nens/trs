@@ -1,3 +1,4 @@
+from collections import defaultdict
 from copy import deepcopy
 from decimal import Decimal
 import csv
@@ -54,6 +55,8 @@ BIG_PROJECT_SIZE = 200  # hours
 MAX_BAR_HEIGHT = 50  # px
 BAR_WIDTH = 75  # px
 BACK_TEMPLATE = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
+MONTHS = ['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni',
+          'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December']
 
 
 class LoginAndPermissionsRequiredMixin(object):
@@ -3347,10 +3350,319 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
             for text, year_weeks in self.half_years:
                 for wbso_project in self.found_wbso_projects:
                     hours = [
-                        round(item['hours__sum'] * item['booked_on__wbso_percentage'] / 100)
+                        round(item['hours__sum'] * (
+                            item['booked_on__wbso_percentage'] or 0) / 100)
                         for item in self.bookings_per_week_per_person_per_wbso_project
                         if item['booked_by__name'] == person and
                         item['year_week'] in year_weeks and
                         item['booked_on__wbso_project'] == wbso_project]
                     line.append(sum(hours))
             yield line
+
+
+class FinancialOverview(BaseView):
+    template_name = 'trs/financial_overview.html'
+    title = 'Overzicht financiën (als .csv)'
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    def download_links(self):
+        yield {'name': 'Gehele bedrijf',
+               'url': reverse('trs.financial.csv')}
+        for pk, name in Group.objects.all().values_list('pk', 'name'):
+            yield {'name': name,
+                   'url': reverse('trs.financial.csv', kwargs={'pk': pk})}
+
+
+
+class FinancialCsvView(CsvResponseMixin, ProjectsView):
+
+    title = "Overzicht financien"
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @property
+    def header_line(self):
+        return [self.title]
+
+    @cached_property
+    def group(self):
+        if 'pk' in self.kwargs:
+            return Group.objects.get(id=self.kwargs['pk'])
+        return
+
+    @property
+    def projects(self):
+        if self.group:
+            return Project.objects.filter(group=self.group)
+        else:
+            return Project.objects.all()
+
+    @property
+    def persons(self):
+        if self.group:
+            return Person.objects.filter(group=self.group)
+        else:
+            return Person.objects.all()
+
+    @cached_property
+    def for_who(self):
+        if self.group:
+            return self.group.name
+        else:
+            return "het gehele bedrijf"
+
+    @cached_property
+    def info_from_bookings(self):
+        """Return info extracted from this year's bookings"""
+        # First grab the persons that booked this year.
+        relevant_person_ids = Booking.objects.filter(
+            year_week__year=self.year).values_list(
+            'booked_by', flat=True).distinct()
+        relevant_persons = Person.objects.filter(
+            id__in=relevant_person_ids)
+        if self.group:
+            relevant_persons = relevant_persons.filter(group=self.group)
+        pycs = [core.get_pyc(person=person, year=self.year)
+                for person in relevant_persons]
+        return {'turnover': sum([pyc.turnover for pyc in pycs]),
+                'left_to_book_external': sum(
+                    [pyc.left_to_book_external for pyc in pycs]),
+                'booked_external': sum(
+                    [pyc.booked_external for pyc in pycs]),
+                'left_to_turn_over': sum(
+                    [pyc.left_to_turn_over for pyc in pycs]),
+                'overbooked_external': sum([pyc.overbooked_external for pyc in pycs]),
+                'loss': sum([pyc.loss for pyc in pycs]),
+            }
+
+    @property
+    def reservations_total(self):
+        return round(self.projects.aggregate(
+            models.Sum('reservation'))['reservation__sum'] or 0)
+
+    def invoice_table(self):
+        """For this year and two years hence, return invoiced amount per month
+
+        Per month, we need 6 values, 2 per year: the invoiced amount in that
+        month plus the cumulative amount in that year till that month.
+
+        Warning: as a side-effect, we set ``self.total_invoiced_this_year``.
+
+        """
+        years = [self.year - 2, self.year -1, self.year]
+        months = [i + 1 for i in range(12)]
+        invoices = Invoice.objects.all()
+        if self.group:
+            invoices = invoices.filter(project__group=self.group)
+        # For both defaultdicts, the first key is year, the second the month.
+        invoiced_per_year_month = defaultdict(dict)
+        cumulative_per_year_month = defaultdict(dict)
+        for year in years:
+            cumulative = 0
+            for month in months:
+                invoiced = invoices.filter(
+                    date__year=year, date__month=month).aggregate(
+                        models.Sum('amount_exclusive'))[
+                            'amount_exclusive__sum'] or 0
+                cumulative += invoiced
+                invoiced_per_year_month[year][month] = invoiced
+                cumulative_per_year_month[year][month] = cumulative
+
+        yield ["", "", self.year - 2, "", self.year - 1, "", self.year]
+        for month, month_name in enumerate(MONTHS, start=1):
+            row = ["", month_name]
+            for year in years:
+                row.append(invoiced_per_year_month[year][month])
+                row.append(cumulative_per_year_month[year][month])
+            yield row
+
+        totals = ["", "Totaal"]
+        for year in years:
+            totals.append(cumulative_per_year_month[year][12])
+            totals.append("")
+        yield totals
+
+        # A bit hacky to set it here...
+        self.total_invoiced_this_year = cumulative_per_year_month[
+            self.year][12]
+
+    def confirmed_amount_table(self):
+        """Return contract amounts for confirmed projects per year/month.
+
+        Per month, we need 6 values, 2 per year: the contract amount in that
+        month plus the cumulative amount in that year till that month.
+
+        """
+        years = [self.year - 2, self.year -1, self.year]
+        months = [i + 1 for i in range(12)]
+        # For both defaultdicts, the first key is year, the second the month.
+        invoiced_per_year_month = defaultdict(dict)
+        cumulative_per_year_month = defaultdict(dict)
+        for year in years:
+            cumulative = 0
+            for month in months:
+                confirmed_amount = self.projects.filter(
+                    confirmation_date__year=year,
+                    confirmation_date__month=month).aggregate(
+                        models.Sum('contract_amount'))[
+                            'contract_amount__sum'] or 0
+                cumulative += confirmed_amount
+                invoiced_per_year_month[year][month] = confirmed_amount
+                cumulative_per_year_month[year][month] = cumulative
+
+        yield ["", "", self.year - 2, "", self.year - 1, "", self.year]
+        for month, month_name in enumerate(MONTHS, start=1):
+            row = ["", month_name]
+            for year in years:
+                row.append(invoiced_per_year_month[year][month])
+                row.append(cumulative_per_year_month[year][month])
+            yield row
+
+        totals = ["", "Totaal"]
+        for year in years:
+            totals.append(cumulative_per_year_month[year][12])
+            totals.append("")
+        yield totals
+
+    @property
+    def total_payables(self):
+        """Return sum of payables ('kosten derden') with a date of this year
+        """
+        return Payable.objects.filter(
+            project__in=self.projects,
+            date__year=self.year).aggregate(
+                models.Sum('amount'))['amount__sum'] or 0
+
+    @cached_property
+    def target(self):
+        if self.group:
+            return self.group.target
+        else:
+            # The target of the whole company is the sum of all groups'
+            # targets.
+            return Group.objects.all().aggregate(
+                models.Sum('target'))['target__sum']
+
+    @cached_property
+    def project_counts(self):
+        """Return counts like 'new in 2016' for projects"""
+        result = {}
+        active_projects = self.projects.filter(archived=False)
+        result['active'] = active_projects.count()
+
+        confirmed_projects = active_projects.exclude(
+            confirmation_date__isnull=True)
+        result['with_confirmation'] = confirmed_projects.count()
+
+        ended_projects = active_projects.filter(
+            end__lt=this_year_week())
+        result['ended'] = ended_projects.count()
+
+        offered_projects = active_projects.filter(
+            confirmation_date__isnull=True).exclude(
+                bid_send_date__isnull=False)
+        result['offered'] = offered_projects.count()
+
+        to_estimate_projects = active_projects.filter(
+            confirmation_date__isnull=True).exclude(
+                bid_send_date__isnull=True)
+        result['to_estimate'] = to_estimate_projects.count()
+
+        unconfirmed_projects = active_projects.filter(
+            confirmation_date__isnull=True)
+        booked_without_confirmation = Booking.objects.filter(
+            booked_on__in=unconfirmed_projects).aggregate(
+                models.Sum('hours'))['hours__sum']
+        result['booked_without_confirmation'] = booked_without_confirmation
+        # Offerte-uren zonder opdracht
+        return result
+
+    def fte(self):
+        """Return number of FTEs"""
+        persons = self.persons.filter(archived=False).select_related(
+            'person_changes')
+        total_hours_per_week = sum([person.hours_per_week()
+                                    for person in persons])
+        return round(total_hours_per_week / 40.0, 1)
+
+    def sick_days(self):
+        """Return number of booked sick days"""
+        sickness_projects = Project.objects.filter(
+            description='Ziekte').filter(archived=False)
+        if not sickness_projects:
+            return "Geen project met naam 'Ziekte' gevonden"
+
+        sick_hours = Booking.objects.filter(
+            booked_by__in=self.persons,
+            booked_on__in=sickness_projects,
+            year_week__year=self.year).aggregate(
+                models.Sum('hours'))['hours__sum']
+
+        return round(sick_hours / 8)
+
+    def days_to_book(self):
+        persons = self.persons.filter(archived=False).select_related(
+            'bookings')
+        hours_to_book = sum([person.to_book()['hours'] for person in persons])
+        return round(hours_to_book / 8)
+
+    @property
+    def csv_lines(self):
+        yield ["", "Datum uitdraai:", self.today.strftime("%d-%m-%Y")]
+        yield ["", "Voor:", self.for_who]
+        yield []
+        yield ["1. GEREALISEERDE OMZET"]
+        yield []
+        yield ["", "", "Uren", "geld"]
+        yield ["", "Gerealiseerde omzet dit jaar",
+               self.info_from_bookings['booked_external'],
+               self.info_from_bookings['turnover']]
+        yield ["", "Werkvoorraad",
+               self.info_from_bookings['left_to_book_external'],
+               self.info_from_bookings['left_to_turn_over']]
+        yield ["", "Totaal reserveringen", "", self.reservations_total]
+        yield ["", "Verliesuren dit jaar",
+               self.info_from_bookings['overbooked_external'],
+               self.info_from_bookings['loss']]
+        yield []
+        yield ["2. GEFACTUREERDE OMZET"]
+        yield []
+        for row in self.invoice_table():
+            yield row
+        yield []
+        yield ["", "Gefactureerde omzet dit jaar",
+               self.total_invoiced_this_year]
+        yield ["", "Kosten derden",
+               self.total_payables]
+        yield ["", "Omzetdoelstelling", self.target]
+        yield ["", "Verschil voor dit jaar",
+               (self.total_invoiced_this_year - self.total_payables -
+                self.target)]
+        yield []
+        yield ["3. OPDRACHTEN"]
+        yield []
+        for row in self.confirmed_amount_table():
+            yield row
+        yield []
+        yield ["", "Aantal projecten",
+               self.project_counts['active']]
+        yield ["", "Al geeindigd",
+               self.project_counts['ended']]
+        yield ["", "Projecten met opdracht",
+               self.project_counts['with_confirmation']]
+        yield ["", "In offerte stadium",
+               self.project_counts['offered']]
+        yield ["", "Nog te begroten",
+               self.project_counts['to_estimate']]
+        yield []
+        yield ["", "(Offerte-)uren zonder opdracht",
+               self.project_counts['booked_without_confirmation']]
+        yield []
+        yield ["4. OVERIG"]
+        yield []
+        yield ["", "Aantal FTE", self.fte()]
+        yield ["", "Aantal dagen ziekteverlof", self.sick_days()]
+        yield ["", "Dagen achter met boeken", self.days_to_book()]

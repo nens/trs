@@ -127,7 +127,12 @@ urlpatterns = patterns(
     url(r'^overviews/wbso_projects/csv/$',
         views.WbsoCsvView.as_view(),
         name='trs.wbso.csv'),
-
+    url(r'^overviews/financial_csv/$',
+        views.FinancialCsvView.as_view(),
+        name='trs.financial.csv'),
+    url(r'^overviews/financial_csv/(?P<pk>\d+)/$',
+        views.FinancialCsvView.as_view(),
+        name='trs.financial.csv'),
 
     # Overviews
     url(r'^overviews/$',
@@ -157,6 +162,9 @@ urlpatterns = patterns(
     url(r'^overviews/ratings/$',
         views.RatingsOverview.as_view(),
         name='trs.overviews.ratings'),
+    url(r'^overviews/financial/$',
+        views.FinancialOverview.as_view(),
+        name='trs.overviews.financial'),
 
     url(r'^locallogin/$',
         views.LoginView.as_view(),

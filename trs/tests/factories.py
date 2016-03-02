@@ -34,6 +34,13 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     project_manager = None
 
 
+class GroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Group
+
+    name = 'My group'
+
+
 class YearWeekFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.YearWeek

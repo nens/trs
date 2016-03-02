@@ -30,6 +30,8 @@ Changelog of TRS
 
 - Made other persons' bookings editable for those that can edit everything.
 
+- Added financial overviews with csv downloads.
+
 
 1.13 (2015-06-18)
 -----------------
