@@ -3350,7 +3350,8 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
             for text, year_weeks in self.half_years:
                 for wbso_project in self.found_wbso_projects:
                     hours = [
-                        round(item['hours__sum'] * item['booked_on__wbso_percentage'] / 100)
+                        round(item['hours__sum'] * (
+                            item['booked_on__wbso_percentage'] or 0) / 100)
                         for item in self.bookings_per_week_per_person_per_wbso_project
                         if item['booked_by__name'] == person and
                         item['year_week'] in year_weeks and
