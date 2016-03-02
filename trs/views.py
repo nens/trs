@@ -3441,7 +3441,7 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
     @property
     def reservations_total(self):
         return round(self.projects.aggregate(
-            models.Sum('reservation'))['reservation__sum'])
+            models.Sum('reservation'))['reservation__sum'] or 0)
 
     def invoice_table(self):
         """For this year and two years hence, return invoiced amount per month
