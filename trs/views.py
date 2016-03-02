@@ -2807,12 +2807,10 @@ class CsvResponseMixin(object):
 
     def render_to_response(self, context, **response_kwargs):
         """Return a csv response instead of a rendered template."""
-        # response = HttpResponse(mimetype='text/csv')  TODO TEMP HACK
-        response = HttpResponse(mimetype='text/plain')
+        response = HttpResponse(mimetype='text/csv')
         filename = self.csv_filename + '.csv'
-        # response[
-        #     'Content-Disposition'] = 'attachment; filename="%s"' % filename
-        # TODO TEMP HACK
+        response[
+            'Content-Disposition'] = 'attachment; filename="%s"' % filename
 
         # Ideally, use something like .encode('cp1251') somehow somewhere.
         writer = csv.writer(response, delimiter=";")
