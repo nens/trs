@@ -3380,6 +3380,9 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
 
     title = "Overzicht financien"
 
+    def has_form_permissions(self):
+        return self.can_see_everything
+
     @property
     def header_line(self):
         return [self.title]
