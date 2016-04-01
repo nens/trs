@@ -1027,6 +1027,8 @@ class ProjectView(BaseView):
 
     @cached_property
     def can_see_financials(self):
+        if self.can_see_everything:
+            return True
         if self.is_project_management:
             return True
         if self.active_person in self.project.assigned_persons():
@@ -1034,6 +1036,8 @@ class ProjectView(BaseView):
 
     @cached_property
     def can_see_project_financials(self):
+        if self.can_see_everything:
+            return True
         if self.is_project_management:
             return True
         if self.active_person in self.project.assigned_persons():
