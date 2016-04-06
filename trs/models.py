@@ -502,6 +502,7 @@ class Project(models.Model):
         if tls_request:
             # If not tls_request, we're in some automated import loop.
             for person in [self.project_manager, self.project_leader]:
+                # Make sure the PL and PM are assigned to the project.
                 if person and person not in self.assigned_persons():
                     work_assignment = WorkAssignment(
                         assigned_to=person,
