@@ -2108,7 +2108,43 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             fields[name] = field_type
             tabindex += 1
 
-        return type("GeneratedTeamEditForm", (forms.Form,), fields)
+        generated_form_class = type("GeneratedTeamEditForm",
+                                    (forms.Form,),
+                                    fields)
+
+        def clean_with_check(generated_form):
+            budgets, hourly_tariffs = self.budgets_and_tariffs
+            new_person_costs = 0
+            new_reservation = generated_form.cleaned_data.get('reservation') or 0
+
+            for person in generated_form.the_project.assigned_persons():
+                budget = (generated_form.cleaned_data.get(
+                    self.hours_fieldname(person)) or
+                          budgets.get(person.id, 0))
+                hourly_tariff = (generated_form.cleaned_data.get(
+                    self.hourly_tariff_fieldname(person)) or
+                          hourly_tariffs.get(person.id, 0))
+                new_person_costs += budget * hourly_tariff
+
+            left_to_dish_out = (
+                generated_form.the_project.contract_amount +
+                generated_form.the_project.income() -
+                new_person_costs -
+                new_reservation -
+                generated_form.the_project.costs())
+            if left_to_dish_out < 0:
+                raise forms.ValidationError(
+                    ("Je budgetteert %(red)s in het rood. "
+                     "Dat is budgettair gezien 'illegaal geld bijdrukken'."),
+                    params={'red': (-1 * left_to_dish_out)},
+                    code='invalid')
+
+            return generated_form.cleaned_data
+
+        generated_form_class.clean = clean_with_check
+        generated_form_class.the_project = self.project
+
+        return generated_form_class
 
     @cached_property
     def bound_form_fields(self):
