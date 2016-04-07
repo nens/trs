@@ -5,7 +5,8 @@ Changelog of TRS
 1.15 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Made it impossible for projects to fabricate money out of thin air by giving
+  team members hours+tariff when there's no budget for it.
 
 
 1.14 (2016-03-02)
