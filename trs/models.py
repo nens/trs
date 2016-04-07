@@ -621,6 +621,7 @@ class Project(models.Model):
 
         costs = 0
         income = 0
+        # Note: a positive budget item is a cost.
         for budget_item in self.budget_items.all():
             if budget_item.amount > 0:
                 costs += budget_item.amount
@@ -628,7 +629,8 @@ class Project(models.Model):
                 income += budget_item.amount * -1
         for budget_item in self.budget_transfers.all():
             # budget_transfers are the reverse of budget_items, pointing at
-            # us, so these count as incomes rather than costs.
+            # us, so a positive budget transfer counts as an income rather
+            # than a cost.
             if budget_item.amount > 0:
                 income += budget_item.amount
             else:
