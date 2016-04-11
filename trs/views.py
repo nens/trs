@@ -2134,8 +2134,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 generated_form.the_project.costs())
             if left_to_dish_out < 0:
                 raise forms.ValidationError(
-                    ("Je budgetteert %(red)s in het rood. "
-                     "Dat is budgettair gezien 'illegaal geld bijdrukken'."),
+                    "Je budgetteert %(red)s in het rood. ",
                     params={'red': (-1 * left_to_dish_out)},
                     code='invalid')
 
