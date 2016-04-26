@@ -1112,8 +1112,9 @@ class ProjectView(BaseView):
                 max(0, (line['booked'] - line['budget'])) * tariff)
             line['left_to_turn_over'] = line['left_to_book'] * tariff
             line['planned_turnover'] = line['budget'] * tariff
-            line['desired_hourly_tariff'] = round(
-                person.standard_hourly_tariff(year_week=self.project.start))
+            line['desired_hourly_tariff'] = round(min(
+                person.standard_hourly_tariff(year_week=self.project.start),
+                person.standard_hourly_tariff()))
             result.append(line)
         return result
 
