@@ -11,6 +11,10 @@ Changelog of TRS
 - You can now set hours/tariff to zero without the code falling back to the
   previous value...
 
+- Project budgets are now OK if they fall within one Euro of zero, instead of
+  requiring it to be exactly zero. This compensates for contract amounts not
+  always being fully rounded.
+
 
 1.14 (2016-03-02)
 -----------------
