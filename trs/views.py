@@ -2134,7 +2134,9 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 new_person_costs -
                 new_reservation -
                 generated_form.the_project.costs())
-            if left_to_dish_out < 0:
+            if left_to_dish_out < -1:
+                # Note: -1 instead of 0 because some contract amounts aren't
+                # neatly rounded.
                 raise forms.ValidationError(
                     "Je budgetteert %(red)s in het rood. ",
                     params={'red': (-1 * left_to_dish_out)},
