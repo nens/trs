@@ -2,7 +2,7 @@ Changelog of TRS
 ===================================================
 
 
-1.15 (unreleased)
+1.15 (2016-06-10)
 -----------------
 
 - Made it impossible for projects to fabricate money out of thin air by giving
