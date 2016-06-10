@@ -2928,7 +2928,7 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
                     project.financial_remark.splitlines())
             result = [
                 project.code,
-                project.description,
+                project.description.replace(',', ' '),
                 project.principal,
                 project.group,
                 project.internal,
