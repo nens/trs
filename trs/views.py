@@ -2119,14 +2119,15 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             new_reservation = generated_form.cleaned_data.get('reservation') or 0
 
             for person in generated_form.the_project.assigned_persons():
-                budget = (generated_form.cleaned_data.get(
-                    self.hours_fieldname(person)) or
-                          budgets.get(person.id, 0))
-                hourly_tariff = (generated_form.cleaned_data.get(
-                    self.hourly_tariff_fieldname(person)) or
-                          hourly_tariffs.get(person.id, 0))
+                budget = generated_form.cleaned_data.get(
+                    self.hours_fieldname(person))
+                if budget is None:
+                    budget = budgets.get(person.id, 0)
+                hourly_tariff = generated_form.cleaned_data.get(
+                    self.hourly_tariff_fieldname(person))
+                if hourly_tariff is None:
+                    hourly_tariff = hourly_tariffs.get(person.id, 0)
                 new_person_costs += budget * hourly_tariff
-
             left_to_dish_out = (
                 generated_form.the_project.contract_amount +
                 generated_form.the_project.income() -
