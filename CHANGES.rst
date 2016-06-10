@@ -15,6 +15,8 @@ Changelog of TRS
   requiring it to be exactly zero. This compensates for contract amounts not
   always being fully rounded.
 
+- Added the fields of the "project loss view" to the main projects csv export.
+
 
 1.14 (2016-03-02)
 -----------------
