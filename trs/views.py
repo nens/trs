@@ -2119,21 +2119,24 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             new_reservation = generated_form.cleaned_data.get('reservation') or 0
 
             for person in generated_form.the_project.assigned_persons():
-                budget = (generated_form.cleaned_data.get(
-                    self.hours_fieldname(person)) or
-                          budgets.get(person.id, 0))
-                hourly_tariff = (generated_form.cleaned_data.get(
-                    self.hourly_tariff_fieldname(person)) or
-                          hourly_tariffs.get(person.id, 0))
+                budget = generated_form.cleaned_data.get(
+                    self.hours_fieldname(person))
+                if budget is None:
+                    budget = budgets.get(person.id, 0)
+                hourly_tariff = generated_form.cleaned_data.get(
+                    self.hourly_tariff_fieldname(person))
+                if hourly_tariff is None:
+                    hourly_tariff = hourly_tariffs.get(person.id, 0)
                 new_person_costs += budget * hourly_tariff
-
             left_to_dish_out = (
                 generated_form.the_project.contract_amount +
                 generated_form.the_project.income() -
                 new_person_costs -
                 new_reservation -
                 generated_form.the_project.costs())
-            if left_to_dish_out < 0:
+            if left_to_dish_out < -1:
+                # Note: -1 instead of 0 because some contract amounts aren't
+                # neatly rounded.
                 raise forms.ValidationError(
                     "Je budgetteert %(red)s in het rood. ",
                     params={'red': (-1 * left_to_dish_out)},
@@ -2896,6 +2899,18 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
         'Gefactureerd t.o.v. opdrachtsom',
         'Gefactureerd t.o.v. omzet + extra kosten',
 
+        '',
+        'Uren binnen budget',
+        'Uren buiten budget',
+        'Werkvoorraad',
+        '',
+        'Omzet',
+        'Budgetoverschijding',
+        'Nog om te zetten',
+        '',
+        'Reservering',
+        '',
+
         'Opmerking',
         'Financiele opmerking',
     ]
@@ -2913,7 +2928,7 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
                     project.financial_remark.splitlines())
             result = [
                 project.code,
-                project.description,
+                project.description.replace(',', ' '),
                 project.principal,
                 project.group,
                 project.internal,
@@ -2937,6 +2952,18 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
                 line['other_costs'],
                 line['invoice_amount_percentage'],
                 line['invoice_versus_turnover_percentage'],
+
+                '',
+                line['well_booked'],
+                line['overbooked'],
+                line['left_to_book'],
+                '',
+                line['turnover'],
+                line['person_loss'],
+                line['left_to_turn_over'],
+                '',
+                line['reservation'],
+                '',
 
                 remark,
                 financial_remark,

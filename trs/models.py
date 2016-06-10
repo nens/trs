@@ -525,7 +525,7 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        cache_version = 14
+        cache_version = 15
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, cache_version)
 
@@ -592,7 +592,9 @@ class Project(models.Model):
                 self.reservation - self.costs())
 
     def budget_ok(self):
-        return self.left_to_dish_out() == 0
+        # Note: a little margin around zero is allowed to account for contract
+        # amounts not always being rounded.
+        return -1 < self.left_to_dish_out() < 1
 
     @cache_on_model
     def work_calculation(self):
