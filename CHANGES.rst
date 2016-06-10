@@ -8,6 +8,9 @@ Changelog of TRS
 - Made it impossible for projects to fabricate money out of thin air by giving
   team members hours+tariff when there's no budget for it.
 
+- You can now set hours/tariff to zero without the code falling back to the
+  previous value...
+
 
 1.14 (2016-03-02)
 -----------------
