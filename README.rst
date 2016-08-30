@@ -31,7 +31,10 @@ Grab the sqlite db from the server::
 
 Bootstrap with python3::
 
-    $ python3 bootstrap.py && bin/buildout
+  $ docker-compose build
+  $ docker-compose run web python3 bootstrap.py
+  $ docker-compose run web bin/buildout
+
 
 
 Server installation
