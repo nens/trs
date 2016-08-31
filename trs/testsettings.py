@@ -17,7 +17,6 @@ INSTALLED_APPS = [
     'trs',
     'lizard_auth_client',
     'raven.contrib.django.raven_compat',
-    'south',
     'gunicorn',
     'debug_toolbar',
     'haystack',
@@ -100,11 +99,6 @@ LOGGING = {
             'handlers': ['null'],  # Quiet by default!
             'propagate': False,
             'level': 'DEBUG',
-        },
-        'south': {
-            'handlers': ['console', 'logfile', 'sentry'],
-            'propagate': False,
-            'level': 'INFO',  # Suppress the huge output in tests
         },
         'factory': {
             'handlers': ['console'],
