@@ -51,6 +51,18 @@ def this_year_week():
     return result
 
 
+def this_year_week_pk():
+    """Return default for project start/end date
+
+    Default should be an int, so the pk. During initial test setup nothing
+    exists yet, so return 1 then...
+    """
+    year_week = this_year_week()
+    if not year_week:
+        return 1
+    return year_week.pk
+
+
 def cache_per_week(callable):
     # Note: only for PersonChange related fields.
     def inner(self, year_week=None):
@@ -399,14 +411,14 @@ class Project(models.Model):
         'YearWeek',
         blank=True,
         null=True,
-        default=this_year_week,
+        default=this_year_week_pk,
         related_name="starting_projects",
         verbose_name="startweek")
     end = models.ForeignKey(
         'YearWeek',
         blank=True,
         null=True,
-        default=this_year_week,
+        default=this_year_week_pk,
         related_name="ending_projects",
         verbose_name="laatste week")
     project_leader = models.ForeignKey(

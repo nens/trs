@@ -220,7 +220,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='project',
             name='end',
-            field=models.ForeignKey(default=trs.models.this_year_week, blank=True, to='trs.YearWeek', related_name='ending_projects', null=True, verbose_name='laatste week'),
+            field=models.ForeignKey(default=trs.models.this_year_week_pk, blank=True, to='trs.YearWeek', related_name='ending_projects', null=True, verbose_name='laatste week'),
         ),
         migrations.AddField(
             model_name='project',
@@ -240,7 +240,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='project',
             name='start',
-            field=models.ForeignKey(default=trs.models.this_year_week, blank=True, to='trs.YearWeek', related_name='starting_projects', null=True, verbose_name='startweek'),
+            field=models.ForeignKey(default=trs.models.this_year_week_pk, blank=True, to='trs.YearWeek', related_name='starting_projects', null=True, verbose_name='startweek'),
         ),
         migrations.AddField(
             model_name='project',
