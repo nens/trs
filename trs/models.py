@@ -699,8 +699,7 @@ class Project(models.Model):
 class WbsoProject(models.Model):
     number = models.IntegerField(
         verbose_name="Nummer",
-        help_text="Gebruikt voor sortering",
-        max_length=255)
+        help_text="Gebruikt voor sortering")
     title = models.CharField(
         verbose_name="titel",
         unique=True,
