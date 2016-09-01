@@ -125,8 +125,9 @@ class Person(models.Model):
     name = models.CharField(
         verbose_name="naam",
         max_length=255)
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         User,
+        on_delete=models.SET_NULL,
         blank=True,
         null=True,
         verbose_name="gebruiker",
