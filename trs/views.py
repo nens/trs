@@ -3649,7 +3649,7 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
 
     def fte(self):
         """Return number of FTEs"""
-        persons = self.persons.filter(archived=False).select_related(
+        persons = self.persons.filter(archived=False).prefetch_related(
             'person_changes')
         total_hours_per_week = sum([person.hours_per_week()
                                     for person in persons])
