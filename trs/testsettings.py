@@ -45,15 +45,17 @@ MIDDLEWARE_CLASSES = [
     'tls.TLSRequestMiddleware',
 ]
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': 'memcache:11211',
-        'TIMEOUT': 60 * 60 * 1,
-        'OPTIONS': {'MAX_ENTRIES': 50000},
-        'KEY_PREFIX': 'trs',
+INSIDE_DOCKER = os.path.exists(os.path.join(os.getcwd(), '..', '.dockerenv'))
+if INSIDE_DOCKER:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+            'LOCATION': 'memcache:11211',
+            'TIMEOUT': 60 * 60 * 1,
+            'OPTIONS': {'MAX_ENTRIES': 50000},
+            'KEY_PREFIX': 'trs',
+        }
     }
-}
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
