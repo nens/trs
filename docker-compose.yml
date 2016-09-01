@@ -1,5 +1,7 @@
 version: '2'
 services:
+  memcache:
+    image: memcached
 
   web:
     build: .
@@ -8,3 +10,5 @@ services:
       - "5000:5000"
     volumes:
       - .:/code
+    links:
+      - memcache

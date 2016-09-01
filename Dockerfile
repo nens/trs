@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     libpng12-dev \
     python3-dev \
     gettext \
+    memcached \
 && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 VOLUME /code
