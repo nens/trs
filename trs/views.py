@@ -3671,7 +3671,7 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
         return round(sick_hours / 8)
 
     def days_to_book(self):
-        persons = self.persons.filter(archived=False).select_related(
+        persons = self.persons.filter(archived=False).prefetch_related(
             'bookings')
         hours_to_book = sum([person.to_book()['hours'] for person in persons])
         return round(hours_to_book / 8)
