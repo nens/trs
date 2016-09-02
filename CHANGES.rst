@@ -5,7 +5,8 @@ Changelog of TRS
 1.16 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Added newest version of lizard-auth-client in preparation for switching to
+  the new style of connecting to the SSO (and especially the staging SSO).
 
 
 1.15 (2016-06-10)
