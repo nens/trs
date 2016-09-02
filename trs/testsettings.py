@@ -140,16 +140,17 @@ INTERNAL_IPS = ['localhost', '127.0.0.1']
 # SSO
 SSO_ENABLED = True
 # A key identifying this client. Can be published.
+SSO_USE_V2_LOGIN = True
 SSO_KEY = 'trs_random_generated_key_to_identify_the_client'
 # A *secret* shared between client and server.
 # Used to sign the messages exchanged between them.
 SSO_SECRET = 'trs_random_generated_secret_key_to_sign_exchanged_messages'
 # URL used to redirect the user to the SSO server
 # Note: needs a trailing slash
-SSO_SERVER_PUBLIC_URL = 'http://sso.lizard.net/'
+# SSO_SERVER_PUBLIC_URL = 'http://sso.lizard.net/'
 # URL used for server-to-server communication
 # Note: needs a trailing slash
-SSO_SERVER_PRIVATE_URL = 'http://somewhere:someport/'
+# SSO_SERVER_PRIVATE_URL = 'http://somewhere:someport/'
 
 HAYSTACK_CONNECTIONS = {
     'default': {
