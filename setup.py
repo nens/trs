@@ -20,7 +20,7 @@ install_requires = [
     'django-haystack',
     'django-tls',
     'gunicorn',
-    'lizard-auth-client >= 0.9',
+    'lizard-auth-client >= 2.1.1',
     'opbeat',
     'python-dateutil',  # Needed by haystack
     'python3-memcached',
