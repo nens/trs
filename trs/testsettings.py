@@ -17,7 +17,6 @@ INSTALLED_APPS = [
     'trs',
     'lizard_auth_client',
     'raven.contrib.django.raven_compat',
-    'south',
     'gunicorn',
     'debug_toolbar',
     'haystack',
@@ -45,6 +44,18 @@ MIDDLEWARE_CLASSES = [
     # 'trs.middleware.TracebackLoggingMiddleware',
     'tls.TLSRequestMiddleware',
 ]
+
+INSIDE_DOCKER = os.path.exists(os.path.join(os.getcwd(), '..', '.dockerenv'))
+if INSIDE_DOCKER:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+            'LOCATION': 'memcache:11211',
+            'TIMEOUT': 60 * 60 * 1,
+            'OPTIONS': {'MAX_ENTRIES': 50000},
+            'KEY_PREFIX': 'trs',
+        }
+    }
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
@@ -100,11 +111,6 @@ LOGGING = {
             'handlers': ['null'],  # Quiet by default!
             'propagate': False,
             'level': 'DEBUG',
-        },
-        'south': {
-            'handlers': ['console', 'logfile', 'sentry'],
-            'propagate': False,
-            'level': 'INFO',  # Suppress the huge output in tests
         },
         'factory': {
             'handlers': ['console'],

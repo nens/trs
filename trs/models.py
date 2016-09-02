@@ -51,6 +51,18 @@ def this_year_week():
     return result
 
 
+def this_year_week_pk():
+    """Return default for project start/end date
+
+    Default should be an int, so the pk. During initial test setup nothing
+    exists yet, so return 1 then...
+    """
+    year_week = this_year_week()
+    if not year_week:
+        return 1
+    return year_week.pk
+
+
 def cache_per_week(callable):
     # Note: only for PersonChange related fields.
     def inner(self, year_week=None):
@@ -113,8 +125,9 @@ class Person(models.Model):
     name = models.CharField(
         verbose_name="naam",
         max_length=255)
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         User,
+        on_delete=models.SET_NULL,
         blank=True,
         null=True,
         verbose_name="gebruiker",
@@ -399,14 +412,14 @@ class Project(models.Model):
         'YearWeek',
         blank=True,
         null=True,
-        default=this_year_week,
+        default=this_year_week_pk,
         related_name="starting_projects",
         verbose_name="startweek")
     end = models.ForeignKey(
         'YearWeek',
         blank=True,
         null=True,
-        default=this_year_week,
+        default=this_year_week_pk,
         related_name="ending_projects",
         verbose_name="laatste week")
     project_leader = models.ForeignKey(
@@ -687,8 +700,7 @@ class Project(models.Model):
 class WbsoProject(models.Model):
     number = models.IntegerField(
         verbose_name="Nummer",
-        help_text="Gebruikt voor sortering",
-        max_length=255)
+        help_text="Gebruikt voor sortering")
     title = models.CharField(
         verbose_name="titel",
         unique=True,

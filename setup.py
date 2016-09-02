@@ -11,7 +11,7 @@ long_description = '\n\n'.join([
     ])
 
 install_requires = [
-    'Django >= 1.6',
+    'Django >= 1.8',
     'Werkzeug',
     'Whoosh',
     'beautifulsoup4',
@@ -27,7 +27,6 @@ install_requires = [
     'raven',
     'requests',
     'setuptools',
-    'south',
     ],
 
 tests_require = [

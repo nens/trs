@@ -4,3 +4,12 @@ omit =
     *settings.py
     eggs/*
     */python?.?/*
+
+[report]
+show_missing = true
+
+[html]
+directory = htmlcov
+
+[xml]
+output = coverage.xml
