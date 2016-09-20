@@ -2850,7 +2850,7 @@ class CsvResponseMixin(object):
 
     def render_to_response(self, context, **response_kwargs):
         """Return a csv response instead of a rendered template."""
-        response = HttpResponse(mimetype='text/csv')
+        response = HttpResponse(content_type='text/csv')
         filename = self.csv_filename + '.csv'
         response[
             'Content-Disposition'] = 'attachment; filename="%s"' % filename
@@ -2892,7 +2892,9 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
 
         'Gefactureerd',
         'Omzet',
+        'Toegekende uren',
         'Geboekte uren',
+        'Goed geboekt',
         'Verliesuren',
         'Personele kosten incl reservering',
         'Overige kosten',
@@ -2947,6 +2949,8 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
                 line['invoice_amount'],
                 line['turnover'],
                 project.hour_budget(),
+                project.well_booked() + project.overbooked(),
+                project.well_booked(),
                 project.overbooked(),
                 line['person_costs_incl_reservation'],
                 line['other_costs'],
