@@ -538,7 +538,7 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        cache_version = 15
+        cache_version = 16
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, cache_version)
 
@@ -591,6 +591,12 @@ class Project(models.Model):
 
     def person_costs(self):
         return self.work_calculation()['person_costs']
+
+    def weighted_average_tariff(self):
+        return self.work_calculation()['weighted_average_tariff']
+
+    def realized_average_tariff(self):
+        return self.work_calculation()['realized_average_tariff']
 
     def overbooked_percentage(self):
         if not self.overbooked():
@@ -684,17 +690,33 @@ class Project(models.Model):
         person_costs = sum([tariff[id] * budget_per_person[id]
                             for id in ids])
 
-        return {'budget': sum(budget_per_person.values()),
+        budget = sum(budget_per_person.values())  # In hours
+        if budget:
+            weighted_average_tariff = person_costs / budget
+        else:  # Divide by zero...
+            weighted_average_tariff = 0
+        total_booked = sum(total_booked_per_person.values())
+        turnover = sum(turnover_per_person.values())
+        if total_booked:
+            realized_average_tariff = turnover / total_booked
+        else:
+            realized_average_tariff = 0
+
+        return {'budget': budget,
                 'overbooked': sum(overbooked_per_person.values()),
                 'well_booked': sum(well_booked_per_person.values()),
                 'left_to_book': sum(left_to_book_per_person.values()),
                 'person_loss': sum(loss_per_person.values()),
-                'turnover': sum(turnover_per_person.values()),
+                'turnover': turnover,
                 'left_to_turn_over': sum(
                     left_to_turn_over_per_person.values()),
                 'person_costs': person_costs,
                 'costs': costs,
-                'income': income}
+                'income': income,
+                'weighted_average_tariff': weighted_average_tariff,
+                'realized_average_tariff': realized_average_tariff,
+                'total_booked': total_booked,
+        }
 
 
 class WbsoProject(models.Model):

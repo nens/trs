@@ -2900,6 +2900,8 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
         'Overige kosten',
         'Gefactureerd t.o.v. opdrachtsom',
         'Gefactureerd t.o.v. omzet + extra kosten',
+        'Gemiddelde tarief',
+        'Gerealiseerde tarief',
 
         '',
         'Uren binnen budget',
@@ -2956,6 +2958,8 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
                 line['other_costs'],
                 line['invoice_amount_percentage'],
                 line['invoice_versus_turnover_percentage'],
+                project.weighted_average_tariff(),
+                project.realized_average_tariff(),
 
                 '',
                 line['well_booked'],
