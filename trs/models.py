@@ -1,7 +1,6 @@
 import datetime
 import logging
 
-from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
@@ -522,8 +521,6 @@ class Project(models.Model):
                         assigned_on=self,
                         hourly_tariff=person.standard_hourly_tariff())
                     work_assignment.save(save_assigned_on=False)
-                    msg = "%s automatisch toegevoegd aan project" % person
-                    messages.info(tls_request, msg)
         for person in self.assigned_persons():
             person.save()  # Increment cache key
         return result
