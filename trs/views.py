@@ -1291,6 +1291,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                     min_value=0,
                     max_value=100,
                     widget=forms.TextInput(attrs={'size': 2,
+                                                  'type': 'number',
                                                   'tabindex': index + 1}))
                 fields[project.code] = field_type
         return type("GeneratedBookingForm", (forms.Form,), fields)
@@ -2076,6 +2077,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                     min_value=0,
                     initial=round(budgets.get(person.id, 0)),
                     widget=forms.TextInput(attrs={'size': 4,
+                                                  'type': 'number',
                                                   'tabindex': tabindex}))
                 fields[self.hours_fieldname(person)] = field_type
                 tabindex += 1
@@ -2084,6 +2086,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                     min_value=0,
                     initial=round(hourly_tariffs.get(person.id, 0)),
                     widget=forms.TextInput(attrs={'size': 4,
+                                                  'type': 'number',
                                                   'tabindex': tabindex}))
                 fields[self.hourly_tariff_fieldname(person)] = field_type
                 tabindex += 1
@@ -2093,6 +2096,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             min_value=0,
             initial=int(self.project.reservation),
             widget=forms.TextInput(attrs={'size': 4,
+                                          'type': 'number',
                                           'tabindex': tabindex}))
         tabindex += 1
 
