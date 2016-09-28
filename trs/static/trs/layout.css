@@ -53,6 +53,10 @@ table .header-fixed {
 input#id_description {
     width: 600px;
 }
+/* The type=number inputs are too wide, they don't respect the html width attribute. */
+input[type=number]{
+    width: 72px;
+}
 
 /* For search results */
 .highlighted {
