@@ -660,6 +660,9 @@ class ProjectsView(BaseView):
                  {'value': 'archived',
                   'title': 'gearchiveerde projecten',
                   'q': Q(archived=True)},
+                 {'value': 'all',
+                  'title': 'Geen filter',
+                  'q': Q()},
              ]},
 
             {'title': 'Subsidie',
