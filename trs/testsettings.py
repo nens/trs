@@ -142,7 +142,7 @@ SSO_ENABLED = True
 SSO_USE_V2_LOGIN = True
 SSO_KEY = 'trs_random_generated_key_to_identify_the_client'
 SSO_SECRET = 'trs_random_generated_secret_key_to_sign_exchanged_messages'
-SSO_SERVER_API_START_URL = 'https://sso.staging.lizard.net/api2/'
+SSO_SERVER_API_START_URL = 'https://sso.lizard.net/api2/'
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend',
                            'lizard_auth_client.backends.SSOBackend']
 
