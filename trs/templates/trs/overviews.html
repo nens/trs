@@ -5,7 +5,7 @@
   <h1>Overzichten</h1>
 
   <ul>
-    {% if user.is_superuser %}
+    {% if perms.auth.manage_users %}
       <li>
         <a href="{% url 'lizard_auth_client.user_overview' %}">
           Gebruikers/toegangsbeheer
