@@ -1,7 +1,7 @@
 import datetime
 
-import factory
 from django.contrib.auth.models import User
+import factory
 
 from trs import models
 
@@ -10,6 +10,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
 
+    first_name = 'Reinout'
     username = factory.Sequence(lambda n: 'user{0}'.format(n))
 
 
@@ -18,7 +19,6 @@ class PersonFactory(factory.django.DjangoModelFactory):
         model = models.Person
 
     name = 'Reinout'
-    user = factory.SubFactory(UserFactory)
 
 
 class ProjectFactory(factory.django.DjangoModelFactory):

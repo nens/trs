@@ -5,6 +5,13 @@
   <h1>Overzichten</h1>
 
   <ul>
+    {% if perms.auth.manage_users %}
+      <li>
+        <a href="{% url 'lizard_auth_client.user_overview' %}">
+          Gebruikers/toegangsbeheer
+        </a>
+      </li>
+    {% endif %}
     {% if view.can_see_everything %}
       <li>
         <a href="{% url 'trs.overviews.invoices' %}">
