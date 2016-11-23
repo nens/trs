@@ -79,9 +79,9 @@ class ProjectsViewTestCase(TestCase):
         self.project2 = factories.ProjectFactory.create()
 
     def test_smoke(self):
-        person = factories.PersonFactory.create()
+        user = factories.UserFactory.create()
         request = RequestFactory().get('/')
-        request.user = person.user
+        request.user = user
         view = views.ProjectsView(request=request)
         self.assertEqual(view.lines[1]['project'], self.project1)
 
