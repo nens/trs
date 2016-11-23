@@ -30,13 +30,14 @@ class BaseMixinTestCase(TestCase):
 
     def test_active_person(self):
         # if no one is logged in, we should be iterable, too.
-        person = factories.PersonFactory.create()
-        self.view.request.user = person.user
-        self.assertEqual(self.view.active_person, person)
+        user = factories.UserFactory.create()  # This creates a person, too
+        self.view.request.user = user
+        self.assertEqual(self.view.active_person, user.person)
 
     def test_active_projects(self):
         ensure_year_weeks_are_present()
-        person = factories.PersonFactory.create()
+        user = factories.UserFactory.create()  # This creates a person, too
+        person = user.person
         project1 = factories.ProjectFactory.create(code='p1')
         project2 = factories.ProjectFactory.create(code='p2')
         factories.WorkAssignmentFactory(assigned_to=person,
