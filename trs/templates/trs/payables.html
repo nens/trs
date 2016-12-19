@@ -2,7 +2,14 @@
 {% load trs_formatting %}
 
 {% block full-width %}
-  <h1>Overzicht kosten derden</h1>
+  <h1>
+    Overzicht kosten derden
+    <a class="pull-right"
+       title="Download .csv"
+       href="{% url 'trs.overviews.payables.csv' %}?{{ view.request.GET.urlencode }}">
+      <span class="glyphicon glyphicon-download-alt"></span>
+    </a>
+  </h1>
   {% for message in messages %}
     <div class="alert alert-{{ message.tags }} alert-dismissable">
       <button type="button"

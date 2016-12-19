@@ -3771,3 +3771,32 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
         yield ["", "Aantal FTE", self.fte()]
         yield ["", "Aantal dagen ziekteverlof", self.sick_days()]
         yield ["", "Dagen achter met boeken", self.days_to_book()]
+
+
+class PayablesCsvView(CsvResponseMixin, PayablesView):
+
+    header_line = [
+        "Factuurdatum",
+        "Factuurnummer",
+        "Project",
+        "Gearchiveerd",
+        "Opdrachtgever",
+        "Omschrijving",
+        "Bedrag",
+        "Betaald",
+    ]
+
+    @property
+    def csv_lines(self):
+        for payable in self.payables:
+            line = [
+                payable.date,
+                payable.number,
+                payable.project.code,
+                payable.project.archived,
+                payable.project.principal,
+                payable.description,
+                payable.amount,
+                payable.payed,
+                ]
+            yield line
