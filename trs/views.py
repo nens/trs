@@ -2579,7 +2579,7 @@ class InvoicesPerMonthOverview(BaseView):
 
 class PayablesView(BaseView):
     template_name = 'trs/payables.html'
-    normally_visible_filters = ['status', 'year', 'projectstatus']
+    normally_visible_filters = ['status', 'year', 'projectstatus', 'group']
 
     @cached_property
     def results_for_selection_pager(self):
@@ -2627,6 +2627,20 @@ class PayablesView(BaseView):
                   'title': 'gearchiveerde projecten',
                   'q': Q(project__archived=True)},
              ]},
+            {'title': 'Groep',
+             'param': 'group',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'Geen filter',
+                  'q': Q()}] +
+             [{'value': str(group.id),
+               'title': group.name,
+               'q': Q(project__group=group.id)}
+              for group in Group.objects.all()] +
+             [{'value': 'geen',
+               'title': 'Zonder groep',
+               'q': Q(project__group=None)}]},
         ]
 
         return result
@@ -3778,6 +3792,7 @@ class PayablesCsvView(CsvResponseMixin, PayablesView):
     header_line = [
         "Factuurdatum",
         "Factuurnummer",
+        "Groep",
         "Project",
         "Gearchiveerd",
         "Opdrachtgever",
@@ -3792,6 +3807,7 @@ class PayablesCsvView(CsvResponseMixin, PayablesView):
             line = [
                 payable.date,
                 payable.number,
+                payable.project.group,
                 payable.project.code,
                 payable.project.archived,
                 payable.project.principal,
