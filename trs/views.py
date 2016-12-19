@@ -2579,7 +2579,7 @@ class InvoicesPerMonthOverview(BaseView):
 
 class PayablesView(BaseView):
     template_name = 'trs/payables.html'
-    normally_visible_filters = ['status', 'year']
+    normally_visible_filters = ['status', 'year', 'projectstatus']
 
     @cached_property
     def results_for_selection_pager(self):
@@ -2592,14 +2592,17 @@ class PayablesView(BaseView):
              'param': 'status',
              'default': 'false',
              'choices': [
+                 {'value': 'false',
+                  'title': 'nog niet uitbetaald',
+                  'q': Q(payed=None)},
+                 {'value': 'true',
+                  'title': 'uitbetaald',
+                  'q': Q(payed__isnull=False)},
                  {'value': 'all',
                   'title': 'alles',
                   'q': Q()},
-                 {'value': 'false',
-                  'title': 'nog niet uitbetaald',
-                  'q': Q(payed=None)}
              ]},
-            {'title': 'Jaar',
+            {'title': 'Jaar (v/d factuurdatum)',
              'param': 'year',
              'default': str(this_year_week().year),
              'choices': [
@@ -2610,6 +2613,20 @@ class PayablesView(BaseView):
                          {'value': 'all',
                           'title': 'alle jaren',
                           'q': Q()}]},
+            {'title': 'Projectstatus',
+             'param': 'projectstatus',
+             'default': 'all',
+             'choices': [
+                 {'value': 'all',
+                  'title': 'geen filter',
+                  'q': Q()},
+                 {'value': 'active',
+                  'title': 'actieve projecten',
+                  'q': Q(project__archived=False)},
+                 {'value': 'archived',
+                  'title': 'gearchiveerde projecten',
+                  'q': Q(project__archived=True)},
+             ]},
         ]
 
         return result
