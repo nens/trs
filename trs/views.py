@@ -3568,7 +3568,7 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
 
     @property
     def reservations_total(self):
-        return round(self.projects.aggregate(
+        return round(self.projects.filter(archived=False).aggregate(
             models.Sum('reservation'))['reservation__sum'] or 0)
 
     def invoice_table(self):
