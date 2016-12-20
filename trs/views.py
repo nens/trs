@@ -3720,6 +3720,8 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
             year_week__year=self.year).aggregate(
                 models.Sum('hours'))['hours__sum']
 
+        if not sick_hours:
+            return 0
         return round(sick_hours / 8)
 
     def days_to_book(self):
