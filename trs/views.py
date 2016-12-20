@@ -3533,18 +3533,17 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
         else:
             return "het gehele bedrijf"
 
-    @cached_property
-    def info_from_bookings(self):
-        """Return info extracted from this year's bookings"""
-        # First grab the persons that booked this year.
+    def _info_from_bookings(self, year):
+        """Return info extracted one year's bookings"""
+        # First grab the persons that booked in the year.
         relevant_person_ids = Booking.objects.filter(
-            year_week__year=self.year).values_list(
+            year_week__year=year).values_list(
             'booked_by', flat=True).distinct()
         relevant_persons = Person.objects.filter(
             id__in=relevant_person_ids)
         if self.group:
             relevant_persons = relevant_persons.filter(group=self.group)
-        pycs = [core.get_pyc(person=person, year=self.year)
+        pycs = [core.get_pyc(person=person, year=year)
                 for person in relevant_persons]
         return {'turnover': sum([pyc.turnover for pyc in pycs]),
                 'left_to_book_external': sum(
@@ -3556,6 +3555,16 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
                 'overbooked_external': sum([pyc.overbooked_external for pyc in pycs]),
                 'loss': sum([pyc.loss for pyc in pycs]),
             }
+
+    @cached_property
+    def info_from_bookings(self):
+        """Return info extracted from this year's bookings"""
+        return self._info_from_bookings(self.year)
+
+    @cached_property
+    def info_from_previous_bookings(self):
+        """Return info extracted from previous year's bookings"""
+        return self._info_from_bookings(self.year - 1)
 
     @property
     def reservations_total(self):
@@ -3737,17 +3746,30 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
         yield []
         yield ["1. GEREALISEERDE OMZET"]
         yield []
-        yield ["", "", "Uren", "geld"]
+        yield ["", "", "Uren", "Geld",
+               "", "Uren vorig jaar", "Geld vorig jaar"]
         yield ["", "Gerealiseerde omzet dit jaar",
                self.info_from_bookings['booked_external'],
-               self.info_from_bookings['turnover']]
+               self.info_from_bookings['turnover'],
+               "",
+               self.info_from_previous_bookings['booked_external'],
+               self.info_from_previous_bookings['turnover'],
+        ]
         yield ["", "Werkvoorraad",
                self.info_from_bookings['left_to_book_external'],
-               self.info_from_bookings['left_to_turn_over']]
+               self.info_from_bookings['left_to_turn_over'],
+               "",
+               self.info_from_previous_bookings['left_to_book_external'],
+               self.info_from_previous_bookings['left_to_turn_over'],
+           ]
         yield ["", "Totaal reserveringen", "", self.reservations_total]
         yield ["", "Verliesuren dit jaar",
                self.info_from_bookings['overbooked_external'],
-               self.info_from_bookings['loss']]
+               self.info_from_bookings['loss'],
+               "",
+               self.info_from_previous_bookings['overbooked_external'],
+               self.info_from_previous_bookings['loss'],
+           ]
         yield []
         yield ["2. GEFACTUREERDE OMZET"]
         yield []
