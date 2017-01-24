@@ -391,6 +391,7 @@ class Project(models.Model):
         max_digits=12,  # We don't mind a metric ton of hard cash.
         decimal_places=DECIMAL_PLACES,
         default=0,
+        validators=[MinValueValidator(0)],
         verbose_name="opdrachtsom")
     bid_send_date = models.DateField(
         verbose_name="offerte verzonden",
@@ -406,6 +407,7 @@ class Project(models.Model):
         max_digits=12,
         decimal_places=DECIMAL_PLACES,
         default=0,
+        validators=[MinValueValidator(0)],
         verbose_name="reservering voor personele kosten")
     start = models.ForeignKey(
         'YearWeek',
