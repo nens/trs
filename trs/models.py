@@ -409,6 +409,18 @@ class Project(models.Model):
         default=0,
         validators=[MinValueValidator(0)],
         verbose_name="reservering voor personele kosten")
+    third_party_costs_estimate = models.DecimalField(
+        max_digits=12,
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        validators=[MinValueValidator(0)],
+        verbose_name="kosten derden (begroot)")
+    profit = models.DecimalField(
+        max_digits=12,
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        validators=[MinValueValidator(0)],
+        verbose_name="afdracht")
     start = models.ForeignKey(
         'YearWeek',
         blank=True,
@@ -848,8 +860,8 @@ class Payable(FinancialBase):
         help_text="Formaat: 25-12-1972, dd-mm-jjjj")
 
     class Meta:
-        verbose_name = "kosten derden"
-        verbose_name_plural = "kosten derden"
+        verbose_name = "factuur kosten derden"
+        verbose_name_plural = "facturen kosten derden"
         ordering = ('date', 'number',)
 
     def __str__(self):
