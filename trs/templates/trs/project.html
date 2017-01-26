@@ -342,7 +342,6 @@
                   {{ view.project.reservation|money }}
                 <td colspan="6"></td>
               </tr>
-
               <tr>
                 <th>
                   {# Subtotaal #}
@@ -420,49 +419,21 @@
               {% endfor %}
 
               <tr>
-                <th>Kosten derden</th>
-                <td colspan="3"></td>
-                <th class="text-right">Factuurnummer</th>
-                <th class="text-right">Factuurdatum</th>
-                <th class="text-right">Betaald op</th>
-                <td colspan="2"></td>
+                <td>Begrote kosten derden</td>
+                <td class="text-right"
+                    colspan="2">
+                  {{ view.project.third_party_costs_estimate|money }}
+                <td colspan="6"></td>
               </tr>
-              {% for payable in view.project.payables.all %}
-                <tr>
-                  <td>
-                    &nbsp;&nbsp;&nbsp;
-                    {% if view.can_edit_financials %}
-                      <a href="{% url 'trs.payable.edit' project_pk=view.project.pk pk=payable.pk %}">
-                        {{ payable.description|default:'Niet ingevuld' }}
-                      </a>
-                    {% else %}
-                      {{ payable.description|default:'Niet ingevuld' }}
-                    {% endif %}
-                  </td>
-                  <td>
-                    {% if view.can_edit_financials %}
-                      <a href="{% url 'trs.project.payable-delete' pk=view.project.pk payable_pk=payable.pk %}">
-                        <span class="glyphicon glyphicon-minus-sign text-danger"></span>
-                      </a>
-                    {% endif %}
-                  </td>
-                  {% if payable.amount >= 0 %}
-                    <td class="text-right">{{ payable.amount|money }}</td>
-                    <td class="text-right"></td>
-                  {% else %}
-                    <td class="text-right"></td>
-                    <td class="text-right">{{ payable.amount_as_income|money }}</td>
-                  {% endif %}
-                  <td class="text-right">{{ payable.number }}</td>
-                  <td class="text-right">{{ payable.date|date:"j b Y" }}</td>
-                  <td class="text-right">
-                    {{ payable.payed|date:"j b Y"|default:'Nee' }}
-                  </td>
-                  <td colspan="2"></td>
-                </tr>
-              {% endfor %}
-
+              <tr>
+                <td>Afdracht</td>
+                <td class="text-right"
+                    colspan="2">
+                  {{ view.project.profit|money }}
+                <td colspan="6"></td>
+              </tr>
             </tbody>
+
             <tfoot>
               <tr>
                 <th>Totaal</th>
@@ -488,7 +459,7 @@
         <a href="{% url 'trs.project.team' pk=view.project.pk %}"
            class="btn btn-default">
           <span class="glyphicon glyphicon-pencil"></span>
-          Pas personele kosten aan
+          Pas personele kosten en reserveringen aan
         </a>
         &nbsp;&nbsp;
       {% endif %}
@@ -499,13 +470,6 @@
           Voeg kostenpost toe
         </a>
         &nbsp;&nbsp;
-      {% endif %}
-      {% if view.can_edit_financials %}
-        <a href="{% url 'trs.payable.add' project_pk=view.project.pk %}"
-           class="btn btn-default">
-          <span class="glyphicon glyphicon-plus"></span>
-          Voeg kosten derden toe
-        </a>
       {% endif %}
     </div>
     {% if view.can_edit_and_see_everything and view.project.internal %}
@@ -599,6 +563,84 @@
         </a>
       </div>
     {% endif %}
+
+
+
+    <h2>Facturen kosten derden</h2>
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Factuurnummer</th>
+            <th>{# 'delete' button #}</th>
+            <th>Omschrijving</th>
+            <th class="text-right">Bedrag</th>
+            <th>Betaald</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for payable in view.project.payables.all %}
+            <tr>
+              <td>{{ payable.date|date:"j b Y" }}</td>
+              <td>{{ payable.number }}</td>
+              <td>
+                {% if view.can_edit_financials %}
+                  <a href="{% url 'trs.project.payable-delete' pk=view.project.pk payable_pk=payable.pk %}">
+                    <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                  </a>
+                {% endif %}
+              </td>
+              <td>
+                {% if view.can_edit_financials %}
+                  <a href="{% url 'trs.payable.edit' project_pk=view.project.pk pk=payable.pk %}">
+                    {{ payable.description|default:'Niet ingevuld' }}
+                  </a>
+                {% else %}
+                  {{ payable.description|default:'Niet ingevuld' }}
+                {% endif %}
+              </td>
+              <td class="text-right">{{ payable.amount|money_with_decimal }}</td>
+              <td class="text-right">
+                {{ payable.payed|date:"j b Y"|default:'Nee' }}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6">
+                <i>Er zijn geen facturen toegevoegd.</i>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+
+        <tfoot>
+          <tr>
+            <th>Totaal</th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th class="text-right">
+              {{ view.total_third_party_invoices|money_with_decimal }}
+            </th>
+            <th></th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+
+    {% if view.can_edit_financials %}
+      <div>
+        <a href="{% url 'trs.payable.add' project_pk=view.project.pk %}"
+           class="btn btn-default">
+          <span class="glyphicon glyphicon-plus"></span>
+          Voeg factuur kosten derden toe
+        </a>
+      </div>
+    {% endif %}
+
 
     {% if view.project.financial_remark %}
       <p>

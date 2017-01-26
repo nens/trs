@@ -1164,6 +1164,11 @@ class ProjectView(BaseView):
         return sum([invoice.amount_inclusive
                     for invoice in self.project.invoices.all()])
 
+    @cached_property
+    def total_third_party_invoices(self):
+        return sum([payable.amount
+                    for payable in self.project.payables.all()])
+
 
 class LoginView(FormView, BaseMixin):
     template_name = 'trs/login.html'
@@ -2010,7 +2015,8 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def title(self):
-        return "Personele kosten voor %s bewerken" % self.project.code
+        return "Personele kosten en reservering voor %s bewerken" % (
+            self.project.code)
 
     @cached_property
     def can_edit_hours(self):
@@ -2094,15 +2100,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 fields[self.hourly_tariff_fieldname(person)] = field_type
                 tabindex += 1
 
-        # Reservation field
-        fields['reservation'] = forms.IntegerField(
-            min_value=0,
-            initial=int(self.project.reservation),
-            widget=forms.TextInput(attrs={'size': 4,
-                                          'type': 'number',
-                                          'tabindex': tabindex}))
-        tabindex += 1
-
         if self.can_add_team_member:
             # New team member field
             name = 'new_team_member'
@@ -2116,6 +2113,32 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             fields[name] = field_type
             tabindex += 1
 
+        # Extra fields from the Project model
+        fields['reservation'] = forms.IntegerField(
+            label="Reservering voor toekomstig werk",
+            min_value=0,
+            initial=int(self.project.reservation),
+            widget=forms.TextInput(attrs={'size': 4,
+                                          'type': 'number',
+                                          'tabindex': tabindex}))
+        tabindex += 1
+        fields['third_party_costs_estimate'] = forms.IntegerField(
+            label="Begrote kosten derden (onderaannemers)",
+            min_value=0,
+            initial=int(self.project.third_party_costs_estimate),
+            widget=forms.TextInput(attrs={'size': 4,
+                                          'type': 'number',
+                                          'tabindex': tabindex}))
+        tabindex += 1
+        fields['profit'] = forms.IntegerField(
+            label="Afdracht",
+            min_value=0,
+            initial=int(self.project.profit),
+            widget=forms.TextInput(attrs={'size': 4,
+                                          'type': 'number',
+                                          'tabindex': tabindex}))
+        tabindex += 1
+
         generated_form_class = type("GeneratedTeamEditForm",
                                     (forms.Form,),
                                     fields)
@@ -2124,6 +2147,9 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             budgets, hourly_tariffs = self.budgets_and_tariffs
             new_person_costs = 0
             new_reservation = generated_form.cleaned_data.get('reservation') or 0
+            new_third_party_costs_estimate = generated_form.cleaned_data.get(
+                'third_party_costs_estimate') or 0
+            new_profit = generated_form.cleaned_data.get('profit') or 0
 
             for person in generated_form.the_project.assigned_persons():
                 budget = generated_form.cleaned_data.get(
@@ -2140,7 +2166,11 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 generated_form.the_project.income() -
                 new_person_costs -
                 new_reservation -
-                generated_form.the_project.costs())
+                generated_form.the_project.costs() +
+                generated_form.the_project.third_party_costs_estimate -
+                new_third_party_costs_estimate +
+                generated_form.the_project.profit -
+                new_profit)
             if left_to_dish_out < -1:
                 # Note: -1 instead of 0 because some contract amounts aren't
                 # neatly rounded.
@@ -2199,14 +2229,19 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     @cached_property
     def new_team_member_field(self):
         if self.can_add_team_member:
-            return self.bound_form_fields[-1]
+            return self.bound_form_fields[-4]
 
     @cached_property
     def reservation_field(self):
-        if self.can_add_team_member:
-            return self.bound_form_fields[-2]
-        else:
-            return self.bound_form_fields[-1]
+        return self.bound_form_fields[-3]
+
+    @cached_property
+    def third_party_costs_estimate_field(self):
+        return self.bound_form_fields[-2]
+
+    @cached_property
+    def profit_field(self):
+        return self.bound_form_fields[-1]
 
     def form_valid(self, form):
         num_changes = 0
@@ -2245,6 +2280,23 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             msg = "Reservering is op %s gezet" % reservation
             messages.success(self.request, msg)
 
+        profit = form.cleaned_data.get('profit')
+        if self.project.profit != profit:
+            self.project.profit = profit
+            self.project.save()
+            msg = "Afdracht is op %s gezet" % profit
+            messages.success(self.request, msg)
+
+        third_party_costs_estimate = form.cleaned_data.get(
+            'third_party_costs_estimate')
+        if (self.project.third_party_costs_estimate !=
+            third_party_costs_estimate):
+            self.project.third_party_costs_estimate = third_party_costs_estimate
+            self.project.save()
+            msg = "Reservering kosten derden is op %s gezet" % (
+                third_party_costs_estimate)
+            messages.success(self.request, msg)
+
         if self.can_add_team_member:
             new_team_member_id = form.cleaned_data.get('new_team_member')
             if new_team_member_id:
@@ -2262,7 +2314,7 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     @cached_property
     def person_costs_incl_reservation(self):
         person_costs = sum([line['costs'] for line in self.lines])
-        return person_costs + self.project.reservation
+        return person_costs + self.project.reservation + self.project.profit
 
     @cached_property
     def total_costs(self):

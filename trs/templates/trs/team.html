@@ -57,22 +57,8 @@
             </td>
           </tr>
         {% endfor %}
-        <tr>
-          <td colspan="6">Reservering</td>
-          <th class="text-right">
-              {% for error in view.reservation_field.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
-              {% endfor %}
-            {{ view.reservation_field }}
-          </th>
-        </tr>
-        <tr>
-          <td colspan="6">Subtotaal (personele kosten)</td>
-          <th class="text-right">{{ view.person_costs_incl_reservation|money }}</th>
-        </tr>
-
-
       </tbody>
+
       {% if view.can_add_team_member %}
         <tbody>
           <tr>
@@ -83,6 +69,41 @@
           </tr>
         </tbody>
       {% endif %}
+
+      <tbody>
+        <tr>
+          <td colspan="6">Reservering toekomstig werk</td>
+          <th class="text-right">
+              {% for error in view.reservation_field.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
+            {{ view.reservation_field }}
+          </th>
+        </tr>
+        <tr>
+          <td colspan="6">Begrote kosten derden</td>
+          <th class="text-right">
+              {% for error in view.third_party_costs_estimate_field.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
+            {{ view.third_party_costs_estimate_field }}
+          </th>
+        </tr>
+        <tr>
+          <td colspan="6">Afdracht</td>
+          <th class="text-right">
+              {% for error in view.profit_field.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
+            {{ view.profit_field }}
+          </th>
+        </tr>
+        <tr>
+          <td colspan="6">Subtotaal</td>
+          <th class="text-right">{{ view.person_costs_incl_reservation|money }}</th>
+        </tr>
+      </tbody>
+
       <tfoot>
         <tr>
           <th colspan="7" class="text-right">
@@ -119,7 +140,7 @@
             <td class="text-right">{{ view.project.contract_amount|money }}</td>
           </tr>
           <tr>
-            <td>Personele kosten incl. reservering</td>
+            <td>Personele kosten incl. reserveringen en afdracht</td>
             <td class="text-right">{{ view.person_costs_incl_reservation|money }}</td>
             <td class="text-right"></td>
           </tr>

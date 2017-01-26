@@ -549,7 +549,7 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        cache_version = 16
+        cache_version = 17
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, cache_version)
 
@@ -667,11 +667,11 @@ class Project(models.Model):
                 income += budget_item.amount
             else:
                 costs += budget_item.amount * -1
-        for payable in self.payables.all():
-            if payable.amount > 0:
-                costs += payable.amount
-            else:
-                income += payable.amount
+
+        # Note: payables ('facturen kosten derden') are treated separately
+        # now.
+        costs += self.third_party_costs_estimate
+        costs += self.profit
 
         # The next three are in hours.
         overbooked_per_person = {
