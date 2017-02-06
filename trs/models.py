@@ -888,8 +888,7 @@ class BudgetItem(FinancialBase):
         default=0,
         verbose_name="bedrag exclusief",
         help_text=("Dit zijn kosten, dus een positief getal wordt van het "
-                   "projectbudget afgetrokken. "
-                   "(Dit is in sept 2014 veranderd!)"))
+                   "projectbudget afgetrokken. "))
     to_project = models.ForeignKey(
         Project,
         blank=True,
@@ -917,6 +916,29 @@ class BudgetItem(FinancialBase):
         if self.to_project:
             self.to_project.save()  # Increment cache key.
         return super(BudgetItem, self).save(*args, **kwargs)
+
+
+class ThirdPartyEstimate(FinancialBase):
+    project = models.ForeignKey(
+        Project,
+        related_name="third_party_estimates",
+        verbose_name="project")
+    description = models.CharField(
+        verbose_name="omschrijving",
+        blank=True,
+        max_length=255)
+    amount = models.DecimalField(
+        max_digits=12,  # We don't mind a metric ton of hard cash.
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="bedrag exclusief")
+
+    class Meta:
+        verbose_name = "begrote kosten derden"
+        verbose_name_plural = "begrote kosten derden"
+
+    def __str__(self):
+        return self.description
 
 
 class YearWeek(models.Model):
