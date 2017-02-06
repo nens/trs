@@ -81,15 +81,6 @@
           </th>
         </tr>
         <tr>
-          <td colspan="6">Begrote kosten derden</td>
-          <th class="text-right">
-              {% for error in view.third_party_costs_estimate_field.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
-              {% endfor %}
-            {{ view.third_party_costs_estimate_field }}
-          </th>
-        </tr>
-        <tr>
           <td colspan="6">Afdracht</td>
           <th class="text-right">
               {% for error in view.profit_field.errors %}

@@ -2122,14 +2122,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                                           'type': 'number',
                                           'tabindex': tabindex}))
         tabindex += 1
-        fields['third_party_costs_estimate'] = forms.IntegerField(
-            label="Begrote kosten derden (onderaannemers)",
-            min_value=0,
-            initial=int(self.project.third_party_costs_estimate),
-            widget=forms.TextInput(attrs={'size': 4,
-                                          'type': 'number',
-                                          'tabindex': tabindex}))
-        tabindex += 1
         fields['profit'] = forms.IntegerField(
             label="Afdracht",
             min_value=0,
@@ -2147,8 +2139,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             budgets, hourly_tariffs = self.budgets_and_tariffs
             new_person_costs = 0
             new_reservation = generated_form.cleaned_data.get('reservation') or 0
-            new_third_party_costs_estimate = generated_form.cleaned_data.get(
-                'third_party_costs_estimate') or 0
             new_profit = generated_form.cleaned_data.get('profit') or 0
 
             for person in generated_form.the_project.assigned_persons():
@@ -2167,8 +2157,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 new_person_costs -
                 new_reservation -
                 generated_form.the_project.costs() +
-                generated_form.the_project.third_party_costs_estimate -
-                new_third_party_costs_estimate +
                 generated_form.the_project.profit -
                 new_profit)
             if left_to_dish_out < -1:
@@ -2229,14 +2217,10 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     @cached_property
     def new_team_member_field(self):
         if self.can_add_team_member:
-            return self.bound_form_fields[-4]
+            return self.bound_form_fields[-3]
 
     @cached_property
     def reservation_field(self):
-        return self.bound_form_fields[-3]
-
-    @cached_property
-    def third_party_costs_estimate_field(self):
         return self.bound_form_fields[-2]
 
     @cached_property
@@ -2285,16 +2269,6 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             self.project.profit = profit
             self.project.save()
             msg = "Afdracht is op %s gezet" % profit
-            messages.success(self.request, msg)
-
-        third_party_costs_estimate = form.cleaned_data.get(
-            'third_party_costs_estimate')
-        if (self.project.third_party_costs_estimate !=
-            third_party_costs_estimate):
-            self.project.third_party_costs_estimate = third_party_costs_estimate
-            self.project.save()
-            msg = "Reservering kosten derden is op %s gezet" % (
-                third_party_costs_estimate)
             messages.success(self.request, msg)
 
         if self.can_add_team_member:

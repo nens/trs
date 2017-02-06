@@ -409,12 +409,6 @@ class Project(models.Model):
         default=0,
         validators=[MinValueValidator(0)],
         verbose_name="reservering voor personele kosten")
-    third_party_costs_estimate = models.DecimalField(
-        max_digits=12,
-        decimal_places=DECIMAL_PLACES,
-        default=0,
-        validators=[MinValueValidator(0)],
-        verbose_name="kosten derden (begroot)")
     profit = models.DecimalField(
         max_digits=12,
         decimal_places=DECIMAL_PLACES,
@@ -670,7 +664,6 @@ class Project(models.Model):
 
         # Note: payables ('facturen kosten derden') are treated separately
         # now.
-        costs += self.third_party_costs_estimate
         costs += self.profit
 
         # The next three are in hours.

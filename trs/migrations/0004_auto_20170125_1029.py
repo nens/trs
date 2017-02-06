@@ -21,11 +21,6 @@ class Migration(migrations.Migration):
             name='profit',
             field=models.DecimalField(verbose_name='afdracht', decimal_places=2, default=0, max_digits=12, validators=[django.core.validators.MinValueValidator(0)]),
         ),
-        migrations.AddField(
-            model_name='project',
-            name='third_party_costs_estimate',
-            field=models.DecimalField(verbose_name='kosten derden (begroot)', decimal_places=2, default=0, max_digits=12, validators=[django.core.validators.MinValueValidator(0)]),
-        ),
         migrations.AlterField(
             model_name='project',
             name='contract_amount',
