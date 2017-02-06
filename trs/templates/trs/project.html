@@ -269,7 +269,63 @@
               <td class="text-right"
                   colspan="3">
                 {{ view.project.contract_amount|money }}
-              <td colspan="3"></td>
+              <td colspan="5"></td>
+              </td>
+            </tr>
+
+            <tr>
+              <th>Begrote kosten derden</th>
+              <td colspan="8"></td>
+            </tr>
+            {% for third_party_cost in view.project.third_party_costs.all %}
+              <tr>
+                <td>
+                  &nbsp;&nbsp;&nbsp;
+                  {% if view.can_edit_financials %}
+                    <a href="{% url 'trs.third_party_cost.edit' project_pk=view.project.pk pk=third_party_cost.pk %}">
+                      {{ third_party_cost.description|default:'Niet ingevuld' }}
+                    </a>
+                  {% else %}
+                    {{ third_party_cost.description|default:'Niet ingevuld' }}
+                  {% endif %}
+                  {% if third_party_cost.to_project %}
+                    naar {{ third_party_cost.to_project.as_widget }}
+                  {% endif %}
+                </td>
+                <td>
+                  {% if view.can_edit_financials %}
+                    <a href="{% url 'trs.project.budget-item-delete' pk=view.project.pk third_party_cost_pk=third_party_cost.pk %}">
+                      <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                    </a>
+                  {% endif %}
+                </td>
+                {% if third_party_cost.amount >= 0 %}
+                  <td class="text-right">{{ third_party_cost.amount|money }}</td>
+                  <td class="text-right"></td>
+                {% else %}
+                  <td class="text-right"></td>
+                  <td class="text-right">{{ third_party_cost.amount_as_income|money }}</td>
+                {% endif %}
+                <td colspan="5">
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td>
+                  &nbsp;&nbsp;&nbsp;
+                  Geen
+                </td>
+                <td colspan="8">
+                </td>
+              </tr>
+            {% endfor %}
+
+            <tr>
+              <th>Netto opdrachtsom</th>
+              <td class="text-right"
+                  colspan="3">
+                {{ view.project.net_contract_amount|money }}
+              <td colspan="5"></td>
               </td>
             </tr>
           </tbody
