@@ -595,6 +595,7 @@ class Project(models.Model):
         return self.work_calculation()['third_party_costs']
 
     def costs(self):
+        # Note: this includes profit ('afdracht')
         return self.work_calculation()['costs']
 
     def income(self):
@@ -625,6 +626,14 @@ class Project(models.Model):
         # Note: a little margin around zero is allowed to account for contract
         # amounts not always being rounded.
         return -1 < self.left_to_dish_out() < 1
+
+    def budget_not_ok_style(self):
+        """Return orange/red style depending on whether were above/below zero.
+        """
+        if self.left_to_dish_out() < 0:
+            return 'text-danger'
+        else:
+            return 'text-warning'
 
     @cache_on_model
     def work_calculation(self):
@@ -943,6 +952,7 @@ class ThirdPartyEstimate(FinancialBase):
         max_digits=12,  # We don't mind a metric ton of hard cash.
         decimal_places=DECIMAL_PLACES,
         default=0,
+        validators=[MinValueValidator(0)],
         verbose_name="bedrag exclusief")
 
     class Meta:

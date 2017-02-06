@@ -78,7 +78,7 @@
           <td class="text-right">
             {% if not line.project.budget_ok %}
               <a href="{{ line.project.get_absolute_url }}#budget">
-                <span class="text-danger glyphicon glyphicon-warning-sign"
+                <span class="{{ view.project.budget_not_ok_style }} glyphicon glyphicon-warning-sign"
                       title="Budget is niet goed verdeeld"></span>
               </a>
             {% endif %}
