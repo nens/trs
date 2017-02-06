@@ -543,7 +543,7 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        cache_version = 17
+        cache_version = 18
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, cache_version)
 
@@ -588,6 +588,12 @@ class Project(models.Model):
     def left_to_turn_over(self):
         return self.work_calculation()['left_to_turn_over']
 
+    def net_contract_amount(self):
+        return self.work_calculation()['net_contract_amount']
+
+    def third_party_costs(self):
+        return self.work_calculation()['third_party_costs']
+
     def costs(self):
         return self.work_calculation()['costs']
 
@@ -611,7 +617,7 @@ class Project(models.Model):
         return round(self.overbooked() / self.hour_budget() * 100)
 
     def left_to_dish_out(self):
-        return (self.contract_amount + self.income()
+        return (self.net_contract_amount() + self.income()
                 - self.person_costs() -
                 self.reservation - self.costs())
 
@@ -706,6 +712,10 @@ class Project(models.Model):
         else:
             realized_average_tariff = 0
 
+        third_party_costs = (self.third_party_estimates.all().aggregate(
+            models.Sum('amount'))['amount__sum'] or 0)
+        net_contract_amount = self.contract_amount - third_party_costs
+
         return {'budget': budget,
                 'overbooked': sum(overbooked_per_person.values()),
                 'well_booked': sum(well_booked_per_person.values()),
@@ -720,6 +730,8 @@ class Project(models.Model):
                 'weighted_average_tariff': weighted_average_tariff,
                 'realized_average_tariff': realized_average_tariff,
                 'total_booked': total_booked,
+                'third_party_costs': third_party_costs,
+                'net_contract_amount': net_contract_amount,
         }
 
 
