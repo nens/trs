@@ -1015,6 +1015,8 @@ class ProjectView(BaseView):
     def can_edit_financials(self):
         if self.project.archived:
             return False
+        if self.project.is_accepted:
+            return False
         if self.is_project_management:
             return True
 
@@ -1023,13 +1025,6 @@ class ProjectView(BaseView):
         if self.project.archived:
             return False
         if self.can_edit_and_see_everything:
-            return True
-
-    @cached_property
-    def can_edit_team(self):
-        if self.project.archived:
-            return False
-        if self.is_project_management:
             return True
 
     @cached_property
@@ -1471,8 +1466,10 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin,
             if not self.project.startup_meeting_done:
                 result.append('startup_meeting_done')
         if self.active_person == self.project.project_manager:
-            if not self.project.is_accepted:
-                result.append('is_accepted')
+            # if not self.project.is_accepted:
+            #     result.append('is_accepted')
+            # ^^^^ TODO: previously the PM could not un-accept the project.
+            result.append('is_accepted')
         return result
 
     @cached_property

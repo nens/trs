@@ -251,67 +251,67 @@
         {% endif %}
       </h2>
 
+      {% if view.can_edit_project and view.project.is_accepted %}
+        <p>
+          Het project is goedgekeurd, dus de begroting kan niet meer worden
+          aangepast.
+          De PM zal het
+          <a href="{% url 'trs.project.edit' pk=view.project.pk %}#id_is_accepted">
+            goedkeurings-vinkje
+          </a>
+          eerst uit moeten zetten.
+        </p>
+      {% endif %}
+
+
       <div class="table-responsive">
         <table class="table table-hover">
           <thead>
             <tr>
-              <th></th>
-              <th></th>
-              <th class="text-right">Kosten</th>
+              <th colspan="7"></th>
               <th class="text-right">Inkomsten</th>
-              <th colspan="5"></th>
+              <th class="text-right">Kosten</th>
             </tr>
           </thead>
 
           <tbody>
             <tr>
-              <th>Opdrachtsom</th>
-              <td class="text-right"
-                  colspan="3">
+              <th colspan="7">Opdrachtsom</th>
+              <td class="text-right">
                 {{ view.project.contract_amount|money }}
-              <td colspan="5"></td>
               </td>
+              <td></td>
             </tr>
 
             <tr>
-              <th>Begrote kosten derden</th>
-              <td colspan="8"></td>
+              <th colspan="9">
+                Begrote kosten derden
+              </th>
             </tr>
             {% for third_party_estimate in view.project.third_party_estimates.all %}
               <tr>
-                <td>
+                <td colspan="8">
                   &nbsp;&nbsp;&nbsp;
                   {{ third_party_estimate.description|default:'Niet ingevuld' }}
                 </td>
-                <td>
-                </td>
-                {% if third_party_estimate.amount >= 0 %}
-                  <td class="text-right">{{ third_party_estimate.amount|money }}</td>
-                  <td class="text-right"></td>
-                {% else %}
-                  <td class="text-right"></td>
-                  <td class="text-right">{{ third_party_estimate.amount_as_income|money }}</td>
-                {% endif %}
-                <td colspan="5">
+                <td class="text-right">{{ third_party_estimate.amount|money }}</td>
                 </td>
               </tr>
             {% empty %}
               <tr>
-                <td>
+                <td colspan="9">
                   &nbsp;&nbsp;&nbsp;
                   Geen
-                </td>
-                <td colspan="8">
                 </td>
               </tr>
             {% endfor %}
 
             <tr>
               <th>Netto opdrachtsom</th>
-              <td class="text-right"
-                  colspan="3">
+              <td>
                 {{ view.project.net_contract_amount|money }}
-              <td colspan="5"></td>
+              </td>
+              <td colspan="7"></td>
               </td>
             </tr>
           </tbody
@@ -319,12 +319,13 @@
           <tbody>
             <tr>
               <th>Personele kosten</th>
-              <th colspan="3"></th>
+              <th></th>
               <th class="text-right">Toegekend</th>
               <th class="text-right">Geboekt</th>
               <th class="text-right">Tarief</th>
               <th class="text-right">Omzet</th>
               <th class="text-right">Verlies</th>
+              <th colspan="2"></th>
             </tr>
 
             {% for line in view.lines %}
@@ -349,19 +350,12 @@
                   {% endif %}
                 </td>
 
-                <td class="text-right">
-                  {{ line.planned_turnover|money }}
-                </td>
-                <td class="text-right">
-                  &nbsp;  {# costs #}
-                </td>
-
                 <td class="text-right">{{ line.budget|hours }}</td>
                 <td class="text-right
                            {% if line.is_overbooked %}danger{% endif %}">
                   {{ line.booked|hours }}
                 </td>
-                {% if line.hourly_tariff >= line.desired_hourly_tariff %}
+                {% if line.desired_hourly_tariff <= line.hourly_tariff  %}
                   <td class="text-right">
                     {{ line.hourly_tariff|money }}
                   </td>
@@ -374,27 +368,30 @@
                 {% endif %}
                 <td class="text-right">{{ line.turnover|money }}</td>
                 <td class="text-right">{{ line.loss|money }}</td>
+                <td class="text-right">
+                  &nbsp;  {# costs #}
+                </td>
+                <td class="text-right">
+                  {{ line.planned_turnover|money }}
+                </td>
               </tr>
             {% endfor %}
             {% if view.can_see_project_financials %}
               <tr>
-                <td>&nbsp;&nbsp;&nbsp;Reservering</td>
-                <td class="text-right"
-                    colspan="2">
+                <td colspan="8">&nbsp;&nbsp;&nbsp;Reservering</td>
+                <td class="text-right">
                   {{ view.project.reservation|money }}
-                <td colspan="6"></td>
               </tr>
+
               <tr>
                 <th>
-                  {# Subtotaal #}
+                  Subtotaal personele kosten
                 </th>
-                <td class="text-right"></td>
-                <th class="text-right">{{ view.project.person_costs_incl_reservation|money }}</th>
-                <td class="text-right">{# costs #}</td>
-                <td colspan="2"></td>
-                <td class="text-right"></td>
-                <th class="text-right">{{ view.total_turnover|money }}</th>
-                <th class="text-right">{{ view.total_loss|money }}</th>
+                <td>
+                  {{ view.project.person_costs_incl_reservation|money }}
+                </td>
+                <td colspan="7">
+                </td>
               </tr>
             {% endif %}
           </tbody>
@@ -402,84 +399,87 @@
           {% if view.can_see_project_financials %}
             <tbody>
               <tr>
-                <th>Overige kosten</th>
-                <td colspan="7"></td>
+                <th colspan="9">Overige kosten</th>
               </tr>
               {% for budget_item in view.project.budget_items.all %}
                 <tr>
-                  <td>
+                  <td colspan="7">
                     &nbsp;&nbsp;&nbsp;
-                    {% if view.can_edit_financials %}
-                      <a href="{% url 'trs.budget_item.edit' project_pk=view.project.pk pk=budget_item.pk %}">
-                        {{ budget_item.description|default:'Niet ingevuld' }}
-                      </a>
-                    {% else %}
-                      {{ budget_item.description|default:'Niet ingevuld' }}
-                    {% endif %}
+                    {{ budget_item.description|default:'Niet ingevuld' }}
                     {% if budget_item.to_project %}
                       naar {{ budget_item.to_project.as_widget }}
                     {% endif %}
                   </td>
-                  <td>
-                    {% if view.can_edit_financials %}
-                      <a href="{% url 'trs.project.budget-item-delete' pk=view.project.pk budget_item_pk=budget_item.pk %}">
-                        <span class="glyphicon glyphicon-minus-sign text-danger"></span>
-                      </a>
-                    {% endif %}
-                  </td>
                   {% if budget_item.amount >= 0 %}
+                    <td class="text-right"></td>
                     <td class="text-right">{{ budget_item.amount|money }}</td>
-                    <td class="text-right"></td>
                   {% else %}
-                    <td class="text-right"></td>
                     <td class="text-right">{{ budget_item.amount_as_income|money }}</td>
+                    <td class="text-right"></td>
                   {% endif %}
-                  <td colspan="5">
-                  </td>
                 </tr>
-              {% endfor %}
-
-              {% for budget_item in view.project.budget_transfers.all %}
+              {% empty %}
                 <tr>
-                  <td>
+                  <td colspan="9">
                     &nbsp;&nbsp;&nbsp;
-                    {{ budget_item.description }}
-                    van {{ budget_item.project.as_widget }}
-                  </td>
-                  <td>
-                  </td>
-                  {% if budget_item.amount < 0 %}
-                    <td class="text-right">{{ budget_item.amount_as_income|money }}</td>
-                    <td class="text-right"></td>
-                  {% else %}
-                    <td class="text-right"></td>
-                    <td class="text-right">{{ budget_item.amount|money }}</td>
-                  {% endif %}
-                  <td colspan="5">
+                    Geen
                   </td>
                 </tr>
               {% endfor %}
 
               <tr>
-                <td>Afdracht</td>
-                <td class="text-right"
-                    colspan="2">
+                <th colspan="9">Overboekingen van andere projecten</th>
+              </tr>
+              {% for budget_item in view.project.budget_transfers.all %}
+                <tr>
+                  <td colspan="7">
+                    &nbsp;&nbsp;&nbsp;
+                    {{ budget_item.description }}
+                    van {{ budget_item.project.as_widget }}
+                  </td>
+                  {% if budget_item.amount < 0 %}
+                    <td class="text-right"></td>
+                    <td class="text-right">{{ budget_item.amount_as_income|money }}</td>
+                  {% else %}
+                    <td class="text-right">{{ budget_item.amount|money }}</td>
+                    <td class="text-right"></td>
+                  {% endif %}
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="9">
+                    &nbsp;&nbsp;&nbsp;
+                    Geen
+                  </td>
+                </tr>
+              {% endfor %}
+
+              <tr>
+                <th colspan="8">Afdracht</th>
+                <td class="text-right">
                   {{ view.project.profit|money }}
-                <td colspan="6"></td>
               </tr>
             </tbody>
 
             <tfoot>
               <tr>
-                <th>Totaal</th>
-                <th></th>
-                <th class="text-right">
-                  {{ view.total_costs|money }}
-                </th>
+                <th colspan="7">Totaal</th>
                 <th class="text-right">
                   {{ view.total_income|money }}
                 </th>
-                <th colspan="5"></th>
+                <th class="text-right">
+                  {{ view.total_costs|money }}
+                </th>
+              </tr>
+              <tr>
+                <th>
+                  Nog te verdelen
+                </th>
+                <td>
+                  {{ view.project.left_to_dish_out|money }}
+                </td>
+                <td colspan="7">
+                </td>
               </tr>
             </tfoot>
           {% endif %}
@@ -490,19 +490,11 @@
     {% endif %}
 
     <div>
-      {% if view.can_edit_team %}
+      {% if view.can_edit_financials %}
         <a href="{% url 'trs.project.team' pk=view.project.pk %}"
            class="btn btn-default">
           <span class="glyphicon glyphicon-pencil"></span>
-          Pas personele kosten en reserveringen aan
-        </a>
-        &nbsp;&nbsp;
-      {% endif %}
-      {% if view.can_edit_financials %}
-        <a href="{% url 'trs.budget_item.add' project_pk=view.project.pk %}"
-           class="btn btn-default">
-          <span class="glyphicon glyphicon-plus"></span>
-          Voeg kostenpost toe
+          Pas projectbegroting aan
         </a>
         &nbsp;&nbsp;
       {% endif %}
