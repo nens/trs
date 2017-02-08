@@ -1,0 +1,88 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>{{ view.title }}</h1>
+  {{ view.back_url }}
+
+  {% for error in view.project_form.errors.values %}
+    <div class="alert alert-danger">{{ error }}</div>
+  {% endfor %}
+
+  <form action="." method="post">
+    {% csrf_token %}
+
+    Opdrachtsom: {{ view.project.contract_amount }}<br>
+
+    Formset reserveringen kosten derden<br>
+
+    <table>
+        {{ view.estimate_formset }}
+    </table>
+
+
+    Netto opdrachtsom: {{ view.project.net_contract_amount }}<br>
+
+    Formset projectleden<br>
+
+    Nieuw lid<br>
+
+    {# Reservering #}
+    <div class="fieldWrapper">
+      {{ view.project_form.reservation.errors }}
+      {{ view.project_form.reservation.label_tag }}
+      {{ view.project_form.reservation }}
+    </div>
+
+
+    Formset kosten<br>
+
+    <table>
+      {{ view.budget_item_formset }}
+    </table>
+
+    Overkomend van andere projecten<br>
+
+    <table>
+      {% for budget_item in view.project.budget_transfers.all %}
+        <tr>
+          <td>
+            &nbsp;&nbsp;&nbsp;
+            {{ budget_item.description }}
+            van {{ budget_item.project.as_widget }}
+          </td>
+          <td>
+          </td>
+          {% if budget_item.amount < 0 %}
+            <td class="text-right">{{ budget_item.amount_as_income|money }}</td>
+            <td class="text-right"></td>
+          {% else %}
+            <td class="text-right"></td>
+            <td class="text-right">{{ budget_item.amount|money }}</td>
+          {% endif %}
+          <td colspan="5">
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    {# Afdracht #}
+    <div class="fieldWrapper">
+      {{ view.project_form.profit.errors }}
+      {{ view.project_form.profit.label_tag }}
+      {{ view.project_form.profit }}
+    </div>
+
+    Nog te verdelen: {{ view.project.left_to_dish_out }}<br>
+
+
+    <input type="submit"
+           class="btn btn-primary"
+           value="Submit">
+
+  </form>
+
+{% endblock %}
+
+{% block overview-column %}
+{% endblock %}

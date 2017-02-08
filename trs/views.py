@@ -22,6 +22,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
 from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.utils.datastructures import SortedDict
 from django.utils.decorators import method_decorator
@@ -33,6 +34,7 @@ from django.views.generic.edit import FormView
 from django.views.generic.edit import UpdateView
 
 from trs import core
+from trs.forms import ProjectTeamForm
 from trs.models import Booking
 from trs.models import BudgetItem
 from trs.models import Group
@@ -41,13 +43,13 @@ from trs.models import Payable
 from trs.models import Person
 from trs.models import PersonChange
 from trs.models import Project
+from trs.models import ThirdPartyEstimate
 from trs.models import WbsoProject
 from trs.models import WorkAssignment
 from trs.models import YearWeek
 from trs.models import this_year_week
 from trs.templatetags.trs_formatting import hours as format_as_hours
 from trs.templatetags.trs_formatting import money as format_as_money
-
 
 logger = logging.getLogger(__name__)
 
@@ -1144,7 +1146,8 @@ class ProjectView(BaseView):
 
     @cached_property
     def total_costs(self):
-        return self.project.costs() + self.person_costs_incl_reservation
+        return (self.project.costs() + self.person_costs_incl_reservation +
+                self.project.third_party_costs())
 
     @cached_property
     def total_income(self):
@@ -2307,6 +2310,344 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         url = self.project.get_absolute_url()
         text = "Terug naar het project"
         return mark_safe(BACK_TEMPLATE.format(url=url, text=text))
+
+
+class TeamEditView2(BaseView):
+    template_name = 'trs/team2.html'
+
+    def has_form_permissions(self):
+        if self.project.archived:
+            return False
+        if self.project.is_accepted:
+            return False
+        if self.is_project_management:
+            return True
+
+    @cached_property
+    def project(self):
+        return Project.objects.get(pk=self.kwargs['pk'])
+
+    @cached_property
+    def title(self):
+        return "Personele kosten en reservering voor %s bewerken" % (
+            self.project.code)
+
+    @cached_property
+    def can_edit_hours(self):
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
+
+    @cached_property
+    def can_add_team_member(self):
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
+
+    @property
+    def can_delete_team_member(self):
+        # Note: team members can in any case only be deleted if they haven't
+        # yet booked any hours on the project.
+        if self.can_edit_and_see_everything:
+            return True
+        if self.project.project_leader == self.active_person:
+            return True
+
+    @cached_property
+    def back_url(self):
+        url = self.project.get_absolute_url()
+        text = "Terug naar het project"
+        return mark_safe(BACK_TEMPLATE.format(url=url, text=text))
+
+    @cached_property
+    def success_url(self):
+        return reverse('trs.project.team', kwargs={'pk': self.project.pk})
+
+    # RRRRRRR
+
+    def estimate_formset_factory(self):
+        return forms.inlineformset_factory(
+            Project,
+            ThirdPartyEstimate,
+            fields=['description', 'amount'])
+
+    def budget_item_formset_factory(self):
+        return forms.inlineformset_factory(
+            Project,
+            BudgetItem,
+            fk_name='project',
+            fields=['description', 'amount', 'to_project'])
+
+    def get(self, *args, **kwargs):
+        self.project_form = ProjectTeamForm(instance=self.project)
+        ThirdPartyEstimateFormSet = self.estimate_formset_factory()
+        self.estimate_formset = ThirdPartyEstimateFormSet(
+            instance=self.project)
+        BudgetItemFormSet = self.budget_item_formset_factory()
+        self.budget_item_formset = BudgetItemFormSet(
+            instance=self.project)
+        return super(TeamEditView2, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        self.project_form = ProjectTeamForm(data=self.request.POST,
+                                            instance=self.project)
+        ThirdPartyEstimateFormSet = self.estimate_formset_factory()
+        self.estimate_formset = ThirdPartyEstimateFormSet(
+            data=self.request.POST,
+            instance=self.project)
+        BudgetItemFormSet = self.budget_item_formset_factory()
+        self.budget_item_formset = BudgetItemFormSet(
+            data=self.request.POST,
+            instance=self.project)
+
+        if (self.project_form.is_valid() and
+            self.estimate_formset.is_valid() and
+            self.budget_item_formset.is_valid()):
+            self.project_form.save()
+            self.estimate_formset.save()
+            self.budget_item_formset.save()
+            return HttpResponseRedirect(self.success_url)
+        else:
+            context = self.get_context_data(**kwargs)
+            return self.render_to_response(context)
+
+
+
+    @cached_property
+    def can_edit_hourly_tariff(self):
+        if self.is_project_management:
+            return True
+
+    @cached_property
+    def budgets_and_tariffs(self):
+        budget_per_person = WorkAssignment.objects.filter(
+            assigned_on=self.project).values(
+                'assigned_to').annotate(
+                    models.Sum('hours'),
+                    models.Sum('hourly_tariff'))
+        budgets = {
+            item['assigned_to']: round(item['hours__sum'] or 0)
+            for item in budget_per_person}
+        hourly_tariffs = {
+            item['assigned_to']: round(item['hourly_tariff__sum'] or 0)
+            for item in budget_per_person}
+        return budgets, hourly_tariffs
+
+    def xxxxget_form_class(self):
+        """Return dynamically generated form class."""
+        fields = SortedDict()
+        tabindex = 1
+        budgets, hourly_tariffs = self.budgets_and_tariffs
+
+        # WorkAssignment fields
+        for index, person in enumerate(self.project.assigned_persons()):
+            if person.archived:
+                continue
+            if self.can_edit_hours:
+                field_type = forms.IntegerField(
+                    min_value=0,
+                    initial=round(budgets.get(person.id, 0)),
+                    widget=forms.TextInput(attrs={'size': 4,
+                                                  'type': 'number',
+                                                  'tabindex': tabindex}))
+                fields[self.hours_fieldname(person)] = field_type
+                tabindex += 1
+            if self.can_edit_hourly_tariff:
+                field_type = forms.IntegerField(
+                    min_value=0,
+                    initial=round(hourly_tariffs.get(person.id, 0)),
+                    widget=forms.TextInput(attrs={'size': 4,
+                                                  'type': 'number',
+                                                  'tabindex': tabindex}))
+                fields[self.hourly_tariff_fieldname(person)] = field_type
+                tabindex += 1
+
+        if self.can_add_team_member:
+            # New team member field
+            name = 'new_team_member'
+            choices = list(Person.objects.filter(
+                archived=False).values_list('pk', 'name'))
+            choices.insert(0, ('', '---'))
+            field_type = forms.ChoiceField(
+                required=False,
+                choices=choices,
+                widget=forms.Select(attrs={'tabindex': tabindex}))
+            fields[name] = field_type
+            tabindex += 1
+
+        # Extra fields from the Project model
+        fields['reservation'] = forms.IntegerField(
+            label="Reservering voor toekomstig werk",
+            min_value=0,
+            initial=int(self.project.reservation),
+            widget=forms.TextInput(attrs={'size': 4,
+                                          'type': 'number',
+                                          'tabindex': tabindex}))
+        tabindex += 1
+        fields['profit'] = forms.IntegerField(
+            label="Afdracht",
+            min_value=0,
+            initial=int(self.project.profit),
+            widget=forms.TextInput(attrs={'size': 4,
+                                          'type': 'number',
+                                          'tabindex': tabindex}))
+        tabindex += 1
+
+        generated_form_class = type("GeneratedTeamEditForm",
+                                    (forms.Form,),
+                                    fields)
+
+        def clean_with_check(generated_form):
+            budgets, hourly_tariffs = self.budgets_and_tariffs
+            new_person_costs = 0
+            new_reservation = generated_form.cleaned_data.get('reservation') or 0
+            new_profit = generated_form.cleaned_data.get('profit') or 0
+
+            for person in generated_form.the_project.assigned_persons():
+                budget = generated_form.cleaned_data.get(
+                    self.hours_fieldname(person))
+                if budget is None:
+                    budget = budgets.get(person.id, 0)
+                hourly_tariff = generated_form.cleaned_data.get(
+                    self.hourly_tariff_fieldname(person))
+                if hourly_tariff is None:
+                    hourly_tariff = hourly_tariffs.get(person.id, 0)
+                new_person_costs += budget * hourly_tariff
+            left_to_dish_out = (
+                generated_form.the_project.contract_amount +
+                generated_form.the_project.income() -
+                new_person_costs -
+                new_reservation -
+                generated_form.the_project.costs() +
+                generated_form.the_project.profit -
+                new_profit)
+            if left_to_dish_out < -1:
+                # Note: -1 instead of 0 because some contract amounts aren't
+                # neatly rounded.
+                raise forms.ValidationError(
+                    "Je budgetteert %(red)s in het rood. ",
+                    params={'red': (-1 * left_to_dish_out)},
+                    code='invalid')
+
+            return generated_form.cleaned_data
+
+        generated_form_class.clean = clean_with_check
+        generated_form_class.the_project = self.project
+
+        return generated_form_class
+
+    @cached_property
+    def bound_form_fields(self):
+        form = self.get_form(self.get_form_class())
+        return list(form)
+
+    @cached_property
+    def lines(self):
+        result = []
+        fields = self.bound_form_fields
+        field_index = 0
+        budgets, hourly_tariffs = self.budgets_and_tariffs
+        booked_per_person = Booking.objects.filter(
+            booked_on=self.project).values(
+                'booked_by').annotate(
+                    models.Sum('hours'))
+        booked = {item['booked_by']: round(item['hours__sum'] or 0)
+                  for item in booked_per_person}
+        for person in self.project.assigned_persons():
+            line = {'person': person}
+            if self.can_edit_hours and not person.archived:
+                line['hours'] = fields[field_index]
+                field_index += 1
+            else:
+                line['hours'] = format_as_hours(budgets.get(person.id, 0))
+            if self.can_edit_hourly_tariff and not person.archived:
+                line['hourly_tariff'] = fields[field_index]
+                field_index += 1
+            else:
+                line['hourly_tariff'] = format_as_money(
+                    hourly_tariffs.get(person.id, 0))
+            line['booked'] = format_as_hours(booked.get(person.id, 0))
+            line['costs'] = (hourly_tariffs.get(person.id, 0) *
+                             budgets.get(person.id, 0))
+            line['deletable'] = False
+            if not booked.get(person.id):
+                if self.can_delete_team_member:
+                    line['deletable'] = True
+            result.append(line)
+        return result
+
+    def form_valid(self, form):
+        num_changes = 0
+        budgets, hourly_tariffs = self.budgets_and_tariffs
+        for person in self.project.assigned_persons():
+            if person.archived:
+                continue
+            hours = 0
+            hourly_tariff = 0
+            if self.can_edit_hours:
+                current = round(budgets.get(person.id, 0))
+                new = form.cleaned_data.get(self.hours_fieldname(person))
+                hours = new - current
+            if self.can_edit_hourly_tariff:
+                current = round(hourly_tariffs.get(person.id, 0))
+                new = form.cleaned_data.get(
+                    self.hourly_tariff_fieldname(person))
+                hourly_tariff = new - current
+            if hours or hourly_tariff:
+                num_changes += 1
+                work_assignment = WorkAssignment(
+                    hours=hours,
+                    hourly_tariff=hourly_tariff,
+                    assigned_on=self.project,
+                    assigned_to=person)
+                work_assignment.save()
+                logger.info("Added work assignment")
+        if num_changes:
+            messages.success(self.request,
+                             "Teamleden: %s gewijzigd" % num_changes)
+
+        reservation = form.cleaned_data.get('reservation')
+        if self.project.reservation != reservation:
+            self.project.reservation = reservation
+            self.project.save()
+            msg = "Reservering is op %s gezet" % reservation
+            messages.success(self.request, msg)
+
+        profit = form.cleaned_data.get('profit')
+        if self.project.profit != profit:
+            self.project.profit = profit
+            self.project.save()
+            msg = "Afdracht is op %s gezet" % profit
+            messages.success(self.request, msg)
+
+        if self.can_add_team_member:
+            new_team_member_id = form.cleaned_data.get('new_team_member')
+            if new_team_member_id:
+                person = Person.objects.get(id=new_team_member_id)
+                msg = "%s is aan het team toegevoegd" % person.name
+                work_assignment = WorkAssignment(
+                    assigned_on=self.project,
+                    assigned_to=person)
+                work_assignment.save()
+                logger.info(msg)
+                messages.success(self.request, msg)
+
+        return super(TeamEditView, self).form_valid(form)
+
+    @cached_property
+    def person_costs_incl_reservation(self):
+        person_costs = sum([line['costs'] for line in self.lines])
+        return person_costs + self.project.reservation + self.project.profit
+
+    @cached_property
+    def total_costs(self):
+        return self.project.costs() + self.person_costs_incl_reservation
+
+    @cached_property
+    def total_income(self):
+        return self.project.contract_amount + self.project.income()
 
 
 class PersonChangeView(LoginAndPermissionsRequiredMixin,

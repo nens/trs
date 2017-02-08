@@ -67,6 +67,10 @@ class YearWeekAdmin(admin.ModelAdmin):
     pass
 
 
+class ThirdPartyEstimateAdmin(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(models.Group, GroupAdmin)
 admin.site.register(models.Person, PersonAdmin)
 admin.site.register(models.Project, ProjectAdmin)
@@ -77,3 +81,4 @@ admin.site.register(models.Booking, BookingAdmin)
 admin.site.register(models.WorkAssignment, WorkAssignmentAdmin)
 admin.site.register(models.BudgetItem, BudgetItemAdmin)
 admin.site.register(models.YearWeek, YearWeekAdmin)
+admin.site.register(models.ThirdPartyEstimate, ThirdPartyEstimateAdmin)
