@@ -25,6 +25,11 @@
 
     Formset projectleden<br>
 
+    <table>
+      {{ view.project_member_formset }}
+    </table>
+
+
     {% if view.can_add_team_member %}
       {# Nieuw lid #}
       <div class="fieldWrapper">
