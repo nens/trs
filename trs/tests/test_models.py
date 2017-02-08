@@ -2,7 +2,6 @@
 import datetime
 
 from django.test import TestCase
-from django.forms import ModelForm
 import mock
 
 from trs import models

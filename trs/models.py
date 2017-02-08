@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 def make_code_sortable(code):
     # Main goal: make P1234.10 sort numerically compared to P1234.2
     code = code.lower()
-    if not '.' in code:
+    if '.' not in code:
         return code
     parts = code.split('.')
     if len(parts) != 2:

@@ -8,7 +8,6 @@ from django.db import models
 from django.utils.functional import cached_property
 
 from trs.models import Booking
-from trs.models import Project
 from trs.models import WorkAssignment
 from trs.models import YearWeek
 
