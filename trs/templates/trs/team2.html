@@ -25,7 +25,14 @@
 
     Formset projectleden<br>
 
-    Nieuw lid<br>
+    {% if view.can_add_team_member %}
+      {# Nieuw lid #}
+      <div class="fieldWrapper">
+        {{ view.new_member_form.new_team_member.errors }}
+        {{ view.new_member_form.new_team_member.label_tag }}
+        {{ view.new_member_form.new_team_member }}
+      </div>
+    {% endif %}
 
     {# Reservering #}
     <div class="fieldWrapper">
