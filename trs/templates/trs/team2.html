@@ -1,9 +1,20 @@
 {% extends "trs/base.html" %}
 {% load trs_formatting %}
 
-{% block main-column %}
+{% block full-width %}
   <h1>{{ view.title }}</h1>
   {{ view.back_url }}
+
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissable">
+      <button type="button"
+              class="close"
+              data-dismiss="alert"
+              aria-hidden="true">&times;</button>
+      {{ message }}
+    </div>
+  {% endfor %}
+
 
   {% for error in view.project_form.errors.values %}
     <div class="alert alert-danger">{{ error }}</div>
@@ -12,80 +23,268 @@
   <form action="." method="post">
     {% csrf_token %}
 
-    Opdrachtsom: {{ view.project.contract_amount }}<br>
+    <table class="table table-hover table-condensed table-fixed-header"
+           id="project-edit-budget-table">
+      {# The table is 9 columns wide. #}
+      <thead>
+        <tr>
+          <th colspan="6">
+          </th>
+          <th>Inkomsten</th>
+          <th>Kosten</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
 
-    Formset reserveringen kosten derden<br>
+      <tbody>
+        <tr>
+          <th colspan="6">Opdrachtsom</th>
+          <td>{{ view.project.contract_amount|money }}</td>
+          <td></td>
+          <td></td>
+        </tr>
 
-    <table>
-        {{ view.estimate_formset }}
-    </table>
+        <tr>
+          <th colspan="9">Reserveringen kosten derden</th>
+        </tr>
+        {{ view.estimate_formset.management_form }}
+        {% for form in view.estimate_formset %}
+          <tr>
+            {{ form.id }}
+            <td colspan="7"
+                title="{{ form.description.label }}">
+              &nbsp;&nbsp;&nbsp;
+              {{ form.description }}
+            </td>
+            <td title="{{ form.amount.label }}">
+              {{ form.amount }}
+            </td>
+            <td title="delete">
+              {{ form.DELETE }}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="9">&nbsp;&nbsp;&nbsp;Geen</td>
+          </tr>
+        {% endfor %}
 
+        <tr>
+          <th>Netto opdrachtsom</th>
+          <td>
+            {{ view.project.net_contract_amount|money }}
+          </td>
+          <td colspan="7">
+            </td>
+        </tr>
+      </tbody>
 
-    Netto opdrachtsom: {{ view.project.net_contract_amount }}<br>
+      <tbody>
+        <tr>
+          <th colspan="2">Personele kosten</th>
+          <th>Uren</th>
+          <th>Al geboekt</th>
+          <th>Uurtarief</th>
+          <th>Standaardtarief</th>
+          <th colspan="3"></th>
+        </tr>
+        {{ view.project_member_formset.management_form }}
+        {% for form in view.project_member_formset %}
+          <tr>
+            {{ form.person_id }}
+            <td>
+              &nbsp;&nbsp;&nbsp;
+              {{ form.person.as_widget }}
+            </td>
+            <td>
+              {% if form.person.to_book.friendly %}
+                <span class="badge"
+                      title="Achter met boeken: {{ form.person.to_book.friendly }}">
+                  {{ form.person.to_book.short }}
+                </span>
+              {% endif %}
+              {% if form.is_project_leader %}
+                <span title="Projectleider: gaat over de uren">PL</span>
+                &nbsp;
+              {% endif %}
+              {% if form.is_project_manager %}
+                <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
+              {% endif %}
+            </td>
 
-    Formset projectleden<br>
+            <td title="{{ form.hours.label }}">
+              {{ form.hours }}
+            </td>
+            <td>
+              <span class="text-muted">
+                {{ form.booked }}
+              </span>
+            </td>
+            <td title="{{ form.hourly_tariff.label }}">
+              {{ form.hourly_tariff }}
+            </td>
+            <td>
+              {{ form.person.standard_hourly_tariff }}
+              <span class="text-muted">
+                ({{ form.person.minimum_hourly_tariff }})
+              </span>
+            </td>
+            <td>
+            </td>
+            <td>
+              {{ form.costs|money }}
+            </td>
+            <td title="delete">
+              {{ form.DELETE }}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="9">&nbsp;&nbsp;&nbsp;Geen</td>
+          </tr>
+        {% endfor %}
 
-    <table>
-      {{ view.project_member_formset }}
-    </table>
+        {% if view.can_add_team_member %}
+          <tr>
+            <td>
+              &nbsp;&nbsp;&nbsp;
+              Nieuw teamlid
+            </td>
+            <td>
+              {{ view.new_member_form.new_team_member }}
+            </td>
+            <td colspan="7">
+            </td>
+          </tr>
+        {% endif %}
 
-
-    {% if view.can_add_team_member %}
-      {# Nieuw lid #}
-      <div class="fieldWrapper">
-        {{ view.new_member_form.new_team_member.errors }}
-        {{ view.new_member_form.new_team_member.label_tag }}
-        {{ view.new_member_form.new_team_member }}
-      </div>
-    {% endif %}
-
-    {# Reservering #}
-    <div class="fieldWrapper">
-      {{ view.project_form.reservation.errors }}
-      {{ view.project_form.reservation.label_tag }}
-      {{ view.project_form.reservation }}
-    </div>
-
-
-    Formset kosten<br>
-
-    <table>
-      {{ view.budget_item_formset }}
-    </table>
-
-    Overkomend van andere projecten<br>
-
-    <table>
-      {% for budget_item in view.project.budget_transfers.all %}
         <tr>
           <td>
             &nbsp;&nbsp;&nbsp;
-            {{ budget_item.description }}
-            van {{ budget_item.project.as_widget }}
+            {{ view.project_form.reservation.label }}
+          </td>
+          <td colspan="6">
+          </td>
+          <td>
+            {{ view.project_form.reservation }}
           </td>
           <td>
           </td>
-          {% if budget_item.amount < 0 %}
-            <td class="text-right">{{ budget_item.amount_as_income|money }}</td>
-            <td class="text-right"></td>
-          {% else %}
-            <td class="text-right"></td>
-            <td class="text-right">{{ budget_item.amount|money }}</td>
-          {% endif %}
-          <td colspan="5">
+        </tr>
+        <tr>
+          <th>
+            Subtotaal personele kosten
+          </th>
+          <td>
+            {{ view.project.person_costs_incl_reservation|money }}
+          </td>
+          <td colspan="7">
           </td>
         </tr>
-      {% endfor %}
+      </tbody>
+
+      <tbody>
+        <tr>
+          <th colspan="9">
+            Overige kosten
+          </th>
+        </tr>
+        {{ view.budget_item_formset.management_form }}
+        {% for form in view.budget_item_formset %}
+          <tr>
+            {{ form.id }}
+            <td colspan="7"
+                title="{{ form.description.label }}">
+              &nbsp;&nbsp;&nbsp;
+              {{ form.description }}
+            </td>
+            <td title="{{ form.amount.label }}">
+              {{ form.amount }}
+            </td>
+            <td title="delete">
+              {{ form.DELETE }}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="9">&nbsp;&nbsp;&nbsp;Geen</td>
+          </tr>
+        {% endfor %}
+
+        <tr>
+          <th colspan="9">
+            Overboekingen van andere projecten
+          </th>
+        </tr>
+        {% for budget_item in view.project.budget_transfers.all %}
+          <tr>
+            <td>
+              &nbsp;&nbsp;&nbsp;
+              {{ budget_item.description }}
+              van {{ budget_item.project.as_widget }}
+            </td>
+            <td colspan="5">
+            </td>
+            {% if budget_item.amount < 0 %}
+              <td>{{ budget_item.amount_as_income|money }}</td>
+              <td></td>
+            {% else %}
+              <td></td>
+              <td>{{ budget_item.amount|money }}</td>
+            {% endif %}
+            <td>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="9">&nbsp;&nbsp;&nbsp;Geen</td>
+          </tr>
+        {% endfor %}
+
+        <tr>
+          <th>
+            {{ view.project_form.profit.label }}
+          </th>
+          <td colspan="6">
+          </td>
+          <td>
+            {{ view.project_form.profit }}
+          </td>
+          <td>
+          </td>
+        </tr>
+
+      </tbody>
+
+      <tfoot>
+        <tr>
+          <th>
+            Totaal
+          </th>
+          <td colspan="5">
+          </td>
+          <td>
+            {{ view.project.total_income|money }}
+          </td>
+          <td>
+            {{ view.project.total_costs|money }}
+          </td>
+          <td>
+          </td>
+        </tr>
+        <tr>
+          <th>
+            Nog te verdelen
+          </th>
+          <td>
+            {{ view.project.left_to_dish_out|money }}
+          </td>
+          <td colspan="7">
+          </td>
+        </tr>
+      </tfoot>
+
     </table>
-
-    {# Afdracht #}
-    <div class="fieldWrapper">
-      {{ view.project_form.profit.errors }}
-      {{ view.project_form.profit.label_tag }}
-      {{ view.project_form.profit }}
-    </div>
-
-    Nog te verdelen: {{ view.project.left_to_dish_out }}<br>
 
 
     <input type="submit"

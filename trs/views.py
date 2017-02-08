@@ -925,14 +925,14 @@ class ProjectsView(BaseView):
             line['contract_amount'] = project.contract_amount
             line['invoice_amount'] = invoice_amount
             line['turnover'] = turnover
-            line['person_costs_incl_reservation'] = (project.person_costs() +
-                                                     project.reservation)
             line['reservation'] = project.reservation
             line['other_costs'] = costs - income
             line['well_booked'] = project.well_booked()
             line['overbooked'] = project.overbooked()
             line['left_to_book'] = project.left_to_book()
             line['person_loss'] = project.person_loss()
+            line['person_costs_incl_reservation'] = (
+                project.person_costs_incl_reservation())
             line['left_to_turn_over'] = project.left_to_turn_over()
 
             line['invoice_amount_percentage'] = invoice_amount_percentage
@@ -1142,13 +1142,9 @@ class ProjectView(BaseView):
         return sum([line['left_to_turn_over'] for line in self.lines])
 
     @cached_property
-    def person_costs_incl_reservation(self):
-        person_costs = sum([line['planned_turnover'] for line in self.lines])
-        return person_costs + self.project.reservation
-
-    @cached_property
     def total_costs(self):
-        return (self.project.costs() + self.person_costs_incl_reservation +
+        return (self.project.costs() +
+                self.project.person_costs_incl_reservation() +
                 self.project.third_party_costs())
 
     @cached_property
@@ -2292,13 +2288,10 @@ class TeamEditView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         return super(TeamEditView, self).form_valid(form)
 
     @cached_property
-    def person_costs_incl_reservation(self):
-        person_costs = sum([line['costs'] for line in self.lines])
-        return person_costs + self.project.reservation + self.project.profit
-
-    @cached_property
     def total_costs(self):
-        return self.project.costs() + self.person_costs_incl_reservation
+        return (self.project.costs() +
+                self.project.person_costs_incl_reservation() +
+                self.project.profit)
 
     @cached_property
     def total_income(self):
@@ -2445,6 +2438,13 @@ class TeamEditView2(BaseView):
                     'new_team_member')
                 if person_id:
                     self.add_team_member(person_id)
+
+            self.project.refresh_from_db()
+            if self.project.left_to_dish_out() < -1:
+                msg = "Je boekt %s in het rood" % (
+                    round(self.project.left_to_dish_out()))
+                messages.error(self.request, msg)
+
             return HttpResponseRedirect(self.success_url)
         else:
             context = self.get_context_data(**kwargs)
@@ -2497,6 +2497,7 @@ class TeamEditView2(BaseView):
         TODO: adjust to the real 'disabled=True' when using django 1.9+.
 
         """
+        budgets, hourly_tariffs = self.budgets_and_tariffs
         booked_per_person = Booking.objects.filter(
             booked_on=self.project).values(
                 'booked_by').annotate(
@@ -2517,7 +2518,15 @@ class TeamEditView2(BaseView):
                 form.fields['DELETE'].widget.attrs[
                     'disabled'] = 'disabled'
 
-
+            # Add a few attributes to help the template that renders it.
+            form.person = person
+            form.booked = format_as_hours(booked.get(person.id, 0))
+            form.costs = (hourly_tariffs.get(person.id, 0) *
+                          budgets.get(person.id, 0))
+            form.is_project_manager = (
+                self.project.project_manager_id == person.id)
+            form.is_project_leader = (
+                self.project.project_leader_id == person.id)
 
     def process_project_member_formset(self):
         num_changes = 0
@@ -2526,7 +2535,6 @@ class TeamEditView2(BaseView):
         new_hourly_tariffs = {}
         to_delete = [form.cleaned_data['person_id']
                      for form in self.project_member_formset.deleted_forms]
-        print(to_delete)
         for form in self.project_member_formset:
             print(form.cleaned_data)
             person_id = form.cleaned_data['person_id']
@@ -2535,8 +2543,6 @@ class TeamEditView2(BaseView):
         for person in self.project.assigned_persons():
             hours = 0
             hourly_tariff = 0
-            if person.archived:
-                continue
 
             if person.id in to_delete:
                 has_booked = Booking.objects.filter(
@@ -2553,6 +2559,8 @@ class TeamEditView2(BaseView):
                         "%s verwijderd uit %s" % (
                             person.name, self.project.code))
 
+            if person.archived:
+                continue
             if self.can_edit_hours:
                 original = original_hours.get(person.id, 0)
                 new = new_hours.get(person.id)
@@ -2577,43 +2585,6 @@ class TeamEditView2(BaseView):
         if num_changes:
             messages.success(self.request,
                              "Teamleden: %s gewijzigd" % num_changes)
-
-
-
-    @cached_property
-    def xxxxxlines(self):
-        result = []
-        fields = self.bound_form_fields
-        field_index = 0
-        budgets, hourly_tariffs = self.budgets_and_tariffs
-        booked_per_person = Booking.objects.filter(
-            booked_on=self.project).values(
-                'booked_by').annotate(
-                    models.Sum('hours'))
-        booked = {item['booked_by']: round(item['hours__sum'] or 0)
-                  for item in booked_per_person}
-        for person in self.project.assigned_persons():
-            line = {'person': person}
-            if self.can_edit_hours and not person.archived:
-                line['hours'] = fields[field_index]
-                field_index += 1
-            else:
-                line['hours'] = format_as_hours(budgets.get(person.id, 0))
-            if self.can_edit_hourly_tariff and not person.archived:
-                line['hourly_tariff'] = fields[field_index]
-                field_index += 1
-            else:
-                line['hourly_tariff'] = format_as_money(
-                    hourly_tariffs.get(person.id, 0))
-            line['booked'] = format_as_hours(booked.get(person.id, 0))
-            line['costs'] = (hourly_tariffs.get(person.id, 0) *
-                             budgets.get(person.id, 0))
-            line['deletable'] = False
-            if not booked.get(person.id):
-                if self.can_delete_team_member:
-                    line['deletable'] = True
-            result.append(line)
-        return result
 
 
 
@@ -3328,7 +3299,7 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
                 project.well_booked() + project.overbooked(),
                 project.well_booked(),
                 project.overbooked(),
-                line['person_costs_incl_reservation'],
+                project.person_costs_incl_reservation(),
                 line['other_costs'],
                 line['invoice_amount_percentage'],
                 line['invoice_versus_turnover_percentage'],
@@ -3484,7 +3455,7 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
                '',
                '',
                '',
-               self.person_costs_incl_reservation,
+               self.project.person_costs_incl_reservation(),
                '',
                '',
                self.total_turnover,

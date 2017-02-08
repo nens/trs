@@ -543,7 +543,7 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        cache_version = 18
+        cache_version = 21
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, cache_version)
 
@@ -591,6 +591,9 @@ class Project(models.Model):
     def net_contract_amount(self):
         return self.work_calculation()['net_contract_amount']
 
+    def person_costs_incl_reservation(self):
+        return self.work_calculation()['person_costs_incl_reservation']
+
     def third_party_costs(self):
         return self.work_calculation()['third_party_costs']
 
@@ -603,6 +606,12 @@ class Project(models.Model):
 
     def person_costs(self):
         return self.work_calculation()['person_costs']
+
+    def total_income(self):
+        return self.work_calculation()['total_income']
+
+    def total_costs(self):
+        return self.work_calculation()['total_costs']
 
     def weighted_average_tariff(self):
         return self.work_calculation()['weighted_average_tariff']
@@ -618,9 +627,7 @@ class Project(models.Model):
         return round(self.overbooked() / self.hour_budget() * 100)
 
     def left_to_dish_out(self):
-        return (self.net_contract_amount() + self.income()
-                - self.person_costs() -
-                self.reservation - self.costs())
+        return self.total_income() - self.total_costs()
 
     def budget_ok(self):
         # Note: a little margin around zero is allowed to account for contract
@@ -725,6 +732,10 @@ class Project(models.Model):
             models.Sum('amount'))['amount__sum'] or 0)
         net_contract_amount = self.contract_amount - third_party_costs
 
+        person_costs_incl_reservation = person_costs + self.reservation
+        total_costs = costs + person_costs_incl_reservation + third_party_costs
+        total_income = self.contract_amount + income
+
         return {'budget': budget,
                 'overbooked': sum(overbooked_per_person.values()),
                 'well_booked': sum(well_booked_per_person.values()),
@@ -734,6 +745,8 @@ class Project(models.Model):
                 'left_to_turn_over': sum(
                     left_to_turn_over_per_person.values()),
                 'person_costs': person_costs,
+                'person_costs_incl_reservation': (
+                    person_costs_incl_reservation),
                 'costs': costs,
                 'income': income,
                 'weighted_average_tariff': weighted_average_tariff,
@@ -741,6 +754,8 @@ class Project(models.Model):
                 'total_booked': total_booked,
                 'third_party_costs': third_party_costs,
                 'net_contract_amount': net_contract_amount,
+                'total_costs': total_costs,
+                'total_income': total_income,
         }
 
 

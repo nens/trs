@@ -34,6 +34,7 @@ class ProjectMemberForm(django_forms.Form):
 
     person_id = django_forms.IntegerField(
         min_value=0,
+        widget=django_forms.HiddenInput(),
         # TODO: set disabled=True after updating to django 1.9+
         )
 
