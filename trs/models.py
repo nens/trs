@@ -971,8 +971,8 @@ class ThirdPartyEstimate(FinancialBase):
         verbose_name="bedrag exclusief")
 
     class Meta:
-        verbose_name = "begrote kosten derden"
-        verbose_name_plural = "begrote kosten derden"
+        verbose_name = "kosten derden"
+        verbose_name_plural = "kosten derden"
 
     def __str__(self):
         return self.description
