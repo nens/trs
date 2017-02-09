@@ -307,11 +307,11 @@
             {% endfor %}
 
             <tr>
-              <th>Netto opdrachtsom</th>
-              <td>
+              <th colspan="7">Netto opdrachtsom</th>
+              <td class="text-right">
                 {{ view.project.net_contract_amount|money }}
               </td>
-              <td colspan="7"></td>
+              <td></td>
               </td>
             </tr>
           </tbody
@@ -472,13 +472,11 @@
                 </th>
               </tr>
               <tr>
-                <th>
+                <th colspan="8">
                   Nog te verdelen
                 </th>
-                <td>
+                <td class="text-right">
                   {{ view.project.left_to_dish_out|money }}
-                </td>
-                <td colspan="7">
                 </td>
               </tr>
             </tfoot>
