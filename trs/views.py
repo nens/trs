@@ -1863,7 +1863,7 @@ class PayableDeleteView(DeleteView):
 
 
 class ProjectBudgetEditView(BaseView):
-    template_name = 'trs/team2.html'
+    template_name = 'trs/project-budget-edit.html'
 
     def has_form_permissions(self):
         if self.project.archived:
@@ -1879,7 +1879,7 @@ class ProjectBudgetEditView(BaseView):
 
     @cached_property
     def title(self):
-        return "Personele kosten en reservering voor %s bewerken" % (
+        return "Projectbegroting van %s bewerken" % (
             self.project.code)
 
     @cached_property
