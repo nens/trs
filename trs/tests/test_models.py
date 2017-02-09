@@ -234,10 +234,6 @@ class BudgetItemTestCase(TestCase):
         budget_item = factories.BudgetItemFactory.create(description='Pay me')
         self.assertEqual(str(budget_item), 'Pay me')
 
-    def test_get_absolute_url(self):
-        budget_item = factories.BudgetItemFactory.create()
-        self.assertTrue(budget_item.get_absolute_url())
-
     def test_amount_as_income(self):
         budget_item = factories.BudgetItemFactory.create(
             description="From project partner",
