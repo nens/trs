@@ -2,7 +2,6 @@
 import datetime
 
 from django.test import TestCase
-from django.forms import ModelForm
 import mock
 
 from trs import models
@@ -234,10 +233,6 @@ class BudgetItemTestCase(TestCase):
     def test_representation(self):
         budget_item = factories.BudgetItemFactory.create(description='Pay me')
         self.assertEqual(str(budget_item), 'Pay me')
-
-    def test_get_absolute_url(self):
-        budget_item = factories.BudgetItemFactory.create()
-        self.assertTrue(budget_item.get_absolute_url())
 
     def test_amount_as_income(self):
         budget_item = factories.BudgetItemFactory.create(

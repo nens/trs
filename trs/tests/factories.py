@@ -91,10 +91,3 @@ class BudgetItemFactory(factory.django.DjangoModelFactory):
     description = ''
     amount = 0.0
     project = factory.SubFactory(ProjectFactory)
-
-
-class GroupFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.Group
-
-    name = 'A nice group of people'

@@ -34,23 +34,26 @@
         <th>Project</th>
         <th>Omschrijving</th>
         <th class="text-right">Verlies-<br>uren</th>
-        <th class="text-right">Opdracht-<br>som</th>
+        <th class="text-right"
+            title="Opdrachtsom min kosten derden">Opdracht-<br>som netto</th>
         <th class="text-right">&nbsp;</th>
         <th class="text-right">Omzet</th>
         <th class="text-right"
             title="inclusief reserveringen">Personele<br>kosten</th>
         <th class="text-right">Overige<br>kosten</th>
         <th class="text-right"
-            title="Inclusief nog niet betaalde facturen">Gefactureerd</th>
-        <th class="text-right">
-          Gefact.<br>
-          t.o.v.<br>
-          opdracht-<br>
-          som
+            title="Gefactureerd (inclusief nog niet betaalde facturen)">
+          Gefact<br>
+          &euro;
         </th>
-        <th class="text-right">
-          Gefact.<br>
-          t.o.v.<br>
+        <th class="text-right"
+            title="Gefactureerd t.o.v. opdrachtsom">
+          Gefact<br>
+          %
+        </th>
+        <th class="text-right"
+            title="Gefactureerd t.o.v. OHW">
+          Gefact<br>
           OHW
         </th>
       </tr>
@@ -73,12 +76,12 @@
             {{ line.project.overbooked|hours }}
           </td>
           <td class="text-right">
-            {{ line.project.contract_amount|money }}
+            {{ line.project.net_contract_amount|money }}
           </td>
           <td class="text-right">
             {% if not line.project.budget_ok %}
               <a href="{{ line.project.get_absolute_url }}#budget">
-                <span class="text-danger glyphicon glyphicon-warning-sign"
+                <span class="{{ line.project.budget_not_ok_style }} glyphicon glyphicon-warning-sign"
                       title="Budget is niet goed verdeeld"></span>
               </a>
             {% endif %}
@@ -87,7 +90,7 @@
             {{ line.turnover|money }}
           </td>
           <td class="text-right">
-            {{ line.person_costs_incl_reservation|money }}
+            {{ line.project.person_costs_incl_reservation|money }}
           </td>
           <td class="text-right">
             {{ line.other_costs|money }}

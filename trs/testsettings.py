@@ -1,4 +1,5 @@
 import os
+from django.contrib.messages import constants as messages
 
 SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
 BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, '..'))
@@ -124,6 +125,12 @@ LOGGING = {
         },
     }
 }
+
+
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger',
+}
+
 # Start and end year are used for creating YearWeek objects for those years
 # with the ``bin/django update_weeks`` command.
 TRS_START_YEAR = 2000

@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 def make_code_sortable(code):
     # Main goal: make P1234.10 sort numerically compared to P1234.2
     code = code.lower()
-    if not '.' in code:
+    if '.' not in code:
         return code
     parts = code.split('.')
     if len(parts) != 2:
@@ -391,6 +391,7 @@ class Project(models.Model):
         max_digits=12,  # We don't mind a metric ton of hard cash.
         decimal_places=DECIMAL_PLACES,
         default=0,
+        validators=[MinValueValidator(0)],
         verbose_name="opdrachtsom")
     bid_send_date = models.DateField(
         verbose_name="offerte verzonden",
@@ -406,7 +407,14 @@ class Project(models.Model):
         max_digits=12,
         decimal_places=DECIMAL_PLACES,
         default=0,
+        validators=[MinValueValidator(0)],
         verbose_name="reservering voor personele kosten")
+    profit = models.DecimalField(
+        max_digits=12,
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        validators=[MinValueValidator(0)],
+        verbose_name="afdracht")
     start = models.ForeignKey(
         'YearWeek',
         blank=True,
@@ -452,8 +460,8 @@ class Project(models.Model):
         help_text="Percentage dat meetelt voor de WBSO (0-100)")
     is_accepted = models.BooleanField(
         verbose_name="goedgekeurd",
-        help_text=("Project is goedgekeurd door PM en PL en zou qua team " +
-                   "en budgetverdeling niet meer gewijzigd moeten worden."),
+        help_text=("Project is goedgekeurd door de PM  en kan qua begroting " +
+                   "niet meer gewijzigd worden."),
         default=False)
     startup_meeting_done = models.BooleanField(
         verbose_name="startoverleg heeft plaatsgevonden",
@@ -535,7 +543,7 @@ class Project(models.Model):
         return reverse('trs.project', kwargs={'pk': self.pk})
 
     def cache_key(self, for_what):
-        cache_version = 16
+        cache_version = 21
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, cache_version)
 
@@ -580,7 +588,17 @@ class Project(models.Model):
     def left_to_turn_over(self):
         return self.work_calculation()['left_to_turn_over']
 
+    def net_contract_amount(self):
+        return self.work_calculation()['net_contract_amount']
+
+    def person_costs_incl_reservation(self):
+        return self.work_calculation()['person_costs_incl_reservation']
+
+    def third_party_costs(self):
+        return self.work_calculation()['third_party_costs']
+
     def costs(self):
+        # Note: this includes profit ('afdracht')
         return self.work_calculation()['costs']
 
     def income(self):
@@ -588,6 +606,12 @@ class Project(models.Model):
 
     def person_costs(self):
         return self.work_calculation()['person_costs']
+
+    def total_income(self):
+        return self.work_calculation()['total_income']
+
+    def total_costs(self):
+        return self.work_calculation()['total_costs']
 
     def weighted_average_tariff(self):
         return self.work_calculation()['weighted_average_tariff']
@@ -603,14 +627,20 @@ class Project(models.Model):
         return round(self.overbooked() / self.hour_budget() * 100)
 
     def left_to_dish_out(self):
-        return (self.contract_amount + self.income()
-                - self.person_costs() -
-                self.reservation - self.costs())
+        return self.total_income() - self.total_costs()
 
     def budget_ok(self):
         # Note: a little margin around zero is allowed to account for contract
         # amounts not always being rounded.
         return -1 < self.left_to_dish_out() < 1
+
+    def budget_not_ok_style(self):
+        """Return orange/red style depending on whether were above/below zero.
+        """
+        if self.left_to_dish_out() < 0:
+            return 'text-danger'
+        else:
+            return 'text-warning'
 
     @cache_on_model
     def work_calculation(self):
@@ -653,11 +683,10 @@ class Project(models.Model):
                 income += budget_item.amount
             else:
                 costs += budget_item.amount * -1
-        for payable in self.payables.all():
-            if payable.amount > 0:
-                costs += payable.amount
-            else:
-                income += payable.amount
+
+        # Note: payables ('facturen kosten derden') are treated separately
+        # now.
+        costs += self.profit
 
         # The next three are in hours.
         overbooked_per_person = {
@@ -699,6 +728,14 @@ class Project(models.Model):
         else:
             realized_average_tariff = 0
 
+        third_party_costs = (self.third_party_estimates.all().aggregate(
+            models.Sum('amount'))['amount__sum'] or 0)
+        net_contract_amount = self.contract_amount - third_party_costs
+
+        person_costs_incl_reservation = person_costs + self.reservation
+        total_costs = costs + person_costs_incl_reservation + third_party_costs
+        total_income = self.contract_amount + income
+
         return {'budget': budget,
                 'overbooked': sum(overbooked_per_person.values()),
                 'well_booked': sum(well_booked_per_person.values()),
@@ -708,11 +745,17 @@ class Project(models.Model):
                 'left_to_turn_over': sum(
                     left_to_turn_over_per_person.values()),
                 'person_costs': person_costs,
+                'person_costs_incl_reservation': (
+                    person_costs_incl_reservation),
                 'costs': costs,
                 'income': income,
                 'weighted_average_tariff': weighted_average_tariff,
                 'realized_average_tariff': realized_average_tariff,
                 'total_booked': total_booked,
+                'third_party_costs': third_party_costs,
+                'net_contract_amount': net_contract_amount,
+                'total_costs': total_costs,
+                'total_income': total_income,
         }
 
 
@@ -846,8 +889,8 @@ class Payable(FinancialBase):
         help_text="Formaat: 25-12-1972, dd-mm-jjjj")
 
     class Meta:
-        verbose_name = "kosten derden"
-        verbose_name_plural = "kosten derden"
+        verbose_name = "factuur kosten derden"
+        verbose_name_plural = "facturen kosten derden"
         ordering = ('date', 'number',)
 
     def __str__(self):
@@ -881,8 +924,7 @@ class BudgetItem(FinancialBase):
         default=0,
         verbose_name="bedrag exclusief",
         help_text=("Dit zijn kosten, dus een positief getal wordt van het "
-                   "projectbudget afgetrokken. "
-                   "(Dit is in sept 2014 veranderd!)"))
+                   "projectbudget afgetrokken. "))
     to_project = models.ForeignKey(
         Project,
         blank=True,
@@ -910,6 +952,30 @@ class BudgetItem(FinancialBase):
         if self.to_project:
             self.to_project.save()  # Increment cache key.
         return super(BudgetItem, self).save(*args, **kwargs)
+
+
+class ThirdPartyEstimate(FinancialBase):
+    project = models.ForeignKey(
+        Project,
+        related_name="third_party_estimates",
+        verbose_name="project")
+    description = models.CharField(
+        verbose_name="omschrijving",
+        blank=True,
+        max_length=255)
+    amount = models.DecimalField(
+        max_digits=12,  # We don't mind a metric ton of hard cash.
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        validators=[MinValueValidator(0)],
+        verbose_name="bedrag exclusief")
+
+    class Meta:
+        verbose_name = "kosten derden"
+        verbose_name_plural = "kosten derden"
+
+    def __str__(self):
+        return self.description
 
 
 class YearWeek(models.Model):

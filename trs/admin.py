@@ -32,7 +32,7 @@ class ProjectAdmin(admin.ModelAdmin):
 class WbsoProjectAdmin(admin.ModelAdmin):
     list_display = ['number', 'title', 'start_date', 'end_date']
     search_fields = ['title']
-    list_editable = ['title',]
+    list_editable = ['title', ]
 
 
 class InvoiceAdmin(admin.ModelAdmin):
@@ -67,6 +67,10 @@ class YearWeekAdmin(admin.ModelAdmin):
     pass
 
 
+class ThirdPartyEstimateAdmin(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(models.Group, GroupAdmin)
 admin.site.register(models.Person, PersonAdmin)
 admin.site.register(models.Project, ProjectAdmin)
@@ -77,3 +81,4 @@ admin.site.register(models.Booking, BookingAdmin)
 admin.site.register(models.WorkAssignment, WorkAssignmentAdmin)
 admin.site.register(models.BudgetItem, BudgetItemAdmin)
 admin.site.register(models.YearWeek, YearWeekAdmin)
+admin.site.register(models.ThirdPartyEstimate, ThirdPartyEstimateAdmin)
