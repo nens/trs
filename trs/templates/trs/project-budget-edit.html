@@ -193,10 +193,15 @@
         {% for form in view.budget_item_formset %}
           <tr>
             {{ form.id }}
-            <td colspan="7"
+            <td colspan="5"
                 title="{{ form.description.label }}">
               &nbsp;&nbsp;&nbsp;
               {{ form.description }}
+            </td>
+            <td title="Overboeken naar ander project
+                       (vaak niet nodig)"
+                colspan="2">
+              {{ form.to_project }}
             </td>
             <td title="{{ form.amount.label }}">
               {{ form.amount }}
