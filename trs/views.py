@@ -361,11 +361,6 @@ class PersonsView(BaseView):
             return True
 
     @cached_property
-    def can_add_person(self):
-        if self.can_edit_and_see_everything:
-            return True
-
-    @cached_property
     def persons(self):
         q_objects = [filter['q'] for filter in self.prepared_filters]
         return Person.objects.filter(*q_objects)
@@ -1716,23 +1711,6 @@ class PersonEditView(LoginAndPermissionsRequiredMixin,
     def form_valid(self, form):
         messages.success(self.request, "Medewerker aangepast")
         return super(PersonEditView, self).form_valid(form)
-
-
-class PersonCreateView(LoginAndPermissionsRequiredMixin,
-                       CreateView,
-                       BaseMixin):
-    template_name = 'trs/edit.html'
-    model = Person
-    title = "Nieuwe medewerker"
-    fields = ['name', 'user', 'group', 'is_management']
-
-    def has_form_permissions(self):
-        if self.can_edit_and_see_everything:
-            return True
-
-    def form_valid(self, form):
-        messages.success(self.request, "Medewerker aangemaakt")
-        return super(PersonCreateView, self).form_valid(form)
 
 
 class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):

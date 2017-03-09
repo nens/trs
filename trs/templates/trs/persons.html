@@ -108,13 +108,4 @@
     </tfoot>
   </table>
 
-  {% if view.can_add_person %}
-    <hr>
-    <p>
-      <a href="{% url 'trs.person.new' %}" class="btn btn-default">
-        <span class="glyphicon glyphicon-plus"></span>
-        Voeg nieuwe medewerker toe
-      </a>
-    </p>
-  {% endif %}
 {% endblock %}
