@@ -3232,13 +3232,15 @@ class WbsoProjectView(BaseView):
 
 class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
 
+    START_YEAR = 2016
+
     @cached_property
     def half_years(self):
-        """Return half years from 1 jan 2014 till now.
+        """Return half years from 1 jan START_YEAR till now.
 
         Also return year_week objects."""
         result = []
-        years = range(2014, this_year_week().year + 1)
+        years = range(self.START_YEAR, this_year_week().year + 1)
         for year in years:
             jan1 = datetime.date(year, 1, 1)
             jul1 = datetime.date(year, 7, 1)
@@ -3263,6 +3265,13 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
                 first_day__lt=datetime.date.today())
 
     @cached_property
+    def names_per_wbso_project_number(self):
+        """Return dict of {number: name} for all WBSO projects"""
+        numbers_and_names = WbsoProject.objects.all().values(
+            'number', 'title')
+        return {item['number']: item['title'] for item in numbers_and_names}
+
+    @cached_property
     def bookings_per_week_per_person_per_wbso_project(self):
         return Booking.objects.filter(
             booked_on__wbso_project__id__gt=0,
@@ -3281,13 +3290,19 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
             first_line.append(text)
             for i in range(num_projects - 1):
                 first_line.append('')
-        return [first_line]
+
+        second_line = ['Naam']
+        for text, year_weeks in self.half_years:
+            second_line += [
+                self.names_per_wbso_project_number[number]
+                for number in self.found_wbso_projects]
+        return [first_line, second_line]
 
     @cached_property
     def found_persons(self):
         persons = [item['booked_by__name'] for item in
                    self.bookings_per_week_per_person_per_wbso_project]
-        return list(set(persons))
+        return sorted(set(persons))
 
     @cached_property
     def found_wbso_projects(self):
@@ -3297,7 +3312,7 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
 
     @property
     def header_line(self):
-        result = ['Naam']
+        result = ['Nummer']
         for text, year_weeks in self.half_years:
             result += self.found_wbso_projects
         return result
