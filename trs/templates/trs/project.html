@@ -78,6 +78,26 @@
           {{ view.project.contract_amount|money }}
         </td>
       </tr>
+
+      {% if view.project.wbso_project %}
+        <tr>
+          <th>
+            WBSO project
+          </th>
+          <td>
+            {% if view.can_see_everything %}
+              <a href="{% url 'trs.wbso_project' pk=view.project.wbso_project.id %}">
+                {{ view.project.wbso_project.title }}
+                (nummer {{ view.project.wbso_project.number }})
+              </a>
+            {% else %}
+              {{ view.project.wbso_project.title }}
+              (nummer {{ view.project.wbso_project.number }})
+            {% endif %}
+          </td>
+        </tr>
+      {% endif %}
+
       {% if view.project.group %}
         <tr>
           <th>Groep</th>
