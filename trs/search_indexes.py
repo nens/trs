@@ -16,9 +16,12 @@ class ProjectIndex(indexes.SearchIndex, indexes.Indexable):
 
     def prepare(self, obj):
         data = super(ProjectIndex, self).prepare(obj)
-        if obj.archived:
-            # Push archived objects down.
-            data['boost'] = 0.5
+        # 2017-04-04: Removed negative boost as someone has a hard time
+        # finding old archived projects.
+
+        # if obj.archived:
+        #     # Push archived objects down.
+        #     data['boost'] = 0.5
         return data
 
 
