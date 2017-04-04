@@ -16,11 +16,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Hardcoded year, change this every year.
-        year = 2015
+        year = 2017
         # Hardcoded project ID, change this every year.
-        bedrijfsvoering = 4613
+        bedrijfsvoering = 5313
         # Hardcoded user IDs.
-        bastiaan = 3
         fons = 6
         wytze = 8
 
@@ -28,7 +27,7 @@ class Command(BaseCommand):
 
         year_weeks = models.YearWeek.objects.filter(year=year)
         project = models.Project.objects.get(pk=bedrijfsvoering)
-        for person_id in [bastiaan, fons, wytze]:
+        for person_id in [fons, wytze]:
             person = models.Person.objects.get(pk=person_id)
             to_work = person.hours_per_week()
             for year_week in year_weeks:
