@@ -12,4 +12,5 @@ node {
    sh "docker-compose run web bin/test"
    step $class: 'JUnitResultArchiver', testResults: 'nosetests.xml'
    publishHTML target: [reportDir: 'htmlcov', reportFiles: 'index.html', reportName: 'Coverage report']
+   step([$class: 'CoberturaPublisher', coberturaReportFile: 'coverage.xml'])
 }
