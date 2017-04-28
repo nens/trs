@@ -60,6 +60,7 @@ BAR_WIDTH = 75  # px
 BACK_TEMPLATE = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
 MONTHS = ['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni',
           'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December']
+TOTAL_COMPANY = 'Totaal'
 
 
 class LoginAndPermissionsRequiredMixin(object):
@@ -3718,7 +3719,7 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
 
     @cached_property
     def group_names_incl_total(self):
-        return ["Totaal"] + [group.name for group in self.groups]
+        return [TOTAL_COMPANY] + [group.name for group in self.groups]
 
     def _info_from_bookings(self, year=None, group=None):
         """Return info extracted one year's bookings"""
@@ -3931,7 +3932,7 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
         info_from_previous_bookings = self._info_from_bookings(
             year=self.year - 1)
         info_from_bookings = {}
-        info_from_bookings["Totaal"] = self._info_from_bookings()
+        info_from_bookings[TOTAL_COMPANY] = self._info_from_bookings()
         for group in self.groups:
             info_from_bookings[group.name] = self._info_from_bookings(
                 group=group)
@@ -3974,18 +3975,18 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
         yield line
 
         invoice_table = {}
-        invoice_table["Totaal"] = self._invoice_table()
+        invoice_table[TOTAL_COMPANY] = self._invoice_table()
         for group in self.groups:
             invoice_table[group.name] = self._invoice_table(group=group)
         for month, month_name in enumerate(MONTHS, start=1):
             line = ["", month_name,
-                    invoice_table["Totaal"]['invoiced_per_year_month'][
+                    invoice_table[TOTAL_COMPANY]['invoiced_per_year_month'][
                         self.year - 2][month],
-                    invoice_table["Totaal"]['cumulative_per_year_month'][
+                    invoice_table[TOTAL_COMPANY]['cumulative_per_year_month'][
                         self.year - 2][month],
-                    invoice_table["Totaal"]['invoiced_per_year_month'][
+                    invoice_table[TOTAL_COMPANY]['invoiced_per_year_month'][
                         self.year - 1][month],
-                    invoice_table["Totaal"]['cumulative_per_year_month'][
+                    invoice_table[TOTAL_COMPANY]['cumulative_per_year_month'][
                         self.year - 1][month],
                 ]
             for name in self.group_names_incl_total:
@@ -3998,9 +3999,9 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
             yield line
 
         line = ["", "Totaal",
-                invoice_table["Totaal"]['totals'][self.year - 2],
+                invoice_table[TOTAL_COMPANY]['totals'][self.year - 2],
                 "",
-                invoice_table["Totaal"]['totals'][self.year - 1],
+                invoice_table[TOTAL_COMPANY]['totals'][self.year - 1],
                 "",
             ]
         for name in self.group_names_incl_total:
@@ -4015,12 +4016,12 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
         total_payables = {}
         targets = {}  # Also used by "3. OPDRACHTEN".
         differences = {}
-        totals["Totaal"] = invoice_table["Totaal"]['totals'][self.year]
-        total_payables["Totaal"] = self.total_payables_this_year()
-        targets["Totaal"] = self.target()
-        differences["Totaal"] = (totals["Totaal"] -
-                                 total_payables["Totaal"] -
-                                 targets["Totaal"])
+        totals[TOTAL_COMPANY] = invoice_table[TOTAL_COMPANY]['totals'][self.year]
+        total_payables[TOTAL_COMPANY] = self.total_payables_this_year()
+        targets[TOTAL_COMPANY] = self.target()
+        differences[TOTAL_COMPANY] = (totals[TOTAL_COMPANY] -
+                                 total_payables[TOTAL_COMPANY] -
+                                 targets[TOTAL_COMPANY])
         for group in self.groups:
             totals[group.name] = invoice_table[group.name]['totals'][self.year]
             total_payables[group.name] = self.total_payables_this_year(group=group)
@@ -4051,18 +4052,18 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
             line += [self.year, "", ""]
         yield line
         confirmed_amount_table = {}
-        confirmed_amount_table["Totaal"] = self._confirmed_amount_table()
+        confirmed_amount_table[TOTAL_COMPANY] = self._confirmed_amount_table()
         for group in self.groups:
             confirmed_amount_table[group.name] = self._confirmed_amount_table(group=group)
         for month, month_name in enumerate(MONTHS, start=1):
             line = ["", month_name,
-                    confirmed_amount_table["Totaal"]['confirmed_amount_per_year_month'][
+                    confirmed_amount_table[TOTAL_COMPANY]['confirmed_amount_per_year_month'][
                         self.year - 2][month],
-                    confirmed_amount_table["Totaal"]['cumulative_per_year_month'][
+                    confirmed_amount_table[TOTAL_COMPANY]['cumulative_per_year_month'][
                         self.year - 2][month],
-                    confirmed_amount_table["Totaal"]['confirmed_amount_per_year_month'][
+                    confirmed_amount_table[TOTAL_COMPANY]['confirmed_amount_per_year_month'][
                         self.year - 1][month],
-                    confirmed_amount_table["Totaal"]['cumulative_per_year_month'][
+                    confirmed_amount_table[TOTAL_COMPANY]['cumulative_per_year_month'][
                         self.year - 1][month],
                 ]
             for name in self.group_names_incl_total:
@@ -4075,9 +4076,9 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
             yield line
 
         line = ["", "Totaal",
-                confirmed_amount_table["Totaal"]['totals'][self.year - 2],
+                confirmed_amount_table[TOTAL_COMPANY]['totals'][self.year - 2],
                 "",
-                confirmed_amount_table["Totaal"]['totals'][self.year - 1],
+                confirmed_amount_table[TOTAL_COMPANY]['totals'][self.year - 1],
                 "",
             ]
         for name in self.group_names_incl_total:
@@ -4116,7 +4117,7 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
 
 
         project_counts = {}
-        project_counts["Totaal"] = self._project_counts()
+        project_counts[TOTAL_COMPANY] = self._project_counts()
         for group in self.groups:
             project_counts[group.name] = self._project_counts(
                 group=group)
@@ -4148,7 +4149,7 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
             line += [self.year, "", ""]
         yield line
         person_counts = {}
-        person_counts["Totaal"] = self._person_counts()
+        person_counts[TOTAL_COMPANY] = self._person_counts()
         for group in self.groups:
             person_counts[group.name] = self._person_counts(
                 group=group)
