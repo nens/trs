@@ -3344,6 +3344,8 @@ class FinancialOverview(BaseView):
     def download_links(self):
         yield {'name': 'Gehele bedrijf',
                'url': reverse('trs.financial.csv')}
+        yield {'name': 'Gehele bedrijf, nieuwe gecombineerde versie',
+               'url': reverse('trs.combined_financial.csv')}
         for pk, name in Group.objects.all().values_list('pk', 'name'):
             yield {'name': name,
                    'url': reverse('trs.financial.csv', kwargs={'pk': pk})}
@@ -3482,7 +3484,7 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
         years = [self.year - 2, self.year -1, self.year]
         months = [i + 1 for i in range(12)]
         # For both defaultdicts, the first key is year, the second the month.
-        invoiced_per_year_month = defaultdict(dict)
+        confirmed_amount_per_year_month = defaultdict(dict)
         cumulative_per_year_month = defaultdict(dict)
         for year in years:
             cumulative = 0
@@ -3493,14 +3495,14 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
                         models.Sum('contract_amount'))[
                             'contract_amount__sum'] or 0
                 cumulative += confirmed_amount
-                invoiced_per_year_month[year][month] = confirmed_amount
+                confirmed_amount_per_year_month[year][month] = confirmed_amount
                 cumulative_per_year_month[year][month] = cumulative
 
         yield ["", "", self.year - 2, "", self.year - 1, "", self.year]
         for month, month_name in enumerate(MONTHS, start=1):
             row = ["", month_name]
             for year in years:
-                row.append(invoiced_per_year_month[year][month])
+                row.append(confirmed_amount_per_year_month[year][month])
                 row.append(cumulative_per_year_month[year][month])
             yield row
 
@@ -3533,7 +3535,8 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
     def project_counts(self):
         """Return counts like 'new in 2016' for projects"""
         result = {}
-        active_projects = self.projects.filter(archived=False)
+        active_projects = self.projects.filter(
+            archived=False).filter(internal=False)
         result['active'] = active_projects.count()
 
         confirmed_projects = active_projects.exclude(
@@ -3693,5 +3696,473 @@ class PayablesCsvView(CsvResponseMixin, PayablesView):
                 payable.description,
                 payable.amount,
                 payable.payed,
+                ]
+            yield line
+
+
+class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
+
+    title = "Gecombineerd overzicht financien"
+
+    def has_form_permissions(self):
+        return self.can_see_everything
+
+    @property
+    def header_line(self):
+        return ["", self.title]
+
+    @cached_property
+    def groups(self):
+        # Exclude groups with a `(`, those are the non-active ones.
+        return list(Group.objects.exclude(name__contains='('))
+
+    @cached_property
+    def group_names_incl_total(self):
+        return ["Totaal"] + [group.name for group in self.groups]
+
+    def _info_from_bookings(self, year=None, group=None):
+        """Return info extracted one year's bookings"""
+        if year is None:
+            year = self.year
+        # First grab the persons that booked in the year.
+        relevant_person_ids = Booking.objects.filter(
+            year_week__year=year).values_list(
+            'booked_by', flat=True).distinct()
+        relevant_persons = Person.objects.filter(
+            id__in=relevant_person_ids)
+        if group:
+            relevant_persons = relevant_persons.filter(group=group)
+        pycs = [core.get_pyc(person=person, year=year)
+                for person in relevant_persons]
+        return {'turnover': sum([pyc.turnover for pyc in pycs]),
+                'left_to_book_external': sum(
+                    [pyc.left_to_book_external for pyc in pycs]),
+                'booked_external': sum(
+                    [pyc.booked_external for pyc in pycs]),
+                'left_to_turn_over': sum(
+                    [pyc.left_to_turn_over for pyc in pycs]),
+                'overbooked_external': sum([pyc.overbooked_external for pyc in pycs]),
+                'loss': sum([pyc.loss for pyc in pycs]),
+            }
+
+    def reservations_total(self, group=None):
+        relevant_projects = Project.objects.filter(archived=False)
+        if group:
+            relevant_projects = relevant_projects.filter(group=group)
+        return round(relevant_projects.aggregate(
+            models.Sum('reservation'))['reservation__sum'] or 0)
+
+    def _invoice_table(self, group=None):
+        """For this year and two years hence, return invoiced amount per month
+
+        Per month, we need 6 values, 2 per year: the invoiced amount in that
+        month plus the cumulative amount in that year till that month.
+
+        Warning: as a side-effect, we set ``self.total_invoiced_this_year``.
+
+        """
+        years = [self.year - 2, self.year -1, self.year]
+        months = [i + 1 for i in range(12)]
+        invoices = Invoice.objects.all()
+        if group:
+            invoices = invoices.filter(project__group=group)
+        # For both defaultdicts, the first key is year, the second the month.
+        invoiced_per_year_month = defaultdict(dict)
+        cumulative_per_year_month = defaultdict(dict)
+        for year in years:
+            cumulative = 0
+            for month in months:
+                invoiced = invoices.filter(
+                    date__year=year, date__month=month).aggregate(
+                        models.Sum('amount_exclusive'))[
+                            'amount_exclusive__sum'] or 0
+                cumulative += invoiced
+                invoiced_per_year_month[year][month] = invoiced
+                cumulative_per_year_month[year][month] = cumulative
+
+        totals = {}
+        for year in years:
+            totals[year] = cumulative_per_year_month[year][12]
+
+        return {'invoiced_per_year_month': invoiced_per_year_month,
+                'cumulative_per_year_month': cumulative_per_year_month,
+                'totals': totals}
+
+    def _confirmed_amount_table(self, group=None):
+        """Return contract amounts for confirmed projects per year/month.
+
+        Per month, we need 6 values, 2 per year: the contract amount in that
+        month plus the cumulative amount in that year till that month.
+
+        """
+        years = [self.year - 2, self.year -1, self.year]
+        months = [i + 1 for i in range(12)]
+        # For both defaultdicts, the first key is year, the second the month.
+        confirmed_amount_per_year_month = defaultdict(dict)
+        cumulative_per_year_month = defaultdict(dict)
+        projects = Project.objects.all()
+        if group:
+            projects = projects.filter(group=group)
+        for year in years:
+            cumulative = 0
+            for month in months:
+                confirmed_amount = projects.filter(
+                    confirmation_date__year=year,
+                    confirmation_date__month=month).aggregate(
+                        models.Sum('contract_amount'))[
+                            'contract_amount__sum'] or 0
+                cumulative += confirmed_amount
+                confirmed_amount_per_year_month[year][month] = confirmed_amount
+                cumulative_per_year_month[year][month] = cumulative
+
+        totals = {}
+        for year in years:
+            totals[year] = cumulative_per_year_month[year][12]
+        return {'confirmed_amount_per_year_month': confirmed_amount_per_year_month,
+                'cumulative_per_year_month': cumulative_per_year_month,
+                'totals': totals}
+
+    def total_payables_this_year(self, group=None):
+        """Return sum of payables ('kosten derden') with a date of this year
+        """
+        payables =  Payable.objects.filter(date__year=self.year)
+        if group:
+            payables = payables.filter(project__group=group)
+        return payables.aggregate(
+                models.Sum('amount'))['amount__sum'] or 0
+
+    def target(self, group=None):
+        if group:
+            return group.target
+        else:
+            # The target of the whole company is the sum of all groups'
+            # targets.
+            return Group.objects.all().aggregate(
+                models.Sum('target'))['target__sum']
+
+    def _project_counts(self, group=None):
+        """Return counts like 'new in 2016' for projects"""
+        result = {}
+        projects = Project.objects.filter(internal=False)
+        if group:
+            projects = projects.filter(group=group)
+        active_projects = projects.filter(archived=False)
+        result['active'] = active_projects.count()
+
+        confirmed_projects = active_projects.exclude(
+            confirmation_date__isnull=True)
+        result['with_confirmation'] = confirmed_projects.count()
+
+        ended_projects = active_projects.filter(
+            end__lt=this_year_week())
+        result['ended'] = ended_projects.count()
+
+        offered_projects = active_projects.filter(
+            confirmation_date__isnull=True).exclude(
+                bid_send_date__isnull=False)
+        result['offered'] = offered_projects.count()
+
+        to_estimate_projects = active_projects.filter(
+            confirmation_date__isnull=True).exclude(
+                bid_send_date__isnull=True)
+        result['to_estimate'] = to_estimate_projects.count()
+
+        unconfirmed_projects = active_projects.filter(
+            confirmation_date__isnull=True)
+        booked_without_confirmation = Booking.objects.filter(
+            booked_on__in=unconfirmed_projects).aggregate(
+                models.Sum('hours'))['hours__sum'] or 0
+        result['booked_without_confirmation'] = booked_without_confirmation
+        # Offerte-uren zonder opdracht
+        return result
+
+    def _person_counts(self, group=None):
+        """Return counts like 'fte' and 'sick days'"""
+        result = {}
+        persons = Person.objects.filter(archived=False).prefetch_related(
+            'person_changes').prefetch_related('bookings')
+        if group:
+            persons = persons.filter(group=group)
+        total_hours_per_week = sum([person.hours_per_week()
+                                    for person in persons])
+        result['fte'] = round(total_hours_per_week / 40.0, 1)
+
+        sickness_projects = Project.objects.filter(
+            description='Ziekte').filter(archived=False)
+        if sickness_projects:
+            sick_hours = Booking.objects.filter(
+                booked_by__in=persons,
+                booked_on__in=sickness_projects,
+                year_week__year=self.year).aggregate(
+                    models.Sum('hours'))['hours__sum'] or 0
+            result['sick_days'] = round(sick_hours / 8)
+        else:
+            logger.warn("Geen project met naam 'Ziekte' gevonden")
+            result['sick_days'] = 0
+
+        result['days_to_book'] = round(
+            sum([person.to_book()['hours'] for person in persons]) / 8)
+        return result
+
+    @property
+    def csv_lines(self):
+        yield ["", "Datum uitdraai:", self.today.strftime("%d-%m-%Y"),
+               "Weeknummer:", this_year_week().week]
+        line = ["", "Kostenplaats:", "Totaal", "", "", "",
+               "",
+        ]
+        for name in self.group_names_incl_total:
+            line += [name, "", ""]
+        yield line
+
+        yield []
+        line = ["1.", "GEREALISEERDE OMZET", "", "",
+                (self.year - 1), "", "",
+        ]
+        for i in range(len(self.group_names_incl_total)):
+            line += [self.year, "", ""]
+        yield line
+
+        line = ["", "", "", ""]
+        for i in range(len(self.group_names_incl_total)):
+            line += ["Uren", "Euro", ""]
+        yield line
+
+        info_from_previous_bookings = self._info_from_bookings(
+            year=self.year - 1)
+        info_from_bookings = {}
+        info_from_bookings["Totaal"] = self._info_from_bookings()
+        for group in self.groups:
+            info_from_bookings[group.name] = self._info_from_bookings(
+                group=group)
+
+        for title, key1, key2 in [
+                ["Gerealiseerde omzet", "booked_external", "turnover"],
+                ["Werkvoorraad", "left_to_book_external", "left_to_turn_over"],
+                ["Verliesuren", "overbooked_external", "loss"],
+            ]:
+            line = ["", title, "", "",
+                   info_from_previous_bookings[key1],
+                   info_from_previous_bookings[key2],
+                   "",
+            ]
+            for name in self.group_names_incl_total:
+                line += [
+                   info_from_bookings[name][key1],
+                   info_from_bookings[name][key2],
+                   "",
+                ]
+            yield line
+
+        line = ["", "Totaal reserveringen", "", "", "", "", "",
+                "", self.reservations_total(group=None), "",
+        ]
+        for group in self.groups:
+            line += ["", self.reservations_total(group=group), ""]
+        yield line
+
+        yield []
+        yield []  # TODO omzetdoelstelling
+        yield []
+
+        line = ["2.", "GEFACTUREERDE OMZET",
+                (self.year - 2), "",
+                (self.year - 1), "", "",
+        ]
+        for i in range(len(self.group_names_incl_total)):
+            line += [self.year, "", ""]
+        yield line
+
+        invoice_table = {}
+        invoice_table["Totaal"] = self._invoice_table()
+        for group in self.groups:
+            invoice_table[group.name] = self._invoice_table(group=group)
+        for month, month_name in enumerate(MONTHS, start=1):
+            line = ["", month_name,
+                    invoice_table["Totaal"]['invoiced_per_year_month'][
+                        self.year - 2][month],
+                    invoice_table["Totaal"]['cumulative_per_year_month'][
+                        self.year - 2][month],
+                    invoice_table["Totaal"]['invoiced_per_year_month'][
+                        self.year - 1][month],
+                    invoice_table["Totaal"]['cumulative_per_year_month'][
+                        self.year - 1][month],
+                ]
+            for name in self.group_names_incl_total:
+                line += ["",
+                         invoice_table[name]['invoiced_per_year_month'][
+                             self.year][month],
+                         invoice_table[name]['cumulative_per_year_month'][
+                             self.year][month],
+                     ]
+            yield line
+
+        line = ["", "Totaal",
+                invoice_table["Totaal"]['totals'][self.year - 2],
+                "",
+                invoice_table["Totaal"]['totals'][self.year - 1],
+                "",
+            ]
+        for name in self.group_names_incl_total:
+            line += ["",
+                     invoice_table[name]['totals'][self.year],
+                     "",
+                 ]
+        yield line
+
+        yield []
+        totals = {}
+        total_payables = {}
+        targets = {}  # Also used by "3. OPDRACHTEN".
+        differences = {}
+        totals["Totaal"] = invoice_table["Totaal"]['totals'][self.year]
+        total_payables["Totaal"] = self.total_payables_this_year()
+        targets["Totaal"] = self.target()
+        differences["Totaal"] = (totals["Totaal"] -
+                                 total_payables["Totaal"] -
+                                 targets["Totaal"])
+        for group in self.groups:
+            totals[group.name] = invoice_table[group.name]['totals'][self.year]
+            total_payables[group.name] = self.total_payables_this_year(group=group)
+            targets[group.name] = self.target(group=group)
+            differences[group.name] = (totals[group.name] -
+                                       total_payables[group.name] -
+                                       targets[group.name])
+        for title, info in [
+                ["Gefactureerde omzet dit jaar", totals],
+                ["Kosten derden", total_payables],
+                ["Omzetdoelstelling", targets],
+                ["Verschil voor dit jaar", differences]]:
+            line = ["", title, "", "", "", ""]
+            for name in self.group_names_incl_total:
+                line += [
+                   "",
+                   info[name],
+                   "",
+                ]
+            yield line
+
+        yield []
+        line = ["3.", "OPDRACHTEN (verkoop)",
+                (self.year - 2), "",
+                (self.year - 1), "", "",
+        ]
+        for i in range(len(self.group_names_incl_total)):
+            line += [self.year, "", ""]
+        yield line
+        confirmed_amount_table = {}
+        confirmed_amount_table["Totaal"] = self._confirmed_amount_table()
+        for group in self.groups:
+            confirmed_amount_table[group.name] = self._confirmed_amount_table(group=group)
+        for month, month_name in enumerate(MONTHS, start=1):
+            line = ["", month_name,
+                    confirmed_amount_table["Totaal"]['confirmed_amount_per_year_month'][
+                        self.year - 2][month],
+                    confirmed_amount_table["Totaal"]['cumulative_per_year_month'][
+                        self.year - 2][month],
+                    confirmed_amount_table["Totaal"]['confirmed_amount_per_year_month'][
+                        self.year - 1][month],
+                    confirmed_amount_table["Totaal"]['cumulative_per_year_month'][
+                        self.year - 1][month],
+                ]
+            for name in self.group_names_incl_total:
+                line += ["",
+                         confirmed_amount_table[name]['confirmed_amount_per_year_month'][
+                             self.year][month],
+                         confirmed_amount_table[name]['cumulative_per_year_month'][
+                             self.year][month],
+                     ]
+            yield line
+
+        line = ["", "Totaal",
+                confirmed_amount_table["Totaal"]['totals'][self.year - 2],
+                "",
+                confirmed_amount_table["Totaal"]['totals'][self.year - 1],
+                "",
+            ]
+        for name in self.group_names_incl_total:
+            line += ["",
+                     confirmed_amount_table[name]['totals'][self.year],
+                     "",
+                 ]
+        yield line
+
+        yield []
+        days_elapsed = datetime.date.today().timetuple().tm_yday
+        portion_of_year = days_elapsed / 365
+        year_percentage = round(portion_of_year * 100)
+        sell_targets = {key: round(float(value) * 1.1)
+                        for (key, value) in targets.items()}
+        sell_targets_relative = {key: round(value * portion_of_year)
+                                 for (key, value) in sell_targets.items()}
+        realized_relative = {key: (
+            value and round(
+                confirmed_amount_table[key]['totals'][self.year] / value * 100)
+            or 0)
+                             for (key, value) in sell_targets_relative.items()}
+        for title, info in [
+                ["Verkoopdoelstelling (jaar)", sell_targets],
+                ["Verkoopdoelstelling (%s%% jaar)" % year_percentage,
+                 sell_targets_relative],
+                ["Gerealiseerde verkoop (% tot nu toe)", realized_relative]]:
+            line = ["", title, "", "", "", ""]
+            for name in self.group_names_incl_total:
+                line += [
+                   "",
+                   info[name],
+                   "",
+                ]
+            yield line
+
+
+        project_counts = {}
+        project_counts["Totaal"] = self._project_counts()
+        for group in self.groups:
+            project_counts[group.name] = self._project_counts(
+                group=group)
+
+        yield []
+        for title, key in [
+                ["Aantal projecten", 'active'],
+                ["Al geëindigd", 'ended'],
+                ["Projecten met opdracht", 'with_confirmation'],
+                ["In offertestadium", 'offered'],
+                ["Nog te begroten", 'to_estimate'],
+                ["(Offerte-)uren zonder opdracht",
+                 'booked_without_confirmation']]:
+            line = ["", title, "", "", "", ""]
+            for name in self.group_names_incl_total:
+                line += [
+                    "",
+                    project_counts[name][key],
+                    "",
+                ]
+            yield line
+
+        yield []
+        line = ["4.", "OVERIG",
+                "", "",
+                "", "", "",
+        ]
+        for i in range(len(self.group_names_incl_total)):
+            line += [self.year, "", ""]
+        yield line
+        person_counts = {}
+        person_counts["Totaal"] = self._person_counts()
+        for group in self.groups:
+            person_counts[group.name] = self._person_counts(
+                group=group)
+
+        yield []
+        for title, key in [
+                ["Aantal FTE", 'fte'],
+                ["Aantal dagen ziekteverlof", 'sick_days'],
+                ["Dagen achter met boeken", 'days_to_book']]:
+            line = ["", title, "", "", "", ""]
+            for name in self.group_names_incl_total:
+                line += [
+                    "",
+                    person_counts[name][key],
+                    "",
                 ]
             yield line
