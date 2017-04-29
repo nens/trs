@@ -3962,8 +3962,56 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
             line += ["", self.reservations_total(group=group), ""]
         yield line
 
+        days_elapsed = datetime.date.today().timetuple().tm_yday
+        portion_of_year = days_elapsed / 365
+        year_percentage = round(portion_of_year * 100)
+
+        targets = {}  # Also used by "2. GEFACTUREERDE OMZET" en "3. OPDRACHTEN".
+        targets[TOTAL_COMPANY] = self.target()
+        for group in self.groups:
+            targets[group.name] = self.target(group=group)
+        person_counts = {}  # ALso used by "4. OVERIG".
+        person_counts[TOTAL_COMPANY] = self._person_counts()
+        for group in self.groups:
+            person_counts[group.name] = self._person_counts(
+                group=group)
+
+        fte = {name: person_counts[name]['fte']
+               for name in self.group_names_incl_total}
+        targets_per_fte = {key: (
+            fte[key] and round(float(value) / fte[key]) or 0)
+                          for (key, value) in targets.items()}
+        targets_per_fte_relative = {
+            key: round(value * portion_of_year)
+            for (key, value) in targets_per_fte.items()}
+        realized_turnover_per_fte = {name: (
+            fte[name] and
+            round(info_from_bookings[name]['turnover'] / fte[name])
+            or 0)
+                                     for name in self.group_names_incl_total}
+        realized_relative = {key: (
+            value and round(
+                realized_turnover_per_fte[key] / value * 100)
+            or 0)
+                             for (key, value) in targets_per_fte_relative.items()}
+
+
         yield []
-        yield []  # TODO omzetdoelstelling
+        for title, info in [
+                ["Omzetdoelstelling/fte (jaar)", targets_per_fte],
+                ["Omzetdoelstelling/fte (%s%% jaar)" % year_percentage,
+                 targets_per_fte_relative],
+                ["Gerealiseerde omzet/fte (tot nu toe)",
+                 realized_turnover_per_fte],
+                ["Gerealiseerde omzet/fte (% tot nu toe)", realized_relative]]:
+            line = ["", title, "", "", "", ""]
+            for name in self.group_names_incl_total:
+                line += [
+                   "",
+                   "",
+                   info[name],
+                ]
+            yield line
         yield []
 
         line = ["2.", "GEFACTUREERDE OMZET",
@@ -4014,18 +4062,15 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
         yield []
         totals = {}
         total_payables = {}
-        targets = {}  # Also used by "3. OPDRACHTEN".
         differences = {}
         totals[TOTAL_COMPANY] = invoice_table[TOTAL_COMPANY]['totals'][self.year]
         total_payables[TOTAL_COMPANY] = self.total_payables_this_year()
-        targets[TOTAL_COMPANY] = self.target()
         differences[TOTAL_COMPANY] = (totals[TOTAL_COMPANY] -
                                  total_payables[TOTAL_COMPANY] -
                                  targets[TOTAL_COMPANY])
         for group in self.groups:
             totals[group.name] = invoice_table[group.name]['totals'][self.year]
             total_payables[group.name] = self.total_payables_this_year(group=group)
-            targets[group.name] = self.target(group=group)
             differences[group.name] = (totals[group.name] -
                                        total_payables[group.name] -
                                        targets[group.name])
@@ -4089,9 +4134,6 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
         yield line
 
         yield []
-        days_elapsed = datetime.date.today().timetuple().tm_yday
-        portion_of_year = days_elapsed / 365
-        year_percentage = round(portion_of_year * 100)
         sell_targets = {key: round(float(value) * 1.1)
                         for (key, value) in targets.items()}
         sell_targets_relative = {key: round(value * portion_of_year)
@@ -4148,11 +4190,6 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
         for i in range(len(self.group_names_incl_total)):
             line += [self.year, "", ""]
         yield line
-        person_counts = {}
-        person_counts[TOTAL_COMPANY] = self._person_counts()
-        for group in self.groups:
-            person_counts[group.name] = self._person_counts(
-                group=group)
 
         yield []
         for title, key in [
