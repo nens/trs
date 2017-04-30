@@ -3708,6 +3708,10 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
         return self.can_see_everything
 
     @property
+    def external_projects(self):
+        return Project.objects.filter(internal=False)
+
+    @property
     def header_line(self):
         return ["", self.title]
 
@@ -3746,7 +3750,7 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
             }
 
     def reservations_total(self, group=None):
-        relevant_projects = Project.objects.filter(archived=False)
+        relevant_projects = self.external_projects.filter(archived=False)
         if group:
             relevant_projects = relevant_projects.filter(group=group)
         return round(relevant_projects.aggregate(
@@ -3800,7 +3804,7 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
         # For both defaultdicts, the first key is year, the second the month.
         confirmed_amount_per_year_month = defaultdict(dict)
         cumulative_per_year_month = defaultdict(dict)
-        projects = Project.objects.all()
+        projects = self.external_projects
         if group:
             projects = projects.filter(group=group)
         for year in years:
@@ -3843,7 +3847,7 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
     def _project_counts(self, group=None):
         """Return counts like 'new in 2016' for projects"""
         result = {}
-        projects = Project.objects.filter(internal=False)
+        projects = self.external_projects
         if group:
             projects = projects.filter(group=group)
         active_projects = projects.filter(archived=False)
