@@ -180,7 +180,7 @@ class FinancialOverviewTestCase(TestCase):
         ensure_year_weeks_are_present()
         request = RequestFactory().get('/')
         view = views.FinancialOverview(request=request)
-        self.assertEquals(len(list(view.download_links())), 3)
+        self.assertEquals(len(list(view.download_links())), 4)
 
 
 class FinancialCsvViewTestCase(TestCase):
