@@ -3536,8 +3536,7 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
     def project_counts(self):
         """Return counts like 'new in 2016' for projects"""
         result = {}
-        active_projects = self.projects.filter(
-            archived=False).filter(internal=False)
+        active_projects = self.projects.filter(archived=False)
         result['active'] = active_projects.count()
 
         confirmed_projects = active_projects.exclude(
