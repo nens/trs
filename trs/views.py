@@ -3372,10 +3372,10 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
 
     @property
     def projects(self):
+        queryset = Project.objects.filter(internal=False)
         if self.group:
-            return Project.objects.filter(group=self.group)
-        else:
-            return Project.objects.all()
+            queryset = queryset.filter(group=self.group)
+        return queryset
 
     @property
     def persons(self):
