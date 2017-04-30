@@ -118,6 +118,9 @@ urlpatterns = patterns(
     url(r'^overviews/financial_csv/(?P<pk>\d+)/$',
         views.FinancialCsvView.as_view(),
         name='trs.financial.csv'),
+    url(r'^overviews/combined_financial_csv/$',
+        views.CombinedFinancialCsvView.as_view(),
+        name='trs.combined_financial.csv'),
 
     # Overviews
     url(r'^overviews/$',
