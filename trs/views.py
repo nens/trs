@@ -3352,7 +3352,6 @@ class FinancialOverview(BaseView):
                    'url': reverse('trs.financial.csv', kwargs={'pk': pk})}
 
 
-
 class FinancialCsvView(CsvResponseMixin, ProjectsView):
 
     title = "Overzicht financien"
@@ -3829,7 +3828,7 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
     def total_payables_this_year(self, group=None):
         """Return sum of payables ('kosten derden') with a date of this year
         """
-        payables =  Payable.objects.filter(date__year=self.year)
+        payables = Payable.objects.filter(date__year=self.year)
         if group:
             payables = payables.filter(project__group=group)
         return payables.aggregate(
@@ -4159,7 +4158,6 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
                    "",
                 ]
             yield line
-
 
         project_counts = {}
         project_counts[TOTAL_COMPANY] = self._project_counts()
