@@ -2101,6 +2101,14 @@ class ProjectBudgetEditView(BaseView):
             if self.can_edit_hourly_tariff:
                 original = original_hourly_tariffs.get(person.id, 0)
                 new = new_hourly_tariffs.get(person.id)
+                if self.project.code.endswith('.0'):
+                    # Offertetraject, dus nultarief.
+                    if new != 0:
+                        new = 0
+                        messages.warning(
+                            self.request,
+                            ".0 project, dus tarieven zijn op 0 gezet")
+
                 if new is None:
                     continue
                 hourly_tariff = new - original
