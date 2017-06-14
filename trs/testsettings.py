@@ -33,7 +33,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE_CLASSES = [
-    'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     # Default stuff below.
     'django.middleware.common.CommonMiddleware',

@@ -274,8 +274,8 @@ class BaseMixin(object):
             return True
 
     @cached_property
-    def gauges_id(self):
-        return getattr(settings, 'GAUGES_ID', None)
+    def sentry_javascript_dsn(self):
+        return getattr(settings, 'SENTRY_JAVASCRIPT_DSN', None)
 
     @cached_property
     def group_choices(self):

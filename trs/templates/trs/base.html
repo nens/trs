@@ -285,22 +285,13 @@
     </script>
     <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
     <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
-    <script src="{% static 'trs/table-fixed-header.js' %}"></script>
-    <script src="{% static 'trs/trs.js' %}"></script>
-    {% if view.gauges_id %}
-      <script type="text/javascript">
-        var _gauges = _gauges || [];
-        (function() {
-          var t   = document.createElement('script');
-          t.type  = 'text/javascript';
-          t.async = true;
-          t.id    = 'gauges-tracker';
-          t.setAttribute('data-site-id', '{{ view.gauges_id }}');
-          t.src = '//secure.gaug.es/track.js';
-          var s = document.getElementsByTagName('script')[0];
-          s.parentNode.insertBefore(t, s);
-        })();
+    {% if view.sentry_javascript_dsn %}
+      <script src="https://cdn.ravenjs.com/3.16.0/raven.min.js" crossorigin="anonymous"></script>
+      <script>
+        Raven.config('{{ view.sentry_javascript_dsn }}').install()
       </script>
     {% endif %}
+    <script src="{% static 'trs/table-fixed-header.js' %}"></script>
+    <script src="{% static 'trs/trs.js' %}"></script>
   </body>
 </html>

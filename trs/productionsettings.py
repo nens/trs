@@ -27,7 +27,4 @@ for unwanted_in_production in ['debug_toolbar.middleware.DebugToolbarMiddleware'
         if unwanted_in_production in where:
             where.remove(unwanted_in_production)
 
-INSTALLED_APPS = ['opbeat.contrib.django'] + INSTALLED_APPS
-MIDDLEWARE_CLASSES = ['opbeat.contrib.django.middleware.OpbeatAPMMiddleware'] + MIDDLEWARE_CLASSES
-
 from trs_site.productionsettings import *
