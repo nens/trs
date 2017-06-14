@@ -8,6 +8,8 @@ Changelog of TRS
 - Added newest version of lizard-auth-client in preparation for switching to
   the new style of connecting to the SSO (and especially the staging SSO).
 
+- .0 projects have mandatory tariffs of 0 now.
+
 
 1.15 (2016-06-10)
 -----------------
