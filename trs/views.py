@@ -3755,6 +3755,24 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
         return round(relevant_projects.aggregate(
             models.Sum('reservation'))['reservation__sum'] or 0)
 
+    def costs_total(self, group=None):
+        # Note: combination of budget_item and budget_transfer.
+        relevant_projects = self.external_projects.filter(archived=False)
+        if group:
+            relevant_projects = relevant_projects.filter(group=group)
+        costs = round(relevant_projects.aggregate(
+            models.Sum('budget_items__amount'))['budget_items__amount__sum'] or 0)
+        income = round(relevant_projects.aggregate(
+            models.Sum('budget_transfers__amount'))['budget_transfers__amount__sum'] or 0)
+        return costs - income
+
+    def profit_total(self, group=None):
+        relevant_projects = self.external_projects.filter(archived=False)
+        if group:
+            relevant_projects = relevant_projects.filter(group=group)
+        return round(relevant_projects.aggregate(
+            models.Sum('profit'))['profit__sum'] or 0)
+
     def _invoice_table(self, group=None):
         """For this year and two years hence, return invoiced amount per month
 
@@ -3940,7 +3958,8 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
                 group=group)
 
         for title, key1, key2 in [
-                ["Gerealiseerde omzet", "booked_external", "turnover"],
+                ["Gerealiseerde omzet (uur*tarief)", "booked_external",
+                 "turnover"],
                 ["Werkvoorraad", "left_to_book_external", "left_to_turn_over"],
                 ["Verliesuren", "overbooked_external", "loss"],
             ]:
@@ -3962,6 +3981,18 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
         ]
         for group in self.groups:
             line += ["", self.reservations_total(group=group), ""]
+        yield line
+        line = ["", "Overige kosten", "", "", "", "", "",
+                "", self.costs_total(group=None), "",
+        ]
+        for group in self.groups:
+            line += ["", self.costs_total(group=group), ""]
+        yield line
+        line = ["", "Afdracht", "", "", "", "", "",
+                "", self.profit_total(group=None), "",
+        ]
+        for group in self.groups:
+            line += ["", self.profit_total(group=group), ""]
         yield line
 
         days_elapsed = datetime.date.today().timetuple().tm_yday
