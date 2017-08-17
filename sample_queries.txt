@@ -1,3 +1,14 @@
 >>> result = Booking.objects.filter(booked_on__description__icontains='ouderschap').values('booked_by__name', 'year_week__year').annotate(Sum('hours'))
 >>> for item in result:
 ...     print("%s,%s,%s" % (item['booked_by__name'], item['year_week__year'], int(item['hours__sum'])))
+
+
+>>> from faker import Factory
+>>> fake = Factory.create()
+>>> fake.name()
+'Paul Torres'
+>>> from trs.models import Person
+>>> for person in Person.objects.exclude(name__icontains='reinout'):
+...     person.name = fake.name()
+...     person.save()
+...
