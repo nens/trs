@@ -12,3 +12,18 @@
 ...     person.name = fake.name()
 ...     person.save()
 ...
+
+
+Hours per WBSO project
+
+>>> from django.db.models import Sum
+
+>>> result = Booking.objects.filter(year_week__year=2016, booked_on__wbso_project__isnull=False, booked_on__wbso_project__end_date__gte='2016-01-01').order_by('booked_on__wbso_project__number').values('booked_on__wbso_project__number', 'booked_on__wbso_project__title', 'booked_on__code', 'booked_on__description').annotate(Sum('hours'))
+>>> for line in result:
+...      print(';'.join([str(line['booked_on__wbso_project__number']), line['booked_on__wbso_project__title'], line['booked_on__code'], line['booked_on__description'], str(line['hours__sum'])]))
+
+Idem with a line per person:
+
+>>> result = Booking.objects.filter(year_week__year=2016, booked_on__wbso_project__isnull=False, booked_on__wbso_project__end_date__gte='2016-01-01').order_by('booked_on__wbso_project__number').values('booked_on__wbso_project__number', 'booked_on__wbso_project__title', 'booked_on__code', 'booked_on__description', 'booked_by__name').annotate(Sum('hours'))
+>>> for line in result:
+...      print(';'.join([str(line['booked_on__wbso_project__number']), line['booked_on__wbso_project__title'], line['booked_on__code'], line['booked_on__description'], line['booked_by__name'], str(line['hours__sum'])]))
