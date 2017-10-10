@@ -953,6 +953,11 @@ class BudgetItem(FinancialBase):
             self.to_project.save()  # Increment cache key.
         return super(BudgetItem, self).save(*args, **kwargs)
 
+    def delete(self, *args, **kwargs):
+        if self.to_project:
+            self.to_project.save()  # Increment cache key.
+        return super(BudgetItem, self).delete(*args, **kwargs)
+
 
 class ThirdPartyEstimate(FinancialBase):
     project = models.ForeignKey(
