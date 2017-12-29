@@ -27,3 +27,111 @@ Idem with a line per person:
 >>> result = Booking.objects.filter(year_week__year=2016, booked_on__wbso_project__isnull=False, booked_on__wbso_project__end_date__gte='2016-01-01').order_by('booked_on__wbso_project__number').values('booked_on__wbso_project__number', 'booked_on__wbso_project__title', 'booked_on__code', 'booked_on__description', 'booked_by__name').annotate(Sum('hours'))
 >>> for line in result:
 ...      print(';'.join([str(line['booked_on__wbso_project__number']), line['booked_on__wbso_project__title'], line['booked_on__code'], line['booked_on__description'], line['booked_by__name'], str(line['hours__sum'])]))
+
+
+Projects for a certain group, added after a certain date:
+
+>>> for p in Project.objects.filter(group=3).filter(added__gte=datetime.datetime(2017, 9, 1)):
+...     print('%10s https://trs.lizard.net%s %9s  %s' % (p.code, p.get_absolute_url(), p.contract_amount, p.description))
+
+
+
+-----------------------------
+Voor presentatie over django queries. Eerst 'sqllog' in `testsettings.py` aanzetten.
+
+
+>>> from trs.models import Person, Project, Booking
+
+>>> Person.objects.all()[0]
+<Person: Andrew Mcguire>
+>>> Person.objects.all()[0].name
+'Andrew Mcguire'
+>>> Person.objects.all()[0].group
+<Group: Bedrijfsvoering/Algemeen>
+
+>>> Person.objects.filter(name='reinout')
+[]
+>>> Person.objects.filter(name__icontains='reinout')
+[<Person: Reinout van Rees>]
+>>> Person.objects.filter(name__icontains='reinout')[0].group
+<Group: Beheer en onderhoud>
+
+>>> Person.objects.filter(group__name='Systemen')
+>>> Person.objects.filter(group__name__icontains='beheer')
+
+
+
+
+>>> Person.objects.filter(group=None)
+>>> Person.objects.filter(group=None).count()
+>>> Person.objects.exclude(group=None).count()
+>>> Person.objects.exclude(group__isnull=True).count()
+
+>>> Person.objects.filter(group__name='Systemen').filter(name__lte='C')
+>>> Person.objects.exclude(group=None).filter(name__lte='C')
+
+>>> groupless_persons = Person.objects.exclude(group=None)  # No sql log
+>>> groupless_persons.count()  # Now we see output
+
+
+
+
+query speed
+
+>>> Person.objects.filter(group__name='Systemen')  # 1 query
+>>> for person in Person.objects.filter(group__name='Systemen'):
+...     print(person.name, person.group.name)
+# ^^^^ veel queries
+
+>>> for person in Person.objects.filter(group__name='Systemen').select_related('group'):
+...     print(person.name, person.group.name)
+# ^^^ inner join
+
+>>> for person in Person.objects.filter(group__name='Systemen').prefetch_related('group'):
+...     print(person.name, person.group.name)
+# ^^^ twee queries
+
+values/objects
+
+>>> relevant_persons = Person.objects.filter(group__name='Systemen').select_related('group')
+("om het leesbaarder te maken")
+>>> for person in relevant_persons:
+...     print(person.name, person.group.name)
+
+En dan nu values:
+
+>>> relevant_persons
+>>> relevant_persons.values('name', 'group__name')  # dict
+>>> relevant_persons.values_list('name', 'group__name')  # list of tuples
+>>> relevant_persons.values_list('name', flat=True)  # list & hele kleine query
+
+
+Aggregatie/annotatie
+
+>>> Booking.objects.filter(booked_by__name__icontains='reinout')
+>>> Booking.objects.filter(booked_by__name__icontains='reinout').count()
+>>> from django.db import models
+>>> Booking.objects.filter(booked_by__name__icontains='reinout').aggregate(models.Sum('hours'))
+
+>>> relevant_persons = Person.objects.filter(group__name='Systemen').select_related('group')
+>>> relevant_persons.aggregate(models.Sum('bookings__hours'))
+>>> relevant_persons.annotate(models.Sum('bookings__hours'))  # je ziet eigenlijk niets
+>>> relevant_persons.annotate(models.Sum('bookings__hours'))[0].bookings__hours__sum  # Nu wel
+>>> for person in relevant_persons.annotate(models.Sum('bookings__hours')):
+...     print(person.name, person.bookings__hours__sum)
+
+
+
+group by
+
+>>> Booking.objects.filter(booked_on__description__icontains='ouderschap')
+>>> Booking.objects.filter(booked_on__description__icontains='ouderschap').count()
+>>> Booking.objects.filter(booked_on__description__icontains='ouderschap').values(
+         'booked_by__name', 'year_week__year')
+>>> Booking.objects.filter(booked_on__description__icontains='ouderschap').values(
+         'booked_by__name', 'year_week__year').annotate(models.Sum('hours'))
+
+>>> result = Booking.objects.filter(booked_on__description__icontains='ouderschap').values(
+         'booked_by__name', 'year_week__year').annotate(models.Sum('hours'))
+>>> for item in result:
+...     print("%s,%s,%s" % (item['booked_by__name'], item['year_week__year'], int(item['hours__sum'])))
