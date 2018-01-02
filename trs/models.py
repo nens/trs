@@ -293,16 +293,18 @@ class Person(models.Model):
         # The line above might have pushed it below zero, so compensate:
         return max(0, result)
 
-    @cache_on_model_every_week
-    def to_book(self):
+    @cache_per_week
+    def to_book(self, year_week=None):
         """Return absolute days and weeks (rounded) left to book."""
-        this_year = this_year_week().year
-        hours_to_work = self.to_work_up_till_now()
+        if year_week is None:
+            year_week = this_year_week()
+        this_year = year_week.year
+        hours_to_work = self.to_work_up_till_now(year_week=year_week)
         # ^^^ Doesn't include the current week, so we don't count bookings in
         # this week, too.
         booked_this_year = self.bookings.filter(
             year_week__year=this_year,
-            year_week__week__lt=this_year_week().week).aggregate(
+            year_week__week__lt=year_week.week).aggregate(
                 models.Sum('hours'))['hours__sum'] or 0
         hours_to_book = max(0, (hours_to_work - booked_this_year))
         days_to_book = round(hours_to_book / 8)  # Assumption: 8 hour workday.
@@ -312,9 +314,9 @@ class Person(models.Model):
             weeks_to_book = 0
 
         to_book_this_week = (self.hours_per_week() -
-                             8 * this_year_week().num_days_missing)
+                             8 * year_week.num_days_missing)
         booked_this_week = self.bookings.filter(
-            year_week=this_year_week()).aggregate(
+            year_week=year_week).aggregate(
                 models.Sum('hours'))['hours__sum'] or 0
         left_to_book_this_week = to_book_this_week - booked_this_week
 
