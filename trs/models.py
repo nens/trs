@@ -85,18 +85,6 @@ def cache_on_model(callable):
     return inner
 
 
-def cache_on_model_every_week(callable):
-    def inner(self):
-        cache_key = self.cache_key(callable.__name__)
-        cache_key += this_year_week().as_param()
-        result = cache.get(cache_key)
-        if result is None:
-            result = callable(self)
-            cache.set(cache_key, result)
-        return result
-    return inner
-
-
 class Group(models.Model):
     name = models.CharField(
         verbose_name="naam",
