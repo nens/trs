@@ -170,7 +170,7 @@ class Person(models.Model):
         return self.name
 
     def cache_key(self, for_what, year_week=None):
-        cache_version = 10
+        cache_version = 11
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-%s-%s-%s-%s' % (
             self.id, self.cache_indicator, for_what, week_id, cache_version)
@@ -282,10 +282,9 @@ class Person(models.Model):
         return max(0, result)
 
     @cache_per_week
-    def to_book(self, year_week=None):
+    def to_book(self, unused_year_week=None):
         """Return absolute days and weeks (rounded) left to book."""
-        if year_week is None:
-            year_week = this_year_week()
+        year_week = this_year_week()
         this_year = year_week.year
         hours_to_work = self.to_work_up_till_now(year_week=year_week)
         # ^^^ Doesn't include the current week, so we don't count bookings in

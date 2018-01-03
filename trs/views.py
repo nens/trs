@@ -2896,7 +2896,7 @@ class PersonsCsvView(CsvResponseMixin, PersonsView):
             pyc = line['pyc']
             result = [
                 person.name,
-                person.to_book()['hours'],
+                pyc.to_book['hours'],
                 pyc.overbooked,
                 pyc.well_booked_percentage,
                 pyc.booked_external,
@@ -2904,7 +2904,7 @@ class PersonsCsvView(CsvResponseMixin, PersonsView):
                 pyc.billable_percentage,
                 pyc.unbillable_percentage,
                 pyc.target_percentage,
-                person.target(),
+                pyc.target,
                 pyc.turnover,
                 pyc.left_to_book_external,
                 pyc.left_to_turn_over,

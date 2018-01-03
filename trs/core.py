@@ -24,6 +24,7 @@ class PersonYearCombination(object):
         'overbooked',
         'overbooked_external',
         'left_to_book_external',
+        # ^^^ What a person can still book external.
         'well_booked',
         'booked_internal',
         'booked_external',
@@ -34,16 +35,21 @@ class PersonYearCombination(object):
         'per_project',
         'all_booked_hours',
         'to_book_this_year',
+        # ^^^ How many hours in total for this whole year a person can book.
         'all_bookings_percentage',
         'left_to_turn_over',
+        'to_book',
+        # ^^^ Unbooked hours (up till last week if in the current year, per
+        # year if not).
     ]
 
     def __init__(self, person, year=None):
         self.person = person
+        self.current_year = datetime.date.today().year
         if year is None:
-            year = datetime.date.today().year
-        self.year = year
-        cache_version = 31
+            year = self.current_year
+        self.year = int(year)
+        cache_version = 37
         self.cache_key = 'pycdata-%s-%s-%s-%s' % (
             person.id, person.cache_indicator, year, cache_version)
         has_cached_data = self.get_cache()
@@ -58,6 +64,26 @@ class PersonYearCombination(object):
         self.calc_target_and_overbookings()
         self.billable_percentage = self.calc_external_percentage()
         self.unbillable_percentage = 100 - self.billable_percentage
+        if self.year == self.current_year:
+            self.to_book = self.person.to_book()
+        else:
+            # Mimick the 'interface'
+            hours_to_book = self.to_book_this_year - self.all_booked_hours
+            days_to_book = round(hours_to_book / 8)
+            friendly = '%s dagen' % days_to_book
+            if days_to_book > 5:
+                klass = 'danger'
+            elif days_to_book > 1:
+                klass = 'warning'
+            else:
+                klass = 'success'
+                friendly = 0
+            self.to_book = {
+                'hours': round(hours_to_book),
+                'klass': klass,
+                'friendly': friendly,
+                }
+
         elapsed = (time.time() - start_time)
         logger.debug("Re-calculated person/year info for %s in %s secs",
                      self.person, elapsed)
