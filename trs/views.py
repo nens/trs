@@ -238,7 +238,8 @@ class BaseMixin(object):
         previous_year = self.year - 1
         to_book = core.get_pyc(person=self.sidebar_person,
                                year=previous_year).to_book
-        if not to_book['hours']:
+        if to_book['friendly'] == 0:
+            # The to_book mechanism filters it out.
             return
         to_book['link'] = (
             reverse('trs.booking.overview',
