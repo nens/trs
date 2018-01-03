@@ -184,6 +184,19 @@
                       {{ view.sidebar_person.to_book.left_to_book_this_week }}
                       uur in de lopende week)
                     </div>
+                    {% if view.sidebar_person_previous_year_reminder %}
+                      <div>
+                        Van
+                        <a href="{{ view.sidebar_person_previous_year_reminder.link }}">
+                          vorig jaar
+                        </a>
+                        staan nog
+                        <span class="label label-{{ view.sidebar_person_previous_year_reminder.klass }}">
+                          {{ view.sidebar_person_previous_year_reminder.friendly }}
+                        </span>
+                        open.
+                      </div>
+                    {% endif %}
                     <br>
                   {% else %}
                     <div class="progress"

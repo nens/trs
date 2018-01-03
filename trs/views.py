@@ -228,6 +228,25 @@ class BaseMixin(object):
         return core.get_pyc(person=self.sidebar_person, year=self.year)
 
     @cached_property
+    def sidebar_person_previous_year_reminder(self):
+        if not self.sidebar_person:
+            return
+        if self.is_custom_year:
+            return
+        if self.today.month != 1:
+            return
+        previous_year = self.year - 1
+        to_book = core.get_pyc(person=self.sidebar_person,
+                               year=previous_year).to_book
+        if not to_book['hours']:
+            return
+        to_book['link'] = (
+            reverse('trs.booking.overview',
+                    kwargs={'pk': self.sidebar_person.id}) +
+            '?year=%s' % previous_year)
+        return to_book
+
+    @cached_property
     def selected_tab(self):
         recognized = ['booking', 'projects', 'persons', 'overviews']
         for path_element in recognized:
