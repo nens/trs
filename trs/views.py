@@ -184,9 +184,6 @@ class BaseMixin(object):
 
     @cached_property
     def is_custom_year(self):
-        if 'year' not in self.request.GET:
-            # Corner case, some views look at the filters instead of GET.
-            return False
         return self.year != this_year_week().year
 
     @cached_property
