@@ -2523,6 +2523,8 @@ class PayablesView(BaseView):
         first_year = first_date.year
         last_date = Payable.objects.all().last().date
         last_year = last_date.year
+        if last_year < this_year_week().year:
+            last_year = this_year_week().year
         return list(range(first_year, last_year + 1))
 
     @cached_property
