@@ -311,7 +311,7 @@ class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
 class PersonsView(BaseView):
 
     title = "Medewerkers"
-    normally_visible_filters = ['status', 'group']
+    normally_visible_filters = ['status', 'group', 'year']
 
     @cached_property
     def results_for_selection_pager(self):
@@ -825,7 +825,8 @@ class ProjectsView(BaseView):
     @cached_property
     def normally_visible_filters(self):
         result = ['status',
-                  'group']
+                  'group',
+                  'year']
         if self.can_see_everything:
             result += [
                 'is_subsidized',
