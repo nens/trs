@@ -148,7 +148,7 @@ class BaseMixin(object):
                 filter['hidden'] = not (param in self.normally_visible_filters
                                         or filter['active'])
                 # Special case: activate 'year' in january.
-                if param == 'year' and self.remind_of_previous_year:
+                if param == 'year' and self.remind_of_previous_year():
                     filter['hidden'] = False
 
             active_value = get_params.get(param, filter['default'])
@@ -189,7 +189,6 @@ class BaseMixin(object):
     def is_custom_year(self):
         return self.year != this_year_week().year
 
-    @cached_property
     def remind_of_previous_year(self):
         if self.today.month == 1 and not self.is_custom_year:
             return True
@@ -240,7 +239,7 @@ class BaseMixin(object):
     def sidebar_person_previous_year_reminder(self):
         if not self.sidebar_person:
             return
-        if not self.remind_of_previous_year:
+        if not self.remind_of_previous_year():
             return
         previous_year = self.year - 1
         to_book = core.get_pyc(person=self.sidebar_person,
