@@ -170,13 +170,13 @@ class Person(models.Model):
         return self.name
 
     def cache_key(self, for_what, year_week=None):
-        cache_version = 11
+        cache_version = 12
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-%s-%s-%s-%s' % (
             self.id, self.cache_indicator, for_what, week_id, cache_version)
 
     def person_change_cache_key(self, for_what, year_week=None):
-        cache_version = 5
+        cache_version = 6
         week_id = year_week and year_week.id or this_year_week().id
         return 'person-%s-pc%s-%s-%s-%s' % (
             self.id, self.cache_indicator_person_change, for_what, week_id,
