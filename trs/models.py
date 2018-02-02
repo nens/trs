@@ -85,6 +85,19 @@ def cache_on_model(callable):
     return inner
 
 
+def cache_per_week_per_person(callable):
+    # Cache per person (so use the regular 'something changed' cache key. But
+    # also differentiate per week. (Name should perhaps be different).
+    def inner(self, year_week=None):
+        cache_key = self.cache_key(callable.__name__, year_week)
+        result = cache.get(cache_key)
+        if result is None:
+            result = callable(self, year_week)
+            cache.set(cache_key, result)
+        return result
+    return inner
+
+
 class Group(models.Model):
     name = models.CharField(
         verbose_name="naam",
@@ -281,7 +294,7 @@ class Person(models.Model):
         # The line above might have pushed it below zero, so compensate:
         return max(0, result)
 
-    @cache_per_week
+    @cache_per_week_per_person
     def to_book(self, year_week=None):
         """Return absolute days and weeks (rounded) left to book."""
         year_week = this_year_week()
