@@ -282,7 +282,7 @@ class Person(models.Model):
         return max(0, result)
 
     @cache_per_week
-    def to_book(self, unused_year_week=None):
+    def to_book(self, year_week=None):
         """Return absolute days and weeks (rounded) left to book."""
         year_week = this_year_week()
         this_year = year_week.year
