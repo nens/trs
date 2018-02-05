@@ -62,8 +62,9 @@ def this_year_week_pk():
     return year_week.pk
 
 
-def cache_per_week(callable):
-    # Note: only for PersonChange related fields.
+def cache_until_personchange_or_new_week(callable):
+    # Note: cache refreshes less often than `@cache_until_any_change` because
+    # we only look at person changes, not bookings or so.
     def inner(self, year_week=None):
         cache_key = self.person_change_cache_key(callable.__name__, year_week)
         result = cache.get(cache_key)
@@ -74,7 +75,7 @@ def cache_per_week(callable):
     return inner
 
 
-def cache_on_model(callable):
+def cache_until_any_change(callable):
     def inner(self):
         cache_key = self.cache_key(callable.__name__)
         result = cache.get(cache_key)
@@ -85,7 +86,7 @@ def cache_on_model(callable):
     return inner
 
 
-def cache_per_week_per_person(callable):
+def cache_until_any_change_or_new_week(callable):
     # Cache per person (so use the regular 'something changed' cache key. But
     # also differentiate per week. (Name should perhaps be different).
     def inner(self, year_week=None):
@@ -198,12 +199,12 @@ class Person(models.Model):
     def get_absolute_url(self):
         return reverse('trs.person', kwargs={'pk': self.pk})
 
-    @cache_on_model
+    @cache_until_any_change
     def as_widget(self):
         return mark_safe(render_to_string('trs/person-widget.html',
                                           {'person': self}))
 
-    @cache_per_week
+    @cache_until_personchange_or_new_week
     def hours_per_week(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
@@ -211,7 +212,7 @@ class Person(models.Model):
             year_week__lte=year_week).aggregate(
                 models.Sum('hours_per_week'))['hours_per_week__sum'] or 0)
 
-    @cache_per_week
+    @cache_until_personchange_or_new_week
     def standard_hourly_tariff(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
@@ -220,7 +221,7 @@ class Person(models.Model):
                 models.Sum('standard_hourly_tariff'))[
                     'standard_hourly_tariff__sum'] or 0)
 
-    @cache_per_week
+    @cache_until_personchange_or_new_week
     def minimum_hourly_tariff(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
@@ -229,7 +230,7 @@ class Person(models.Model):
                 models.Sum('minimum_hourly_tariff'))[
                     'minimum_hourly_tariff__sum'] or 0)
 
-    @cache_per_week
+    @cache_until_personchange_or_new_week
     def target(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
@@ -237,7 +238,7 @@ class Person(models.Model):
             year_week__lte=year_week).aggregate(
                 models.Sum('target'))['target__sum'] or 0)
 
-    @cache_on_model
+    @cache_until_any_change
     def filtered_assigned_projects(self):
         """Return active projects: unarchived and not over the end date."""
         return Project.objects.filter(
@@ -245,7 +246,7 @@ class Person(models.Model):
             archived=False,
             end__gte=this_year_week()).distinct()
 
-    @cache_on_model
+    @cache_until_any_change
     def unarchived_assigned_projects(self):
         """Return assigned projects that aren't archived.
 
@@ -255,13 +256,13 @@ class Person(models.Model):
             work_assignments__assigned_to=self,
             archived=False).distinct()
 
-    @cache_on_model
+    @cache_until_any_change
     def assigned_projects(self):
         """Return all assigned projects."""
         return Project.objects.filter(
             work_assignments__assigned_to=self).distinct()
 
-    @cache_per_week
+    @cache_until_personchange_or_new_week
     def to_work_up_till_now(self, year_week=None):
         """Return hours I've had to work this year."""
         if year_week is None:
@@ -294,7 +295,7 @@ class Person(models.Model):
         # The line above might have pushed it below zero, so compensate:
         return max(0, result)
 
-    @cache_per_week_per_person
+    @cache_until_any_change_or_new_week
     def to_book(self, year_week=None):
         """Return absolute days and weeks (rounded) left to book."""
         year_week = this_year_week()
@@ -549,12 +550,12 @@ class Project(models.Model):
         return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
                                         for_what, cache_version)
 
-    @cache_on_model
+    @cache_until_any_change
     def as_widget(self):
         return mark_safe(render_to_string('trs/project-widget.html',
                                           {'project': self}))
 
-    @cache_on_model
+    @cache_until_any_change
     def not_yet_started(self):
         if not self.start:
             return False
@@ -644,7 +645,7 @@ class Project(models.Model):
         else:
             return 'text-warning'
 
-    @cache_on_model
+    @cache_until_any_change
     def work_calculation(self):
         # The big calculation from which the rest derives.
         work_per_person = WorkAssignment.objects.filter(
