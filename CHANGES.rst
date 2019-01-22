@@ -10,6 +10,9 @@ Changelog of TRS
 
 - .0 projects have mandatory tariffs of 0 now.
 
+- Added 'software development' field (mimicking the 'profit' field) on
+  projects.
+
 
 1.15 (2016-06-10)
 -----------------
