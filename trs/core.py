@@ -13,32 +13,32 @@ from trs.models import YearWeek
 
 logger = logging.getLogger(__name__)
 
-ALL = 'ALL'
+ALL = "ALL"
 
 
 class PersonYearCombination(object):
     PYC_KEYS = [
-        'target',
-        'turnover',
-        'loss',
-        'overbooked',
-        'overbooked_external',
-        'left_to_book_external',
+        "target",
+        "turnover",
+        "loss",
+        "overbooked",
+        "overbooked_external",
+        "left_to_book_external",
         # ^^^ What a person can still book external.
-        'well_booked',
-        'booked_internal',
-        'booked_external',
-        'overbooked_percentage',
-        'well_booked_percentage',
-        'billable_percentage',
-        'unbillable_percentage',
-        'per_project',
-        'all_booked_hours',
-        'to_book_this_year',
+        "well_booked",
+        "booked_internal",
+        "booked_external",
+        "overbooked_percentage",
+        "well_booked_percentage",
+        "billable_percentage",
+        "unbillable_percentage",
+        "per_project",
+        "all_booked_hours",
+        "to_book_this_year",
         # ^^^ How many hours in total for this whole year a person can book.
-        'all_bookings_percentage',
-        'left_to_turn_over',
-        'to_book',
+        "all_bookings_percentage",
+        "left_to_turn_over",
+        "to_book",
         # ^^^ Unbooked hours (up till last week if in the current year, per
         # year if not).
     ]
@@ -50,8 +50,12 @@ class PersonYearCombination(object):
             year = self.current_year
         self.year = int(year)
         cache_version = 38
-        self.cache_key = 'pycdata-%s-%s-%s-%s' % (
-            person.id, person.cache_indicator, year, cache_version)
+        self.cache_key = "pycdata-%s-%s-%s-%s" % (
+            person.id,
+            person.cache_indicator,
+            year,
+            cache_version,
+        )
         has_cached_data = self.get_cache()
         if not has_cached_data:
             self.just_calculate_everything()
@@ -70,29 +74,34 @@ class PersonYearCombination(object):
             # Mimick the 'interface'
             hours_to_book = self.to_book_this_year - self.all_booked_hours
             days_to_book = round(hours_to_book / 8)
-            friendly = '%s dagen' % days_to_book
+            friendly = "%s dagen" % days_to_book
             if days_to_book > 5:
-                klass = 'danger'
+                klass = "danger"
             elif days_to_book > 1:
-                klass = 'warning'
+                klass = "warning"
             else:
-                klass = 'success'
+                klass = "success"
                 friendly = 0
             self.to_book = {
-                'hours': round(hours_to_book),
-                'klass': klass,
-                'friendly': friendly,
-                }
+                "hours": round(hours_to_book),
+                "klass": klass,
+                "friendly": friendly,
+            }
 
-        elapsed = (time.time() - start_time)
-        logger.debug("Re-calculated person/year info for %s in %s secs",
-                     self.person, elapsed)
+        elapsed = time.time() - start_time
+        logger.debug(
+            "Re-calculated person/year info for %s in %s secs", self.person, elapsed
+        )
 
     def set_cache(self):
         result = {key: getattr(self, key) for key in self.PYC_KEYS}
         cache.set(self.cache_key, result)
-        logger.debug("Cached NEW pyc data for %s (%s) , %s",
-                     self.person, self.year, self.cache_key)
+        logger.debug(
+            "Cached NEW pyc data for %s (%s) , %s",
+            self.person,
+            self.year,
+            self.cache_key,
+        )
 
     def get_cache(self):
         result = cache.get(self.cache_key)
@@ -103,47 +112,58 @@ class PersonYearCombination(object):
         return True
 
     def calc_target_and_overbookings(self):
-        budget_per_project = WorkAssignment.objects.filter(
-            assigned_to=self.person,
-            assigned_on__start__year__lte=self.year,
-            assigned_on__end__year__gte=self.year,
-            assigned_on__hourless=False).values(
-                'assigned_on',
-                'assigned_on__internal').annotate(
-                    models.Sum('hours'),
-                    models.Sum('hourly_tariff')
-                )
+        budget_per_project = (
+            WorkAssignment.objects.filter(
+                assigned_to=self.person,
+                assigned_on__start__year__lte=self.year,
+                assigned_on__end__year__gte=self.year,
+                assigned_on__hourless=False,
+            )
+            .values("assigned_on", "assigned_on__internal")
+            .annotate(models.Sum("hours"), models.Sum("hourly_tariff"))
+        )
         budget = {
-            item['assigned_on']: round(item['hours__sum'] or 0)
-            for item in budget_per_project}
+            item["assigned_on"]: round(item["hours__sum"] or 0)
+            for item in budget_per_project
+        }
         hourly_tariff = {
-            item['assigned_on']: round(item['hourly_tariff__sum'] or 0)
-            for item in budget_per_project}
+            item["assigned_on"]: round(item["hourly_tariff__sum"] or 0)
+            for item in budget_per_project
+        }
         is_internal = {
-            item['assigned_on']: item['assigned_on__internal']
-            for item in budget_per_project}
+            item["assigned_on"]: item["assigned_on__internal"]
+            for item in budget_per_project
+        }
 
         project_ids = budget.keys()
 
-        booked_this_year_per_project = Booking.objects.filter(
-            booked_by=self.person,
-            year_week__year=self.year,
-            booked_on__hourless=False).values(
-                'booked_on').annotate(
-                    models.Sum('hours'))
+        booked_this_year_per_project = (
+            Booking.objects.filter(
+                booked_by=self.person,
+                year_week__year=self.year,
+                booked_on__hourless=False,
+            )
+            .values("booked_on")
+            .annotate(models.Sum("hours"))
+        )
         booked_this_year = {
-            item['booked_on']: round(item['hours__sum'])
-            for item in booked_this_year_per_project}
+            item["booked_on"]: round(item["hours__sum"])
+            for item in booked_this_year_per_project
+        }
 
-        booked_up_to_this_year_per_project = Booking.objects.filter(
-            booked_by=self.person,
-            year_week__year__lt=self.year,
-            booked_on__in=project_ids).values(
-                'booked_on').annotate(
-                    models.Sum('hours'))
+        booked_up_to_this_year_per_project = (
+            Booking.objects.filter(
+                booked_by=self.person,
+                year_week__year__lt=self.year,
+                booked_on__in=project_ids,
+            )
+            .values("booked_on")
+            .annotate(models.Sum("hours"))
+        )
         booked_before_this_year = {
-            item['booked_on']: round(item['hours__sum'])
-            for item in booked_up_to_this_year_per_project}
+            item["booked_on"]: round(item["hours__sum"])
+            for item in booked_up_to_this_year_per_project
+        }
 
         per_project = {}
         for id in project_ids:
@@ -151,8 +171,7 @@ class PersonYearCombination(object):
             booked_till_now = booked + booked_before_this_year.get(id, 0)
             overbooked = max(0, (booked_till_now - budget[id]))
             overbooked_this_year = min(overbooked, booked_this_year.get(id, 0))
-            well_booked_this_year = (
-                booked_this_year.get(id, 0) - overbooked_this_year)
+            well_booked_this_year = booked_this_year.get(id, 0) - overbooked_this_year
             tariff = hourly_tariff[id]
             turnover = well_booked_this_year * tariff
             loss = overbooked_this_year * tariff
@@ -173,78 +192,89 @@ class PersonYearCombination(object):
                 overbooked_external = overbooked_this_year
 
             project_info = {
-                'booked': booked,
-                'overbooked': overbooked_this_year,
-                'overbooked_external': overbooked_external,
-                'well_booked': well_booked_this_year,
-                'left_to_book_external': left_to_book_external,
-                'turnover': turnover,
-                'loss': loss,
-                'left_to_turn_over': left_to_turn_over,
-                'booked_internal': booked_internal,
-                'booked_external': booked_external,
+                "booked": booked,
+                "overbooked": overbooked_this_year,
+                "overbooked_external": overbooked_external,
+                "well_booked": well_booked_this_year,
+                "left_to_book_external": left_to_book_external,
+                "turnover": turnover,
+                "loss": loss,
+                "left_to_turn_over": left_to_turn_over,
+                "booked_internal": booked_internal,
+                "booked_external": booked_external,
             }
             per_project[id] = project_info
 
         # year-based person.to_work_up_till_now() implementation.
-        hours_per_week = round(self.person.person_changes.filter(
-            year_week__year__lt=self.year).aggregate(
-                models.Sum('hours_per_week'))['hours_per_week__sum'] or 0)
-        changes_this_year = self.person.person_changes.filter(
-            year_week__year=self.year).values(
-                'year_week__week').annotate(
-                    models.Sum('hours_per_week'))
-        changes_per_week = {change['year_week__week']:
-                            round(change['hours_per_week__sum'])
-                            for change in changes_this_year}
-        year_weeks = YearWeek.objects.filter(
-            year=self.year).values('week', 'num_days_missing')
-        week_numbers = [year_week['week'] for year_week in year_weeks]
-        missing_days = sum([year_week['num_days_missing']
-                            for year_week in year_weeks])
+        hours_per_week = round(
+            self.person.person_changes.filter(year_week__year__lt=self.year).aggregate(
+                models.Sum("hours_per_week")
+            )["hours_per_week__sum"]
+            or 0
+        )
+        changes_this_year = (
+            self.person.person_changes.filter(year_week__year=self.year)
+            .values("year_week__week")
+            .annotate(models.Sum("hours_per_week"))
+        )
+        changes_per_week = {
+            change["year_week__week"]: round(change["hours_per_week__sum"])
+            for change in changes_this_year
+        }
+        year_weeks = YearWeek.objects.filter(year=self.year).values(
+            "week", "num_days_missing"
+        )
+        week_numbers = [year_week["week"] for year_week in year_weeks]
+        missing_days = sum([year_week["num_days_missing"] for year_week in year_weeks])
         self.to_book_this_year = 0
         for week in week_numbers:
             if week in changes_per_week:
                 hours_per_week += changes_per_week[week]
             self.to_book_this_year += hours_per_week
         self.to_book_this_year -= missing_days * 8
-        self.all_booked_hours = round(self.person.bookings.filter(
-            year_week__year=self.year).aggregate(
-                models.Sum('hours'))['hours__sum'] or 0)
+        self.all_booked_hours = round(
+            self.person.bookings.filter(year_week__year=self.year).aggregate(
+                models.Sum("hours")
+            )["hours__sum"]
+            or 0
+        )
         # ^^^ self.all_booked_hours *includes* the 'hourless' projects that
         # are filtered out in the rest of this calculation.
         if self.to_book_this_year:
             self.all_bookings_percentage = round(
-                100 * self.all_booked_hours / self.to_book_this_year)
+                100 * self.all_booked_hours / self.to_book_this_year
+            )
         else:  # Division by zero
             self.all_bookings_percentage = 0
 
-        self.overbooked = sum([project['overbooked']
-                               for project in per_project.values()])
-        self.overbooked_external = sum([project['overbooked_external']
-                                        for project in per_project.values()])
-        self.well_booked = sum([project['well_booked']
-                                for project in per_project.values()])
-        self.turnover = sum([project['turnover']
-                             for project in per_project.values()])
-        self.loss = sum([project['loss']
-                         for project in per_project.values()])
-        self.left_to_turn_over = sum([project['left_to_turn_over']
-                                      for project in per_project.values()])
+        self.overbooked = sum(
+            [project["overbooked"] for project in per_project.values()]
+        )
+        self.overbooked_external = sum(
+            [project["overbooked_external"] for project in per_project.values()]
+        )
+        self.well_booked = sum(
+            [project["well_booked"] for project in per_project.values()]
+        )
+        self.turnover = sum([project["turnover"] for project in per_project.values()])
+        self.loss = sum([project["loss"] for project in per_project.values()])
+        self.left_to_turn_over = sum(
+            [project["left_to_turn_over"] for project in per_project.values()]
+        )
         self.left_to_book_external = sum(
-            [project['left_to_book_external']
-             for project in per_project.values()])
-        self.booked_internal = sum([project['booked_internal']
-                                    for project in per_project.values()])
-        self.booked_external = sum([project['booked_external']
-                                    for project in per_project.values()])
-        total_booked = sum([project['booked']
-                            for project in per_project.values()])
+            [project["left_to_book_external"] for project in per_project.values()]
+        )
+        self.booked_internal = sum(
+            [project["booked_internal"] for project in per_project.values()]
+        )
+        self.booked_external = sum(
+            [project["booked_external"] for project in per_project.values()]
+        )
+        total_booked = sum([project["booked"] for project in per_project.values()])
         # ^^^ total_booked excludes, like everything here, the 'hourless'
         # projects.
         if total_booked:
-            overbooked_percentage = round(
-                100 * self.overbooked / total_booked)
+            overbooked_percentage = round(100 * self.overbooked / total_booked)
             well_booked_percentage = 100 - overbooked_percentage
         else:
             overbooked_percentage = 0
@@ -257,19 +287,22 @@ class PersonYearCombination(object):
     def calc_external_percentage(self):
         """Return percentage hours booked this year on external projects.
         """
-        query_result = Booking.objects.filter(
-            booked_by=self.person,
-            booked_on__hourless=False,
-            year_week__year=self.year).values(
-                'booked_on__internal').annotate(
-                    models.Sum('hours'))
+        query_result = (
+            Booking.objects.filter(
+                booked_by=self.person,
+                booked_on__hourless=False,
+                year_week__year=self.year,
+            )
+            .values("booked_on__internal")
+            .annotate(models.Sum("hours"))
+        )
         internal = 0
         external = 0
         for result in query_result:
-            if result['booked_on__internal']:
-                internal = round(result['hours__sum'])
+            if result["booked_on__internal"]:
+                internal = round(result["hours__sum"])
             else:
-                external = round(result['hours__sum'])
+                external = round(result["hours__sum"])
         if not internal + external:  # Division by zero
             return 100
         return round(100 * external / (internal + external))
@@ -299,12 +332,12 @@ class PersonYearCombination(object):
     @cached_property
     def relative_bar_color(self):
         if self.relative_target_percentage >= 100:
-            color = 'success'
+            color = "success"
         elif self.relative_target_percentage < 50:
-            color = 'danger'
+            color = "danger"
         else:
-            color = 'warning'
-        return 'progress-bar-' + color
+            color = "warning"
+        return "progress-bar-" + color
 
 
 def get_pyc(person, year=None):

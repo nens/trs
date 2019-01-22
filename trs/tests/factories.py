@@ -10,26 +10,26 @@ class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
 
-    first_name = 'Reinout'
-    username = factory.Sequence(lambda n: 'user{0}'.format(n))
+    first_name = "Reinout"
+    username = factory.Sequence(lambda n: "user{0}".format(n))
 
 
 class PersonFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Person
 
-    name = 'Reinout'
+    name = "Reinout"
 
 
 class ProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Project
 
-    code = factory.Sequence(lambda n: 'P%s' % str(1234 + n))
-    description = ''
+    code = factory.Sequence(lambda n: "P%s" % str(1234 + n))
+    description = ""
     internal = False
     archived = False
-    principal = ''
+    principal = ""
     project_leader = None
     project_manager = None
 
@@ -38,7 +38,7 @@ class GroupFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Group
 
-    name = 'My group'
+    name = "My group"
 
 
 class YearWeekFactory(factory.django.DjangoModelFactory):
@@ -49,8 +49,10 @@ class YearWeekFactory(factory.django.DjangoModelFactory):
     # Start in week 2, which starts 7 jan 2013.
     week = factory.Sequence(lambda n: n + 1)
     first_day = factory.Sequence(
-        lambda n: (datetime.date(year=2013, month=1, day=7) +
-              datetime.timedelta(days=7) * n))
+        lambda n: (
+            datetime.date(year=2013, month=1, day=7) + datetime.timedelta(days=7) * n
+        )
+    )
 
 
 class PersonChangeFactory(factory.django.DjangoModelFactory):
@@ -88,6 +90,6 @@ class BudgetItemFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.BudgetItem
 
-    description = ''
+    description = ""
     amount = 0.0
     project = factory.SubFactory(ProjectFactory)

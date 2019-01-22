@@ -8,7 +8,6 @@ from trs.tests import factories
 
 
 class TestFillCache(unittest.TestCase):
-
     def setUp(self):
         self.command = fill_cache.Command()
 
@@ -17,5 +16,5 @@ class TestFillCache(unittest.TestCase):
         self.person = factories.PersonFactory.create()
         self.project = factories.ProjectFactory.create()
         self.command.handle()
-        key = self.project.cache_key('work_calculation')
+        key = self.project.cache_key("work_calculation")
         self.assertTrue(cache.get(key))

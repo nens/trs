@@ -4,58 +4,63 @@ from trs import models
 
 
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description']
+    list_display = ["name", "description"]
 
 
 class PersonAdmin(admin.ModelAdmin):
-    list_display = ['name', 'group', 'archived', 'user',
-                    'is_office_management', 'is_management']
-    list_editable = ['group', 'archived', 'is_office_management']
-    list_filter = ['archived', 'group', 'is_management',
-                   'is_office_management']
-    search_fields = ['name']
+    list_display = [
+        "name",
+        "group",
+        "archived",
+        "user",
+        "is_office_management",
+        "is_management",
+    ]
+    list_editable = ["group", "archived", "is_office_management"]
+    list_filter = ["archived", "group", "is_management", "is_office_management"]
+    search_fields = ["name"]
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ['code',
-                    'description',
-                    'group',
-                    'wbso_project',
-                    'wbso_percentage',
-                    'internal',
-                    'archived']
-    list_filter = ['internal', 'archived', 'group', 'wbso_project']
-    list_editable = ['group', 'wbso_project', 'wbso_percentage']
-    search_fields = ['code', 'description']
+    list_display = [
+        "code",
+        "description",
+        "group",
+        "wbso_project",
+        "wbso_percentage",
+        "internal",
+        "archived",
+    ]
+    list_filter = ["internal", "archived", "group", "wbso_project"]
+    list_editable = ["group", "wbso_project", "wbso_percentage"]
+    search_fields = ["code", "description"]
 
 
 class WbsoProjectAdmin(admin.ModelAdmin):
-    list_display = ['number', 'title', 'start_date', 'end_date']
-    search_fields = ['title']
-    list_editable = ['title', ]
+    list_display = ["number", "title", "start_date", "end_date"]
+    search_fields = ["title"]
+    list_editable = ["title"]
 
 
 class InvoiceAdmin(admin.ModelAdmin):
-    list_display = ['number', 'project', 'date', 'description',
-                    'amount_exclusive']
-    search_fields = ['number', 'project', 'description']
-    ordering = ('-date', '-number',)  # Reverse from the normal display
+    list_display = ["number", "project", "date", "description", "amount_exclusive"]
+    search_fields = ["number", "project", "description"]
+    ordering = ("-date", "-number")  # Reverse from the normal display
 
 
 class PersonChangeAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'year_week']
+    list_display = ["__str__", "year_week"]
 
 
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ['year_week', 'hours', 'booked_by', 'booked_on']
-    list_filter = ['booked_by', 'booked_on', 'year_week__year']
+    list_display = ["year_week", "hours", "booked_by", "booked_on"]
+    list_filter = ["booked_by", "booked_on", "year_week__year"]
 
 
 class WorkAssignmentAdmin(admin.ModelAdmin):
-    list_display = ['assigned_on', 'year_week', 'assigned_to',
-                    'hours', 'hourly_tariff']
-    search_fields = ['assigned_on__code', 'assigned_to__name']
-    ordering = ['assigned_on', 'year_week', 'added']
+    list_display = ["assigned_on", "year_week", "assigned_to", "hours", "hourly_tariff"]
+    search_fields = ["assigned_on__code", "assigned_to__name"]
+    ordering = ["assigned_on", "year_week", "added"]
 
 
 class BudgetItemAdmin(admin.ModelAdmin):

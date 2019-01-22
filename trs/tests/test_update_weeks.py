@@ -6,7 +6,6 @@ from trs import models
 
 
 class TestUpdateWeeks(unittest.TestCase):
-
     def setUp(self):
         self.command = update_weeks.Command()
 

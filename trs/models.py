@@ -27,25 +27,24 @@ logger = logging.getLogger(__name__)
 def make_code_sortable(code):
     # Main goal: make P1234.10 sort numerically compared to P1234.2
     code = code.lower()
-    if '.' not in code:
+    if "." not in code:
         return code
-    parts = code.split('.')
+    parts = code.split(".")
     if len(parts) != 2:
         return code
     try:
         number = int(parts[1])
-        return '%s.%02d' % (parts[0], number)
+        return "%s.%02d" % (parts[0], number)
     except ValueError:
         return code
 
 
 def this_year_week():
-    cache_key = 'this-year-week2'
+    cache_key = "this-year-week2"
     cached = cache.get(cache_key)
     if cached is not None:
         return cached
-    result = YearWeek.objects.filter(
-        first_day__lte=datetime.date.today()).last()
+    result = YearWeek.objects.filter(first_day__lte=datetime.date.today()).last()
     cache.set(cache_key, result, 3600)
     return result
 
@@ -72,6 +71,7 @@ def cache_until_personchange_or_new_week(callable):
             result = callable(self, year_week)
             cache.set(cache_key, result)
         return result
+
     return inner
 
 
@@ -83,6 +83,7 @@ def cache_until_any_change(callable):
             result = callable(self)
             cache.set(cache_key, result)
         return result
+
     return inner
 
 
@@ -96,36 +97,33 @@ def cache_until_any_change_or_new_week(callable):
             result = callable(self, year_week)
             cache.set(cache_key, result)
         return result
+
     return inner
 
 
 class Group(models.Model):
-    name = models.CharField(
-        verbose_name="naam",
-        max_length=255)
+    name = models.CharField(verbose_name="naam", max_length=255)
     description = models.CharField(
-        verbose_name="omschrijving",
-        blank=True,
-        max_length=255)
+        verbose_name="omschrijving", blank=True, max_length=255
+    )
     target = models.DecimalField(
         max_digits=12,
         decimal_places=DECIMAL_PLACES,
         default=0,
-        verbose_name="omzetdoelstelling")
+        verbose_name="omzetdoelstelling",
+    )
 
     class Meta:
         verbose_name = "groep"
         verbose_name_plural = "groepen"
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
 
 
 class Person(models.Model):
-    name = models.CharField(
-        verbose_name="naam",
-        max_length=255)
+    name = models.CharField(verbose_name="naam", max_length=255)
     user = models.OneToOneField(
         User,
         on_delete=models.SET_NULL,
@@ -133,48 +131,44 @@ class Person(models.Model):
         null=True,
         verbose_name="gebruiker",
         unique=True,
-        help_text=("De interne (django) gebruiker die deze persoon is. " +
-                   "Dit wordt normaliter automatisch gekoppeld op basis van" +
-                   "de loginnaam zodra de gebruiker voor de eerste keer " +
-                   "inlogt."))
+        help_text=(
+            "De interne (django) gebruiker die deze persoon is. "
+            + "Dit wordt normaliter automatisch gekoppeld op basis van"
+            + "de loginnaam zodra de gebruiker voor de eerste keer "
+            + "inlogt."
+        ),
+    )
     description = models.CharField(
-        verbose_name="omschrijving",
-        blank=True,
-        max_length=255)
+        verbose_name="omschrijving", blank=True, max_length=255
+    )
     # Description on persons is useful for noting that someone doesn't work
     # for us anymore, for instance. And other corner cases.
     group = models.ForeignKey(
-        Group,
-        blank=True,
-        null=True,
-        verbose_name="groep",
-        related_name="persons")
+        Group, blank=True, null=True, verbose_name="groep", related_name="persons"
+    )
     is_office_management = models.BooleanField(
         verbose_name="office management",
         help_text="Office management can edit and add everything",
-        default=False)
+        default=False,
+    )
     is_management = models.BooleanField(
         verbose_name="management",
-        help_text=("Management can see everything, but doesn't get extra " +
-                   "edit rights"),
-        default=False)
-    archived = models.BooleanField(
-        verbose_name="gearchiveerd",
-        default=False)
-    cache_indicator = models.IntegerField(
-        default=0,
-        verbose_name="cache indicator")
+        help_text=(
+            "Management can see everything, but doesn't get extra " + "edit rights"
+        ),
+        default=False,
+    )
+    archived = models.BooleanField(verbose_name="gearchiveerd", default=False)
+    cache_indicator = models.IntegerField(default=0, verbose_name="cache indicator")
     cache_indicator_person_change = models.IntegerField(
-        default=0,
-        verbose_name="cache indicator voor PersonChange veranderingen")
-    last_modified = models.DateTimeField(
-        auto_now=True,
-        verbose_name="laatst gewijzigd")
+        default=0, verbose_name="cache indicator voor PersonChange veranderingen"
+    )
+    last_modified = models.DateTimeField(auto_now=True, verbose_name="laatst gewijzigd")
 
     class Meta:
         verbose_name = "persoon"
         verbose_name_plural = "personen"
-        ordering = ['archived', 'name']
+        ordering = ["archived", "name"]
 
     def save(self, *args, **kwargs):
         self.cache_indicator += 1
@@ -186,57 +180,75 @@ class Person(models.Model):
     def cache_key(self, for_what, year_week=None):
         cache_version = 12
         week_id = year_week and year_week.id or this_year_week().id
-        return 'person-%s-%s-%s-%s-%s' % (
-            self.id, self.cache_indicator, for_what, week_id, cache_version)
+        return "person-%s-%s-%s-%s-%s" % (
+            self.id,
+            self.cache_indicator,
+            for_what,
+            week_id,
+            cache_version,
+        )
 
     def person_change_cache_key(self, for_what, year_week=None):
         cache_version = 6
         week_id = year_week and year_week.id or this_year_week().id
-        return 'person-%s-pc%s-%s-%s-%s' % (
-            self.id, self.cache_indicator_person_change, for_what, week_id,
-            cache_version)
+        return "person-%s-pc%s-%s-%s-%s" % (
+            self.id,
+            self.cache_indicator_person_change,
+            for_what,
+            week_id,
+            cache_version,
+        )
 
     def get_absolute_url(self):
-        return reverse('trs.person', kwargs={'pk': self.pk})
+        return reverse("trs.person", kwargs={"pk": self.pk})
 
     @cache_until_any_change
     def as_widget(self):
-        return mark_safe(render_to_string('trs/person-widget.html',
-                                          {'person': self}))
+        return mark_safe(render_to_string("trs/person-widget.html", {"person": self}))
 
     @cache_until_personchange_or_new_week
     def hours_per_week(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return round(self.person_changes.filter(
-            year_week__lte=year_week).aggregate(
-                models.Sum('hours_per_week'))['hours_per_week__sum'] or 0)
+        return round(
+            self.person_changes.filter(year_week__lte=year_week).aggregate(
+                models.Sum("hours_per_week")
+            )["hours_per_week__sum"]
+            or 0
+        )
 
     @cache_until_personchange_or_new_week
     def standard_hourly_tariff(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return round(self.person_changes.filter(
-            year_week__lte=year_week).aggregate(
-                models.Sum('standard_hourly_tariff'))[
-                    'standard_hourly_tariff__sum'] or 0)
+        return round(
+            self.person_changes.filter(year_week__lte=year_week).aggregate(
+                models.Sum("standard_hourly_tariff")
+            )["standard_hourly_tariff__sum"]
+            or 0
+        )
 
     @cache_until_personchange_or_new_week
     def minimum_hourly_tariff(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return round(self.person_changes.filter(
-            year_week__lte=year_week).aggregate(
-                models.Sum('minimum_hourly_tariff'))[
-                    'minimum_hourly_tariff__sum'] or 0)
+        return round(
+            self.person_changes.filter(year_week__lte=year_week).aggregate(
+                models.Sum("minimum_hourly_tariff")
+            )["minimum_hourly_tariff__sum"]
+            or 0
+        )
 
     @cache_until_personchange_or_new_week
     def target(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return round(self.person_changes.filter(
-            year_week__lte=year_week).aggregate(
-                models.Sum('target'))['target__sum'] or 0)
+        return round(
+            self.person_changes.filter(year_week__lte=year_week).aggregate(
+                models.Sum("target")
+            )["target__sum"]
+            or 0
+        )
 
     @cache_until_any_change
     def filtered_assigned_projects(self):
@@ -244,7 +256,8 @@ class Person(models.Model):
         return Project.objects.filter(
             work_assignments__assigned_to=self,
             archived=False,
-            end__gte=this_year_week()).distinct()
+            end__gte=this_year_week(),
+        ).distinct()
 
     @cache_until_any_change
     def unarchived_assigned_projects(self):
@@ -253,14 +266,13 @@ class Person(models.Model):
         Don't look at the start/end date.
         """
         return Project.objects.filter(
-            work_assignments__assigned_to=self,
-            archived=False).distinct()
+            work_assignments__assigned_to=self, archived=False
+        ).distinct()
 
     @cache_until_any_change
     def assigned_projects(self):
         """Return all assigned projects."""
-        return Project.objects.filter(
-            work_assignments__assigned_to=self).distinct()
+        return Project.objects.filter(work_assignments__assigned_to=self).distinct()
 
     @cache_until_personchange_or_new_week
     def to_work_up_till_now(self, year_week=None):
@@ -268,25 +280,31 @@ class Person(models.Model):
         if year_week is None:
             year_week = this_year_week()
         this_year = year_week.year
-        hours_per_week = round(self.person_changes.filter(
-            year_week__year__lt=this_year).aggregate(
-                models.Sum('hours_per_week'))['hours_per_week__sum'] or 0)
-        changes_this_year = self.person_changes.filter(
-            year_week__year=this_year,
-            year_week__week__lte=year_week.week).values(
-                'year_week__week').annotate(
-                    models.Sum('hours_per_week'))
-        changes_per_week = {change['year_week__week']:
-                            round(change['hours_per_week__sum'])
-                            for change in changes_this_year}
+        hours_per_week = round(
+            self.person_changes.filter(year_week__year__lt=this_year).aggregate(
+                models.Sum("hours_per_week")
+            )["hours_per_week__sum"]
+            or 0
+        )
+        changes_this_year = (
+            self.person_changes.filter(
+                year_week__year=this_year, year_week__week__lte=year_week.week
+            )
+            .values("year_week__week")
+            .annotate(models.Sum("hours_per_week"))
+        )
+        changes_per_week = {
+            change["year_week__week"]: round(change["hours_per_week__sum"])
+            for change in changes_this_year
+        }
         result = 0
         # Grab week numbers. "lt" isn't "lte" as we want to exclude the
         # current week. You only have to book on friday!
         year_weeks = YearWeek.objects.filter(
-            year=year_week.year,
-            week__lt=year_week.week).values('week', 'num_days_missing')
-        week_numbers = [item['week'] for item in year_weeks]
-        missing_days = sum([item['num_days_missing'] for item in year_weeks])
+            year=year_week.year, week__lt=year_week.week
+        ).values("week", "num_days_missing")
+        week_numbers = [item["week"] for item in year_weeks]
+        missing_days = sum([item["num_days_missing"] for item in year_weeks])
         for week in week_numbers:
             if week in changes_per_week:
                 hours_per_week += changes_per_week[week]
@@ -303,10 +321,12 @@ class Person(models.Model):
         hours_to_work = self.to_work_up_till_now(year_week=year_week)
         # ^^^ Doesn't include the current week, so we don't count bookings in
         # this week, too.
-        booked_this_year = self.bookings.filter(
-            year_week__year=this_year,
-            year_week__week__lt=year_week.week).aggregate(
-                models.Sum('hours'))['hours__sum'] or 0
+        booked_this_year = (
+            self.bookings.filter(
+                year_week__year=this_year, year_week__week__lt=year_week.week
+            ).aggregate(models.Sum("hours"))["hours__sum"]
+            or 0
+        )
         hours_to_book = max(0, (hours_to_work - booked_this_year))
         days_to_book = round(hours_to_book / 8)  # Assumption: 8 hour workday.
         if self.hours_per_week():
@@ -314,214 +334,220 @@ class Person(models.Model):
         else:  # Division by zero
             weeks_to_book = 0
 
-        to_book_this_week = (self.hours_per_week() -
-                             8 * year_week.num_days_missing)
-        booked_this_week = self.bookings.filter(
-            year_week=year_week).aggregate(
-                models.Sum('hours'))['hours__sum'] or 0
+        to_book_this_week = self.hours_per_week() - 8 * year_week.num_days_missing
+        booked_this_week = (
+            self.bookings.filter(year_week=year_week).aggregate(models.Sum("hours"))[
+                "hours__sum"
+            ]
+            or 0
+        )
         left_to_book_this_week = to_book_this_week - booked_this_week
 
         if weeks_to_book > 1:
-            klass = 'danger'
-            friendly = '%s weken' % weeks_to_book
-            short = '%sw' % weeks_to_book
+            klass = "danger"
+            friendly = "%s weken" % weeks_to_book
+            short = "%sw" % weeks_to_book
         elif weeks_to_book == 1:
-            klass = 'warning'
-            friendly = '%s week' % weeks_to_book
-            short = '%sw' % weeks_to_book
+            klass = "warning"
+            friendly = "%s week" % weeks_to_book
+            short = "%sw" % weeks_to_book
         elif days_to_book > 1:
-            klass = 'warning'
-            friendly = '%s dagen' % days_to_book
-            short = '%sd' % days_to_book
+            klass = "warning"
+            friendly = "%s dagen" % days_to_book
+            short = "%sd" % days_to_book
         elif days_to_book == 1:
-            klass = 'warning'
-            friendly = '%s dag' % days_to_book
-            short = '%sd' % days_to_book
+            klass = "warning"
+            friendly = "%s dag" % days_to_book
+            short = "%sd" % days_to_book
         else:
-            klass = 'success'
+            klass = "success"
             friendly = 0
-            short = ''
-        return {'hours': round(hours_to_book),
-                'days': days_to_book,
-                'weeks': weeks_to_book,
-                'friendly': friendly,
-                'short': short,
-                'klass': klass,
-                'left_to_book_this_week': round(left_to_book_this_week)}
+            short = ""
+        return {
+            "hours": round(hours_to_book),
+            "days": days_to_book,
+            "weeks": weeks_to_book,
+            "friendly": friendly,
+            "short": short,
+            "klass": klass,
+            "left_to_book_this_week": round(left_to_book_this_week),
+        }
 
 
 class Project(models.Model):
-    code = models.CharField(
-        verbose_name="projectcode",
-        unique=True,
-        max_length=255)
+    code = models.CharField(verbose_name="projectcode", unique=True, max_length=255)
     code_for_sorting = models.CharField(
-        editable=False,
-        blank=True,
-        null=True,
-        max_length=255)
+        editable=False, blank=True, null=True, max_length=255
+    )
     description = models.CharField(
-        verbose_name="omschrijving",
-        blank=True,
-        max_length=255)
-    added = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="toegevoegd op")
-    internal = models.BooleanField(
-        verbose_name="intern project",
-        default=False)
+        verbose_name="omschrijving", blank=True, max_length=255
+    )
+    added = models.DateTimeField(auto_now_add=True, verbose_name="toegevoegd op")
+    internal = models.BooleanField(verbose_name="intern project", default=False)
     hidden = models.BooleanField(
         verbose_name="afgeschermd project",
-        help_text=("Zet dit standaard aan voor interne projecten, tenzij " +
-                   "het een 'echt' project is waar uren voor staan. " +
-                   "Afgeschermde projecten kan je andermans gegevens niet " +
-                   "van zien. Goed voor ziekte enzo."),
-        default=False)
+        help_text=(
+            "Zet dit standaard aan voor interne projecten, tenzij "
+            + "het een 'echt' project is waar uren voor staan. "
+            + "Afgeschermde projecten kan je andermans gegevens niet "
+            + "van zien. Goed voor ziekte enzo."
+        ),
+        default=False,
+    )
     hourless = models.BooleanField(
         verbose_name="tel uren niet mee",
-        help_text=("Uren van dit project tellen niet mee voor de " +
-                   "intern/extern verhouding en binnen/buiten budget. " +
-                   "Gebruik dit voor verlof en zwangerschapsverlof."),
-        default=False)
-    archived = models.BooleanField(
-        verbose_name="gearchiveerd",
-        default=False)
+        help_text=(
+            "Uren van dit project tellen niet mee voor de "
+            + "intern/extern verhouding en binnen/buiten budget. "
+            + "Gebruik dit voor verlof en zwangerschapsverlof."
+        ),
+        default=False,
+    )
+    archived = models.BooleanField(verbose_name="gearchiveerd", default=False)
     principal = models.CharField(
-        verbose_name="opdrachtgever",
-        blank=True,
-        max_length=255)
+        verbose_name="opdrachtgever", blank=True, max_length=255
+    )
     contract_amount = models.DecimalField(
         max_digits=12,  # We don't mind a metric ton of hard cash.
         decimal_places=DECIMAL_PLACES,
         default=0,
         validators=[MinValueValidator(0)],
-        verbose_name="opdrachtsom")
+        verbose_name="opdrachtsom",
+    )
     bid_send_date = models.DateField(
         verbose_name="offerte verzonden",
         blank=True,
         null=True,
-        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj",
+    )
     confirmation_date = models.DateField(
         verbose_name="opdrachtbevestiging binnen",
         blank=True,
         null=True,
-        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj",
+    )
     reservation = models.DecimalField(
         max_digits=12,
         decimal_places=DECIMAL_PLACES,
         default=0,
         validators=[MinValueValidator(0)],
-        verbose_name="reservering voor personele kosten")
+        verbose_name="reservering voor personele kosten",
+    )
     software_development = models.DecimalField(
         max_digits=12,
         decimal_places=DECIMAL_PLACES,
         default=0,
         validators=[MinValueValidator(0)],
-        verbose_name="kosten software development (€1000/dag)")
+        verbose_name="kosten software development (€1000/dag)",
+    )
     profit = models.DecimalField(
         max_digits=12,
         decimal_places=DECIMAL_PLACES,
         default=0,
         validators=[MinValueValidator(0)],
-        verbose_name="afdracht")
+        verbose_name="afdracht",
+    )
     start = models.ForeignKey(
-        'YearWeek',
+        "YearWeek",
         blank=True,
         null=True,
         default=this_year_week_pk,
         related_name="starting_projects",
-        verbose_name="startweek")
+        verbose_name="startweek",
+    )
     end = models.ForeignKey(
-        'YearWeek',
+        "YearWeek",
         blank=True,
         null=True,
         default=this_year_week_pk,
         related_name="ending_projects",
-        verbose_name="laatste week")
+        verbose_name="laatste week",
+    )
     project_leader = models.ForeignKey(
         Person,
         blank=True,
         null=True,
         verbose_name="projectleider",
-        related_name="projects_i_lead")
+        related_name="projects_i_lead",
+    )
     project_manager = models.ForeignKey(
         Person,
         blank=True,
         null=True,
         verbose_name="projectmanager",
-        related_name="projects_i_manage")
+        related_name="projects_i_manage",
+    )
     group = models.ForeignKey(
-        Group,
-        blank=True,
-        null=True,
-        verbose_name="groep",
-        related_name="projects")
+        Group, blank=True, null=True, verbose_name="groep", related_name="projects"
+    )
     wbso_project = models.ForeignKey(
-        'WbsoProject',
+        "WbsoProject",
         blank=True,
         null=True,
         related_name="projects",
-        verbose_name="WBSO project")
+        verbose_name="WBSO project",
+    )
     wbso_percentage = models.IntegerField(
         blank=True,
         null=True,
         verbose_name="WBSO percentage",
-        help_text="Percentage dat meetelt voor de WBSO (0-100)")
+        help_text="Percentage dat meetelt voor de WBSO (0-100)",
+    )
     is_accepted = models.BooleanField(
         verbose_name="goedgekeurd",
-        help_text=("Project is goedgekeurd door de PM  en kan qua begroting " +
-                   "niet meer gewijzigd worden."),
-        default=False)
+        help_text=(
+            "Project is goedgekeurd door de PM  en kan qua begroting "
+            + "niet meer gewijzigd worden."
+        ),
+        default=False,
+    )
     startup_meeting_done = models.BooleanField(
-        verbose_name="startoverleg heeft plaatsgevonden",
-        default=False)
+        verbose_name="startoverleg heeft plaatsgevonden", default=False
+    )
     is_subsidized = models.BooleanField(
         verbose_name="subsidieproject",
-        help_text=("Dit project zit in een subsidietraject. " +
-                   "Dit veld wordt gebruikt voor filtering."),
-        default=False)
-    remark = models.TextField(
-        verbose_name="opmerkingen",
-        blank=True,
-        null=True)
+        help_text=(
+            "Dit project zit in een subsidietraject. "
+            + "Dit veld wordt gebruikt voor filtering."
+        ),
+        default=False,
+    )
+    remark = models.TextField(verbose_name="opmerkingen", blank=True, null=True)
     financial_remark = models.TextField(
         verbose_name="financiële opmerkingen",
         help_text="Bedoeld voor het office management",
         blank=True,
-        null=True)
+        null=True,
+    )
 
     rating_projectteam = models.IntegerField(
         blank=True,
         null=True,
-        validators=[MinValueValidator(1),
-                    MaxValueValidator(10)],
-        verbose_name="rapportcijfer v/h projectteam")
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        verbose_name="rapportcijfer v/h projectteam",
+    )
     rating_projectteam_reason = models.TextField(
         verbose_name="Evt. onderbouwing rapportcijfer v/h projectteam",
         blank=True,
-        null=True)
+        null=True,
+    )
     rating_customer = models.IntegerField(
         blank=True,
         null=True,
-        validators=[MinValueValidator(1),
-                    MaxValueValidator(10)],
-        verbose_name="rapportcijfer v/d klant")
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        verbose_name="rapportcijfer v/d klant",
+    )
     rating_customer_reason = models.TextField(
-        verbose_name="Evt. onderbouwing rapportcijfer v/d klant",
-        blank=True,
-        null=True)
+        verbose_name="Evt. onderbouwing rapportcijfer v/d klant", blank=True, null=True
+    )
 
-    cache_indicator = models.IntegerField(
-        default=0,
-        verbose_name="cache indicator")
-    last_modified = models.DateTimeField(
-        auto_now=True,
-        verbose_name="laatst gewijzigd")
+    cache_indicator = models.IntegerField(default=0, verbose_name="cache indicator")
+    last_modified = models.DateTimeField(auto_now=True, verbose_name="laatst gewijzigd")
 
     class Meta:
         verbose_name = "project"
         verbose_name_plural = "projecten"
-        ordering = ('internal', '-code_for_sorting')
+        ordering = ("internal", "-code_for_sorting")
 
     def save(self, *args, **kwargs):
         self.cache_indicator += 1
@@ -536,7 +562,8 @@ class Project(models.Model):
                     work_assignment = WorkAssignment(
                         assigned_to=person,
                         assigned_on=self,
-                        hourly_tariff=person.standard_hourly_tariff())
+                        hourly_tariff=person.standard_hourly_tariff(),
+                    )
                     work_assignment.save(save_assigned_on=False)
         for person in self.assigned_persons():
             person.save()  # Increment cache key
@@ -546,20 +573,23 @@ class Project(models.Model):
         return self.code
 
     def code_for_searching(self):
-        return self.code.replace('.', ' ')
+        return self.code.replace(".", " ")
 
     def get_absolute_url(self):
-        return reverse('trs.project', kwargs={'pk': self.pk})
+        return reverse("trs.project", kwargs={"pk": self.pk})
 
     def cache_key(self, for_what):
         cache_version = 21
-        return 'project-%s-%s-%s-%s' % (self.id, self.cache_indicator,
-                                        for_what, cache_version)
+        return "project-%s-%s-%s-%s" % (
+            self.id,
+            self.cache_indicator,
+            for_what,
+            cache_version,
+        )
 
     @cache_until_any_change
     def as_widget(self):
-        return mark_safe(render_to_string('trs/project-widget.html',
-                                          {'project': self}))
+        return mark_safe(render_to_string("trs/project-widget.html", {"project": self}))
 
     @cache_until_any_change
     def not_yet_started(self):
@@ -573,60 +603,59 @@ class Project(models.Model):
         return self.end.first_day < this_year_week().first_day
 
     def assigned_persons(self):
-        return Person.objects.filter(
-            work_assignments__assigned_on=self).distinct()
+        return Person.objects.filter(work_assignments__assigned_on=self).distinct()
 
     def hour_budget(self):
-        return self.work_calculation()['budget']
+        return self.work_calculation()["budget"]
 
     def overbooked(self):
-        return self.work_calculation()['overbooked']
+        return self.work_calculation()["overbooked"]
 
     def well_booked(self):
-        return self.work_calculation()['well_booked']
+        return self.work_calculation()["well_booked"]
 
     def left_to_book(self):
-        return self.work_calculation()['left_to_book']
+        return self.work_calculation()["left_to_book"]
 
     def person_loss(self):
-        return self.work_calculation()['person_loss']
+        return self.work_calculation()["person_loss"]
 
     def turnover(self):
-        return self.work_calculation()['turnover']
+        return self.work_calculation()["turnover"]
 
     def left_to_turn_over(self):
-        return self.work_calculation()['left_to_turn_over']
+        return self.work_calculation()["left_to_turn_over"]
 
     def net_contract_amount(self):
-        return self.work_calculation()['net_contract_amount']
+        return self.work_calculation()["net_contract_amount"]
 
     def person_costs_incl_reservation(self):
-        return self.work_calculation()['person_costs_incl_reservation']
+        return self.work_calculation()["person_costs_incl_reservation"]
 
     def third_party_costs(self):
-        return self.work_calculation()['third_party_costs']
+        return self.work_calculation()["third_party_costs"]
 
     def costs(self):
         # Note: this includes profit ('afdracht') and software development.
-        return self.work_calculation()['costs']
+        return self.work_calculation()["costs"]
 
     def income(self):
-        return self.work_calculation()['income']
+        return self.work_calculation()["income"]
 
     def person_costs(self):
-        return self.work_calculation()['person_costs']
+        return self.work_calculation()["person_costs"]
 
     def total_income(self):
-        return self.work_calculation()['total_income']
+        return self.work_calculation()["total_income"]
 
     def total_costs(self):
-        return self.work_calculation()['total_costs']
+        return self.work_calculation()["total_costs"]
 
     def weighted_average_tariff(self):
-        return self.work_calculation()['weighted_average_tariff']
+        return self.work_calculation()["weighted_average_tariff"]
 
     def realized_average_tariff(self):
-        return self.work_calculation()['realized_average_tariff']
+        return self.work_calculation()["realized_average_tariff"]
 
     def overbooked_percentage(self):
         if not self.overbooked():
@@ -647,34 +676,37 @@ class Project(models.Model):
         """Return orange/red style depending on whether were above/below zero.
         """
         if self.left_to_dish_out() < 0:
-            return 'text-danger'
+            return "text-danger"
         else:
-            return 'text-warning'
+            return "text-warning"
 
     @cache_until_any_change
     def work_calculation(self):
         # The big calculation from which the rest derives.
-        work_per_person = WorkAssignment.objects.filter(
-            assigned_on=self).values(
-                'assigned_to').annotate(
-                    models.Sum('hours'),
-                    models.Sum('hourly_tariff'))
+        work_per_person = (
+            WorkAssignment.objects.filter(assigned_on=self)
+            .values("assigned_to")
+            .annotate(models.Sum("hours"), models.Sum("hourly_tariff"))
+        )
         budget_per_person = {
-            item['assigned_to']: round(item['hours__sum'] or 0)
-            for item in work_per_person}
+            item["assigned_to"]: round(item["hours__sum"] or 0)
+            for item in work_per_person
+        }
         hourly_tariff_per_person = {
-            item['assigned_to']: round(item['hourly_tariff__sum'] or 0)
-            for item in work_per_person}
+            item["assigned_to"]: round(item["hourly_tariff__sum"] or 0)
+            for item in work_per_person
+        }
         ids = budget_per_person.keys()
 
-        booked_this_year_per_person = Booking.objects.filter(
-            booked_on=self,
-            booked_by__in=ids).values(
-                'booked_by').annotate(
-                    models.Sum('hours'))
+        booked_this_year_per_person = (
+            Booking.objects.filter(booked_on=self, booked_by__in=ids)
+            .values("booked_by")
+            .annotate(models.Sum("hours"))
+        )
         total_booked_per_person = {
-            item['booked_by']: round(item['hours__sum'])
-            for item in booked_this_year_per_person}
+            item["booked_by"]: round(item["hours__sum"])
+            for item in booked_this_year_per_person
+        }
 
         costs = 0
         income = 0
@@ -699,31 +731,27 @@ class Project(models.Model):
 
         # The next three are in hours.
         overbooked_per_person = {
-            id: max(0, (total_booked_per_person.get(id, 0) -
-                        budget_per_person[id]))
-            for id in ids}
+            id: max(0, (total_booked_per_person.get(id, 0) - budget_per_person[id]))
+            for id in ids
+        }
         well_booked_per_person = {
-            id: (total_booked_per_person.get(id, 0) -
-                 overbooked_per_person[id])
-            for id in ids}
+            id: (total_booked_per_person.get(id, 0) - overbooked_per_person[id])
+            for id in ids
+        }
         left_to_book_per_person = {
-            id: (budget_per_person[id] - well_booked_per_person[id])
-            for id in ids}
+            id: (budget_per_person[id] - well_booked_per_person[id]) for id in ids
+        }
 
-        tariff = {id: hourly_tariff_per_person[id]
-                  for id in ids}
+        tariff = {id: hourly_tariff_per_person[id] for id in ids}
         # The next four are in money.
-        loss_per_person = {
-            id: (overbooked_per_person[id] * tariff[id])
-            for id in ids}
+        loss_per_person = {id: (overbooked_per_person[id] * tariff[id]) for id in ids}
         turnover_per_person = {
-            id: (well_booked_per_person[id] * tariff[id])
-            for id in ids}
+            id: (well_booked_per_person[id] * tariff[id]) for id in ids
+        }
         left_to_turn_over_per_person = {
-            id: (left_to_book_per_person[id] * tariff[id])
-            for id in ids}
-        person_costs = sum([tariff[id] * budget_per_person[id]
-                            for id in ids])
+            id: (left_to_book_per_person[id] * tariff[id]) for id in ids
+        }
+        person_costs = sum([tariff[id] * budget_per_person[id] for id in ids])
 
         budget = sum(budget_per_person.values())  # In hours
         if budget:
@@ -737,75 +765,71 @@ class Project(models.Model):
         else:
             realized_average_tariff = 0
 
-        third_party_costs = (self.third_party_estimates.all().aggregate(
-            models.Sum('amount'))['amount__sum'] or 0)
+        third_party_costs = (
+            self.third_party_estimates.all().aggregate(models.Sum("amount"))[
+                "amount__sum"
+            ]
+            or 0
+        )
         net_contract_amount = self.contract_amount - third_party_costs
 
         person_costs_incl_reservation = person_costs + self.reservation
         total_costs = costs + person_costs_incl_reservation + third_party_costs
         total_income = self.contract_amount + income
 
-        return {'budget': budget,
-                'overbooked': sum(overbooked_per_person.values()),
-                'well_booked': sum(well_booked_per_person.values()),
-                'left_to_book': sum(left_to_book_per_person.values()),
-                'person_loss': sum(loss_per_person.values()),
-                'turnover': turnover,
-                'left_to_turn_over': sum(
-                    left_to_turn_over_per_person.values()),
-                'person_costs': person_costs,
-                'person_costs_incl_reservation': (
-                    person_costs_incl_reservation),
-                'costs': costs,
-                'income': income,
-                'weighted_average_tariff': weighted_average_tariff,
-                'realized_average_tariff': realized_average_tariff,
-                'total_booked': total_booked,
-                'third_party_costs': third_party_costs,
-                'net_contract_amount': net_contract_amount,
-                'total_costs': total_costs,
-                'total_income': total_income,
+        return {
+            "budget": budget,
+            "overbooked": sum(overbooked_per_person.values()),
+            "well_booked": sum(well_booked_per_person.values()),
+            "left_to_book": sum(left_to_book_per_person.values()),
+            "person_loss": sum(loss_per_person.values()),
+            "turnover": turnover,
+            "left_to_turn_over": sum(left_to_turn_over_per_person.values()),
+            "person_costs": person_costs,
+            "person_costs_incl_reservation": (person_costs_incl_reservation),
+            "costs": costs,
+            "income": income,
+            "weighted_average_tariff": weighted_average_tariff,
+            "realized_average_tariff": realized_average_tariff,
+            "total_booked": total_booked,
+            "third_party_costs": third_party_costs,
+            "net_contract_amount": net_contract_amount,
+            "total_costs": total_costs,
+            "total_income": total_income,
         }
 
 
 class WbsoProject(models.Model):
     number = models.IntegerField(
-        verbose_name="Nummer",
-        help_text="Gebruikt voor sortering")
-    title = models.CharField(
-        verbose_name="titel",
-        unique=True,
-        max_length=255)
+        verbose_name="Nummer", help_text="Gebruikt voor sortering"
+    )
+    title = models.CharField(verbose_name="titel", unique=True, max_length=255)
     start_date = models.DateField(
-        verbose_name="startdatum",
-        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
+        verbose_name="startdatum", help_text="Formaat: 25-12-1972, dd-mm-jjjj"
+    )
     end_date = models.DateField(
-        verbose_name="einddatum",
-        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
+        verbose_name="einddatum", help_text="Formaat: 25-12-1972, dd-mm-jjjj"
+    )
 
     class Meta:
-        ordering = ['number']
+        ordering = ["number"]
         verbose_name = "WBSO project"
         verbose_name_plural = "WBSO projecten"
 
     def __str__(self):
-        return '%s: %s' % (self.number, self.title)
+        return "%s: %s" % (self.number, self.title)
 
 
 class FinancialBase(models.Model):
-    added = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="toegevoegd op")
+    added = models.DateTimeField(auto_now_add=True, verbose_name="toegevoegd op")
     added_by = models.ForeignKey(
-        User,
-        blank=True,
-        null=True,
-        verbose_name="toegevoegd door")
+        User, blank=True, null=True, verbose_name="toegevoegd door"
+    )
     # ^^^ The two above are copied from EventBase.
 
     class Meta:
         abstract = True
-        ordering = ['project', 'added']
+        ordering = ["project", "added"]
 
     def save(self, *args, **kwargs):
         # Partially copied form EventBase.
@@ -822,47 +846,43 @@ class FinancialBase(models.Model):
 
 class Invoice(FinancialBase):
     project = models.ForeignKey(
-        Project,
-        related_name="invoices",
-        verbose_name="project")
+        Project, related_name="invoices", verbose_name="project"
+    )
     date = models.DateField(
-        verbose_name="factuurdatum",
-        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
-    number = models.CharField(
-        verbose_name="factuurnummer",
-        max_length=255)
+        verbose_name="factuurdatum", help_text="Formaat: 25-12-1972, dd-mm-jjjj"
+    )
+    number = models.CharField(verbose_name="factuurnummer", max_length=255)
     description = models.CharField(
-        verbose_name="omschrijving",
-        blank=True,
-        max_length=255)
+        verbose_name="omschrijving", blank=True, max_length=255
+    )
     amount_exclusive = models.DecimalField(
         max_digits=12,  # We don't mind a metric ton of hard cash.
         decimal_places=DECIMAL_PLACES,
         default=0,
-        verbose_name="bedrag exclusief")
+        verbose_name="bedrag exclusief",
+    )
     vat = models.DecimalField(
-        max_digits=12,
-        decimal_places=DECIMAL_PLACES,
-        default=0,
-        verbose_name="btw")
+        max_digits=12, decimal_places=DECIMAL_PLACES, default=0, verbose_name="btw"
+    )
     payed = models.DateField(
         blank=True,
         null=True,
         verbose_name="betaald op",
-        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj",
+    )
 
     class Meta:
         verbose_name = "factuur"
         verbose_name_plural = "facturen"
-        ordering = ('date', 'number',)
+        ordering = ("date", "number")
 
     def __str__(self):
         return self.number
 
     def get_absolute_url(self):
-        return reverse('trs.invoice.edit', kwargs={
-            'pk': self.pk,
-            'project_pk': self.project.pk})
+        return reverse(
+            "trs.invoice.edit", kwargs={"pk": self.pk, "project_pk": self.project.pk}
+        )
 
     @property
     def amount_inclusive(self):
@@ -871,36 +891,36 @@ class Invoice(FinancialBase):
 
 class Payable(FinancialBase):
     project = models.ForeignKey(
-        Project,
-        related_name="payables",
-        verbose_name="project")
+        Project, related_name="payables", verbose_name="project"
+    )
     date = models.DateField(
-        verbose_name="factuurdatum",
-        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
-    number = models.CharField(
-        verbose_name="factuurnummer",
-        max_length=255)
+        verbose_name="factuurdatum", help_text="Formaat: 25-12-1972, dd-mm-jjjj"
+    )
+    number = models.CharField(verbose_name="factuurnummer", max_length=255)
     description = models.CharField(
-        verbose_name="omschrijving",
-        blank=True,
-        max_length=255)
+        verbose_name="omschrijving", blank=True, max_length=255
+    )
     amount = models.DecimalField(
         max_digits=12,  # We don't mind a metric ton of hard cash.
         decimal_places=DECIMAL_PLACES,
         default=0,
         verbose_name="bedrag exclusief",
-        help_text=("Dit zijn kosten, dus een positief getal wordt van het "
-                   "projectbudget afgetrokken. Bedrag is ex btw."))
+        help_text=(
+            "Dit zijn kosten, dus een positief getal wordt van het "
+            "projectbudget afgetrokken. Bedrag is ex btw."
+        ),
+    )
     payed = models.DateField(
         blank=True,
         null=True,
         verbose_name="overgemaakt op",
-        help_text="Formaat: 25-12-1972, dd-mm-jjjj")
+        help_text="Formaat: 25-12-1972, dd-mm-jjjj",
+    )
 
     class Meta:
         verbose_name = "factuur kosten derden"
         verbose_name_plural = "facturen kosten derden"
-        ordering = ('date', 'number',)
+        ordering = ("date", "number")
 
     def __str__(self):
         return self.number
@@ -909,9 +929,9 @@ class Payable(FinancialBase):
         return self.amount * -1
 
     def get_absolute_url(self):
-        return reverse('trs.payable.edit', kwargs={
-            'pk': self.pk,
-            'project_pk': self.project.pk})
+        return reverse(
+            "trs.payable.edit", kwargs={"pk": self.pk, "project_pk": self.project.pk}
+        )
 
     @property
     def amount_inclusive(self):
@@ -920,27 +940,29 @@ class Payable(FinancialBase):
 
 class BudgetItem(FinancialBase):
     project = models.ForeignKey(
-        Project,
-        related_name="budget_items",
-        verbose_name="project")
+        Project, related_name="budget_items", verbose_name="project"
+    )
     description = models.CharField(
-        verbose_name="omschrijving",
-        blank=True,
-        max_length=255)
+        verbose_name="omschrijving", blank=True, max_length=255
+    )
     amount = models.DecimalField(
         max_digits=12,  # We don't mind a metric ton of hard cash.
         decimal_places=DECIMAL_PLACES,
         default=0,
         verbose_name="bedrag exclusief",
-        help_text=("Dit zijn kosten, dus een positief getal wordt van het "
-                   "projectbudget afgetrokken. "))
+        help_text=(
+            "Dit zijn kosten, dus een positief getal wordt van het "
+            "projectbudget afgetrokken. "
+        ),
+    )
     to_project = models.ForeignKey(
         Project,
         blank=True,
         null=True,
         related_name="budget_transfers",
         verbose_name="overboeken naar ander project",
-        help_text="optioneel: project waarnaar het bedrag wordt overgemaakt")
+        help_text="optioneel: project waarnaar het bedrag wordt overgemaakt",
+    )
 
     class Meta:
         verbose_name = "projectkostenpost"
@@ -953,9 +975,10 @@ class BudgetItem(FinancialBase):
         return self.amount * -1
 
     def get_absolute_url(self):
-        return reverse('trs.budget_item.edit', kwargs={
-            'pk': self.pk,
-            'project_pk': self.project.pk})
+        return reverse(
+            "trs.budget_item.edit",
+            kwargs={"pk": self.pk, "project_pk": self.project.pk},
+        )
 
     def save(self, *args, **kwargs):
         if self.to_project:
@@ -970,19 +993,18 @@ class BudgetItem(FinancialBase):
 
 class ThirdPartyEstimate(FinancialBase):
     project = models.ForeignKey(
-        Project,
-        related_name="third_party_estimates",
-        verbose_name="project")
+        Project, related_name="third_party_estimates", verbose_name="project"
+    )
     description = models.CharField(
-        verbose_name="omschrijving",
-        blank=True,
-        max_length=255)
+        verbose_name="omschrijving", blank=True, max_length=255
+    )
     amount = models.DecimalField(
         max_digits=12,  # We don't mind a metric ton of hard cash.
         decimal_places=DECIMAL_PLACES,
         default=0,
         validators=[MinValueValidator(0)],
-        verbose_name="bedrag exclusief")
+        verbose_name="bedrag exclusief",
+    )
 
     class Meta:
         verbose_name = "kosten derden"
@@ -994,63 +1016,60 @@ class ThirdPartyEstimate(FinancialBase):
 
 class YearWeek(models.Model):
     # This ought to be automatically generated.
-    year = models.IntegerField(
-        verbose_name="jaar")
-    week = models.IntegerField(
-        verbose_name="weeknummer")
+    year = models.IntegerField(verbose_name="jaar")
+    week = models.IntegerField(verbose_name="weeknummer")
     first_day = models.DateField(
         verbose_name="eerste maandag van de week",
         # Note: 1 january won't always be a monday, that's fine.
-        db_index=True)
+        db_index=True,
+    )
     num_days_missing = models.IntegerField(
         verbose_name="aantal dagen dat mist",
         help_text="(Alleen relevant voor de eerste en laatste week v/h jaar)",
-        default=0)
+        default=0,
+    )
 
     class Meta:
         verbose_name = "jaar/week combinatie"
         verbose_name_plural = "jaar/week combinaties"
-        ordering = ['year', 'week']
+        ordering = ["year", "week"]
 
     def __str__(self):
         return "{} (week {:02d})".format(self.formatted_first_day, self.week)
 
     def __lt__(self, other):
-        return ("%s %02d" % (self.year, self.week) <
-                "%s %02d" % (other.year, other.week))
+        return "%s %02d" % (self.year, self.week) < "%s %02d" % (other.year, other.week)
 
     @property
     def formatted_first_day(self):
-        return datelocalizer(self.first_day, 'j b Y')
+        return datelocalizer(self.first_day, "j b Y")
 
     def as_param(self):
         """Return string representation for in url parameters."""
         return "{}-{:02d}".format(self.year, self.week)
 
     def friendly(self):
-        return mark_safe(render_to_string('trs/year-week-friendly.html',
-                                          {'year_week': self}))
+        return mark_safe(
+            render_to_string("trs/year-week-friendly.html", {"year_week": self})
+        )
 
 
 class EventBase(models.Model):
-    added = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="toegevoegd op")
+    added = models.DateTimeField(auto_now_add=True, verbose_name="toegevoegd op")
     added_by = models.ForeignKey(
-        User,
-        blank=True,
-        null=True,
-        verbose_name="toegevoegd door")
+        User, blank=True, null=True, verbose_name="toegevoegd door"
+    )
     year_week = models.ForeignKey(
         YearWeek,
         blank=True,
         null=True,
         verbose_name="jaar en week",
-        help_text="Ingangsdatum van de wijziging (of datum van de boeking)")
+        help_text="Ingangsdatum van de wijziging (of datum van de boeking)",
+    )
 
     class Meta:
         abstract = True
-        ordering = ['year_and_week', 'added']
+        ordering = ["year_and_week", "added"]
 
     def save(self, *args, **kwargs):
         if not self.year_week:
@@ -1069,25 +1088,29 @@ class PersonChange(EventBase):
         decimal_places=DECIMAL_PLACES,
         blank=True,
         null=True,
-        verbose_name="uren per week")
+        verbose_name="uren per week",
+    )
     target = models.DecimalField(
         max_digits=MAX_DIGITS,
         decimal_places=DECIMAL_PLACES,
         blank=True,
         null=True,
-        verbose_name="target")
+        verbose_name="target",
+    )
     standard_hourly_tariff = models.DecimalField(
         max_digits=MAX_DIGITS,
         decimal_places=DECIMAL_PLACES,
         blank=True,
         null=True,
-        verbose_name="standaard uurtarief")
+        verbose_name="standaard uurtarief",
+    )
     minimum_hourly_tariff = models.DecimalField(
         max_digits=MAX_DIGITS,
         decimal_places=DECIMAL_PLACES,
         blank=True,
         null=True,
-        verbose_name="minimum uurtarief")
+        verbose_name="minimum uurtarief",
+    )
 
     person = models.ForeignKey(
         Person,
@@ -1095,7 +1118,8 @@ class PersonChange(EventBase):
         null=True,
         verbose_name="persoon",
         help_text="persoon waar de verandering voor is",
-        related_name="person_changes")
+        related_name="person_changes",
+    )
 
     def save(self, *args, **kwargs):
         self.person.cache_indicator_person_change += 1  # Specially for us.
@@ -1103,7 +1127,7 @@ class PersonChange(EventBase):
         return super(PersonChange, self).save(*args, **kwargs)
 
     def __str__(self):
-        return 'PersonChange on %s' % self.person
+        return "PersonChange on %s" % self.person
 
     class Meta:
         verbose_name = "verandering aan persoon"
@@ -1116,20 +1140,23 @@ class Booking(EventBase):
         decimal_places=DECIMAL_PLACES,
         blank=True,
         null=True,
-        verbose_name="uren")
+        verbose_name="uren",
+    )
 
     booked_by = models.ForeignKey(
         Person,
         blank=True,
         null=True,
         verbose_name="geboekt door",
-        related_name="bookings")
+        related_name="bookings",
+    )
     booked_on = models.ForeignKey(
         Project,
         blank=True,
         null=True,
         verbose_name="geboekt op",
-        related_name="bookings")
+        related_name="bookings",
+    )
 
     class Meta:
         verbose_name = "boeking"
@@ -1147,26 +1174,30 @@ class WorkAssignment(EventBase):
         decimal_places=DECIMAL_PLACES,
         blank=True,
         null=True,
-        verbose_name="uren")
+        verbose_name="uren",
+    )
     hourly_tariff = models.DecimalField(
         max_digits=MAX_DIGITS,
         decimal_places=DECIMAL_PLACES,
         blank=True,
         null=True,
-        verbose_name="uurtarief")
+        verbose_name="uurtarief",
+    )
 
     assigned_on = models.ForeignKey(
         Project,
         blank=True,
         null=True,
         verbose_name="toegekend voor",
-        related_name="work_assignments")
+        related_name="work_assignments",
+    )
     assigned_to = models.ForeignKey(
         Person,
         blank=True,
         null=True,
         verbose_name="toegekend aan",
-        related_name="work_assignments")
+        related_name="work_assignments",
+    )
 
     class Meta:
         verbose_name = "toekenning van werk"

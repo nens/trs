@@ -20,7 +20,8 @@ def get_or_create_wbso_project(wbso_number):
         number=number,
         title="TODO titel voor %s" % wbso_number,
         start_date=datetime.date(2013, 1, 1),
-        end_date=datetime.date(2015, 12, 31))
+        end_date=datetime.date(2015, 12, 31),
+    )
     wbso_project.save()
     logger.info("Created WBSO project %s", wbso_project)
     return wbso_project
@@ -40,20 +41,23 @@ class Command(BaseCommand):
             except models.Project.DoesNotExist:
                 logger.warn("Project %s does not exist", project_code)
                 continue
-            percentage = wbso_percentage.replace('%', '')
+            percentage = wbso_percentage.replace("%", "")
             if not percentage:
                 percentage = 0
             percentage = int(percentage)
             if project.wbso_project and not OVERWRITE_EXISTING:
-                logger.debug("Not overwriting existing wbso project %s on %s",
-                             wbso_project, project)
+                logger.debug(
+                    "Not overwriting existing wbso project %s on %s",
+                    wbso_project,
+                    project,
+                )
                 continue
             project.wbso_project = wbso_project
             project.wbso_percentage = percentage
             project.save()
-            logger.info("Set wbso project %s on %s for %s%%",
-                        wbso_project, project, percentage)
-
+            logger.info(
+                "Set wbso project %s on %s for %s%%", wbso_project, project, percentage
+            )
 
     def extract(self, filename):
         with open(filename) as f:
@@ -62,7 +66,7 @@ class Command(BaseCommand):
                 if len(row) != 12:
                     # Empty line.
                     continue
-                if row[0] == 'Code':
+                if row[0] == "Code":
                     # First line
                     continue
                 code = row[0]

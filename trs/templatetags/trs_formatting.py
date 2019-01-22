@@ -15,7 +15,7 @@ def money(value):
         rounded = round(value)
     except:  # Yes, a bare except: filters should not raise exceptions
         return value
-    return mark_safe('<tt>%s</tt>' % intcomma(rounded))
+    return mark_safe("<tt>%s</tt>" % intcomma(rounded))
 
 
 @register.filter
@@ -23,7 +23,7 @@ def money_with_decimal(value):
     """Return monetary value, rounded and nicely formatted. Fixed width font.
     """
     try:
-        is_negative = (value < 0)
+        is_negative = value < 0
         value = abs(value)
         whole = value // 1
         remainder = value % 1
@@ -32,8 +32,9 @@ def money_with_decimal(value):
     except:  # Yes, a bare except: filters should not raise exceptions
         return value
 
-    return mark_safe('<tt>%s,%02d</tt>' % (intcomma(round(whole)),
-                                           round(100 * remainder)))
+    return mark_safe(
+        "<tt>%s,%02d</tt>" % (intcomma(round(whole)), round(100 * remainder))
+    )
 
 
 @register.filter
@@ -45,8 +46,8 @@ def moneydiff(value):
     except:  # Yes, a bare except: filters should not raise exceptions
         return value
     if rounded > 0:
-        return mark_safe('<tt>+%s</tt>' % intcomma(rounded))
-    return mark_safe('<tt>%s</tt>' % intcomma(rounded))
+        return mark_safe("<tt>+%s</tt>" % intcomma(rounded))
+    return mark_safe("<tt>%s</tt>" % intcomma(rounded))
 
 
 @register.filter
@@ -69,7 +70,7 @@ def hoursdiff(value):
     except:  # Yes, a bare except: filters should not raise exceptions
         return value
     if rounded > 0:
-        return '+%s' % rounded
+        return "+%s" % rounded
     return str(rounded)
 
 
@@ -80,5 +81,5 @@ def tabindex(value, index):
 
     See http://stackoverflow.com/a/9250304/27401
     """
-    value.field.widget.attrs['tabindex'] = index
+    value.field.widget.attrs["tabindex"] = index
     return value

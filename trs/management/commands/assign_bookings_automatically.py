@@ -23,7 +23,7 @@ class Command(BaseCommand):
         fons = 6
         wytze = 8
 
-        import_user = User.objects.get(username='import_user')
+        import_user = User.objects.get(username="import_user")
 
         year_weeks = models.YearWeek.objects.filter(year=year)
         project = models.Project.objects.get(pk=bedrijfsvoering)
@@ -32,18 +32,26 @@ class Command(BaseCommand):
             to_work = person.hours_per_week()
             for year_week in year_weeks:
                 to_work_this_week = to_work - year_week.num_days_missing * 8
-                already_booked = round(models.Booking.objects.filter(
-                    booked_by=person,
-                    year_week=year_week).aggregate(
-                        Sum('hours'))['hours__sum'] or 0)
+                already_booked = round(
+                    models.Booking.objects.filter(
+                        booked_by=person, year_week=year_week
+                    ).aggregate(Sum("hours"))["hours__sum"]
+                    or 0
+                )
                 to_book = to_work_this_week - already_booked
                 if to_book:
-                    logger.info("Booking %s hours on %s in week %s for %s",
-                                to_book, project, year_week, person)
+                    logger.info(
+                        "Booking %s hours on %s in week %s for %s",
+                        to_book,
+                        project,
+                        year_week,
+                        person,
+                    )
                     booking = models.Booking(
                         booked_by=person,
                         booked_on=project,
                         hours=to_book,
                         year_week=year_week,
-                        added_by=import_user)
+                        added_by=import_user,
+                    )
                     booking.save()

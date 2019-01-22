@@ -74,9 +74,8 @@ def ensure_year_weeks_are_present():
         for date in interesting_days(year):
             year, week = year_and_week_from_date(date)
             obj, added = models.YearWeek.objects.get_or_create(
-                year=year,
-                week=week,
-                first_day=date)
+                year=year, week=week, first_day=date
+            )
             if added:
                 count += 1
     logger.info("Added %s YearWeek objects", count)

@@ -2,8 +2,8 @@ from django.apps import AppConfig
 
 
 class TRSAppConfig(AppConfig):
-    name = 'trs'
-    verbose_name = 'TRS'
+    name = "trs"
+    verbose_name = "TRS"
 
     def ready(self):
         # Enable the signals
