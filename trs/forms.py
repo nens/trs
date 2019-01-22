@@ -8,6 +8,7 @@ class ProjectTeamForm(django_forms.ModelForm):
     class Meta:
         model = Project
         fields = ['reservation',
+                  'software_development',
                   'profit',
                   ]
 

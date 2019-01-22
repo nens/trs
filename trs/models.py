@@ -412,18 +412,18 @@ class Project(models.Model):
         default=0,
         validators=[MinValueValidator(0)],
         verbose_name="reservering voor personele kosten")
-    profit = models.DecimalField(
-        max_digits=12,
-        decimal_places=DECIMAL_PLACES,
-        default=0,
-        validators=[MinValueValidator(0)],
-        verbose_name="afdracht")
     software_development = models.DecimalField(
         max_digits=12,
         decimal_places=DECIMAL_PLACES,
         default=0,
         validators=[MinValueValidator(0)],
         verbose_name="kosten software development (€1000/dag)")
+    profit = models.DecimalField(
+        max_digits=12,
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        validators=[MinValueValidator(0)],
+        verbose_name="afdracht")
     start = models.ForeignKey(
         'YearWeek',
         blank=True,
@@ -607,7 +607,7 @@ class Project(models.Model):
         return self.work_calculation()['third_party_costs']
 
     def costs(self):
-        # Note: this includes profit ('afdracht')
+        # Note: this includes profit ('afdracht') and software development.
         return self.work_calculation()['costs']
 
     def income(self):
@@ -695,7 +695,7 @@ class Project(models.Model):
 
         # Note: payables ('facturen kosten derden') are treated separately
         # now.
-        costs += self.profit
+        costs += self.profit + self.software_development
 
         # The next three are in hours.
         overbooked_per_person = {

@@ -2793,6 +2793,7 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
         'Opdrachtsom',
         'Kosten derden',
         'Netto opdrachtsom',
+        'Software ontwikkeling',
         'Afdracht',
         'Opdrachtbevestiging binnen',
         'Startoverleg',
@@ -2855,6 +2856,7 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
                 project.contract_amount,
                 project.third_party_costs(),
                 project.net_contract_amount(),
+                project.software_development,
                 project.profit,
                 project.confirmation_date,
                 project.startup_meeting_done,
@@ -3799,6 +3801,13 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
             models.Sum('budget_transfers__amount'))['budget_transfers__amount__sum'] or 0)
         return costs - income
 
+    def software_development_total(self, group=None):
+        relevant_projects = self.external_projects.filter(archived=False)
+        if group:
+            relevant_projects = relevant_projects.filter(group=group)
+        return round(relevant_projects.aggregate(
+            models.Sum('software_development'))['software_development__sum'] or 0)
+
     def profit_total(self, group=None):
         relevant_projects = self.external_projects.filter(archived=False)
         if group:
@@ -4020,6 +4029,12 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
         ]
         for group in self.groups:
             line += ["", self.costs_total(group=group), ""]
+        yield line
+        line = ["", "Software ontwikkeling", "", "", "", "", "",
+                "", self.software_development_total(group=None), "",
+        ]
+        for group in self.groups:
+            line += ["", self.software_development_total(group=group), ""]
         yield line
         line = ["", "Afdracht", "", "", "", "", "",
                 "", self.profit_total(group=None), "",
