@@ -2,13 +2,22 @@ Changelog of TRS
 ===================================================
 
 
-1.16 (unreleased)
+1.17 (unreleased)
+-----------------
+
+- Nothing changed yet.
+
+
+1.16 (2019-01-22)
 -----------------
 
 - Added newest version of lizard-auth-client in preparation for switching to
   the new style of connecting to the SSO (and especially the staging SSO).
 
 - .0 projects have mandatory tariffs of 0 now.
+
+- Added 'software development' field (mimicking the 'profit' field) on
+  projects.
 
 
 1.15 (2016-06-10)

@@ -18,7 +18,7 @@ Local development installation
 
 Grab the sqlite db from the server::
 
-  $ scp the.server.name:/srv/trs.lizard.net/var/db/trs.db var/db/
+  $ scp the.server.name:/srv/trs.nelen-schuurmans.nl/var/db/trs.db var/db/
 
 Bootstrap with python3::
 
