@@ -418,6 +418,12 @@ class Project(models.Model):
         default=0,
         validators=[MinValueValidator(0)],
         verbose_name="afdracht")
+    software_development = models.DecimalField(
+        max_digits=12,
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        validators=[MinValueValidator(0)],
+        verbose_name="kosten software development (€1000/dag)")
     start = models.ForeignKey(
         'YearWeek',
         blank=True,
