@@ -2,7 +2,7 @@ Changelog of TRS
 ===================================================
 
 
-1.16 (unreleased)
+1.16 (2019-01-22)
 -----------------
 
 - Added newest version of lizard-auth-client in preparation for switching to
