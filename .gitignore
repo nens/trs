@@ -47,3 +47,4 @@ trs/local_testsettings.py
 
 buildout.cfg
 *~
+scriptjes/
