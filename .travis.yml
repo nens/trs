@@ -7,7 +7,7 @@ cache:
 install:
   - ln -s development.cfg buildout.cfg
   - docker-compose build
-  - docker-compose run web python bootstrap.py
+  - docker-compose run web python3 bootstrap.py
   - docker-compose run web bin/buildout
 script:
   - docker-compose run web bin/test
