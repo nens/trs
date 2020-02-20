@@ -47,4 +47,4 @@ created with a management command::
     $ bin/django update_weeks
 
 It is safe to run this command more than once. In case this site is still used
-after 2020: adjust the ``TRS_END_YEAR`` setting and run the command again :-)
+after 2025: adjust the ``TRS_END_YEAR`` setting and run the command again :-)
