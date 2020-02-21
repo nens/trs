@@ -1107,6 +1107,8 @@ class ProjectView(BaseView):
             return True
         if self.is_project_management:
             return True
+        if self.can_see_everything:
+            return True
 
     @cached_property
     def can_edit_project(self):

@@ -5,7 +5,10 @@ Changelog of TRS
 1.17 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Showing decimals for 'opdrachtsom', also showing decimals in the last two
+  columns of the main project financial table.
+
+- Management can now also see team details on the project page.
 
 
 1.16 (2019-01-22)

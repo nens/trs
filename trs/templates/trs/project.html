@@ -75,7 +75,7 @@
       <tr>
         <th>Opdrachtsom</th>
         <td>
-          {{ view.project.contract_amount|money }}
+          {{ view.project.contract_amount|money_with_decimal }}
         </td>
       </tr>
 
@@ -298,7 +298,7 @@
             <tr>
               <th colspan="7">Opdrachtsom</th>
               <td class="text-right">
-                {{ view.project.contract_amount|money }}
+                {{ view.project.contract_amount|money_with_decimal }}
               </td>
               <td></td>
             </tr>
@@ -314,7 +314,7 @@
                   &nbsp;&nbsp;&nbsp;
                   {{ third_party_estimate.description|default:'Niet ingevuld' }}
                 </td>
-                <td class="text-right">{{ third_party_estimate.amount|money }}</td>
+                <td class="text-right">{{ third_party_estimate.amount|money_with_decimal }}</td>
                 </td>
               </tr>
             {% empty %}
@@ -329,12 +329,12 @@
             <tr>
               <th colspan="7">Netto opdrachtsom</th>
               <td class="text-right">
-                {{ view.project.net_contract_amount|money }}
+                {{ view.project.net_contract_amount|money_with_decimal }}
               </td>
               <td></td>
               </td>
             </tr>
-          </tbody
+          </tbody>
 
           <tbody>
             <tr>
@@ -392,120 +392,116 @@
                   &nbsp;  {# costs #}
                 </td>
                 <td class="text-right">
-                  {{ line.planned_turnover|money }}
+                  {{ line.planned_turnover|money_with_decimal }}
                 </td>
               </tr>
             {% endfor %}
-            {% if view.can_see_project_financials %}
-              <tr>
-                <td colspan="8">&nbsp;&nbsp;&nbsp;Reservering</td>
-                <td class="text-right">
-                  {{ view.project.reservation|money }}
-              </tr>
+	    <tr>
+	      <td colspan="8">&nbsp;&nbsp;&nbsp;Reservering</td>
+	      <td class="text-right">
+		{{ view.project.reservation|money_with_decimal }}
+	    </tr>
 
-              <tr>
-                <th>
-                  Subtotaal personele kosten
-                </th>
-                <td>
-                  {{ view.project.person_costs_incl_reservation|money }}
-                </td>
-                <td colspan="7">
-                </td>
-              </tr>
-            {% endif %}
+	    <tr>
+	      <th>
+		Subtotaal personele kosten
+	      </th>
+	      <td>
+		{{ view.project.person_costs_incl_reservation|money_with_decimal }}
+	      </td>
+	      <td colspan="7">
+	      </td>
+	    </tr>
           </tbody>
 
-          {% if view.can_see_project_financials %}
-            <tbody>
-              <tr>
-                <th colspan="9">Overige kosten</th>
-              </tr>
-              {% for budget_item in view.project.budget_items.all %}
-                <tr>
-                  <td colspan="7">
-                    &nbsp;&nbsp;&nbsp;
-                    {{ budget_item.description|default:'Niet ingevuld' }}
-                    {% if budget_item.to_project %}
-                      naar {{ budget_item.to_project.as_widget }}
-                    {% endif %}
-                  </td>
-                  {% if budget_item.amount >= 0 %}
-                    <td class="text-right"></td>
-                    <td class="text-right">{{ budget_item.amount|money }}</td>
-                  {% else %}
-                    <td class="text-right">{{ budget_item.amount_as_income|money }}</td>
-                    <td class="text-right"></td>
-                  {% endif %}
-                </tr>
-              {% empty %}
-                <tr>
-                  <td colspan="9">
-                    &nbsp;&nbsp;&nbsp;
-                    Geen
-                  </td>
-                </tr>
-              {% endfor %}
+	  <tbody>
+	    <tr>
+	      <th colspan="9">Overige kosten</th>
+	    </tr>
+	    {% for budget_item in view.project.budget_items.all %}
+	      <tr>
+		<td colspan="7">
+		  &nbsp;&nbsp;&nbsp;
+		  {{ budget_item.description|default:'Niet ingevuld' }}
+		  {% if budget_item.to_project %}
+		    naar {{ budget_item.to_project.as_widget }}
+		  {% endif %}
+		</td>
+		{% if budget_item.amount >= 0 %}
+		  <td class="text-right"></td>
+		  <td class="text-right">{{ budget_item.amount|money_with_decimal }}</td>
+		{% else %}
+		  <td class="text-right">{{ budget_item.amount_as_income|money_with_decimal }}</td>
+		  <td class="text-right"></td>
+		{% endif %}
+	      </tr>
+	    {% empty %}
+	      <tr>
+		<td colspan="9">
+		  &nbsp;&nbsp;&nbsp;
+		  Geen
+		</td>
+	      </tr>
+	    {% endfor %}
 
-              <tr>
-                <th colspan="9">Overboekingen van andere projecten</th>
-              </tr>
-              {% for budget_item in view.project.budget_transfers.all %}
-                <tr>
-                  <td colspan="7">
-                    &nbsp;&nbsp;&nbsp;
-                    {{ budget_item.description }}
-                    van {{ budget_item.project.as_widget }}
-                  </td>
-                  {% if budget_item.amount < 0 %}
-                    <td class="text-right"></td>
-                    <td class="text-right">{{ budget_item.amount_as_income|money }}</td>
-                  {% else %}
-                    <td class="text-right">{{ budget_item.amount|money }}</td>
-                    <td class="text-right"></td>
-                  {% endif %}
-                </tr>
-              {% empty %}
-                <tr>
-                  <td colspan="9">
-                    &nbsp;&nbsp;&nbsp;
-                    Geen
-                  </td>
-                </tr>
-              {% endfor %}
+	    <tr>
+	      <th colspan="9">Overboekingen van andere projecten</th>
+	    </tr>
+	    {% for budget_item in view.project.budget_transfers.all %}
+	      <tr>
+		<td colspan="7">
+		  &nbsp;&nbsp;&nbsp;
+		  {{ budget_item.description }}
+		  van {{ budget_item.project.as_widget }}
+		</td>
+		{% if budget_item.amount < 0 %}
+		  <td class="text-right"></td>
+		  <td class="text-right">{{ budget_item.amount_as_income|money_with_decimal }}</td>
+		{% else %}
+		  <td class="text-right">{{ budget_item.amount|money_with_decimal }}</td>
+		  <td class="text-right"></td>
+		{% endif %}
+	      </tr>
+	    {% empty %}
+	      <tr>
+		<td colspan="9">
+		  &nbsp;&nbsp;&nbsp;
+		  Geen
+		</td>
+	      </tr>
+	    {% endfor %}
 
-              <tr>
-                <th colspan="8">Software ontwikkeling</th>
-                <td class="text-right">
-                  {{ view.project.software_development|money }}
-              </tr>
-              <tr>
-                <th colspan="8">Afdracht</th>
-                <td class="text-right">
-                  {{ view.project.profit|money }}
-              </tr>
-            </tbody>
+	    <tr>
+	      <th colspan="8">Software ontwikkeling</th>
+	      <td class="text-right">
+		{{ view.project.software_development|money_with_decimal }}
+	    </tr>
+	    <tr>
+	      <th colspan="8">Afdracht</th>
+	      <td class="text-right">
+		{{ view.project.profit|money_with_decimal }}
+	    </tr>
+	  </tbody>
 
-            <tfoot>
-              <tr>
-                <th colspan="7">Totaal</th>
-                <th class="text-right">
-                  {{ view.total_income|money }}
-                </th>
-                <th class="text-right">
-                  {{ view.total_costs|money }}
-                </th>
-              </tr>
-              <tr>
-                <th colspan="8">
-                  Nog te verdelen
-                </th>
-                <td class="text-right">
-                  {{ view.project.left_to_dish_out|money }}
-                </td>
-              </tr>
-            </tfoot>
-          {% endif %}
+	  <tfoot>
+	    <tr>
+	      <th colspan="7">Totaal</th>
+	      <th class="text-right">
+		{{ view.total_income|money_with_decimal }}
+	      </th>
+	      <th class="text-right">
+		{{ view.total_costs|money_with_decimal }}
+	      </th>
+	    </tr>
+	    <tr>
+	      <th colspan="8">
+		Nog te verdelen
+	      </th>
+	      <td class="text-right">
+		{{ view.project.left_to_dish_out|money_with_decimal }}
+	      </td>
+	    </tr>
+	  </tfoot>
 
         </table>
       </div>
