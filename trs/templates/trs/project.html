@@ -298,7 +298,7 @@
             <tr>
               <th colspan="7">Opdrachtsom</th>
               <td class="text-right">
-                {{ view.project.contract_amount|money }}
+                {{ view.project.contract_amount|money_with_decimal }}
               </td>
               <td></td>
             </tr>
@@ -314,7 +314,7 @@
                   &nbsp;&nbsp;&nbsp;
                   {{ third_party_estimate.description|default:'Niet ingevuld' }}
                 </td>
-                <td class="text-right">{{ third_party_estimate.amount|money }}</td>
+                <td class="text-right">{{ third_party_estimate.amount|money_with_decimal }}</td>
                 </td>
               </tr>
             {% empty %}
@@ -329,7 +329,7 @@
             <tr>
               <th colspan="7">Netto opdrachtsom</th>
               <td class="text-right">
-                {{ view.project.net_contract_amount|money }}
+                {{ view.project.net_contract_amount|money_with_decimal }}
               </td>
               <td></td>
               </td>
@@ -392,14 +392,14 @@
                   &nbsp;  {# costs #}
                 </td>
                 <td class="text-right">
-                  {{ line.planned_turnover|money }}
+                  {{ line.planned_turnover|money_with_decimal }}
                 </td>
               </tr>
             {% endfor %}
 	    <tr>
 	      <td colspan="8">&nbsp;&nbsp;&nbsp;Reservering</td>
 	      <td class="text-right">
-		{{ view.project.reservation|money }}
+		{{ view.project.reservation|money_with_decimal }}
 	    </tr>
 
 	    <tr>
@@ -407,7 +407,7 @@
 		Subtotaal personele kosten
 	      </th>
 	      <td>
-		{{ view.project.person_costs_incl_reservation|money }}
+		{{ view.project.person_costs_incl_reservation|money_with_decimal }}
 	      </td>
 	      <td colspan="7">
 	      </td>
@@ -429,9 +429,9 @@
 		</td>
 		{% if budget_item.amount >= 0 %}
 		  <td class="text-right"></td>
-		  <td class="text-right">{{ budget_item.amount|money }}</td>
+		  <td class="text-right">{{ budget_item.amount|money_with_decimal }}</td>
 		{% else %}
-		  <td class="text-right">{{ budget_item.amount_as_income|money }}</td>
+		  <td class="text-right">{{ budget_item.amount_as_income|money_with_decimal }}</td>
 		  <td class="text-right"></td>
 		{% endif %}
 	      </tr>
@@ -456,9 +456,9 @@
 		</td>
 		{% if budget_item.amount < 0 %}
 		  <td class="text-right"></td>
-		  <td class="text-right">{{ budget_item.amount_as_income|money }}</td>
+		  <td class="text-right">{{ budget_item.amount_as_income|money_with_decimal }}</td>
 		{% else %}
-		  <td class="text-right">{{ budget_item.amount|money }}</td>
+		  <td class="text-right">{{ budget_item.amount|money_with_decimal }}</td>
 		  <td class="text-right"></td>
 		{% endif %}
 	      </tr>
@@ -474,12 +474,12 @@
 	    <tr>
 	      <th colspan="8">Software ontwikkeling</th>
 	      <td class="text-right">
-		{{ view.project.software_development|money }}
+		{{ view.project.software_development|money_with_decimal }}
 	    </tr>
 	    <tr>
 	      <th colspan="8">Afdracht</th>
 	      <td class="text-right">
-		{{ view.project.profit|money }}
+		{{ view.project.profit|money_with_decimal }}
 	    </tr>
 	  </tbody>
 
@@ -487,10 +487,10 @@
 	    <tr>
 	      <th colspan="7">Totaal</th>
 	      <th class="text-right">
-		{{ view.total_income|money }}
+		{{ view.total_income|money_with_decimal }}
 	      </th>
 	      <th class="text-right">
-		{{ view.total_costs|money }}
+		{{ view.total_costs|money_with_decimal }}
 	      </th>
 	    </tr>
 	    <tr>
@@ -498,7 +498,7 @@
 		Nog te verdelen
 	      </th>
 	      <td class="text-right">
-		{{ view.project.left_to_dish_out|money }}
+		{{ view.project.left_to_dish_out|money_with_decimal }}
 	      </td>
 	    </tr>
 	  </tfoot>
