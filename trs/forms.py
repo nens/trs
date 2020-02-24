@@ -50,3 +50,8 @@ class ProjectMemberForm(django_forms.Form):
         min_value=0,
         widget=django_forms.TextInput(attrs={"size": 4, "type": "number"}),
     )
+
+
+class SearchForm(django_forms.Form):
+    q = django_forms.CharField(max_length=200,
+                               label="zoektekst")

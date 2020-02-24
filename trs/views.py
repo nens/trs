@@ -37,6 +37,7 @@ from trs import core
 from trs.forms import NewMemberForm
 from trs.forms import ProjectMemberForm
 from trs.forms import ProjectTeamForm
+from trs.forms import SearchForm
 from trs.models import Booking
 from trs.models import BudgetItem
 from trs.models import Group
@@ -1930,6 +1931,69 @@ class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         url = self.project.get_absolute_url()
         text = "Terug naar het project"
         return mark_safe(BACK_TEMPLATE.format(url=url, text=text))
+
+
+# class SearchView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
+
+#     template_name = "trs/search.html"
+#     success_url = "."
+#     form_class = SearchForm
+
+#     def form_valid(self, form):
+#         """Calculate results into _results."""
+#         search_text = form.cleaned_data.get("search_text")
+#         self._results = {}
+#         projects = Project.objects.filter(
+#             Q(code__icontains=search_text) | Q(description__icontains=search_text))
+#         self._results["projects"] = projects
+
+#     def results(self):
+#         """Return _results, if it exists."""
+#         return getattr(self, "_results", None)
+
+
+class SearchView(BaseView):
+    # xxxx
+
+    template_name = "trs/search.html"
+    form_class = SearchForm
+
+    @cached_property
+    def search_text(self):
+        q = self.request.GET.get("q", None)
+        if not q:
+            return
+        form = SearchForm({"q": q})
+        if form.is_valid():
+            return form.cleaned_data["q"]
+
+    def projects(self):
+        if not self.search_text:
+            return
+        return Project.objects.filter(
+            Q(code__icontains=self.search_text) | Q(description__icontains=self.search_text))
+
+    def persons(self):
+        if not self.search_text:
+            return
+        return Person.objects.filter(
+            Q(name__icontains=self.search_text) | Q(description__icontains=self.search_text)
+            | Q(user__username__icontains=self.search_text))
+
+    def show_nothing_found_warning(self):
+        """Return if we found nothing, but only when we actually searched.
+
+        Used for UI feedback.
+        """
+        if not self.search_text:
+            # We didn't search yet, so no need to show a warning.
+            return False
+        if self.projects() or self.persons():
+            # Results! So no warning
+            return False
+        # We searched, but didn't get any results.
+        return True
+
 
 
 class DeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
