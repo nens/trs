@@ -1,0 +1,75 @@
+{% extends "trs/edit.html" %}
+{% load trs_formatting %}
+
+{% block main-column %}
+  <h1>{{ view.title }}</h1>
+
+  <form class="navbar-form"
+        method="get"
+        action="." >
+  </form>
+
+  <form action="."
+        method="get"
+        role="form"
+        class="form-horizontal">
+    <fieldset>
+      <input type="text"
+             class="search-query"
+             name="q"
+	     {% if view.search_text %}value="{{ view.search_text }}"{% endif %}
+             placeholder="Zoek...">
+      <input type="submit"
+             class="btn btn-primary"
+             tabindex="{{ view.tabindex_submit_button|default:99 }}"
+             value="Zoek" />
+    </fieldset>
+  </form>
+
+  {% if view.show_nothing_found_warning %}
+    <h2>Niets gevonden</h2>
+    <p>
+      De nieuwe zoekfunctie kijkt heel kaal in de database. Dus zoek op
+      "T0078" en niet op "T 0078". Trema's en accenten vind 'ie niet erg
+      leuk. Vind je iets niet wat wel gevonden zou moeten worden? Mail Reinout
+      even met je zoekterm + wat er mist.
+    </p>
+    <p>
+      Je kan ook
+      <a href="{% url 'haystack_search' %}?q={{ view.search_text }}">
+	de oude full-text search
+      </a> nog proberen.
+    </p>
+  {% endif %}
+
+  {% if view.persons %}
+    <h2>Gevonden medewerkers</h2>
+    <ul>
+      {% for person in view.persons %}
+	<li>
+	  {{ person.as_widget }}
+	</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if view.projects %}
+    <h2>Gevonden projecten</h2>
+    <ul>
+      {% for project in view.projects %}
+	<li>
+	  {{ project.as_widget }}
+	  &nbsp;&nbsp;&nbsp;
+	  <span class="text-muted">
+	    {{ project.description }}
+	  </span>
+	</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+{% endblock %}
+
+{% block overview-column %}
+
+{% endblock %}
