@@ -188,3 +188,46 @@ class FinancialCsvViewTestCase(TestCase):
         request = RequestFactory().get("/")
         view = views.FinancialCsvView(request=request, kwargs={"pk": self.group.id})
         self.assertTrue(list(view.csv_lines))
+
+
+class SearchViewTestCase(TestCase):
+    def setUp(self):
+        self.project1 = factories.ProjectFactory.create(code="Bring wood")
+        self.project2 = factories.ProjectFactory.create(code="Bring oil",
+                                                        description="for the pyre")
+        self.person1 = factories.PersonFactory.create(name="Faramir")
+
+    def test_without_query(self):
+        request = RequestFactory().get("/")
+        view = views.SearchView(request=request, kwargs={})
+        self.assertFalse(view.projects())
+        self.assertFalse(view.persons())
+        self.assertFalse(view.show_nothing_found_warning())
+
+    def test_query_project(self):
+        request = RequestFactory().get("/", data={"q": "wood"})
+        view = views.SearchView(request=request)
+        self.assertEquals(len(view.projects()), 1)
+        self.assertFalse(view.persons())
+        self.assertFalse(view.show_nothing_found_warning())
+
+    def test_query_project_multiple(self):
+        request = RequestFactory().get("/", data={"q": "bring"})
+        view = views.SearchView(request=request)
+        self.assertEquals(len(view.projects()), 2)
+        self.assertFalse(view.persons())
+        self.assertFalse(view.show_nothing_found_warning())
+
+    def test_query_person(self):
+        request = RequestFactory().get("/", data={"q": "faramir"})
+        view = views.SearchView(request=request)
+        self.assertFalse(view.projects())
+        self.assertEquals(len(view.persons()), 1)
+        self.assertFalse(view.show_nothing_found_warning())
+
+    def test_query_nothing_found(self):
+        request = RequestFactory().get("/", data={"q": "hobbit"})
+        view = views.SearchView(request=request)
+        self.assertFalse(view.projects())
+        self.assertFalse(view.persons())
+        self.assertTrue(view.show_nothing_found_warning())
