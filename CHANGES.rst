@@ -10,6 +10,8 @@ Changelog of TRS
 
 - Management can now also see team details on the project page.
 
+- Added new simpler search page.
+
 
 1.16 (2019-01-22)
 -----------------
