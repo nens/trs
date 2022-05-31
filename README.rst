@@ -20,11 +20,12 @@ Grab the sqlite db from the server::
 
   $ scp the.server.name:/srv/trs.nelen-schuurmans.nl/var/db/trs.db var/db/
 
-Bootstrap with python3::
+Add ``trs/local_testsettings.py`` with the SSO settings for localhost.
+
+Install django with the makefile::
 
   $ docker-compose build
-  $ docker-compose run web python3 bootstrap.py
-  $ docker-compose run web bin/buildout
+  $ docker-compose run web make install
 
 You can run it with::
 
