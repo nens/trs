@@ -5,7 +5,7 @@ services:
 
   web:
     build: .
-    command: "bin/django runserver 0.0.0.0:5000"
+    command: "bin/python manage.py runserver 0.0.0.0:5000"
     ports:
       - "5000:5000"
     volumes:
