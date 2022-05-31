@@ -36,6 +36,8 @@ Server installation
 
 See the ``src/trs-site/README.rst`` (from the protected github trs-site repo).
 
+The site doesn't run with docker-compose there, yet, though.
+
 
 Weeks
 -----
@@ -48,3 +50,34 @@ created with a management command::
 
 It is safe to run this command more than once. In case this site is still used
 after 2025: adjust the ``TRS_END_YEAR`` setting and run the command again :-)
+
+
+Upgrade notes
+-------------
+
+Als ik van buildout naar pip overga mis ik o.a. de volgende zaken:
+
+- mr.developer checkout van trs-site
+
+- mkdir van var/static, db, log, cache, media, index
+
+- gunicorn/supervisord config
+
+- settings selectie
+
+- npm setup met bower en grunt
+
+- Auto-run van ``bin/bower --allow-root install``
+
+- nginx template
+
+- collectstatic
+
+En in productie:
+
+- cronjob ``bin/django fill_cache``, elke 5 minuten
+
+- cronjob collectstatic??? Elke nacht?
+
+- cronjob ``bin/django update_index--age 2`` elk uur? Wat doet dat? Oh, search
+  index updaten.
