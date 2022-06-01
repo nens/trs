@@ -29,6 +29,7 @@ requirements.txt: requirements.in setup.py
 bin/.everything-installed: requirements.txt
 	bin/pip-sync
 	touch $@
+
 directories: var/static var/media var/log var/db var/cache var/plugins var/index
 
 
@@ -36,8 +37,12 @@ var/%:
 	mkdir -p var/$*
 
 
-staticfiles:
+staticfiles: bower_components
 	bin/python manage.py collectstatic --noinput
+
+
+bower_components: bower.json
+	node_modules/bower/bin/bower --allow-root install
 
 
 test: install

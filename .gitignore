@@ -54,3 +54,4 @@ lib64
 man/
 pyvenv.cfg
 share/
+node_modules/

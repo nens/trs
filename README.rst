@@ -27,9 +27,10 @@ Install django with the makefile::
   $ docker-compose build
   $ docker-compose run web make install
 
-You can run it with::
+You can run it with one of the following::
 
   $ docker-compose up
+  $ docker-compose run web bin/python manage.py runserver 0.0.0.0:5000
 
 
 Server installation
@@ -60,19 +61,19 @@ Als ik van buildout naar pip overga mis ik o.a. de volgende zaken:
 
 - mr.developer checkout van trs-site
 
-- mkdir van var/static, db, log, cache, media, index
+- DONE mkdir van var/static, db, log, cache, media, index
 
 - gunicorn/supervisord config
 
 - settings selectie
 
-- npm setup met bower en grunt
+- DONE (grunt nog niet, is dat nodig?) npm setup met bower en grunt
 
-- Auto-run van ``bin/bower --allow-root install``
+- DONE Auto-run van ``bin/bower --allow-root install``
 
 - nginx template
 
-- collectstatic
+- DONE collectstatic
 
 En in productie:
 

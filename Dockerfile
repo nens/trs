@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     git \
     libevent-dev \
+    npm \
     python3-dev \
     python3-pip \
     python3-venv \
@@ -16,6 +17,8 @@ RUN apt-get update && apt-get install -y \
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
+
+RUN npm install bower
 
 VOLUME /code
 WORKDIR /code
