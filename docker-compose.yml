@@ -1,11 +1,14 @@
 version: '2'
+
 services:
+
   memcache:
     image: memcached
+    restart: unless-stopped
 
   web:
     build: .
-    command: "bin/python manage.py runserver 0.0.0.0:5000"
+    command: "bin/gunicorn -b 0.0.0.0:5000 --workers=3 --timeout 90 --preload --max-requests=10000 trs.wsgi"
     ports:
       - "5000:5000"
     volumes:

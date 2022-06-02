@@ -63,7 +63,7 @@ Als ik van buildout naar pip overga mis ik o.a. de volgende zaken:
 
 - DONE mkdir van var/static, db, log, cache, media, index
 
-- gunicorn/supervisord config
+- DONE gunicorn/supervisord config (supervisor kan weg)
 
 - settings selectie
 
@@ -83,3 +83,6 @@ En in productie:
 
 - cronjob ``bin/django update_index--age 2`` elk uur? Wat doet dat? Oh, search
   index updaten.
+
+memcache met z'n 64MB: zat. Beetje lopen testen en er lijkt 10% gebruikt te
+worden :-)
