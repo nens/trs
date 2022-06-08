@@ -8,7 +8,7 @@ message:
 	@echo "make beautiful: flake8, black, isort"
 
 
-install: bin/pip-compile bin/.everything-installed directories staticfiles
+install: bin/pip-compile bin/.installed directories staticfiles/.installed
 
 
 clean:
@@ -29,19 +29,21 @@ requirements/requirements.txt: requirements/requirements.in setup.py
 	bin/pip-compile --output-file=requirements/requirements.txt requirements/requirements.in
 
 
-bin/.everything-installed: requirements/requirements.txt
+bin/.installed: requirements/requirements.txt
 	bin/pip-sync requirements/requirements.txt
 	touch $@
 
-directories: var/static var/media var/log var/db var/cache var/plugins var/index
+# Note: no var/static anymore.
+directories: var/media var/log var/db var/cache var/plugins var/index
 
 
 var/%:
 	mkdir -p var/$*
 
 
-staticfiles: bower_components
+staticfiles/.installed: bower_components
 	bin/python manage.py collectstatic --noinput
+	touch $@
 
 
 bower_components: bower.json
@@ -50,7 +52,8 @@ bower_components: bower.json
 
 test: install
 	bin/flake8 trs
-	bin/pytest | tee pytest-coverage.txt
+	bin/python manage.py test
+	# bin/pytest | tee pytest-coverage.txt
 
 
 beautiful:
