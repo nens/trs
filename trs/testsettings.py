@@ -5,8 +5,7 @@ import os
 
 SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
 BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, ".."))
-STATIC_ROOT = os.path.join(BUILDOUT_DIR, "staticfiles")  # Note: not var/static/!
-STATIC_URL = "/static/"
+
 ROOT_URLCONF = "trs.urls"
 SECRET_KEY = "sleutel van het secreet"
 DEBUG = True
@@ -47,6 +46,13 @@ MIDDLEWARE_CLASSES = [
     "tls.TLSRequestMiddleware",
 ]
 
+STATIC_ROOT = os.path.join(BUILDOUT_DIR, "staticfiles")  # Note: not var/static/!
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [
+    os.path.join(BUILDOUT_DIR, "bower_components"),
+]
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.CachedStaticFilesStorage"
+
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
@@ -60,15 +66,6 @@ CACHES = {
 
 TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
 
-SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
-BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, ".."))
-STATIC_ROOT = os.path.join(BUILDOUT_DIR, "var", "static")
-STATICFILES_DIRS = [
-    os.path.join(BUILDOUT_DIR, "bower_components"),
-    # ^^^ bower-managed files.
-]
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.CachedStaticFilesStorage"
-STATIC_URL = "/static/"
 
 LOGGING = {
     "version": 1,
