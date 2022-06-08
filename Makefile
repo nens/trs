@@ -54,5 +54,5 @@ test: install
 
 
 beautiful:
-	bin/isort artifact_handler
-	bin/black artifact_handler
+	bin/isort trs
+	bin/black trs
