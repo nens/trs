@@ -55,3 +55,4 @@ man/
 pyvenv.cfg
 share/
 node_modules/
+docker-compose.override.yml

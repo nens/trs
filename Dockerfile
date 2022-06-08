@@ -18,7 +18,6 @@ RUN apt-get update && apt-get install -y \
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
-RUN npm install bower
-
-VOLUME /code
 WORKDIR /code
+COPY . .
+RUN make install

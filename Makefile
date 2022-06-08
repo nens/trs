@@ -27,7 +27,7 @@ requirements/requirements.txt: requirements/requirements.in setup.py
 
 
 bin/.everything-installed: requirements/requirements.txt
-	bin/pip-sync
+	bin/pip-sync requirements/requirements.txt
 	touch $@
 
 directories: var/static var/media var/log var/db var/cache var/plugins var/index
