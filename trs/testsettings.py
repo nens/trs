@@ -23,7 +23,6 @@ INSTALLED_APPS = [
     "lizard_auth_client",
     "raven.contrib.django.raven_compat",
     "gunicorn",
-    "debug_toolbar",
     "haystack",
     "django.contrib.staticfiles",
     "django_extensions",
@@ -37,7 +36,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE_CLASSES = [
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     # Default stuff below.
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -163,6 +161,6 @@ HAYSTACK_CONNECTIONS = {
 }
 
 try:
-    from .local_testsettings import *
+    from .local_testsettings import *  # noqa
 except ImportError:
     pass

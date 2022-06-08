@@ -14,7 +14,6 @@ install_requires = (
         "Werkzeug",
         "Whoosh",
         "beautifulsoup4",
-        "django-debug-toolbar",
         "django-extensions",
         "django-haystack",
         "django-tls",
