@@ -48,3 +48,11 @@ trs/local_testsettings.py
 buildout.cfg
 *~
 scriptjes/
+trs.db
+lib
+lib64
+man/
+pyvenv.cfg
+share/
+node_modules/
+docker-compose.override.yml

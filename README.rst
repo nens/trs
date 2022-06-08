@@ -20,21 +20,25 @@ Grab the sqlite db from the server::
 
   $ scp the.server.name:/srv/trs.nelen-schuurmans.nl/var/db/trs.db var/db/
 
-Bootstrap with python3::
+Add ``trs/local_testsettings.py`` with the SSO settings for localhost.
 
+Symlink the development compose file and build it::
+
+  $ ln -s docker-compose.development.yml docker-compose.override.yml
   $ docker-compose build
-  $ docker-compose run web python3 bootstrap.py
-  $ docker-compose run web bin/buildout
 
-You can run it with::
+You can run it with one of the following::
 
   $ docker-compose up
+  $ docker-compose run web bin/python manage.py runserver 0.0.0.0:5000
 
 
 Server installation
 -------------------
 
 See the ``src/trs-site/README.rst`` (from the protected github trs-site repo).
+
+The site doesn't run with docker-compose there, yet, though.
 
 
 Weeks
@@ -44,7 +48,42 @@ A ``YearWeek`` is the core time object in the site: every year+week
 combination has its own database object for easy filtering. They must be
 created with a management command::
 
-    $ bin/django update_weeks
+    $ bin/python manage.py update_weeks
 
 It is safe to run this command more than once. In case this site is still used
 after 2025: adjust the ``TRS_END_YEAR`` setting and run the command again :-)
+
+
+Upgrade notes
+-------------
+
+Als ik van buildout naar pip overga mis ik o.a. de volgende zaken:
+
+- mr.developer checkout van trs-site
+
+- DONE mkdir van var/static, db, log, cache, media, index
+
+- DONE gunicorn/supervisord config (supervisor kan weg)
+
+- settings selectie (TODO, via DJANGO_SETTINGS_MODULE in .env)
+
+- DONE (grunt nog niet, is dat nodig?) npm setup met bower en grunt
+
+- DONE Auto-run van ``bin/bower --allow-root install``
+
+- nginx template
+
+- DONE collectstatic
+
+En in productie:
+
+- cronjob ``bin/python manage.py fill_cache``, elke 5 minuten
+
+- cronjob collectstatic??? Elke nacht? Zou niet meer nodig moeten zijn. Vage
+  corner case. Is waarschijnlijk weg nu we docker gebruiken.
+
+- cronjob ``bin/python manage.py update_index --age 2`` elk uur? Wat doet dat? Oh, search
+  index updaten.
+
+memcache met z'n 64MB: zat. Beetje lopen testen en er lijkt 10% gebruikt te
+worden :-)
