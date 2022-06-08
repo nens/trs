@@ -12,7 +12,8 @@ def money(value):
     """Return monetary value, rounded and nicely formatted. Fixed width font."""
     try:
         rounded = round(value)
-    except:  # Yes, a bare except: filters should not raise exceptions
+    except:  # noqa: E722
+        # Yes, a bare except: filters should not raise exceptions
         return value
     return mark_safe("<tt>%s</tt>" % intcomma(rounded))
 
@@ -27,7 +28,8 @@ def money_with_decimal(value):
         remainder = value % 1
         if is_negative:
             whole = whole * -1
-    except:  # Yes, a bare except: filters should not raise exceptions
+    except:  # noqa: E722
+        # Yes, a bare except: filters should not raise exceptions
         return value
 
     return mark_safe(
@@ -40,7 +42,8 @@ def moneydiff(value):
     """Return monetary value like money, but including a + sign when needed."""
     try:
         rounded = round(value)
-    except:  # Yes, a bare except: filters should not raise exceptions
+    except:  # noqa: E722
+        # Yes, a bare except: filters should not raise exceptions
         return value
     if rounded > 0:
         return mark_safe("<tt>+%s</tt>" % intcomma(rounded))
@@ -52,7 +55,8 @@ def hours(value):
     """Return hours (hours booked, for instance), nicely rounded."""
     try:
         rounded = round(value)
-    except:  # Yes, a bare except: filters should not raise exceptions
+    except:  # noqa: E722
+        # Yes, a bare except: filters should not raise exceptions
         return value
     return intcomma(rounded)
 
@@ -62,7 +66,8 @@ def hoursdiff(value):
     """Return diff in hours, nice rounded and including a sign."""
     try:
         rounded = round(value)
-    except:  # Yes, a bare except: filters should not raise exceptions
+    except:  # noqa: E722
+        # Yes, a bare except: filters should not raise exceptions
         return value
     if rounded > 0:
         return "+%s" % rounded
