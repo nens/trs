@@ -1,3 +1,6 @@
+# Note: after an update here, run:
+# docker-compose run --rm web make install
+
 --index-url https://packages.lizard.net
 
 # Develop ourselves:
@@ -11,3 +14,9 @@ django-haystack == 2.4.0
 django-tls == 0.0.2
 snowballstemmer == 1.2.0
 django-debug-toolbar == 1.3.2
+
+
+# Development tools
+isort
+flake8
+black

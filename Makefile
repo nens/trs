@@ -1,3 +1,6 @@
+# Note: makefile updates first need a 'make install' before the makefile gets
+# updated in the docker image...
+
 message:
 	@echo "make install: install everything"
 	@echo "make clean: remove .venv and staticfiles"
@@ -46,8 +49,7 @@ bower_components: bower.json
 
 
 test: install
-	bin/ansible-lint -p ansible/*.yml
-	bin/flake8 artifact_handler
+	bin/flake8 trs
 	bin/pytest | tee pytest-coverage.txt
 
 
