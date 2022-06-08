@@ -48,7 +48,7 @@ A ``YearWeek`` is the core time object in the site: every year+week
 combination has its own database object for easy filtering. They must be
 created with a management command::
 
-    $ bin/django update_weeks
+    $ bin/python manage.py update_weeks
 
 It is safe to run this command more than once. In case this site is still used
 after 2025: adjust the ``TRS_END_YEAR`` setting and run the command again :-)
@@ -77,12 +77,12 @@ Als ik van buildout naar pip overga mis ik o.a. de volgende zaken:
 
 En in productie:
 
-- cronjob ``bin/django fill_cache``, elke 5 minuten
+- cronjob ``bin/python manage.py fill_cache``, elke 5 minuten
 
 - cronjob collectstatic??? Elke nacht? Zou niet meer nodig moeten zijn. Vage
   corner case. Is waarschijnlijk weg nu we docker gebruiken.
 
-- cronjob ``bin/django update_index --age 2`` elk uur? Wat doet dat? Oh, search
+- cronjob ``bin/python manage.py update_index --age 2`` elk uur? Wat doet dat? Oh, search
   index updaten.
 
 memcache met z'n 64MB: zat. Beetje lopen testen en er lijkt 10% gebruikt te
