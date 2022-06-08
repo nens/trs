@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import migrations, models
-import trs.models
 from django.conf import settings
+from django.db import migrations
+from django.db import models
+
 import django.core.validators
+import trs.models
 
 
 class Migration(migrations.Migration):

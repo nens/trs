@@ -1,6 +1,3 @@
-import datetime
-import logging
-
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
@@ -11,6 +8,10 @@ from django.template.defaultfilters import date as datelocalizer
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from tls import request as tls_request
+
+import datetime
+import logging
+
 
 # TODO: add django-appconf
 
@@ -673,8 +674,7 @@ class Project(models.Model):
         return -1 < self.left_to_dish_out() < 1
 
     def budget_not_ok_style(self):
-        """Return orange/red style depending on whether were above/below zero.
-        """
+        """Return orange/red style depending on whether were above/below zero."""
         if self.left_to_dish_out() < 0:
             return "text-danger"
         else:

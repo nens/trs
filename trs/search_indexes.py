@@ -1,5 +1,4 @@
 from haystack import indexes
-
 from trs import models
 
 

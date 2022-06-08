@@ -1,17 +1,12 @@
 from collections import defaultdict
 from copy import deepcopy
 from decimal import Decimal
-import csv
-import datetime
-import logging
-import statistics
-import time
-import urllib
-
 from django import forms
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import logout, login, authenticate
+from django.contrib.auth import authenticate
+from django.contrib.auth import login
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import PermissionDenied
@@ -32,7 +27,6 @@ from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic.edit import FormView
 from django.views.generic.edit import UpdateView
-
 from trs import core
 from trs.forms import NewMemberForm
 from trs.forms import ProjectMemberForm
@@ -47,11 +41,19 @@ from trs.models import Person
 from trs.models import PersonChange
 from trs.models import Project
 from trs.models import ThirdPartyEstimate
+from trs.models import this_year_week
 from trs.models import WbsoProject
 from trs.models import WorkAssignment
 from trs.models import YearWeek
-from trs.models import this_year_week
 from trs.templatetags.trs_formatting import hours as format_as_hours
+
+import csv
+import datetime
+import logging
+import statistics
+import time
+import urllib
+
 
 logger = logging.getLogger(__name__)
 
@@ -1971,14 +1973,18 @@ class SearchView(BaseView):
         if not self.search_text:
             return
         return Project.objects.filter(
-            Q(code__icontains=self.search_text) | Q(description__icontains=self.search_text))
+            Q(code__icontains=self.search_text)
+            | Q(description__icontains=self.search_text)
+        )
 
     def persons(self):
         if not self.search_text:
             return
         return Person.objects.filter(
-            Q(name__icontains=self.search_text) | Q(description__icontains=self.search_text)
-            | Q(user__username__icontains=self.search_text))
+            Q(name__icontains=self.search_text)
+            | Q(description__icontains=self.search_text)
+            | Q(user__username__icontains=self.search_text)
+        )
 
     def show_nothing_found_warning(self):
         """Return if we found nothing, but only when we actually searched.
@@ -1993,7 +1999,6 @@ class SearchView(BaseView):
             return False
         # We searched, but didn't get any results.
         return True
-
 
 
 class DeleteView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
@@ -3777,8 +3782,7 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
 
     @property
     def total_payables(self):
-        """Return sum of payables ('kosten derden') with a date of this year
-        """
+        """Return sum of payables ('kosten derden') with a date of this year"""
         return (
             Payable.objects.filter(
                 project__in=self.projects, date__year=self.year
@@ -4133,8 +4137,7 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
         }
 
     def total_payables_this_year(self, group=None):
-        """Return sum of payables ('kosten derden') with a date of this year
-        """
+        """Return sum of payables ('kosten derden') with a date of this year"""
         payables = Payable.objects.filter(date__year=self.year)
         if group:
             payables = payables.filter(project__group=group)

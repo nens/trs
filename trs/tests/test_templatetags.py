@@ -1,12 +1,12 @@
 from django.test import TestCase
-import mock
-
-from trs.templatetags.trs_formatting import money
-from trs.templatetags.trs_formatting import moneydiff
-from trs.templatetags.trs_formatting import money_with_decimal
 from trs.templatetags.trs_formatting import hours
 from trs.templatetags.trs_formatting import hoursdiff
+from trs.templatetags.trs_formatting import money
+from trs.templatetags.trs_formatting import money_with_decimal
+from trs.templatetags.trs_formatting import moneydiff
 from trs.templatetags.trs_formatting import tabindex
+
+import mock
 
 
 class MoneyTestCase(TestCase):

@@ -9,8 +9,10 @@ https://docs.djangoproject.com/en/1.9/howto/deployment/wsgi/
 
 import os
 
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "trs.testsettings")
 
 from django.core.wsgi import get_wsgi_application
+
 
 application = get_wsgi_application()

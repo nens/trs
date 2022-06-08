@@ -1,13 +1,12 @@
-import datetime
-
-from django.test.client import RequestFactory
-from django.test import TestCase
 from django.contrib.auth.models import AnonymousUser
-import mock
-
+from django.test import TestCase
+from django.test.client import RequestFactory
 from trs import views
 from trs.management.commands.update_weeks import ensure_year_weeks_are_present
 from trs.tests import factories
+
+import datetime
+import mock
 
 
 REINOUTS_BIRTHDATE = datetime.date(year=1972, month=12, day=25)
@@ -193,8 +192,9 @@ class FinancialCsvViewTestCase(TestCase):
 class SearchViewTestCase(TestCase):
     def setUp(self):
         self.project1 = factories.ProjectFactory.create(code="Bring wood")
-        self.project2 = factories.ProjectFactory.create(code="Bring oil",
-                                                        description="for the pyre")
+        self.project2 = factories.ProjectFactory.create(
+            code="Bring oil", description="for the pyre"
+        )
         self.person1 = factories.PersonFactory.create(name="Faramir")
 
     def test_without_query(self):

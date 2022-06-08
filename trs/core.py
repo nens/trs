@@ -1,15 +1,15 @@
 # Calculation core around the models.
+from django.core.cache import cache
+from django.db import models
+from django.utils.functional import cached_property
+from trs.models import Booking
+from trs.models import WorkAssignment
+from trs.models import YearWeek
+
 import datetime
 import logging
 import time
 
-from django.core.cache import cache
-from django.db import models
-from django.utils.functional import cached_property
-
-from trs.models import Booking
-from trs.models import WorkAssignment
-from trs.models import YearWeek
 
 logger = logging.getLogger(__name__)
 
@@ -285,8 +285,7 @@ class PersonYearCombination(object):
         self.per_project = per_project
 
     def calc_external_percentage(self):
-        """Return percentage hours booked this year on external projects.
-        """
+        """Return percentage hours booked this year on external projects."""
         query_result = (
             Booking.objects.filter(
                 booked_by=self.person,

@@ -1,9 +1,8 @@
 from django.core.cache import cache
 from django.test import TestCase
-
 from trs import core
-from trs.tests import factories
 from trs.management.commands.update_weeks import ensure_year_weeks_are_present
+from trs.tests import factories
 
 
 class PersonYearCombinationTestCase(TestCase):

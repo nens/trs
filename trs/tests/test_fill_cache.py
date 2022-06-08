@@ -1,10 +1,9 @@
-import unittest  # Note: this is 3.3's unittest2!
-
 from django.core.cache import cache
-
 from trs.management.commands import fill_cache
 from trs.management.commands.update_weeks import ensure_year_weeks_are_present
 from trs.tests import factories
+
+import unittest  # Note: this is 3.3's unittest2!
 
 
 class TestFillCache(unittest.TestCase):

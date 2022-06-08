@@ -1,5 +1,7 @@
-import os
 from django.contrib.messages import constants as messages
+
+import os
+
 
 SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
 BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, ".."))
