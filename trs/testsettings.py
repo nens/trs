@@ -47,17 +47,16 @@ MIDDLEWARE_CLASSES = [
     "tls.TLSRequestMiddleware",
 ]
 
-INSIDE_DOCKER = os.path.exists(os.path.join(os.getcwd(), "..", ".dockerenv"))
-if INSIDE_DOCKER:
-    CACHES = {
-        "default": {
-            "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
-            "LOCATION": "memcache:11211",
-            "TIMEOUT": 60 * 60 * 1,
-            "OPTIONS": {"MAX_ENTRIES": 50000},
-            "KEY_PREFIX": "trs",
-        }
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
+        "LOCATION": "memcache:11211",
+        "TIMEOUT": 60 * 60 * 24 * 29,
+        # ^^^ 29 days, memcached has a practical limit at 30 days
+        "OPTIONS": {"MAX_ENTRIES": 500000},
+        "KEY_PREFIX": "trs",
     }
+}
 
 TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
 
@@ -68,6 +67,7 @@ STATICFILES_DIRS = [
     os.path.join(BUILDOUT_DIR, "bower_components"),
     # ^^^ bower-managed files.
 ]
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.CachedStaticFilesStorage"
 STATIC_URL = "/static/"
 
 LOGGING = {
@@ -132,7 +132,7 @@ MESSAGE_TAGS = {messages.ERROR: "danger"}
 # Start and end year are used for creating YearWeek objects for those years
 # with the ``bin/django update_weeks`` command.
 TRS_START_YEAR = 2000
-TRS_END_YEAR = 2025
+TRS_END_YEAR = 2028
 # ^^^ TODO: appconf defaults.
 
 USE_L10N = True
