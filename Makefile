@@ -22,11 +22,11 @@ bin/pip-compile: bin/activate
 	bin/pip install --upgrade pip setuptools wheel pip-tools
 
 
-requirements.txt: requirements.in setup.py
-	bin/pip-compile --index-url=https://packages.lizard.net
+requirements/requirements.txt: requirements/requirements.in setup.py
+	bin/pip-compile --output-file=requirements/requirements.txt requirements/requirements.in
 
 
-bin/.everything-installed: requirements.txt
+bin/.everything-installed: requirements/requirements.txt
 	bin/pip-sync
 	touch $@
 
