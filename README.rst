@@ -22,10 +22,10 @@ Grab the sqlite db from the server::
 
 Add ``trs/local_testsettings.py`` with the SSO settings for localhost.
 
-Install django with the makefile::
+Symlink the development compose file and build it::
 
+  $ ln -s docker-compose.development.yml docker-compose.override.yml
   $ docker-compose build
-  $ docker-compose run web make install
 
 You can run it with one of the following::
 
@@ -65,7 +65,7 @@ Als ik van buildout naar pip overga mis ik o.a. de volgende zaken:
 
 - DONE gunicorn/supervisord config (supervisor kan weg)
 
-- settings selectie
+- settings selectie (TODO, via DJANGO_SETTINGS_MODULE in .env)
 
 - DONE (grunt nog niet, is dat nodig?) npm setup met bower en grunt
 
@@ -79,9 +79,10 @@ En in productie:
 
 - cronjob ``bin/django fill_cache``, elke 5 minuten
 
-- cronjob collectstatic??? Elke nacht?
+- cronjob collectstatic??? Elke nacht? Zou niet meer nodig moeten zijn. Vage
+  corner case. Is waarschijnlijk weg nu we docker gebruiken.
 
-- cronjob ``bin/django update_index--age 2`` elk uur? Wat doet dat? Oh, search
+- cronjob ``bin/django update_index --age 2`` elk uur? Wat doet dat? Oh, search
   index updaten.
 
 memcache met z'n 64MB: zat. Beetje lopen testen en er lijkt 10% gebruikt te
