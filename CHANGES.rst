@@ -2,8 +2,8 @@ Changelog of TRS
 ===================================================
 
 
-1.17 (unreleased)
------------------
+2.0 (unreleased)
+----------------
 
 - Showing decimals for 'opdrachtsom', also showing decimals in the last two
   columns of the main project financial table.

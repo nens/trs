@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 import monkeypatch_setuptools
 from setuptools import setup
 
-version = "1.17.dev0"
+version = "2.0.dev0"
 
 long_description = "\n\n".join(
     [open("README.rst").read(), open("CREDITS.rst").read(), open("CHANGES.rst").read()]
