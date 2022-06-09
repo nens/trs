@@ -216,7 +216,7 @@ class BudgetItemTestCase(TestCase):
         )
         # A budget item is a cost item. So negative numbers should be inverted
         # and listed in a different column.
-        self.assertEquals(budget_item.amount_as_income(), 20)
+        self.assertEqual(budget_item.amount_as_income(), 20)
 
 
 class GroupTestCase(TestCase):

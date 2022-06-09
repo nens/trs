@@ -151,13 +151,13 @@ class RatingsOveriewTestCase(TestCase):
         self.view = views.RatingsOverview(request=request)
 
     def test_projects(self):
-        self.assertEquals(len(self.view.projects), 3)
+        self.assertEqual(len(self.view.projects), 3)
 
     def test_average1(self):
-        self.assertEquals(self.view.average_rating_projectteam, 7.5)
+        self.assertEqual(self.view.average_rating_projectteam, 7.5)
 
     def test_average2(self):
-        self.assertEquals(self.view.average_rating_customer, 4)
+        self.assertEqual(self.view.average_rating_customer, 4)
 
 
 class FinancialOverviewTestCase(TestCase):
@@ -169,7 +169,7 @@ class FinancialOverviewTestCase(TestCase):
         ensure_year_weeks_are_present()
         request = RequestFactory().get("/")
         view = views.FinancialOverview(request=request)
-        self.assertEquals(len(list(view.download_links())), 4)
+        self.assertEqual(len(list(view.download_links())), 4)
 
 
 class FinancialCsvViewTestCase(TestCase):
@@ -207,14 +207,14 @@ class SearchViewTestCase(TestCase):
     def test_query_project(self):
         request = RequestFactory().get("/", data={"q": "wood"})
         view = views.SearchView(request=request)
-        self.assertEquals(len(view.projects()), 1)
+        self.assertEqual(len(view.projects()), 1)
         self.assertFalse(view.persons())
         self.assertFalse(view.show_nothing_found_warning())
 
     def test_query_project_multiple(self):
         request = RequestFactory().get("/", data={"q": "bring"})
         view = views.SearchView(request=request)
-        self.assertEquals(len(view.projects()), 2)
+        self.assertEqual(len(view.projects()), 2)
         self.assertFalse(view.persons())
         self.assertFalse(view.show_nothing_found_warning())
 
@@ -222,7 +222,7 @@ class SearchViewTestCase(TestCase):
         request = RequestFactory().get("/", data={"q": "faramir"})
         view = views.SearchView(request=request)
         self.assertFalse(view.projects())
-        self.assertEquals(len(view.persons()), 1)
+        self.assertEqual(len(view.persons()), 1)
         self.assertFalse(view.show_nothing_found_warning())
 
     def test_query_nothing_found(self):

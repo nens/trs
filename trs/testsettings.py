@@ -10,7 +10,17 @@ ROOT_URLCONF = "trs.urls"
 SECRET_KEY = "sleutel van het secreet"
 DEBUG = True
 ALLOWED_HOSTS = ["trs.lizard.net", "localhost", "trs.nelen-schuurmans.nl"]
-TEMPLATE_DEBUG = True
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {},
+    },
+]
+
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
