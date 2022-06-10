@@ -1,4 +1,5 @@
 from collections import defaultdict
+from collections import OrderedDict
 from copy import deepcopy
 from decimal import Decimal
 from django import forms
@@ -19,7 +20,6 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
-from django.utils.datastructures import SortedDict
 from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
@@ -1410,7 +1410,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     def get_form_class(self):
         """Return dynamically generated form class."""
-        fields = SortedDict()
+        fields = OrderedDict()
         if self.has_edit_permissions:
             # If not, we cannot edit anything, just view.
             for index, project in enumerate(self.relevant_projects):

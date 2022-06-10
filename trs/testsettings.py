@@ -14,9 +14,12 @@ ALLOWED_HOSTS = ["trs.lizard.net", "localhost", "trs.nelen-schuurmans.nl"]
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
         "APP_DIRS": True,
-        "OPTIONS": {},
+        'OPTIONS': {
+            'context_processors': [
+                "django.contrib.auth.context_processors.auth",
+            ]
+        }
     },
 ]
 
@@ -48,6 +51,7 @@ MIDDLEWARE_CLASSES = [
     # Default stuff below.
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -97,12 +101,13 @@ LOGGING = {
             "formatter": "verbose",
             "filename": os.path.join(BUILDOUT_DIR, "var", "log", "django.log"),
         },
-        "sqllogfile": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "formatter": "verbose",
-            "filename": os.path.join(BUILDOUT_DIR, "var", "log", "sql.log"),
-        },
+        # sqllogfile is only used for demo purposes for showing off django's ORM.
+        # "sqllogfile": {
+        #     "level": "DEBUG",
+        #     "class": "logging.FileHandler",
+        #     "formatter": "verbose",
+        #     "filename": os.path.join(BUILDOUT_DIR, "var", "log", "sql.log"),
+        # },
         "sentry": {
             "level": "WARN",
             "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
