@@ -12,14 +12,11 @@ install_requires = (
     [
         "Django >= 1.8",
         "Werkzeug",
-        "Whoosh",
         "beautifulsoup4",
         "django-extensions",
-        "django-haystack",
         "django-tls",
         "gunicorn",
         "lizard-auth-client >= 2.6",
-        "python-dateutil",  # Needed by haystack
         "python3-memcached",
         "raven",
         "requests",

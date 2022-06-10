@@ -202,6 +202,5 @@ urlpatterns = [
     ),
     url(r"^locallogin/$", views.LoginView.as_view(), name="trs.login"),
     url(r"^logout/$", views.logout_view, name="trs.logout"),
-    url(r"^search/", include("haystack.urls")),
     url(r"^admin/", include(admin.site.urls)),
 ]

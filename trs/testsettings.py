@@ -35,7 +35,6 @@ INSTALLED_APPS = [
     "lizard_auth_client",
     "raven.contrib.django.raven_compat",
     "gunicorn",
-    "haystack",
     "django.contrib.staticfiles",
     "django_extensions",
     "django_nose",
@@ -164,13 +163,6 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "lizard_auth_client.backends.SSOBackend",
 ]
-
-HAYSTACK_CONNECTIONS = {
-    "default": {
-        "ENGINE": "haystack.backends.whoosh_backend.WhooshEngine",
-        "PATH": os.path.join(BUILDOUT_DIR, "var", "index"),
-    }
-}
 
 try:
     from .local_testsettings import *  # noqa

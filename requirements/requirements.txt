@@ -25,7 +25,6 @@ dataclasses==0.8
 django==1.8.14
     # via
     #   -r requirements/requirements.in
-    #   django-haystack
     #   lizard-auth-client
     #   trs
 django-appconf==1.0.2
@@ -35,10 +34,6 @@ django-crispy-forms==1.6.1
 django-extensions==1.7.3
     # via
     #   lizard-auth-client
-    #   trs
-django-haystack==2.6.1
-    # via
-    #   -r requirements/requirements.in
     #   trs
 django-nose==1.4.4
     # via
@@ -89,9 +84,7 @@ pyflakes==2.4.0
 pyjwt==1.4.2
     # via lizard-auth-client
 python-dateutil==2.5.3
-    # via
-    #   fake-factory
-    #   trs
+    # via fake-factory
 python3-memcached==1.51
     # via trs
 raven==5.7.2
@@ -119,8 +112,6 @@ werkzeug==0.11.11
     # via
     #   django-tls
     #   trs
-whoosh==2.7.4
-    # via trs
 zipp==3.6.0
     # via importlib-metadata
 

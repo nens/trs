@@ -13,6 +13,8 @@ Changelog of TRS
 
 - Staticfiles are stored inside the docker image.
 
+- Removed django-haystack (=the old full-text search method).
+
 
 1.17 (2020/2021)
 -----------------

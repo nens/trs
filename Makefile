@@ -34,7 +34,7 @@ bin/.installed: requirements/requirements.txt
 	touch $@
 
 # Note: no var/static anymore.
-directories: var/media var/log var/db var/cache var/plugins var/index
+directories: var/media var/log var/db var/cache var/plugins
 
 
 var/%:
