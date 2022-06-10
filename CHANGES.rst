@@ -15,6 +15,8 @@ Changelog of TRS
 
 - Removed django-haystack (=the old full-text search method).
 
+- Using pytest instead of django-nose.
+
 
 1.17 (2020/2021)
 -----------------

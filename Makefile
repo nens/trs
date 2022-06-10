@@ -56,8 +56,7 @@ node_modules/bower/bin/bower:
 
 test: install
 	bin/flake8 trs
-	bin/python manage.py test
-	# bin/pytest | tee pytest-coverage.txt
+	bin/pytest | tee trs/pytest-coverage.txt
 
 
 beautiful:

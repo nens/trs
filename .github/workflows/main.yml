@@ -17,6 +17,7 @@ jobs:
         run: docker compose build
       - name: Test
         run: docker compose run --rm web make test
-      # Enable coverage report after moving to pytest
-      # - name: Add coverage comment for better visibility
-      #   uses: coroo/pytest-coverage-commentator@v1.0.2
+      - name: Add coverage comment for better visibility
+        uses: coroo/pytest-coverage-commentator@v1.0.2
+        with:
+          pytest-coverage: trs/pytest-coverage.txt

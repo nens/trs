@@ -56,3 +56,4 @@ pyvenv.cfg
 share/
 node_modules/
 docker-compose.override.yml
+trs/pytest-coverage.txt
