@@ -36,7 +36,7 @@ django-extensions==1.7.3
     # via
     #   lizard-auth-client
     #   trs
-django-haystack==2.4.0
+django-haystack==2.6.1
     # via
     #   -r requirements/requirements.in
     #   trs
@@ -45,9 +45,7 @@ django-nose==1.4.4
     #   lizard-auth-client
     #   trs
 django-tls==0.0.2
-    # via
-    #   -r requirements/requirements.in
-    #   trs
+    # via trs
 docopt==0.6.2
     # via coveralls
 factory-boy==2.7.0
@@ -109,8 +107,6 @@ six==1.16.0
     #   fake-factory
     #   mock
     #   python-dateutil
-snowballstemmer==1.2.0
-    # via -r requirements/requirements.in
 tomli==1.2.3
     # via black
 typed-ast==1.5.4

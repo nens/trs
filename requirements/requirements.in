@@ -10,9 +10,9 @@
 Django == 1.8.14
 
 # Items I don't dare to update, yet.
-django-haystack == 2.4.0
-django-tls == 0.0.2
-snowballstemmer == 1.2.0
+django-haystack == 2.6.1
+# django-tls == 0.0.2
+# snowballstemmer == 1.2.0
 
 # Development tools
 isort
