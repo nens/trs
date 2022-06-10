@@ -1,6 +1,9 @@
 # Note: makefile updates first need a 'make install' before the makefile gets
 # updated in the docker image...
 
+SHELL=/bin/bash -o pipefail
+
+
 message:
 	@echo "make install: install everything"
 	@echo "make clean: remove .venv and staticfiles"
@@ -56,7 +59,7 @@ node_modules/bower/bin/bower:
 
 test: install
 	bin/flake8 trs
-	set -o pipefail && bin/pytest | tee trs/pytest-coverage.txt
+	bin/pytest | tee trs/pytest-coverage.txt
 
 
 beautiful:
