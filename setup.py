@@ -24,7 +24,14 @@ install_requires = (
     ],
 )
 
-tests_require = ["nose", "mock", "factory_boy", "coverage", "django-nose", "coveralls"]
+tests_require = [
+    "coverage",
+    "factory_boy",
+    "mock",
+    "pytest",
+    "pytest-cov",
+    "pytest-django < 4",  # Remove restriction when django is new enough.
+]
 
 setup(
     name="trs",

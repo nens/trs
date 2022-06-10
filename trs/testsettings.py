@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     "gunicorn",
     "django.contrib.staticfiles",
     "django_extensions",
-    "django_nose",
     "django.contrib.humanize",
     "django.contrib.messages",
     "django.contrib.admin",
@@ -76,9 +75,6 @@ CACHES = {
         "KEY_PREFIX": "trs",
     }
 }
-
-TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
-
 
 LOGGING = {
     "version": 1,
