@@ -14,7 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build
-        run: docker compose build
+        run: |
+          ln -s docker-compose.development.yml docker-compose.override.yml
+          docker compose build
       - name: Test
         run: docker compose run --rm web make test
       - name: Add coverage comment for better visibility

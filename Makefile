@@ -1,6 +1,9 @@
 # Note: makefile updates first need a 'make install' before the makefile gets
 # updated in the docker image...
 
+SHELL=/bin/bash -o pipefail
+
+
 message:
 	@echo "make install: install everything"
 	@echo "make clean: remove .venv and staticfiles"
