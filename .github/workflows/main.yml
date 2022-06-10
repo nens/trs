@@ -1,0 +1,21 @@
+name: test
+
+# Run on pull requests and on the master branch itself.
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Buld
+        run: docker compose build
+      - name: Test
+        run: docker compose run --rm web make test
+      - name: Add coverage comment for better visibility
+        uses: coroo/pytest-coverage-commentator@v1.0.2
