@@ -2,9 +2,11 @@ from trs import models
 from trs.management.commands import update_weeks
 
 import datetime
+import pytest
 import unittest  # Note: this is 3.3's unittest2!
 
 
+@pytest.mark.django_db
 class TestUpdateWeeks(unittest.TestCase):
     def setUp(self):
         self.command = update_weeks.Command()
