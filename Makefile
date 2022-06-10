@@ -12,7 +12,7 @@ install: bin/pip-compile bin/.installed directories staticfiles/.installed
 
 
 clean:
-	rm -rf .venv var/static bin/ lib/ share/ pyvenv.cfg
+	rm -rf .venv var/static bin/ lib/ share/ pyvenv.cfg bower_components/ node_modules/
 
 
 # A virtualenv creates bin/activate
@@ -46,8 +46,12 @@ staticfiles/.installed: bower_components
 	touch $@
 
 
-bower_components: bower.json
+bower_components: bower.json node_modules/bower/bin/bower
 	node_modules/bower/bin/bower --allow-root install
+
+
+node_modules/bower/bin/bower:
+	npm install bower
 
 
 test: install
