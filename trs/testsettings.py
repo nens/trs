@@ -1,15 +1,29 @@
-import os
 from django.contrib.messages import constants as messages
+
+import os
+
 
 SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
 BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, ".."))
-STATIC_ROOT = os.path.join(BUILDOUT_DIR, "var", "static")
-STATIC_URL = "/static/"
+
 ROOT_URLCONF = "trs.urls"
 SECRET_KEY = "sleutel van het secreet"
 DEBUG = True
 ALLOWED_HOSTS = ["trs.lizard.net", "localhost", "trs.nelen-schuurmans.nl"]
-TEMPLATE_DEBUG = True
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.contrib.auth.context_processors.auth",
+            ]
+        },
+    },
+]
+
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -21,8 +35,6 @@ INSTALLED_APPS = [
     "lizard_auth_client",
     "raven.contrib.django.raven_compat",
     "gunicorn",
-    "debug_toolbar",
-    "haystack",
     "django.contrib.staticfiles",
     "django_extensions",
     "django_nose",
@@ -35,10 +47,10 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE_CLASSES = [
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     # Default stuff below.
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -46,6 +58,13 @@ MIDDLEWARE_CLASSES = [
     # 'trs.middleware.TracebackLoggingMiddleware',
     "tls.TLSRequestMiddleware",
 ]
+
+STATIC_ROOT = os.path.join(BUILDOUT_DIR, "staticfiles")  # Note: not var/static/!
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [
+    os.path.join(BUILDOUT_DIR, "bower_components"),
+]
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.CachedStaticFilesStorage"
 
 CACHES = {
     "default": {
@@ -60,15 +79,6 @@ CACHES = {
 
 TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
 
-SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
-BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, ".."))
-STATIC_ROOT = os.path.join(BUILDOUT_DIR, "var", "static")
-STATICFILES_DIRS = [
-    os.path.join(BUILDOUT_DIR, "bower_components"),
-    # ^^^ bower-managed files.
-]
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.CachedStaticFilesStorage"
-STATIC_URL = "/static/"
 
 LOGGING = {
     "version": 1,
@@ -90,12 +100,13 @@ LOGGING = {
             "formatter": "verbose",
             "filename": os.path.join(BUILDOUT_DIR, "var", "log", "django.log"),
         },
-        "sqllogfile": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "formatter": "verbose",
-            "filename": os.path.join(BUILDOUT_DIR, "var", "log", "sql.log"),
-        },
+        # sqllogfile is only used for demo purposes for showing off django's ORM.
+        # "sqllogfile": {
+        #     "level": "DEBUG",
+        #     "class": "logging.FileHandler",
+        #     "formatter": "verbose",
+        #     "filename": os.path.join(BUILDOUT_DIR, "var", "log", "sql.log"),
+        # },
         "sentry": {
             "level": "WARN",
             "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
@@ -153,14 +164,7 @@ AUTHENTICATION_BACKENDS = [
     "lizard_auth_client.backends.SSOBackend",
 ]
 
-HAYSTACK_CONNECTIONS = {
-    "default": {
-        "ENGINE": "haystack.backends.whoosh_backend.WhooshEngine",
-        "PATH": os.path.join(BUILDOUT_DIR, "var", "index"),
-    }
-}
-
 try:
-    from .local_testsettings import *
+    from .local_testsettings import *  # noqa
 except ImportError:
     pass

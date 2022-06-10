@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 import monkeypatch_setuptools
 from setuptools import setup
 
-version = "1.17.dev0"
+version = "2.0.dev0"
 
 long_description = "\n\n".join(
     [open("README.rst").read(), open("CREDITS.rst").read(), open("CHANGES.rst").read()]
@@ -12,15 +12,11 @@ install_requires = (
     [
         "Django >= 1.8",
         "Werkzeug",
-        "Whoosh",
         "beautifulsoup4",
-        "django-debug-toolbar",
         "django-extensions",
-        "django-haystack",
         "django-tls",
         "gunicorn",
         "lizard-auth-client >= 2.6",
-        "python-dateutil",  # Needed by haystack
         "python3-memcached",
         "raven",
         "requests",

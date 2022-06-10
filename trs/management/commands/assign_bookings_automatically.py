@@ -1,11 +1,11 @@
 # Used to automatically book 40 hours on an internal project for managers.
-import logging
-
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db.models import Sum
-
 from trs import models
+
+import logging
+
 
 logger = logging.getLogger(__name__)
 

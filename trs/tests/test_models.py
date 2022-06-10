@@ -1,12 +1,11 @@
 # import unittest  # Note: this is 3.3's unittest2!
-import datetime
-
 from django.test import TestCase
-import mock
-
 from trs import models
-from trs.tests import factories
 from trs.management.commands.update_weeks import ensure_year_weeks_are_present
+from trs.tests import factories
+
+import datetime
+import mock
 
 
 class PersonTestCase(TestCase):
@@ -217,7 +216,7 @@ class BudgetItemTestCase(TestCase):
         )
         # A budget item is a cost item. So negative numbers should be inverted
         # and listed in a different column.
-        self.assertEquals(budget_item.amount_as_income(), 20)
+        self.assertEqual(budget_item.amount_as_income(), 20)
 
 
 class GroupTestCase(TestCase):

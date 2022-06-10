@@ -1,23 +1,19 @@
 from django.conf.urls import include
-from django.conf.urls import patterns
 from django.conf.urls import url
 from django.contrib import admin
-
 from trs import views
+
 
 admin.autodiscover()
 
-urlpatterns = patterns(
-    "",
+urlpatterns = [
     url(r"^$", views.home, name="trs.home"),
     url(r"", include("lizard_auth_client.urls")),
-
     url(
         r"^simple-search/$",
         views.SearchView.as_view(),
         name="trs.search",
     ),
-
     url(r"^persons/$", views.PersonsView.as_view(), name="trs.persons"),
     url(r"^persons/csv/$", views.PersonsCsvView.as_view(), name="trs.persons.csv"),
     url(r"^persons/(?P<pk>\d+)/$", views.PersonView.as_view(), name="trs.person"),
@@ -206,6 +202,5 @@ urlpatterns = patterns(
     ),
     url(r"^locallogin/$", views.LoginView.as_view(), name="trs.login"),
     url(r"^logout/$", views.logout_view, name="trs.logout"),
-    (r"^search/", include("haystack.urls")),
-    (r"^admin/", include(admin.site.urls)),
-)
+    url(r"^admin/", include(admin.site.urls)),
+]

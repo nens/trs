@@ -1,8 +1,8 @@
-import unittest  # Note: this is 3.3's unittest2!
-import datetime
-
-from trs.management.commands import update_weeks
 from trs import models
+from trs.management.commands import update_weeks
+
+import datetime
+import unittest  # Note: this is 3.3's unittest2!
 
 
 class TestUpdateWeeks(unittest.TestCase):

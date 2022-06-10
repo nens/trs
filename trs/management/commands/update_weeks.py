@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # Copyright 2013 Nelen & Schuurmans
+from django.conf import settings
+from django.core.management.base import BaseCommand
+from trs import models
+
 import calendar
 import datetime
 import logging
 
-from django.core.management.base import BaseCommand
-from django.conf import settings
-
-from trs import models
 
 logger = logging.getLogger(__name__)
 

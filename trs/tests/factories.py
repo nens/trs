@@ -1,9 +1,8 @@
-import datetime
-
 from django.contrib.auth.models import User
-import factory
-
 from trs import models
+
+import datetime
+import factory
 
 
 class UserFactory(factory.django.DjangoModelFactory):

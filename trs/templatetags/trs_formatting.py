@@ -1,7 +1,7 @@
 # Template filter library for TRS.
 from django import template
-from django.utils.safestring import mark_safe
 from django.contrib.humanize.templatetags.humanize import intcomma
+from django.utils.safestring import mark_safe
 
 
 register = template.Library()
@@ -9,19 +9,18 @@ register = template.Library()
 
 @register.filter
 def money(value):
-    """Return monetary value, rounded and nicely formatted. Fixed width font.
-    """
+    """Return monetary value, rounded and nicely formatted. Fixed width font."""
     try:
         rounded = round(value)
-    except:  # Yes, a bare except: filters should not raise exceptions
+    except:  # noqa: E722
+        # Yes, a bare except: filters should not raise exceptions
         return value
     return mark_safe("<tt>%s</tt>" % intcomma(rounded))
 
 
 @register.filter
 def money_with_decimal(value):
-    """Return monetary value, rounded and nicely formatted. Fixed width font.
-    """
+    """Return monetary value, rounded and nicely formatted. Fixed width font."""
     try:
         is_negative = value < 0
         value = abs(value)
@@ -29,7 +28,8 @@ def money_with_decimal(value):
         remainder = value % 1
         if is_negative:
             whole = whole * -1
-    except:  # Yes, a bare except: filters should not raise exceptions
+    except:  # noqa: E722
+        # Yes, a bare except: filters should not raise exceptions
         return value
 
     return mark_safe(
@@ -39,11 +39,11 @@ def money_with_decimal(value):
 
 @register.filter
 def moneydiff(value):
-    """Return monetary value like money, but including a + sign when needed.
-    """
+    """Return monetary value like money, but including a + sign when needed."""
     try:
         rounded = round(value)
-    except:  # Yes, a bare except: filters should not raise exceptions
+    except:  # noqa: E722
+        # Yes, a bare except: filters should not raise exceptions
         return value
     if rounded > 0:
         return mark_safe("<tt>+%s</tt>" % intcomma(rounded))
@@ -52,22 +52,22 @@ def moneydiff(value):
 
 @register.filter
 def hours(value):
-    """Return hours (hours booked, for instance), nicely rounded.
-    """
+    """Return hours (hours booked, for instance), nicely rounded."""
     try:
         rounded = round(value)
-    except:  # Yes, a bare except: filters should not raise exceptions
+    except:  # noqa: E722
+        # Yes, a bare except: filters should not raise exceptions
         return value
     return intcomma(rounded)
 
 
 @register.filter
 def hoursdiff(value):
-    """Return diff in hours, nice rounded and including a sign.
-    """
+    """Return diff in hours, nice rounded and including a sign."""
     try:
         rounded = round(value)
-    except:  # Yes, a bare except: filters should not raise exceptions
+    except:  # noqa: E722
+        # Yes, a bare except: filters should not raise exceptions
         return value
     if rounded > 0:
         return "+%s" % rounded

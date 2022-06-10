@@ -1,6 +1,7 @@
-import django.forms as django_forms
-from trs.models import Project
 from trs.models import Person
+from trs.models import Project
+
+import django.forms as django_forms
 
 
 class ProjectTeamForm(django_forms.ModelForm):
@@ -53,5 +54,4 @@ class ProjectMemberForm(django_forms.Form):
 
 
 class SearchForm(django_forms.Form):
-    q = django_forms.CharField(max_length=200,
-                               label="zoektekst")
+    q = django_forms.CharField(max_length=200, label="zoektekst")

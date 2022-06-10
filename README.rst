@@ -61,7 +61,7 @@ Als ik van buildout naar pip overga mis ik o.a. de volgende zaken:
 
 - mr.developer checkout van trs-site
 
-- DONE mkdir van var/static, db, log, cache, media, index
+- DONE mkdir van var/static, db, log, cache, media
 
 - DONE gunicorn/supervisord config (supervisor kan weg)
 
@@ -81,9 +81,6 @@ En in productie:
 
 - cronjob collectstatic??? Elke nacht? Zou niet meer nodig moeten zijn. Vage
   corner case. Is waarschijnlijk weg nu we docker gebruiken.
-
-- cronjob ``bin/python manage.py update_index --age 2`` elk uur? Wat doet dat? Oh, search
-  index updaten.
 
 memcache met z'n 64MB: zat. Beetje lopen testen en er lijkt 10% gebruikt te
 worden :-)

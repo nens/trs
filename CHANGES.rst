@@ -2,7 +2,21 @@ Changelog of TRS
 ===================================================
 
 
-1.17 (unreleased)
+2.0 (unreleased)
+----------------
+
+- Moved from buildout to pip-tools.
+
+- Ubuntu 16.04 to 18.04.
+
+- Switched server setup to docker-compose.
+
+- Staticfiles are stored inside the docker image.
+
+- Removed django-haystack (=the old full-text search method).
+
+
+1.17 (2020/2021)
 -----------------
 
 - Showing decimals for 'opdrachtsom', also showing decimals in the last two
