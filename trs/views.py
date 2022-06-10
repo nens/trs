@@ -207,6 +207,9 @@ class BaseMixin(object):
     def is_custom_year(self):
         return self.year != this_year_week().year
 
+    # Note on security-related items: see ``security.rst`` for a quick
+    # intro. It might not be 100% accurate, but it is close.
+
     @cached_property
     def active_person(self):
         if self.request.user.is_anonymous():
