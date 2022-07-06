@@ -18,7 +18,6 @@ install_requires = (
         "gunicorn",
         "lizard-auth-client >= 2.13",
         "python3-memcached",
-        "raven",
         "requests",
         "setuptools",
     ],

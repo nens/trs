@@ -33,7 +33,6 @@ DATABASES = {
 INSTALLED_APPS = [
     "trs",
     "lizard_auth_client",
-    "raven.contrib.django.raven_compat",
     "gunicorn",
     "django.contrib.staticfiles",
     "django_extensions",
@@ -102,14 +101,14 @@ LOGGING = {
         #     "formatter": "verbose",
         #     "filename": os.path.join(BUILDOUT_DIR, "var", "log", "sql.log"),
         # },
-        "sentry": {
-            "level": "WARN",
-            "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
-        },
+        # "sentry": {
+        #     "level": "WARN",
+        #     "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
+        # },
     },
     "loggers": {
         "": {
-            "handlers": ["console", "logfile", "sentry"],
+            "handlers": ["console", "logfile"],  # TODO: add sentry
             "propagate": True,
             "level": "DEBUG",
         },
@@ -125,7 +124,7 @@ LOGGING = {
             "level": "INFO",  # Suppress the huge output in tests
         },
         "django.request": {
-            "handlers": ["console", "logfile", "sentry"],
+            "handlers": ["console", "logfile"],  # TODO: add sentry
             "propagate": False,
             "level": "ERROR",  # WARN also shows 404 errors
         },
