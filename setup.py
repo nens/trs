@@ -10,13 +10,13 @@ long_description = "\n\n".join(
 
 install_requires = (
     [
-        "Django >= 1.8",
+        "Django >= 1.11",
         "Werkzeug",
         "beautifulsoup4",
         "django-extensions",
         "django-tls",
         "gunicorn",
-        "lizard-auth-client >= 2.6",
+        "lizard-auth-client >= 2.13",
         "python3-memcached",
         "raven",
         "requests",
