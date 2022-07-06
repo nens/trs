@@ -54,6 +54,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         verbose_name="toegevoegd door",
                         to=settings.AUTH_USER_MODEL,
+                        on_delete=models.CASCADE,
                     ),
                 ),
                 (
@@ -62,6 +63,7 @@ class Migration(migrations.Migration):
                         verbose_name="project",
                         related_name="third_party_estimates",
                         to="trs.Project",
+                        on_delete=models.CASCADE,
                     ),
                 ),
             ],

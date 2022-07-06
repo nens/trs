@@ -49,6 +49,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         to=settings.AUTH_USER_MODEL,
                         null=True,
+                        on_delete=models.CASCADE,
                     ),
                 ),
             ],
@@ -95,6 +96,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         to=settings.AUTH_USER_MODEL,
                         null=True,
+                        on_delete=models.CASCADE,
                     ),
                 ),
             ],
@@ -204,6 +206,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         to=settings.AUTH_USER_MODEL,
                         null=True,
+                        on_delete=models.CASCADE,
                     ),
                 ),
             ],
@@ -274,6 +277,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         to=settings.AUTH_USER_MODEL,
                         null=True,
+                        on_delete=models.CASCADE,
                     ),
                 ),
             ],
@@ -347,6 +351,7 @@ class Migration(migrations.Migration):
                         to="trs.Group",
                         null=True,
                         related_name="persons",
+                        on_delete=models.CASCADE,
                     ),
                 ),
                 (
@@ -358,6 +363,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         to=settings.AUTH_USER_MODEL,
                         null=True,
+                        on_delete=models.CASCADE,
                     ),
                 ),
             ],
@@ -432,6 +438,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         to=settings.AUTH_USER_MODEL,
                         null=True,
+                        on_delete=models.CASCADE,
                     ),
                 ),
                 (
@@ -443,6 +450,7 @@ class Migration(migrations.Migration):
                         to="trs.Person",
                         null=True,
                         related_name="person_changes",
+                        on_delete=models.CASCADE,
                     ),
                 ),
             ],
@@ -744,6 +752,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         to=settings.AUTH_USER_MODEL,
                         null=True,
+                        on_delete=models.CASCADE,
                     ),
                 ),
                 (
@@ -754,6 +763,7 @@ class Migration(migrations.Migration):
                         to="trs.Project",
                         null=True,
                         related_name="work_assignments",
+                        on_delete=models.CASCADE,
                     ),
                 ),
                 (
@@ -764,6 +774,7 @@ class Migration(migrations.Migration):
                         to="trs.Person",
                         null=True,
                         related_name="work_assignments",
+                        on_delete=models.CASCADE,
                     ),
                 ),
             ],
@@ -816,6 +827,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 to="trs.YearWeek",
                 null=True,
+                on_delete=models.CASCADE,
             ),
         ),
         migrations.AddField(
@@ -828,6 +840,7 @@ class Migration(migrations.Migration):
                 related_name="ending_projects",
                 null=True,
                 verbose_name="laatste week",
+                on_delete=models.CASCADE,
             ),
         ),
         migrations.AddField(
@@ -839,6 +852,7 @@ class Migration(migrations.Migration):
                 to="trs.Group",
                 null=True,
                 related_name="projects",
+                on_delete=models.CASCADE,
             ),
         ),
         migrations.AddField(
@@ -850,6 +864,7 @@ class Migration(migrations.Migration):
                 to="trs.Person",
                 null=True,
                 related_name="projects_i_lead",
+                on_delete=models.CASCADE,
             ),
         ),
         migrations.AddField(
@@ -861,6 +876,7 @@ class Migration(migrations.Migration):
                 to="trs.Person",
                 null=True,
                 related_name="projects_i_manage",
+                on_delete=models.CASCADE,
             ),
         ),
         migrations.AddField(
@@ -873,6 +889,7 @@ class Migration(migrations.Migration):
                 related_name="starting_projects",
                 null=True,
                 verbose_name="startweek",
+                on_delete=models.CASCADE,
             ),
         ),
         migrations.AddField(
@@ -884,6 +901,7 @@ class Migration(migrations.Migration):
                 to="trs.WbsoProject",
                 null=True,
                 related_name="projects",
+                on_delete=models.CASCADE,
             ),
         ),
         migrations.AddField(
@@ -895,27 +913,37 @@ class Migration(migrations.Migration):
                 blank=True,
                 to="trs.YearWeek",
                 null=True,
+                on_delete=models.CASCADE,
             ),
         ),
         migrations.AddField(
             model_name="payable",
             name="project",
             field=models.ForeignKey(
-                verbose_name="project", to="trs.Project", related_name="payables"
+                verbose_name="project",
+                to="trs.Project",
+                related_name="payables",
+                on_delete=models.CASCADE,
             ),
         ),
         migrations.AddField(
             model_name="invoice",
             name="project",
             field=models.ForeignKey(
-                verbose_name="project", to="trs.Project", related_name="invoices"
+                verbose_name="project",
+                to="trs.Project",
+                related_name="invoices",
+                on_delete=models.CASCADE,
             ),
         ),
         migrations.AddField(
             model_name="budgetitem",
             name="project",
             field=models.ForeignKey(
-                verbose_name="project", to="trs.Project", related_name="budget_items"
+                verbose_name="project",
+                to="trs.Project",
+                related_name="budget_items",
+                on_delete=models.CASCADE,
             ),
         ),
         migrations.AddField(
@@ -928,6 +956,7 @@ class Migration(migrations.Migration):
                 to="trs.Project",
                 null=True,
                 related_name="budget_transfers",
+                on_delete=models.CASCADE,
             ),
         ),
         migrations.AddField(
@@ -939,6 +968,7 @@ class Migration(migrations.Migration):
                 to="trs.Person",
                 null=True,
                 related_name="bookings",
+                on_delete=models.CASCADE,
             ),
         ),
         migrations.AddField(
@@ -950,6 +980,7 @@ class Migration(migrations.Migration):
                 to="trs.Project",
                 null=True,
                 related_name="bookings",
+                on_delete=models.CASCADE,
             ),
         ),
         migrations.AddField(
@@ -961,6 +992,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 to="trs.YearWeek",
                 null=True,
+                on_delete=models.CASCADE,
             ),
         ),
     ]

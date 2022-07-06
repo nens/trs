@@ -145,7 +145,12 @@ class Person(models.Model):
     # Description on persons is useful for noting that someone doesn't work
     # for us anymore, for instance. And other corner cases.
     group = models.ForeignKey(
-        Group, blank=True, null=True, verbose_name="groep", related_name="persons"
+        Group,
+        blank=True,
+        null=True,
+        verbose_name="groep",
+        related_name="persons",
+        on_delete=models.CASCADE,
     )
     is_office_management = models.BooleanField(
         verbose_name="office management",
@@ -455,6 +460,7 @@ class Project(models.Model):
         default=this_year_week_pk,
         related_name="starting_projects",
         verbose_name="startweek",
+        on_delete=models.CASCADE,
     )
     end = models.ForeignKey(
         "YearWeek",
@@ -463,6 +469,7 @@ class Project(models.Model):
         default=this_year_week_pk,
         related_name="ending_projects",
         verbose_name="laatste week",
+        on_delete=models.CASCADE,
     )
     project_leader = models.ForeignKey(
         Person,
@@ -470,6 +477,7 @@ class Project(models.Model):
         null=True,
         verbose_name="projectleider",
         related_name="projects_i_lead",
+        on_delete=models.CASCADE,
     )
     project_manager = models.ForeignKey(
         Person,
@@ -477,9 +485,15 @@ class Project(models.Model):
         null=True,
         verbose_name="projectmanager",
         related_name="projects_i_manage",
+        on_delete=models.CASCADE,
     )
     group = models.ForeignKey(
-        Group, blank=True, null=True, verbose_name="groep", related_name="projects"
+        Group,
+        blank=True,
+        null=True,
+        verbose_name="groep",
+        related_name="projects",
+        on_delete=models.CASCADE,
     )
     wbso_project = models.ForeignKey(
         "WbsoProject",
@@ -487,6 +501,7 @@ class Project(models.Model):
         null=True,
         related_name="projects",
         verbose_name="WBSO project",
+        on_delete=models.CASCADE,
     )
     wbso_percentage = models.IntegerField(
         blank=True,
@@ -823,7 +838,11 @@ class WbsoProject(models.Model):
 class FinancialBase(models.Model):
     added = models.DateTimeField(auto_now_add=True, verbose_name="toegevoegd op")
     added_by = models.ForeignKey(
-        User, blank=True, null=True, verbose_name="toegevoegd door"
+        User,
+        blank=True,
+        null=True,
+        verbose_name="toegevoegd door",
+        on_delete=models.CASCADE,
     )
     # ^^^ The two above are copied from EventBase.
 
@@ -846,7 +865,10 @@ class FinancialBase(models.Model):
 
 class Invoice(FinancialBase):
     project = models.ForeignKey(
-        Project, related_name="invoices", verbose_name="project"
+        Project,
+        related_name="invoices",
+        verbose_name="project",
+        on_delete=models.CASCADE,
     )
     date = models.DateField(
         verbose_name="factuurdatum", help_text="Formaat: 25-12-1972, dd-mm-jjjj"
@@ -891,7 +913,10 @@ class Invoice(FinancialBase):
 
 class Payable(FinancialBase):
     project = models.ForeignKey(
-        Project, related_name="payables", verbose_name="project"
+        Project,
+        related_name="payables",
+        verbose_name="project",
+        on_delete=models.CASCADE,
     )
     date = models.DateField(
         verbose_name="factuurdatum", help_text="Formaat: 25-12-1972, dd-mm-jjjj"
@@ -940,7 +965,10 @@ class Payable(FinancialBase):
 
 class BudgetItem(FinancialBase):
     project = models.ForeignKey(
-        Project, related_name="budget_items", verbose_name="project"
+        Project,
+        related_name="budget_items",
+        verbose_name="project",
+        on_delete=models.CASCADE,
     )
     description = models.CharField(
         verbose_name="omschrijving", blank=True, max_length=255
@@ -962,6 +990,7 @@ class BudgetItem(FinancialBase):
         related_name="budget_transfers",
         verbose_name="overboeken naar ander project",
         help_text="optioneel: project waarnaar het bedrag wordt overgemaakt",
+        on_delete=models.CASCADE,
     )
 
     class Meta:
@@ -993,7 +1022,10 @@ class BudgetItem(FinancialBase):
 
 class ThirdPartyEstimate(FinancialBase):
     project = models.ForeignKey(
-        Project, related_name="third_party_estimates", verbose_name="project"
+        Project,
+        related_name="third_party_estimates",
+        verbose_name="project",
+        on_delete=models.CASCADE,
     )
     description = models.CharField(
         verbose_name="omschrijving", blank=True, max_length=255
@@ -1057,7 +1089,11 @@ class YearWeek(models.Model):
 class EventBase(models.Model):
     added = models.DateTimeField(auto_now_add=True, verbose_name="toegevoegd op")
     added_by = models.ForeignKey(
-        User, blank=True, null=True, verbose_name="toegevoegd door"
+        User,
+        blank=True,
+        null=True,
+        verbose_name="toegevoegd door",
+        on_delete=models.CASCADE,
     )
     year_week = models.ForeignKey(
         YearWeek,
@@ -1065,6 +1101,7 @@ class EventBase(models.Model):
         null=True,
         verbose_name="jaar en week",
         help_text="Ingangsdatum van de wijziging (of datum van de boeking)",
+        on_delete=models.CASCADE,
     )
 
     class Meta:
@@ -1119,6 +1156,7 @@ class PersonChange(EventBase):
         verbose_name="persoon",
         help_text="persoon waar de verandering voor is",
         related_name="person_changes",
+        on_delete=models.CASCADE,
     )
 
     def save(self, *args, **kwargs):
@@ -1149,6 +1187,7 @@ class Booking(EventBase):
         null=True,
         verbose_name="geboekt door",
         related_name="bookings",
+        on_delete=models.CASCADE,
     )
     booked_on = models.ForeignKey(
         Project,
@@ -1156,6 +1195,7 @@ class Booking(EventBase):
         null=True,
         verbose_name="geboekt op",
         related_name="bookings",
+        on_delete=models.CASCADE,
     )
 
     class Meta:
@@ -1190,6 +1230,7 @@ class WorkAssignment(EventBase):
         null=True,
         verbose_name="toegekend voor",
         related_name="work_assignments",
+        on_delete=models.CASCADE,
     )
     assigned_to = models.ForeignKey(
         Person,
@@ -1197,6 +1238,7 @@ class WorkAssignment(EventBase):
         null=True,
         verbose_name="toegekend aan",
         related_name="work_assignments",
+        on_delete=models.CASCADE,
     )
 
     class Meta:
