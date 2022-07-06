@@ -202,5 +202,5 @@ urlpatterns = [
     ),
     url(r"^locallogin/$", views.LoginView.as_view(), name="trs.login"),
     url(r"^logout/$", views.logout_view, name="trs.logout"),
-    url(r"^admin/", include(admin.site.urls)),
+    url(r"^admin/", admin.site.urls),
 ]
