@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     # Default stuff below.
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

@@ -5,6 +5,7 @@
 #    pip-compile --output-file=requirements/requirements.txt requirements/requirements.in
 #
 --index-url https://packages.lizard.net
+--find-links https://packages.lizard.net/
 
 -e file:.#trs
     # via -r requirements/requirements.in
@@ -43,7 +44,7 @@ django-extensions==2.2.9
     #   -r requirements/requirements.in
     #   lizard-auth-client
     #   trs
-django-tls==0.0.2
+django-tls_rvanlaar==0.0.3
     # via trs
 factory-boy==3.2.1
     # via trs
@@ -112,8 +113,6 @@ python3-memcached==1.51
     # via trs
 pytz==2022.1
     # via django
-raven==6.10.0
-    # via trs
 requests==2.27.1
     # via
     #   lizard-auth-client
@@ -140,7 +139,7 @@ urllib3==1.26.9
     # via requests
 werkzeug==2.0.3
     # via
-    #   django-tls
+    #   django-tls-rvanlaar
     #   trs
 zipp==3.6.0
     # via importlib-metadata

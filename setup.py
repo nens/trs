@@ -14,7 +14,7 @@ install_requires = (
         "Werkzeug",
         "beautifulsoup4",
         "django-extensions",
-        "django-tls",
+        "django-tls_rvanlaar == 0.0.3",
         "gunicorn",
         "lizard-auth-client >= 2.13",
         "python3-memcached",

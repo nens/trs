@@ -2,6 +2,7 @@
 # docker-compose run --rm web make install
 
 --index-url https://packages.lizard.net
+--find-links https://packages.lizard.net/
 
 # Develop ourselves:
 -e file:.#trs[test]
