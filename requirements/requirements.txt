@@ -22,7 +22,7 @@ coverage[toml]==6.2
     #   trs
 dataclasses==0.8
     # via black
-django==1.9.13
+django==1.10.8
     # via
     #   -r requirements/requirements.in
     #   lizard-auth-client
