@@ -25,12 +25,20 @@ Add ``trs/local_testsettings.py`` with the SSO settings for localhost.
 Symlink the development compose file and build it::
 
   $ ln -s docker-compose.development.yml docker-compose.override.yml
-  $ docker-compose build
+  $ docker compose build
 
 You can run it with one of the following::
 
-  $ docker-compose up
-  $ docker-compose run web bin/python manage.py runserver 0.0.0.0:5000
+  $ docker compose up
+  $ docker compose run --rm web bin/python manage.py runserver 0.0.0.0:5000
+
+Run the tests::
+
+  $ docker compose run --rm web make test
+
+And sometimes::
+
+  $ docker compose run --rm web make beautiful
 
 
 Server installation
