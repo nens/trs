@@ -7,7 +7,7 @@
 -e file:.#trs[test]
 
 # Specific pins
-Django == 1.10.*
+Django == 1.11.*
 
 # Development tools
 isort
