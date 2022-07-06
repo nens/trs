@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.validators import MaxValueValidator
 from django.core.validators import MinValueValidator
 from django.db import models

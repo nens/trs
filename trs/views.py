@@ -212,7 +212,7 @@ class BaseMixin(object):
 
     @cached_property
     def active_person(self):
-        if self.request.user.is_anonymous():
+        if self.request.user.is_anonymous:
             logger.debug("Anonymous user")
             return
         persons = Person.objects.filter(user=self.request.user)
