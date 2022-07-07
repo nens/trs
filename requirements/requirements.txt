@@ -29,7 +29,7 @@ dataclasses==0.8
     # via
     #   black
     #   werkzeug
-django==2.0.13
+django==2.1.15
     # via
     #   -r requirements/requirements.in
     #   django-appconf
