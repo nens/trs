@@ -18,6 +18,7 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ]
         },
     },
@@ -61,7 +62,7 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     os.path.join(BUILDOUT_DIR, "bower_components"),
 ]
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.CachedStaticFilesStorage"
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 
 CACHES = {
     "default": {
