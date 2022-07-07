@@ -29,7 +29,7 @@ dataclasses==0.8
     # via
     #   black
     #   werkzeug
-django==1.11.29
+django==2.0.13
     # via
     #   -r requirements/requirements.in
     #   django-appconf
@@ -68,10 +68,8 @@ isort==5.10.1
     # via -r requirements/requirements.in
 itsdangerous==2.0.1
     # via lizard-auth-client
-lizard-auth-client==2.19
-    # via
-    #   -r requirements/requirements.in
-    #   trs
+lizard-auth-client==3.0.5
+    # via trs
 mccabe==0.6.1
     # via flake8
 mock==4.0.3
