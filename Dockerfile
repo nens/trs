@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM ubuntu:focal
 
 # system dependencies
 RUN apt-get update && apt-get install -y \
