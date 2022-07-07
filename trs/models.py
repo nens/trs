@@ -1,11 +1,11 @@
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.urls import reverse
 from django.core.validators import MaxValueValidator
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.template.defaultfilters import date as datelocalizer
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 from tls import request as tls_request
 
