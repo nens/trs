@@ -30,7 +30,7 @@ Symlink the development compose file and build it::
 You can run it with one of the following::
 
   $ docker compose up
-  $ docker compose run --rm web bin/python manage.py runserver 0.0.0.0:5000
+  $ docker compose run --rm --service-ports web bin/python manage.py runserver 0.0.0.0:5000
 
 Run the tests::
 
