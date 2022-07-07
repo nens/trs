@@ -7,7 +7,7 @@ Changelog of TRS
 
 - Moved from buildout to pip-tools.
 
-- Ubuntu 16.04 to 18.04.
+- Ubuntu 16.04 to 18.04. And to 20.04
 
 - Switched server setup to docker-compose.
 
