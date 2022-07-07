@@ -2785,7 +2785,7 @@ class ChangesOverview(BaseView):
     @cached_property
     def num_weeks(self):
         """Return number of weeks to use for the summaries."""
-        return self.filters["num_weeks"]
+        return int(self.filters["num_weeks"])
 
     @cached_property
     def relevant_year_weeks(self):
