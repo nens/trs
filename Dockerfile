@@ -1,10 +1,14 @@
 FROM ubuntu:focal
 
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
 # system dependencies
 RUN apt-get update && apt-get install -y \
     wget \
-    build-essential \
     git \
+    build-essential \
     libevent-dev \
     npm \
     python3-dev \
@@ -14,9 +18,6 @@ RUN apt-get update && apt-get install -y \
     gettext \
     memcached \
 && apt-get clean -y && rm -rf /var/lib/apt/lists/*
-
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
 
 WORKDIR /code
 COPY . .
