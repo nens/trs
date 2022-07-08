@@ -27,7 +27,7 @@ coverage[toml]==6.4.1
     # via
     #   pytest-cov
     #   trs
-django==3.1.14
+django==3.2.14
     # via
     #   -r requirements/requirements.in
     #   django-appconf
@@ -93,7 +93,7 @@ pytest==7.1.2
     #   trs
 pytest-cov==3.0.0
     # via trs
-pytest-django==3.10.0
+pytest-django==4.5.2
     # via trs
 python-dateutil==2.8.2
     # via faker

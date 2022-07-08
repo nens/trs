@@ -10,7 +10,7 @@ long_description = "\n\n".join(
 
 install_requires = (
     [
-        "Django >= 3.0",
+        "Django >= 3.2",
         "Werkzeug",
         "beautifulsoup4",
         "django-extensions > 3.0.0",
@@ -29,7 +29,7 @@ tests_require = [
     "mock",
     "pytest",
     "pytest-cov",
-    "pytest-django < 4",  # Remove restriction when django is new enough.
+    "pytest-django",
 ]
 
 setup(
