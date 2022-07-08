@@ -10,7 +10,6 @@
 # Specific pins
 Django == 2.2.*
 django-extensions >= 3.0.0
-pyjwt < 2  # 2.0 drops 3.5 support
 
 # Development tools
 isort
