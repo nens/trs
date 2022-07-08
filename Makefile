@@ -1,5 +1,5 @@
-# Note: makefile updates first need a 'make install' before the makefile gets
-# updated in the docker image...
+# Note: makefile updates first need a 'docker compose build' before the
+# makefile gets updated in the docker image...
 
 SHELL=/bin/bash -o pipefail
 
