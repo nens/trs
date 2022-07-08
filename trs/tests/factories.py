@@ -5,6 +5,20 @@ import datetime
 import factory
 
 
+class YearWeekFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.YearWeek
+
+    year = 2013
+    # Start in week 2, which starts 7 jan 2013.
+    week = factory.Sequence(lambda n: n + 1)
+    first_day = factory.Sequence(
+        lambda n: (
+            datetime.date(year=2013, month=1, day=7) + datetime.timedelta(days=7) * n
+        )
+    )
+
+
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
@@ -31,6 +45,8 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     principal = ""
     project_leader = None
     project_manager = None
+    start = factory.SubFactory(YearWeekFactory)
+    end = factory.SubFactory(YearWeekFactory)
 
 
 class GroupFactory(factory.django.DjangoModelFactory):
@@ -40,20 +56,6 @@ class GroupFactory(factory.django.DjangoModelFactory):
     name = "My group"
 
 
-class YearWeekFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.YearWeek
-
-    year = 2013
-    # Start in week 2, which starts 7 jan 2013.
-    week = factory.Sequence(lambda n: n + 1)
-    first_day = factory.Sequence(
-        lambda n: (
-            datetime.date(year=2013, month=1, day=7) + datetime.timedelta(days=7) * n
-        )
-    )
-
-
 class PersonChangeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PersonChange
@@ -61,7 +63,7 @@ class PersonChangeFactory(factory.django.DjangoModelFactory):
     person = factory.SubFactory(PersonFactory)
     hours_per_week = 0
     target = 0
-    year_week = None
+    year_week = factory.SubFactory(YearWeekFactory)
 
 
 class BookingFactory(factory.django.DjangoModelFactory):
@@ -71,7 +73,7 @@ class BookingFactory(factory.django.DjangoModelFactory):
     booked_by = factory.SubFactory(PersonFactory)
     booked_on = factory.SubFactory(ProjectFactory)
     hours = 2
-    year_week = None
+    year_week = factory.SubFactory(YearWeekFactory)
 
 
 class WorkAssignmentFactory(factory.django.DjangoModelFactory):
@@ -82,7 +84,7 @@ class WorkAssignmentFactory(factory.django.DjangoModelFactory):
     hourly_tariff = 0
     assigned_to = factory.SubFactory(PersonFactory)
     assigned_on = factory.SubFactory(ProjectFactory)
-    year_week = None
+    year_week = factory.SubFactory(YearWeekFactory)
 
 
 class BudgetItemFactory(factory.django.DjangoModelFactory):
