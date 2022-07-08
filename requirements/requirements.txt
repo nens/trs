@@ -84,6 +84,8 @@ pyflakes==2.4.0
     # via flake8
 pyjwt==2.4.0
     # via lizard-auth-client
+pymemcache==3.5.2
+    # via trs
 pyparsing==3.0.9
     # via packaging
 pytest==7.1.2
@@ -97,8 +99,6 @@ pytest-django==4.5.2
     # via trs
 python-dateutil==2.8.2
     # via faker
-python3-memcached==1.51
-    # via trs
 pytz==2022.1
     # via django
 requests==2.28.1
@@ -106,7 +106,9 @@ requests==2.28.1
     #   lizard-auth-client
     #   trs
 six==1.16.0
-    # via python-dateutil
+    # via
+    #   pymemcache
+    #   python-dateutil
 soupsieve==2.3.2.post1
     # via beautifulsoup4
 sqlparse==0.4.2

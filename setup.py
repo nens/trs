@@ -17,7 +17,7 @@ install_requires = (
         "django-tls_rvanlaar == 0.0.3",
         "gunicorn",
         "lizard-auth-client >= 3.0",
-        "python3-memcached",
+        "pymemcache",
         "requests",
         "setuptools",
     ],

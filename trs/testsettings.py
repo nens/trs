@@ -67,7 +67,7 @@ STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesSto
 
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
+        "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
         "LOCATION": "memcache:11211",
         "TIMEOUT": 60 * 60 * 24 * 29,
         # ^^^ 29 days, memcached has a practical limit at 30 days
