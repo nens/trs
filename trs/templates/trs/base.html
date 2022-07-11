@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% load staticfiles %}
+{% load static %}
 {% load trs_formatting %}
 <html>
   <head>
@@ -37,7 +37,7 @@
           <!-- Start of collapsible part -->
           <div class="collapse navbar-collapse navbar-ex1-collapse">
             <ul class="nav navbar-nav">
-              <li {% if view.selected_tab = 'booking' %}class="active"{% endif %}>
+              <li {% if view.selected_tab == 'booking' %}class="active"{% endif %}>
                 <a href="{% url 'trs.booking' %}">
                   Boeken
                   {% if view.active_person.to_book.friendly %}
@@ -48,13 +48,13 @@
                   {% endif %}
                 </a>
               </li>
-              <li {% if view.selected_tab = 'projects' %}class="active"{% endif %}>
+              <li {% if view.selected_tab == 'projects' %}class="active"{% endif %}>
                 <a href="{% url 'trs.projects' %}">Projecten</a>
               </li>
-              <li {% if view.selected_tab = 'persons' %}class="active"{% endif %}>
+              <li {% if view.selected_tab == 'persons' %}class="active"{% endif %}>
                 <a href="{% url 'trs.persons' %}">Medewerkers</a>
               </li>
-              <li {% if view.selected_tab = 'overviews' %}class="active"{% endif %}>
+              <li {% if view.selected_tab == 'overviews' %}class="active"{% endif %}>
                 <a href="{% url 'trs.overviews' %}">Overzichten</a>
               </li>
             </ul>

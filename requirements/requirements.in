@@ -2,12 +2,13 @@
 # docker-compose run --rm web make install
 
 --index-url https://packages.lizard.net
+--find-links https://packages.lizard.net/
 
 # Develop ourselves:
 -e file:.#trs[test]
 
 # Specific pins
-Django == 1.8.14
+Django == 3.2.*
 
 # Development tools
 isort

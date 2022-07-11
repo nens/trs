@@ -1,5 +1,5 @@
 {% extends "trs/base.html" %}
-{% load staticfiles %}
+{% load static %}
 {% load trs_formatting %}
 
 {% block main-column %}
@@ -104,7 +104,7 @@
           <th></th>
           {% for total in view.totals %}
             <th class="text-right"
-                {% if forloop.counter = 3 %}id="hour-total"{% endif %}
+                {% if forloop.counter == 3 %}id="hour-total"{% endif %}
                 >{{ total|hours }}</th>
           {% endfor %}
         </tr>

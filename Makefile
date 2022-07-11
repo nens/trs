@@ -1,5 +1,5 @@
-# Note: makefile updates first need a 'make install' before the makefile gets
-# updated in the docker image...
+# Note: makefile updates first need a 'docker compose build' before the
+# makefile gets updated in the docker image...
 
 SHELL=/bin/bash -o pipefail
 
@@ -9,6 +9,7 @@ message:
 	@echo "make clean: remove .venv and staticfiles"
 	@echo "make test: run the tests"
 	@echo "make beautiful: flake8, black, isort"
+	@echo "make upgrade: call pip-compile with --upgrade"
 
 
 install: bin/pip-compile bin/.installed directories staticfiles/.installed
@@ -30,6 +31,12 @@ bin/pip-compile: bin/activate
 
 requirements/requirements.txt: requirements/requirements.in setup.py
 	bin/pip-compile --output-file=requirements/requirements.txt requirements/requirements.in
+
+
+upgrade:
+	bin/pip-compile --upgrade \
+	    --output-file=requirements/requirements.txt requirements/requirements.in
+	@echo "Don't forget to run 'make install' now"
 
 
 bin/.installed: requirements/requirements.txt

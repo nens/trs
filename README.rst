@@ -30,7 +30,7 @@ Symlink the development compose file and build it::
 You can run it with one of the following::
 
   $ docker compose up
-  $ docker compose run --rm web bin/python manage.py runserver 0.0.0.0:5000
+  $ docker compose run --rm --service-ports web bin/python manage.py runserver 0.0.0.0:5000
 
 Run the tests::
 
@@ -39,6 +39,21 @@ Run the tests::
 And sometimes::
 
   $ docker compose run --rm web make beautiful
+
+For upgrading versions: ``requirements/requirements.in`` (and ``.txt``) are in
+a mounted subfolder, so running "make install" inside the docker will update
+.txt if you change the .in. But changes to the makefile or the setup.py are
+only copied when you re-build the docker.... So what I did during the upgrades
+of the django versions was to change the version in ``requirements.in``, run
+``make install`` and then rebuild the docker::
+
+  $ docker compose run --rm web make install
+  $ docker compose build
+
+And sometimes, to upgrade all versions to the latest ones::
+
+  $ docker compose run --rm web make upgrade
+  $ docker compose run --rm web make install
 
 
 Server installation

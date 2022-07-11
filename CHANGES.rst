@@ -5,9 +5,13 @@ Changelog of TRS
 2.0 (unreleased)
 ----------------
 
-- Moved from buildout to pip-tools.
+- Upgraded django from 1.8 to 1.11. And to 2.2. And to 3.2.
 
-- Ubuntu 16.04 to 18.04.
+- Upgraded ubuntu from 16.04 to 18.04. And to 20.04. And to 22.04
+
+- Upgraded python in lockstep with ubuntu, so we went from 3.5 to 3.10.
+
+- Moved from buildout to pip-tools.
 
 - Switched server setup to docker-compose.
 

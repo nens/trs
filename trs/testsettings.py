@@ -18,6 +18,8 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.request",
             ]
         },
     },
@@ -33,7 +35,6 @@ DATABASES = {
 INSTALLED_APPS = [
     "trs",
     "lizard_auth_client",
-    "raven.contrib.django.raven_compat",
     "gunicorn",
     "django.contrib.staticfiles",
     "django_extensions",
@@ -45,11 +46,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     # Default stuff below.
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -63,15 +63,14 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     os.path.join(BUILDOUT_DIR, "bower_components"),
 ]
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.CachedStaticFilesStorage"
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
+        "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
         "LOCATION": "memcache:11211",
         "TIMEOUT": 60 * 60 * 24 * 29,
         # ^^^ 29 days, memcached has a practical limit at 30 days
-        "OPTIONS": {"MAX_ENTRIES": 500000},
         "KEY_PREFIX": "trs",
     }
 }
@@ -84,7 +83,7 @@ LOGGING = {
         "simple": {"format": "%(levelname)s %(message)s"},
     },
     "handlers": {
-        "null": {"level": "DEBUG", "class": "django.utils.log.NullHandler"},
+        "null": {"level": "DEBUG", "class": "logging.NullHandler"},
         "console": {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
@@ -103,14 +102,14 @@ LOGGING = {
         #     "formatter": "verbose",
         #     "filename": os.path.join(BUILDOUT_DIR, "var", "log", "sql.log"),
         # },
-        "sentry": {
-            "level": "WARN",
-            "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
-        },
+        # "sentry": {
+        #     "level": "WARN",
+        #     "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
+        # },
     },
     "loggers": {
         "": {
-            "handlers": ["console", "logfile", "sentry"],
+            "handlers": ["console", "logfile"],  # TODO: add sentry
             "propagate": True,
             "level": "DEBUG",
         },
@@ -126,7 +125,7 @@ LOGGING = {
             "level": "INFO",  # Suppress the huge output in tests
         },
         "django.request": {
-            "handlers": ["console", "logfile", "sentry"],
+            "handlers": ["console", "logfile"],  # TODO: add sentry
             "propagate": False,
             "level": "ERROR",  # WARN also shows 404 errors
         },

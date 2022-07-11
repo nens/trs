@@ -10,15 +10,14 @@ long_description = "\n\n".join(
 
 install_requires = (
     [
-        "Django >= 1.8",
+        "Django >= 3.2",
         "Werkzeug",
         "beautifulsoup4",
-        "django-extensions",
-        "django-tls",
+        "django-extensions > 3.0.0",
+        "django-tls_rvanlaar == 0.0.3",
         "gunicorn",
-        "lizard-auth-client >= 2.6",
-        "python3-memcached",
-        "raven",
+        "lizard-auth-client >= 3.0",
+        "pymemcache",
         "requests",
         "setuptools",
     ],
@@ -30,7 +29,7 @@ tests_require = [
     "mock",
     "pytest",
     "pytest-cov",
-    "pytest-django < 4",  # Remove restriction when django is new enough.
+    "pytest-django",
 ]
 
 setup(
