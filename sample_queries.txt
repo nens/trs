@@ -37,7 +37,7 @@ Projects for a certain group, added after a certain date:
 
 
 -----------------------------
-Voor presentatie over django queries. Eerst 'sqllog' in `testsettings.py` aanzetten.
+Voor presentatie over django queries. Eerst 'sqllog' in `settings.py` aanzetten.
 
 
 >>> from trs.models import Person, Project, Booking
