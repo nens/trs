@@ -16,7 +16,7 @@ install: bin/pip-compile bin/.installed directories staticfiles/.installed
 
 
 clean:
-	rm -rf .venv var/static bin/ lib/ share/ pyvenv.cfg bower_components/ node_modules/
+	rm -rf .venv staticfiles/ bin/ lib/ share/ pyvenv.cfg bower_components/ node_modules/
 
 
 # A virtualenv creates bin/activate
