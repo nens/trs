@@ -1,14 +1,20 @@
 from django.contrib.messages import constants as messages
 
+import environ
 import os
 
+
+env = environ.Env()
 
 SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
 BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, ".."))
 
 ROOT_URLCONF = "trs.urls"
-SECRET_KEY = "sleutel van het secreet"
-DEBUG = True
+
+DEBUG = env.bool("DEBUG", default=True)
+SECRET_KEY = env("SECRET_KEY", default="sleutel van het secreet")
+
+
 ALLOWED_HOSTS = ["trs.lizard.net", "localhost", "trs.nelen-schuurmans.nl"]
 
 TEMPLATES = [
@@ -162,7 +168,9 @@ AUTHENTICATION_BACKENDS = [
     "lizard_auth_client.backends.SSOBackend",
 ]
 
+
 try:
     from .local_testsettings import *  # noqa
+    # Necessary for the local SSO stuff... Can be removed later.
 except ImportError:
     pass

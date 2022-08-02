@@ -12,7 +12,7 @@ from django.core.wsgi import get_wsgi_application
 import os
 
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "trs.testsettings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "trs.settings")
 
 
 application = get_wsgi_application()

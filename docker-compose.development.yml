@@ -11,7 +11,5 @@ services:
     # TODO: db, index
     # Use the development settings.
     environment:
-      - DJANGO_SETTINGS_MODULE=trs.testsettings
-      - ENABLE_SENTRY=0
       # The next is only for during upgrades.
       - PYTHONWARNINGS=always

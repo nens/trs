@@ -13,6 +13,7 @@ install_requires = (
         "Django >= 3.2",
         "Werkzeug",
         "beautifulsoup4",
+        "django-environ",
         "django-extensions > 3.0.0",
         "django-tls_rvanlaar == 0.0.3",
         "gunicorn",
