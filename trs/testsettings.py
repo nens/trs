@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "trs",
     "lizard_auth_client",
     "gunicorn",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django_extensions",
     "django.contrib.humanize",
@@ -47,6 +48,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # Whitenoise should be first.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     # Default stuff below.
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -63,7 +66,7 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     os.path.join(BUILDOUT_DIR, "bower_components"),
 ]
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 CACHES = {
     "default": {

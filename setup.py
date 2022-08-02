@@ -20,6 +20,7 @@ install_requires = (
         "pymemcache",
         "requests",
         "setuptools",
+        "whitenoise",
     ],
 )
 
