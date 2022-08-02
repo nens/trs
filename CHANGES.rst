@@ -17,7 +17,8 @@ Changelog of TRS
 
 - Staticfiles are stored inside the docker image.
 
-- Removed django-haystack (=the old full-text search method).
+- Removed django-haystack (=the old full-text search method, it was only used
+  once per month or so).
 
 - Using pytest instead of django-nose.
 
