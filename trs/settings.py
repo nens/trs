@@ -12,7 +12,7 @@ import os
 env = environ.Env()
 
 SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
-BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, ".."))
+BASE_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, ".."))
 
 ROOT_URLCONF = "trs.urls"
 
@@ -40,7 +40,7 @@ TEMPLATES = [
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BUILDOUT_DIR, "var/db/trs.db"),
+        "NAME": os.path.join(BASE_DIR, "var/db/trs.db"),
     }
 }
 INSTALLED_APPS = [
@@ -72,10 +72,10 @@ MIDDLEWARE = [
     "tls.TLSRequestMiddleware",
 ]
 
-STATIC_ROOT = os.path.join(BUILDOUT_DIR, "staticfiles")  # Note: not var/static/!
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # Note: not var/static/!
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
-    os.path.join(BUILDOUT_DIR, "bower_components"),
+    os.path.join(BASE_DIR, "bower_components"),
 ]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
@@ -107,14 +107,14 @@ LOGGING = {
             "level": "INFO",
             "class": "logging.FileHandler",
             "formatter": "verbose",
-            "filename": os.path.join(BUILDOUT_DIR, "var", "log", "django.log"),
+            "filename": os.path.join(BASE_DIR, "var", "log", "django.log"),
         },
         # sqllogfile is only used for demo purposes for showing off django's ORM.
         # "sqllogfile": {
         #     "level": "DEBUG",
         #     "class": "logging.FileHandler",
         #     "formatter": "verbose",
-        #     "filename": os.path.join(BUILDOUT_DIR, "var", "log", "sql.log"),
+        #     "filename": os.path.join(BASE_DIR, "var", "log", "sql.log"),
         # },
         # "sentry": {
         #     "level": "WARN",
