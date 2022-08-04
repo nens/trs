@@ -59,9 +59,8 @@ And sometimes, to upgrade all versions to the latest ones::
 Server installation
 -------------------
 
-See the ``src/trs-site/README.rst`` (from the protected github trs-site repo).
-
-The site doesn't run with docker-compose there, yet, though.
+For a production installation, see the private
+https://github.com/nens/trs-site repo.
 
 
 Weeks
