@@ -81,7 +81,7 @@ Upgrade notes
 
 Als ik van buildout naar pip overga mis ik o.a. de volgende zaken:
 
-- mr.developer checkout van trs-site
+- DONE mr.developer checkout van trs-site
 
 - DONE mkdir van var/static, db, log, cache, media
 
@@ -99,7 +99,7 @@ Als ik van buildout naar pip overga mis ik o.a. de volgende zaken:
 
 En in productie:
 
-- cronjob ``bin/python manage.py fill_cache``, elke 5 minuten
+- DONE cronjob ``bin/python manage.py fill_cache``, elke 5 minuten
 
 memcache met z'n 64MB: zat. Beetje lopen testen en er lijkt 10% gebruikt te
 worden :-)
