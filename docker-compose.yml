@@ -20,3 +20,6 @@ services:
       # Can be set in .env, we'll pass them on.
       - SECRET_KEY
       - DEBUG
+      - SSO_KEY
+      - SSO_SECRET
+      # TODO: sentry/raven

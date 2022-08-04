@@ -1,7 +1,5 @@
 # Note: there are no separate development settings! DEBUG is handled through
-# enviroment variables. Likewise the secret key. There's an "import
-# localtestsettings" at the end, but that's for the sso settings as long as
-# that's needed.
+# enviroment variables. Likewise the secret key.
 
 from django.contrib.messages import constants as messages
 
@@ -165,17 +163,12 @@ INTERNAL_IPS = ["localhost", "127.0.0.1"]
 # SSO
 SSO_ENABLED = True
 SSO_USE_V2_LOGIN = True
-SSO_KEY = "trs_random_generated_key_to_identify_the_client"
-SSO_SECRET = "trs_random_generated_secret_key_to_sign_exchanged_messages"
+SSO_KEY = env("SSO_KEY", default="trs_random_generated_key_to_identify_the_client")
+SSO_SECRET = env(
+    "SSO_SECRET", default="trs_random_generated_secret_key_to_sign_exchanged_messages"
+)
 SSO_SERVER_API_START_URL = "https://sso.lizard.net/api2/"
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "lizard_auth_client.backends.SSOBackend",
 ]
-
-
-try:
-    from .local_testsettings import *  # noqa
-    # Necessary for the local SSO stuff... Can be removed later.
-except ImportError:
-    pass
