@@ -1,3 +1,8 @@
+# Note: there are no separate development settings! DEBUG is handled through
+# enviroment variables. Likewise the secret key. There's an "import
+# localtestsettings" at the end, but that's for the sso settings as long as
+# that's needed.
+
 from django.contrib.messages import constants as messages
 
 import environ

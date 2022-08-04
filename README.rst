@@ -88,22 +88,19 @@ Als ik van buildout naar pip overga mis ik o.a. de volgende zaken:
 
 - DONE gunicorn/supervisord config (supervisor kan weg)
 
-- settings selectie (TODO, via DJANGO_SETTINGS_MODULE in .env)
+- DONE settings selectie (één setting, DEBUG enzo via env var)
 
 - DONE (grunt nog niet, is dat nodig?) npm setup met bower en grunt
 
 - DONE Auto-run van ``bin/bower --allow-root install``
 
-- nginx template
+- DONE nginx template (vervangen door gunicorn)
 
 - DONE collectstatic
 
 En in productie:
 
 - cronjob ``bin/python manage.py fill_cache``, elke 5 minuten
-
-- cronjob collectstatic??? Elke nacht? Zou niet meer nodig moeten zijn. Vage
-  corner case. Is waarschijnlijk weg nu we docker gebruiken.
 
 memcache met z'n 64MB: zat. Beetje lopen testen en er lijkt 10% gebruikt te
 worden :-)

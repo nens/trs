@@ -8,8 +8,6 @@ services:
     volumes:
       - ./requirements/:/code/requirements/
       - ./trs/:/code/trs/
-    # TODO: db, index
-    # Use the development settings.
     environment:
       # The next is only for during upgrades.
       - PYTHONWARNINGS=always
