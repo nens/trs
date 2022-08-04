@@ -38,6 +38,8 @@ django-appconf==1.0.5
     # via lizard-auth-client
 django-crispy-forms==1.14.0
     # via lizard-auth-client
+django-environ==0.9.0
+    # via trs
 django-extensions==3.2.0
     # via
     #   lizard-auth-client
