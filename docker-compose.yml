@@ -16,6 +16,7 @@ services:
     links:
       - memcache
     environment:
+      - DJANGO_SETTINGS_MODULE=trs.settings
       # Can be set in .env, we'll pass them on.
       - SECRET_KEY
       - DEBUG
