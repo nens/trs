@@ -3464,6 +3464,7 @@ class RatingsOverview(BaseView):
 
 class WbsoProjectsOverview(BaseView):
     template_name = "trs/wbso_projects.html"
+    title = "WBSO projecten"
 
     def has_form_permissions(self):
         return self.can_see_everything
@@ -3626,7 +3627,9 @@ class FinancialOverview(BaseView):
 
 class FinancialCsvView(CsvResponseMixin, ProjectsView):
 
-    title = "Overzicht financien"
+    @property
+    def title(self):
+        return "Overzicht financien " + self.for_who
 
     def has_form_permissions(self):
         return self.can_see_everything
