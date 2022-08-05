@@ -3585,6 +3585,12 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
     def csv_lines(self):
         for person in self.found_persons:
             line = [person]
+            this_persons_bookings_per_week_per_wbso_project = [
+                item
+                for item in self.bookings_per_week_per_person_per_wbso_project
+                if item["booked_by__name"] == person
+            ]
+
             for text, year_weeks in self.half_years:
                 for wbso_project in self.found_wbso_projects:
                     hours = [
@@ -3593,9 +3599,8 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
                             * (item["booked_on__wbso_percentage"] or 0)
                             / 100
                         )
-                        for item in self.bookings_per_week_per_person_per_wbso_project
-                        if item["booked_by__name"] == person
-                        and item["year_week"] in year_weeks
+                        for item in this_persons_bookings_per_week_per_wbso_project
+                        if item["year_week"] in year_weeks
                         and item["booked_on__wbso_project"] == wbso_project
                     ]
                     line.append(sum(hours))
