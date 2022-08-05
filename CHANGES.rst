@@ -2,7 +2,7 @@ Changelog of TRS
 ===================================================
 
 
-2.0 (unreleased)
+2.0 (2022-08-05)
 ----------------
 
 - Upgraded django from 1.8 to 1.11. And to 2.2. And to 3.2.
