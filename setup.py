@@ -20,6 +20,7 @@ install_requires = (
         "lizard-auth-client >= 3.0",
         "pymemcache",
         "requests",
+        "sentry-sdk",
         "setuptools",
         "whitenoise",
     ],

@@ -18,7 +18,9 @@ beautifulsoup4==4.11.1
 black==22.6.0
     # via -r requirements/requirements.in
 certifi==2022.6.15
-    # via requests
+    # via
+    #   requests
+    #   sentry-sdk
 charset-normalizer==2.1.0
     # via requests
 click==8.1.3
@@ -109,6 +111,8 @@ requests==2.28.1
     # via
     #   lizard-auth-client
     #   trs
+sentry-sdk==1.9.0
+    # via trs
 six==1.16.0
     # via
     #   pymemcache
@@ -123,7 +127,9 @@ tomli==2.0.1
     #   coverage
     #   pytest
 urllib3==1.26.11
-    # via requests
+    # via
+    #   requests
+    #   sentry-sdk
 werkzeug==2.2.1
     # via
     #   django-tls-rvanlaar
