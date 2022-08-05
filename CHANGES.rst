@@ -15,8 +15,11 @@ Changelog of TRS
 
 - Switched server setup to docker-compose.
 
-- There's only one settings file now. ``DEBUG`` and ``SECRET_KEY`` are handled
-  through env variables.
+- There's only one settings file now. ``DEBUG`` and ``SECRET_KEY`` and others
+  are handled through env variables.
+
+- The accompanying private ``trs-site`` github project now only contains the
+  ansible scripts and a ``.env`` file with the necessary settings.
 
 - Staticfiles are stored inside the docker image.
 
