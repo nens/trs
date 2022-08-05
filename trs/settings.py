@@ -117,14 +117,10 @@ LOGGING = {
         #     "formatter": "verbose",
         #     "filename": os.path.join(BASE_DIR, "var", "log", "sql.log"),
         # },
-        # "sentry": {
-        #     "level": "WARN",
-        #     "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
-        # },
     },
     "loggers": {
         "": {
-            "handlers": ["console", "logfile"],  # TODO: add sentry
+            "handlers": ["console", "logfile"],
             "propagate": True,
             "level": "DEBUG",
         },
@@ -140,7 +136,7 @@ LOGGING = {
             "level": "INFO",  # Suppress the huge output in tests
         },
         "django.request": {
-            "handlers": ["console", "logfile"],  # TODO: add sentry
+            "handlers": ["console", "logfile"],
             "propagate": False,
             "level": "ERROR",  # WARN also shows 404 errors
         },
