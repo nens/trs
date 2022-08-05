@@ -1,14 +1,23 @@
+# Note: there are no separate development settings! DEBUG is handled through
+# enviroment variables. Likewise the secret key.
+
 from django.contrib.messages import constants as messages
 
+import environ
 import os
 
 
+env = environ.Env()
+
 SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
-BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, ".."))
+BASE_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, ".."))
 
 ROOT_URLCONF = "trs.urls"
-SECRET_KEY = "sleutel van het secreet"
-DEBUG = True
+
+DEBUG = env.bool("DEBUG", default=True)
+SECRET_KEY = env("SECRET_KEY", default="sleutel van het secreet")
+
+
 ALLOWED_HOSTS = ["trs.lizard.net", "localhost", "trs.nelen-schuurmans.nl"]
 
 TEMPLATES = [
@@ -29,13 +38,14 @@ TEMPLATES = [
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BUILDOUT_DIR, "var/db/trs.db"),
+        "NAME": os.path.join(BASE_DIR, "var/db/trs.db"),
     }
 }
 INSTALLED_APPS = [
     "trs",
     "lizard_auth_client",
     "gunicorn",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django_extensions",
     "django.contrib.humanize",
@@ -47,6 +57,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # Whitenoise should be first.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     # Default stuff below.
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -58,12 +70,12 @@ MIDDLEWARE = [
     "tls.TLSRequestMiddleware",
 ]
 
-STATIC_ROOT = os.path.join(BUILDOUT_DIR, "staticfiles")  # Note: not var/static/!
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # Note: not var/static/!
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
-    os.path.join(BUILDOUT_DIR, "bower_components"),
+    os.path.join(BASE_DIR, "bower_components"),
 ]
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 CACHES = {
     "default": {
@@ -93,14 +105,14 @@ LOGGING = {
             "level": "INFO",
             "class": "logging.FileHandler",
             "formatter": "verbose",
-            "filename": os.path.join(BUILDOUT_DIR, "var", "log", "django.log"),
+            "filename": os.path.join(BASE_DIR, "var", "log", "django.log"),
         },
         # sqllogfile is only used for demo purposes for showing off django's ORM.
         # "sqllogfile": {
         #     "level": "DEBUG",
         #     "class": "logging.FileHandler",
         #     "formatter": "verbose",
-        #     "filename": os.path.join(BUILDOUT_DIR, "var", "log", "sql.log"),
+        #     "filename": os.path.join(BASE_DIR, "var", "log", "sql.log"),
         # },
         # "sentry": {
         #     "level": "WARN",
@@ -151,15 +163,12 @@ INTERNAL_IPS = ["localhost", "127.0.0.1"]
 # SSO
 SSO_ENABLED = True
 SSO_USE_V2_LOGIN = True
-SSO_KEY = "trs_random_generated_key_to_identify_the_client"
-SSO_SECRET = "trs_random_generated_secret_key_to_sign_exchanged_messages"
+SSO_KEY = env("SSO_KEY", default="trs_random_generated_key_to_identify_the_client")
+SSO_SECRET = env(
+    "SSO_SECRET", default="trs_random_generated_secret_key_to_sign_exchanged_messages"
+)
 SSO_SERVER_API_START_URL = "https://sso.lizard.net/api2/"
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "lizard_auth_client.backends.SSOBackend",
 ]
-
-try:
-    from .local_testsettings import *  # noqa
-except ImportError:
-    pass

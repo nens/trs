@@ -20,7 +20,7 @@ Grab the sqlite db from the server::
 
   $ scp the.server.name:/srv/trs.nelen-schuurmans.nl/var/db/trs.db var/db/
 
-Add ``trs/local_testsettings.py`` with the SSO settings for localhost.
+Add a ``.env`` with the SSO settings for localhost.
 
 Symlink the development compose file and build it::
 
@@ -59,9 +59,8 @@ And sometimes, to upgrade all versions to the latest ones::
 Server installation
 -------------------
 
-See the ``src/trs-site/README.rst`` (from the protected github trs-site repo).
-
-The site doesn't run with docker-compose there, yet, though.
+For a production installation, see the private
+https://github.com/nens/trs-site repo.
 
 
 Weeks
@@ -82,28 +81,25 @@ Upgrade notes
 
 Als ik van buildout naar pip overga mis ik o.a. de volgende zaken:
 
-- mr.developer checkout van trs-site
+- DONE mr.developer checkout van trs-site
 
 - DONE mkdir van var/static, db, log, cache, media
 
 - DONE gunicorn/supervisord config (supervisor kan weg)
 
-- settings selectie (TODO, via DJANGO_SETTINGS_MODULE in .env)
+- DONE settings selectie (één setting, DEBUG enzo via env var)
 
 - DONE (grunt nog niet, is dat nodig?) npm setup met bower en grunt
 
 - DONE Auto-run van ``bin/bower --allow-root install``
 
-- nginx template
+- DONE nginx template (vervangen door gunicorn)
 
 - DONE collectstatic
 
 En in productie:
 
-- cronjob ``bin/python manage.py fill_cache``, elke 5 minuten
-
-- cronjob collectstatic??? Elke nacht? Zou niet meer nodig moeten zijn. Vage
-  corner case. Is waarschijnlijk weg nu we docker gebruiken.
+- DONE cronjob ``bin/python manage.py fill_cache``, elke 5 minuten
 
 memcache met z'n 64MB: zat. Beetje lopen testen en er lijkt 10% gebruikt te
 worden :-)

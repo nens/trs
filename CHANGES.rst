@@ -15,9 +15,13 @@ Changelog of TRS
 
 - Switched server setup to docker-compose.
 
+- There's only one settings file now. ``DEBUG`` and ``SECRET_KEY`` are handled
+  through env variables.
+
 - Staticfiles are stored inside the docker image.
 
-- Removed django-haystack (=the old full-text search method).
+- Removed django-haystack (=the old full-text search method, it was only used
+  once per month or so).
 
 - Using pytest instead of django-nose.
 
