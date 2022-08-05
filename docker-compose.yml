@@ -15,6 +15,7 @@ services:
       - ./var:/code/var
     links:
       - memcache
+    restart: unless-stopped
     environment:
       - DJANGO_SETTINGS_MODULE=trs.settings
       # Can be set in .env, we'll pass them on.
