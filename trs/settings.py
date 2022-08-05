@@ -2,9 +2,11 @@
 # enviroment variables. Likewise the secret key.
 
 from django.contrib.messages import constants as messages
+from sentry_sdk.integrations.django import DjangoIntegration
 
 import environ
 import os
+import sentry_sdk
 
 
 env = environ.Env()
@@ -16,6 +18,7 @@ ROOT_URLCONF = "trs.urls"
 
 DEBUG = env.bool("DEBUG", default=True)
 SECRET_KEY = env("SECRET_KEY", default="sleutel van het secreet")
+SENTRY_DSN = env("SENTRY_DSN", default="")
 
 
 ALLOWED_HOSTS = ["trs.lizard.net", "localhost", "trs.nelen-schuurmans.nl"]
@@ -114,14 +117,10 @@ LOGGING = {
         #     "formatter": "verbose",
         #     "filename": os.path.join(BASE_DIR, "var", "log", "sql.log"),
         # },
-        # "sentry": {
-        #     "level": "WARN",
-        #     "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
-        # },
     },
     "loggers": {
         "": {
-            "handlers": ["console", "logfile"],  # TODO: add sentry
+            "handlers": ["console", "logfile"],
             "propagate": True,
             "level": "DEBUG",
         },
@@ -137,7 +136,7 @@ LOGGING = {
             "level": "INFO",  # Suppress the huge output in tests
         },
         "django.request": {
-            "handlers": ["console", "logfile"],  # TODO: add sentry
+            "handlers": ["console", "logfile"],
             "propagate": False,
             "level": "ERROR",  # WARN also shows 404 errors
         },
@@ -159,6 +158,22 @@ LANGUAGE_CODE = "nl-nl"
 TIME_ZONE = "Europe/Amsterdam"
 
 INTERNAL_IPS = ["localhost", "127.0.0.1"]
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[
+            DjangoIntegration(),
+        ],
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=0.2,
+        # If you wish to associate users to errors (assuming you are using
+        # django.contrib.auth) you may enable sending PII data.
+        send_default_pii=False,
+    )
+
 
 # SSO
 SSO_ENABLED = True
