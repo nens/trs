@@ -22,6 +22,6 @@ services:
       - SECRET_KEY
       - DEBUG
       - SENTRY_DSN
-      - SSO_KEY
-      - SSO_SECRET
-      # TODO: sentry/raven
+      - NENS_AUTH_ISSUER
+      - NENS_AUTH_CLIENT_ID
+      - NENS_AUTH_CLIENT_SECRET

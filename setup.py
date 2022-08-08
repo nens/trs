@@ -17,7 +17,7 @@ install_requires = (
         "django-extensions > 3.0.0",
         "django-tls_rvanlaar == 0.0.3",
         "gunicorn",
-        "lizard-auth-client >= 3.0",
+        "nens-auth-client",
         "pymemcache",
         "requests",
         "sentry-sdk",

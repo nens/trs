@@ -46,11 +46,11 @@ DATABASES = {
 }
 INSTALLED_APPS = [
     "trs",
-    "lizard_auth_client",
     "gunicorn",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django_extensions",
+    "nens_auth_client",
     "django.contrib.humanize",
     "django.contrib.messages",
     "django.contrib.admin",
@@ -168,15 +168,12 @@ if SENTRY_DSN:
     )
 
 
-# SSO
-SSO_ENABLED = True
-SSO_USE_V2_LOGIN = True
-SSO_KEY = env("SSO_KEY", default="trs_random_generated_key_to_identify_the_client")
-SSO_SECRET = env(
-    "SSO_SECRET", default="trs_random_generated_secret_key_to_sign_exchanged_messages"
-)
-SSO_SERVER_API_START_URL = "https://sso.lizard.net/api2/"
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    "lizard_auth_client.backends.SSOBackend",
+    "nens_auth_client.backends.RemoteUserBackend",
+    "nens_auth_client.backends.AcceptNensBackend",
+    "nens_auth_client.backends.SSOMigrationBackend",
 ]
+NENS_AUTH_ISSUER = env("NENS_AUTH_ISSUER", default="")
+NENS_AUTH_CLIENT_ID = env("NENS_AUTH_CLIENT_ID", default="")
+NENS_AUTH_CLIENT_SECRET = env("NENS_AUTH_CLIENT_SECRET", default="")

@@ -20,7 +20,7 @@ Grab the sqlite db from the server::
 
   $ scp the.server.name:/srv/trs.nelen-schuurmans.nl/var/db/trs.db var/db/
 
-Add a ``.env`` with the SSO settings for localhost.
+Add a ``.env`` with the nens-auth-client cognito settings for localhost.
 
 Symlink the development compose file and build it::
 

@@ -1291,6 +1291,7 @@ class ProjectView(BaseView):
 
 
 class LoginView(FormView, BaseMixin):
+    # Reachable as /locallogin/
     template_name = "trs/login.html"
     form_class = AuthenticationForm
 
@@ -3606,7 +3607,6 @@ class FinancialOverview(BaseView):
 
 
 class FinancialCsvView(CsvResponseMixin, ProjectsView):
-
     @property
     def title(self):
         return "Overzicht financien " + self.for_who

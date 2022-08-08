@@ -7,9 +7,9 @@
   <ul>
     {% if perms.auth.manage_users %}
       <li>
-        <a href="{% url 'lizard_auth_client.user_overview' %}">
-          Gebruikers/toegangsbeheer
-        </a>
+        Opgepast: gebruikersbeheer gaat nu via azure AD. Iedereen die daar
+        (nog) mag inloggen mag hier inloggen. Bij aanmaken nieuwe gebruiker
+        hier eenmalig inloggen, dan wordt er een trs-gebruiker aangemaakt.
       </li>
     {% endif %}
     {% if view.can_see_everything %}

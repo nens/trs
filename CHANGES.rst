@@ -7,6 +7,9 @@ Changelog of TRS
 
 - Sped up the WBSO csv export considerably.
 
+- Using Cognito instead of the old SSO now. N&S users are automatically
+  accepted, so no manual user adding is necessary anymore.
+
 
 2.0 (2022-08-05)
 ----------------

@@ -1,6 +1,7 @@
 from django.conf.urls import include
 from django.contrib import admin
 from django.urls import re_path
+from nens_auth_client.urls import override_admin_auth
 from trs import views
 
 
@@ -8,7 +9,7 @@ admin.autodiscover()
 
 urlpatterns = [
     re_path(r"^$", views.home, name="trs.home"),
-    re_path(r"", include("lizard_auth_client.urls")),
+    re_path(r"^accounts/", include("nens_auth_client.urls", namespace="auth")),
     re_path(
         r"^simple-search/$",
         views.SearchView.as_view(),
@@ -208,5 +209,6 @@ urlpatterns = [
     ),
     re_path(r"^locallogin/$", views.LoginView.as_view(), name="trs.login"),
     re_path(r"^logout/$", views.logout_view, name="trs.logout"),
+    *override_admin_auth(),
     re_path(r"^admin/", admin.site.urls),
 ]

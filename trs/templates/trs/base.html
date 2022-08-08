@@ -70,9 +70,9 @@
                 </form>
               </li>
               {% if user.is_authenticated %}
-                <li><a href="{% url 'logout' %}">Log uit</a></li>
+                <li><a href="{% url 'auth:logout' %}">Log uit</a></li>
               {% else %}
-                <li><a href="{% url 'login' %}">Log in</a></li>
+                <li><a href="{% url 'auth:login' %}">Log in</a></li>
               {% endif %}
             </ul>
           </div><!-- /.navbar-collapse -->
