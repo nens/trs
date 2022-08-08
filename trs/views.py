@@ -3607,7 +3607,6 @@ class FinancialOverview(BaseView):
 
 
 class FinancialCsvView(CsvResponseMixin, ProjectsView):
-
     @property
     def title(self):
         return "Overzicht financien " + self.for_who

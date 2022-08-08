@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django_extensions",
+    "nens_auth_client",
     "django.contrib.humanize",
     "django.contrib.messages",
     "django.contrib.admin",
@@ -169,4 +170,10 @@ if SENTRY_DSN:
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
+    "nens_auth_client.backends.RemoteUserBackend",
+    "nens_auth_client.backends.AcceptNensBackend",
+    "nens_auth_client.backends.SSOMigrationBackend",
 ]
+NENS_AUTH_ISSUER = env("NENS_AUTH_ISSUER", default="")
+NENS_AUTH_CLIENT_ID = env("NENS_AUTH_CLIENT_ID", default="")
+NENS_AUTH_CLIENT_SECRET = env("NENS_AUTH_CLIENT_SECRET", default="")
