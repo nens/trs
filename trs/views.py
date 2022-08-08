@@ -1291,6 +1291,7 @@ class ProjectView(BaseView):
 
 
 class LoginView(FormView, BaseMixin):
+    # Reachable as /locallogin/
     template_name = "trs/login.html"
     form_class = AuthenticationForm
 
