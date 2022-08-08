@@ -177,3 +177,7 @@ AUTHENTICATION_BACKENDS = [
 NENS_AUTH_ISSUER = env("NENS_AUTH_ISSUER", default="")
 NENS_AUTH_CLIENT_ID = env("NENS_AUTH_CLIENT_ID", default="")
 NENS_AUTH_CLIENT_SECRET = env("NENS_AUTH_CLIENT_SECRET", default="")
+
+# Apparently this is needed now that we run gunicorn directly?
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
