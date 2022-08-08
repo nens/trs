@@ -1,7 +1,0 @@
-[program:trs]
-command = ${buildout:directory}/bin/django run_gunicorn --workers=${serverconfig:workers} --timeout 600 --bind 127.0.0.1:${serverconfig:gunicorn-port} --preload --max-requests=500
-process_name = trs
-directory = ${buildout:directory}
-user = buildout
-priority = 10
-redirect_stderr = false
