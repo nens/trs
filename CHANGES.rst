@@ -2,7 +2,7 @@ Changelog of TRS
 ===================================================
 
 
-2.1 (unreleased)
+2.1 (2022-08-08)
 ----------------
 
 - Sped up the WBSO csv export considerably.
