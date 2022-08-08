@@ -1938,27 +1938,7 @@ class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         return mark_safe(BACK_TEMPLATE.format(url=url, text=text))
 
 
-# class SearchView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
-
-#     template_name = "trs/search.html"
-#     success_url = "."
-#     form_class = SearchForm
-
-#     def form_valid(self, form):
-#         """Calculate results into _results."""
-#         search_text = form.cleaned_data.get("search_text")
-#         self._results = {}
-#         projects = Project.objects.filter(
-#             Q(code__icontains=search_text) | Q(description__icontains=search_text))
-#         self._results["projects"] = projects
-
-#     def results(self):
-#         """Return _results, if it exists."""
-#         return getattr(self, "_results", None)
-
-
 class SearchView(BaseView):
-    # xxxx
 
     template_name = "trs/search.html"
     form_class = SearchForm
