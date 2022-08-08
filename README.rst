@@ -73,33 +73,4 @@ created with a management command::
     $ bin/python manage.py update_weeks
 
 It is safe to run this command more than once. In case this site is still used
-after 2025: adjust the ``TRS_END_YEAR`` setting and run the command again :-)
-
-
-Upgrade notes
--------------
-
-Als ik van buildout naar pip overga mis ik o.a. de volgende zaken:
-
-- DONE mr.developer checkout van trs-site
-
-- DONE mkdir van var/static, db, log, cache, media
-
-- DONE gunicorn/supervisord config (supervisor kan weg)
-
-- DONE settings selectie (één setting, DEBUG enzo via env var)
-
-- DONE (grunt nog niet, is dat nodig?) npm setup met bower en grunt
-
-- DONE Auto-run van ``bin/bower --allow-root install``
-
-- DONE nginx template (vervangen door gunicorn)
-
-- DONE collectstatic
-
-En in productie:
-
-- DONE cronjob ``bin/python manage.py fill_cache``, elke 5 minuten
-
-memcache met z'n 64MB: zat. Beetje lopen testen en er lijkt 10% gebruikt te
-worden :-)
+after 2028: adjust the ``TRS_END_YEAR`` setting and run the command again :-)
