@@ -8,7 +8,6 @@ admin.autodiscover()
 
 urlpatterns = [
     re_path(r"^$", views.home, name="trs.home"),
-    re_path(r"", include("lizard_auth_client.urls")),
     re_path(
         r"^simple-search/$",
         views.SearchView.as_view(),
