@@ -53,6 +53,7 @@ import logging
 import statistics
 import time
 import urllib
+import xlsxwriter
 
 
 logger = logging.getLogger(__name__)
@@ -2955,19 +2956,25 @@ class CsvResponseMixin(object):
 
     def render_to_response(self, context, **response_kwargs):
         """Return a csv response instead of a rendered template."""
-        response = HttpResponse(content_type="text/csv")
-        filename = self.csv_filename + ".csv"
+        response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        filename = self.csv_filename + ".xlsx"
         response["Content-Disposition"] = 'attachment; filename="%s"' % filename
 
-        # Ideally, use something like .encode('cp1251') somehow somewhere.
-        writer = csv.writer(response, delimiter=";")
+        workbook = xlsxwriter.Workbook(response)
+        worksheet = workbook.add_worksheet()
 
+        row_number = 0
         for line in self.prepend_lines:
-            writer.writerow(line)
-        writer.writerow(self.header_line)
+            worksheet.write_row(row_number, 0, line)
+            row_number += 1  # yeah, right...
+        worksheet.write_row(row_number, 0, self.header_line)
+        row_number += 1
         for line in self.csv_lines:
             # Note: line should be a list of values.
-            writer.writerow(line)
+            worksheet.write_row(row_number, 0, line)
+            row_number += 1
+
+        workbook.close()
         return response
 
 
