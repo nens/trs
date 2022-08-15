@@ -2956,7 +2956,9 @@ class CsvResponseMixin(object):
 
     def render_to_response(self, context, **response_kwargs):
         """Return a csv response instead of a rendered template."""
-        response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
         filename = self.csv_filename + ".xlsx"
         response["Content-Disposition"] = 'attachment; filename="%s"' % filename
 
