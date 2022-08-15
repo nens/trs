@@ -47,12 +47,12 @@ from trs.models import WorkAssignment
 from trs.models import YearWeek
 from trs.templatetags.trs_formatting import hours as format_as_hours
 
-import csv
 import datetime
 import logging
 import statistics
 import time
 import urllib
+import xlsxwriter
 
 
 logger = logging.getLogger(__name__)
@@ -2931,11 +2931,16 @@ class ProjectLeadersAndManagersView(BaseView):
         return Person.objects.filter(projects_i_manage__archived=False).distinct()
 
 
-class CsvResponseMixin(object):
+def _django_model_instance_to_string(worksheet, row, col, instance, format=None):
+    # See https://xlsxwriter.readthedocs.io/working_with_data.html#writing-user-types
+    return worksheet.write_string(row, col, str(instance), format)
+
+
+class ExcelResponseMixin(object):
 
     prepend_lines = []
     header_line = []
-    csv_lines = []
+    excel_lines = []
 
     def title_to_filename(self):
         name = self.title.lower()
@@ -2950,28 +2955,39 @@ class CsvResponseMixin(object):
         return name
 
     @property
-    def csv_filename(self):
+    def excel_filename(self):
         return self.title_to_filename()
 
     def render_to_response(self, context, **response_kwargs):
-        """Return a csv response instead of a rendered template."""
-        response = HttpResponse(content_type="text/csv")
-        filename = self.csv_filename + ".csv"
+        """Return a excel response instead of a rendered template."""
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  # noqa
+        )
+        filename = self.excel_filename + ".xlsx"
         response["Content-Disposition"] = 'attachment; filename="%s"' % filename
 
-        # Ideally, use something like .encode('cp1251') somehow somewhere.
-        writer = csv.writer(response, delimiter=";")
+        workbook = xlsxwriter.Workbook(response)
+        worksheet = workbook.add_worksheet()
+        worksheet.add_write_handler(Group, _django_model_instance_to_string)
+        worksheet.add_write_handler(Person, _django_model_instance_to_string)
+        worksheet.add_write_handler(Project, _django_model_instance_to_string)
 
+        row_number = 0
         for line in self.prepend_lines:
-            writer.writerow(line)
-        writer.writerow(self.header_line)
-        for line in self.csv_lines:
+            worksheet.write_row(row_number, 0, line)
+            row_number += 1  # yeah, right...
+        worksheet.write_row(row_number, 0, self.header_line)
+        row_number += 1
+        for line in self.excel_lines:
             # Note: line should be a list of values.
-            writer.writerow(line)
+            worksheet.write_row(row_number, 0, line)
+            row_number += 1
+
+        workbook.close()
         return response
 
 
-class ProjectsCsvView(CsvResponseMixin, ProjectsView):
+class ProjectsExcelView(ExcelResponseMixin, ProjectsView):
     def has_form_permissions(self):
         return self.can_view_elaborate_version
 
@@ -3025,7 +3041,7 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
     ]
 
     @property
-    def csv_lines(self):
+    def excel_lines(self):
         for line in self.lines:
             project = line["project"]
             remark = ""
@@ -3085,7 +3101,7 @@ class ProjectsCsvView(CsvResponseMixin, ProjectsView):
             yield (result)
 
 
-class PersonsCsvView(CsvResponseMixin, PersonsView):
+class PersonsExcelView(ExcelResponseMixin, PersonsView):
     def has_form_permissions(self):
         return self.can_view_elaborate_version
 
@@ -3106,7 +3122,7 @@ class PersonsCsvView(CsvResponseMixin, PersonsView):
     ]
 
     @property
-    def csv_lines(self):
+    def excel_lines(self):
         for line in self.lines:
             person = line["person"]
             pyc = line["pyc"]
@@ -3128,7 +3144,7 @@ class PersonsCsvView(CsvResponseMixin, PersonsView):
             yield result
 
 
-class ProjectCsvView(CsvResponseMixin, ProjectView):
+class ProjectExcelView(ExcelResponseMixin, ProjectView):
     def has_form_permissions(self):
         return self.can_see_project_financials
 
@@ -3180,7 +3196,7 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
         return result
 
     @property
-    def csv_lines(self):
+    def excel_lines(self):
         for line in self.lines:
             person = line["person"]
             pl = (person == self.project.project_leader) and "PL" or ""
@@ -3242,12 +3258,12 @@ class ProjectCsvView(CsvResponseMixin, ProjectView):
         yield (["Nog te verdelen", "", "", "", "", "", self.project.left_to_dish_out()])
 
 
-class ProjectPersonsCsvView(CsvResponseMixin, ProjectView):
+class ProjectPersonsExcelView(ExcelResponseMixin, ProjectView):
     def has_form_permissions(self):
         return self.can_see_everything
 
     @property
-    def csv_filename(self):
+    def excel_filename(self):
         return self.title_to_filename() + "_subsidie"
 
     @cached_property
@@ -3299,7 +3315,7 @@ class ProjectPersonsCsvView(CsvResponseMixin, ProjectView):
         return result
 
     @property
-    def csv_lines(self):
+    def excel_lines(self):
         relevant_persons = self.project.assigned_persons()
         relevant_project_ids = [
             booked_on
@@ -3470,7 +3486,7 @@ class WbsoProjectView(BaseView):
         return self.wbso_project.projects.all()
 
 
-class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
+class WbsoExcelView(ExcelResponseMixin, WbsoProjectsOverview):
 
     START_YEAR = 2016
 
@@ -3564,7 +3580,7 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
         return result
 
     @property
-    def csv_lines(self):
+    def excel_lines(self):
         for person in self.found_persons:
             line = [person]
             this_persons_bookings_per_week_per_wbso_project = [
@@ -3591,22 +3607,25 @@ class WbsoCsvView(CsvResponseMixin, WbsoProjectsOverview):
 
 class FinancialOverview(BaseView):
     template_name = "trs/financial_overview.html"
-    title = "Overzicht financiën (als .csv)"
+    title = "Overzicht financiën (als excel)"
 
     def has_form_permissions(self):
         return self.can_see_everything
 
     def download_links(self):
-        yield {"name": "Gehele bedrijf", "url": reverse("trs.financial.csv")}
+        yield {"name": "Gehele bedrijf", "url": reverse("trs.financial.excel")}
         yield {
             "name": "Gehele bedrijf, nieuwe gecombineerde versie",
-            "url": reverse("trs.combined_financial.csv"),
+            "url": reverse("trs.combined_financial.excel"),
         }
         for pk, name in Group.objects.all().values_list("pk", "name"):
-            yield {"name": name, "url": reverse("trs.financial.csv", kwargs={"pk": pk})}
+            yield {
+                "name": name,
+                "url": reverse("trs.financial.excel", kwargs={"pk": pk}),
+            }
 
 
-class FinancialCsvView(CsvResponseMixin, ProjectsView):
+class FinancialExcelView(ExcelResponseMixin, ProjectsView):
     @property
     def title(self):
         return "Overzicht financien " + self.for_who
@@ -3851,7 +3870,7 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
         return round(hours_to_book / 8)
 
     @property
-    def csv_lines(self):
+    def excel_lines(self):
         yield ["", "Datum uitdraai:", self.today.strftime("%d-%m-%Y")]
         yield ["", "Voor:", self.for_who]
         yield []
@@ -3925,7 +3944,7 @@ class FinancialCsvView(CsvResponseMixin, ProjectsView):
         yield ["", "Dagen achter met boeken", self.days_to_book()]
 
 
-class PayablesCsvView(CsvResponseMixin, PayablesView):
+class PayablesExcelView(ExcelResponseMixin, PayablesView):
 
     header_line = [
         "Factuurdatum",
@@ -3940,7 +3959,7 @@ class PayablesCsvView(CsvResponseMixin, PayablesView):
     ]
 
     @property
-    def csv_lines(self):
+    def excel_lines(self):
         for payable in self.payables:
             line = [
                 payable.date,
@@ -3956,7 +3975,7 @@ class PayablesCsvView(CsvResponseMixin, PayablesView):
             yield line
 
 
-class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
+class CombinedFinancialExcelView(ExcelResponseMixin, ProjectsView):
 
     title = "Gecombineerd overzicht financien"
 
@@ -4214,7 +4233,7 @@ class CombinedFinancialCsvView(CsvResponseMixin, ProjectsView):
         return result
 
     @property
-    def csv_lines(self):
+    def excel_lines(self):
         yield [
             "",
             "Datum uitdraai:",

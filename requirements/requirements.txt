@@ -136,6 +136,8 @@ werkzeug==2.2.1
     #   trs
 whitenoise==6.2.0
     # via trs
+xlsxwriter==3.0.3
+    # via trs
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

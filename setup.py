@@ -23,6 +23,7 @@ install_requires = (
         "sentry-sdk",
         "setuptools",
         "whitenoise",
+        "xlsxwriter",
     ],
 )
 

@@ -5,7 +5,9 @@ Changelog of TRS
 2.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Switched from csv to excel export. xlsxwriter wasn't available when the
+  project started and it is now. So hopefully all the csv-related small
+  mishaps are gone now :-)
 
 
 2.1 (2022-08-08)

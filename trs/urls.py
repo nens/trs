@@ -16,7 +16,9 @@ urlpatterns = [
         name="trs.search",
     ),
     re_path(r"^persons/$", views.PersonsView.as_view(), name="trs.persons"),
-    re_path(r"^persons/csv/$", views.PersonsCsvView.as_view(), name="trs.persons.csv"),
+    re_path(
+        r"^persons/excel/$", views.PersonsExcelView.as_view(), name="trs.persons.excel"
+    ),
     re_path(r"^persons/(?P<pk>\d+)/$", views.PersonView.as_view(), name="trs.person"),
     re_path(
         r"^persons/(?P<pk>\d+)/kpi/$",
@@ -38,7 +40,9 @@ urlpatterns = [
         r"^projects/loss/$", views.ProjectsLossView.as_view(), name="trs.projects.loss"
     ),
     re_path(
-        r"^projects/csv/$", views.ProjectsCsvView.as_view(), name="trs.projects.csv"
+        r"^projects/excel/$",
+        views.ProjectsExcelView.as_view(),
+        name="trs.projects.excel",
     ),
     re_path(
         r"^projects/new/$", views.ProjectCreateView.as_view(), name="trs.project.new"
@@ -47,14 +51,14 @@ urlpatterns = [
         r"^projects/(?P<pk>\d+)/$", views.ProjectView.as_view(), name="trs.project"
     ),
     re_path(
-        r"^projects/(?P<pk>\d+)/csv/$",
-        views.ProjectCsvView.as_view(),
-        name="trs.project.csv",
+        r"^projects/(?P<pk>\d+)/excel/$",
+        views.ProjectExcelView.as_view(),
+        name="trs.project.excel",
     ),
     re_path(
-        r"^projects/(?P<pk>\d+)/persons/csv/$",
-        views.ProjectPersonsCsvView.as_view(),
-        name="trs.project.persons.csv",
+        r"^projects/(?P<pk>\d+)/persons/excel/$",
+        views.ProjectPersonsExcelView.as_view(),
+        name="trs.project.persons.excel",
     ),
     re_path(
         r"^projects/(?P<pk>\d+)/edit/$",
@@ -136,24 +140,24 @@ urlpatterns = [
         name="trs.wbso_project",
     ),
     re_path(
-        r"^overviews/wbso_projects/csv/$",
-        views.WbsoCsvView.as_view(),
-        name="trs.wbso.csv",
+        r"^overviews/wbso_projects/excel/$",
+        views.WbsoExcelView.as_view(),
+        name="trs.wbso.excel",
     ),
     re_path(
-        r"^overviews/financial_csv/$",
-        views.FinancialCsvView.as_view(),
-        name="trs.financial.csv",
+        r"^overviews/financial_excel/$",
+        views.FinancialExcelView.as_view(),
+        name="trs.financial.excel",
     ),
     re_path(
-        r"^overviews/financial_csv/(?P<pk>\d+)/$",
-        views.FinancialCsvView.as_view(),
-        name="trs.financial.csv",
+        r"^overviews/financial_excel/(?P<pk>\d+)/$",
+        views.FinancialExcelView.as_view(),
+        name="trs.financial.excel",
     ),
     re_path(
-        r"^overviews/combined_financial_csv/$",
-        views.CombinedFinancialCsvView.as_view(),
-        name="trs.combined_financial.csv",
+        r"^overviews/combined_financial_excel/$",
+        views.CombinedFinancialExcelView.as_view(),
+        name="trs.combined_financial.excel",
     ),
     # Overviews
     re_path(r"^overviews/$", views.OverviewsView.as_view(), name="trs.overviews"),
@@ -193,9 +197,9 @@ urlpatterns = [
         name="trs.overviews.payables",
     ),
     re_path(
-        r"^overviews/payables_csv/$",
-        views.PayablesCsvView.as_view(),
-        name="trs.overviews.payables.csv",
+        r"^overviews/payables_excel/$",
+        views.PayablesExcelView.as_view(),
+        name="trs.overviews.payables.excel",
     ),
     re_path(
         r"^overviews/ratings/$",
