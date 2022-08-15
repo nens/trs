@@ -172,21 +172,21 @@ class FinancialOverviewTestCase(TestCase):
         self.assertEqual(len(list(view.download_links())), 4)
 
 
-class FinancialCsvViewTestCase(TestCase):
+class FinancialExcelViewTestCase(TestCase):
     def setUp(self):
         self.group = factories.GroupFactory.create()
 
     def test_smoke(self):
         ensure_year_weeks_are_present()
         request = RequestFactory().get("/")
-        view = views.FinancialCsvView(request=request, kwargs={})
-        self.assertTrue(list(view.csv_lines))
+        view = views.FinancialExcelView(request=request, kwargs={})
+        self.assertTrue(list(view.excel_lines))
 
     def test_smoke_with_group(self):
         ensure_year_weeks_are_present()
         request = RequestFactory().get("/")
-        view = views.FinancialCsvView(request=request, kwargs={"pk": self.group.id})
-        self.assertTrue(list(view.csv_lines))
+        view = views.FinancialExcelView(request=request, kwargs={"pk": self.group.id})
+        self.assertTrue(list(view.excel_lines))
 
 
 class SearchViewTestCase(TestCase):

@@ -8,8 +8,8 @@
       <small>({{ view.small_title }})</small>
     {% endif %}
     <a class="pull-right"
-       title="Download .csv"
-       href="{% url 'trs.projects.csv' %}?{{ view.request.GET.urlencode }}">
+       title="Download excel"
+       href="{% url 'trs.projects.excel' %}?{{ view.request.GET.urlencode }}">
       <span class="glyphicon glyphicon-download-alt"></span>
     </a>
   </h1>
