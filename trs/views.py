@@ -2961,7 +2961,7 @@ class ExcelResponseMixin(object):
     def render_to_response(self, context, **response_kwargs):
         """Return a excel response instead of a rendered template."""
         response = HttpResponse(
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  # noqa
         )
         filename = self.excel_filename + ".xlsx"
         response["Content-Disposition"] = 'attachment; filename="%s"' % filename
