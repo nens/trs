@@ -2931,6 +2931,11 @@ class ProjectLeadersAndManagersView(BaseView):
         return Person.objects.filter(projects_i_manage__archived=False).distinct()
 
 
+def _django_model_instance_to_string(worksheet, row, col, instance, format=None):
+    # See https://xlsxwriter.readthedocs.io/working_with_data.html#writing-user-types
+    return worksheet.write_string(row, col, str(instance), format)
+
+
 class ExcelResponseMixin(object):
 
     prepend_lines = []
@@ -2963,6 +2968,9 @@ class ExcelResponseMixin(object):
 
         workbook = xlsxwriter.Workbook(response)
         worksheet = workbook.add_worksheet()
+        worksheet.add_write_handler(Group, _django_model_instance_to_string)
+        worksheet.add_write_handler(Person, _django_model_instance_to_string)
+        worksheet.add_write_handler(Project, _django_model_instance_to_string)
 
         row_number = 0
         for line in self.prepend_lines:
