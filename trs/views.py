@@ -3619,7 +3619,10 @@ class FinancialOverview(BaseView):
             "url": reverse("trs.combined_financial.excel"),
         }
         for pk, name in Group.objects.all().values_list("pk", "name"):
-            yield {"name": name, "url": reverse("trs.financial.excel", kwargs={"pk": pk})}
+            yield {
+                "name": name,
+                "url": reverse("trs.financial.excel", kwargs={"pk": pk}),
+            }
 
 
 class FinancialExcelView(ExcelResponseMixin, ProjectsView):

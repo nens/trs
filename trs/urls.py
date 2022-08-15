@@ -16,7 +16,9 @@ urlpatterns = [
         name="trs.search",
     ),
     re_path(r"^persons/$", views.PersonsView.as_view(), name="trs.persons"),
-    re_path(r"^persons/excel/$", views.PersonsExcelView.as_view(), name="trs.persons.excel"),
+    re_path(
+        r"^persons/excel/$", views.PersonsExcelView.as_view(), name="trs.persons.excel"
+    ),
     re_path(r"^persons/(?P<pk>\d+)/$", views.PersonView.as_view(), name="trs.person"),
     re_path(
         r"^persons/(?P<pk>\d+)/kpi/$",
@@ -38,7 +40,9 @@ urlpatterns = [
         r"^projects/loss/$", views.ProjectsLossView.as_view(), name="trs.projects.loss"
     ),
     re_path(
-        r"^projects/excel/$", views.ProjectsExcelView.as_view(), name="trs.projects.excel"
+        r"^projects/excel/$",
+        views.ProjectsExcelView.as_view(),
+        name="trs.projects.excel",
     ),
     re_path(
         r"^projects/new/$", views.ProjectCreateView.as_view(), name="trs.project.new"
