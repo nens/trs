@@ -9,6 +9,9 @@ Changelog of TRS
   project started and it is now. So hopefully all the csv-related small
   mishaps are gone now :-)
 
+- Fixed person creation. Name wasn't getting set. All name updates to User are
+  handled now, fixing the problem.
+
 
 2.1 (2022-08-08)
 ----------------
