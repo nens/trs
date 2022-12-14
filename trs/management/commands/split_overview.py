@@ -6,6 +6,7 @@ from trs import models
 import logging
 import xlsxwriter
 
+
 YEAR = 2022
 FILENAME = "var/split_overview.xlsx"
 
@@ -35,10 +36,13 @@ class Command(BaseCommand):
         for query_result in hours_per_person_per_projectgroup:
             name = query_result["booked_by__name"]
             if name not in persons:
-                persons[name] = {"group": query_result["booked_by__group__name"],
-                                 "booked_per_projectgroup": {}}
-            persons[name]["booked_per_projectgroup"][query_result["booked_on__group__name"]] = round(query_result["hours__sum"])
-
+                persons[name] = {
+                    "group": query_result["booked_by__group__name"],
+                    "booked_per_projectgroup": {},
+                }
+            persons[name]["booked_per_projectgroup"][
+                query_result["booked_on__group__name"]
+            ] = round(query_result["hours__sum"])
 
         workbook = xlsxwriter.Workbook(FILENAME)
         worksheet = workbook.add_worksheet()
@@ -50,7 +54,7 @@ class Command(BaseCommand):
             for group in groups:
                 line.append(person["booked_per_projectgroup"].get(group, 0))
 
-            worksheet.write_row(i+1, 0, line)
+            worksheet.write_row(i + 1, 0, line)
 
         workbook.close()
         print(f"Wrote {FILENAME}")
