@@ -12,15 +12,15 @@ jobs:
   build_and_test:
     runs-on: ubuntu-20.04
     steps:
-      # setup-buildx automatically does the checkout
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Set up docker stuff
         uses: docker/setup-buildx-action@v2
-      # - name: Build docker
-      #   uses: docker/build-push-action@v4
+      - name: Build docker
+        uses: docker/build-push-action@v4
       - name: Test
         run: |
           ln -s docker-compose.development.yml docker-compose.override.yml
-          ls -l
           docker compose run --rm web make test
       - name: Add coverage comment for better visibility
         uses: coroo/pytest-coverage-commentator@v1.0.2
