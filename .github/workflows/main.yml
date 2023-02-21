@@ -18,6 +18,9 @@ jobs:
         uses: docker/setup-buildx-action@v2
       - name: Build docker
         uses: docker/build-push-action@v4
+        with:
+          cache-from: type=gha
+          cache-to: type=gha
       - name: Test
         run: |
           ln -s docker-compose.development.yml docker-compose.override.yml
