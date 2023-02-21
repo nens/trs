@@ -23,6 +23,7 @@ jobs:
         with:
           cache-from: type=gha
           cache-to: type=gha
+
       - name: Test
         run: docker compose run --rm web make test
       - name: Add coverage comment for better visibility
