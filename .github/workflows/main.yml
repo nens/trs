@@ -23,6 +23,7 @@ jobs:
         with:
           cache-from: type=gha
           cache-to: type=gha
+          tags: trs:latest
 
       - name: Test
         run: docker compose run --rm web make test
