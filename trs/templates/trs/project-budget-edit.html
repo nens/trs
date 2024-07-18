@@ -15,11 +15,6 @@
     </div>
   {% endfor %}
 
-
-  {% for error in view.project_form.errors.values %}
-    <div class="alert alert-danger">{{ error }}</div>
-  {% endfor %}
-
   <form action="." method="post">
     {% csrf_token %}
 
@@ -58,6 +53,9 @@
             </td>
             <td title="{{ form.amount.label }}">
               {{ form.amount }}
+              {% for error in form.amount.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
             </td>
             <td title="delete">
               {{ form.DELETE }}
@@ -92,6 +90,9 @@
         {% for form in view.project_member_formset %}
           <tr>
             {{ form.person_id }}
+            {% for error in form.non_field_errors %}
+              <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
             <td>
               &nbsp;&nbsp;&nbsp;
               {{ form.person.as_widget }}
@@ -114,6 +115,9 @@
 
             <td title="{{ form.hours.label }}">
               {{ form.hours }}
+              {% for error in form.hours.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
             </td>
             <td>
               <span class="text-muted">
@@ -122,6 +126,9 @@
             </td>
             <td title="{{ form.hourly_tariff.label }}">
               {{ form.hourly_tariff }}
+              {% for error in form.hourly_tariff.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
             </td>
             <td>
               {{ form.person.standard_hourly_tariff }}
@@ -167,6 +174,9 @@
           </td>
           <td>
             {{ view.project_form.reservation }}
+            {% for error in view.project_form.reservation.errors %}
+              <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
           </td>
           <td>
           </td>
@@ -205,6 +215,9 @@
             </td>
             <td title="{{ form.amount.label }}">
               {{ form.amount }}
+              {% for error in form.amount.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
             </td>
             <td title="delete">
               {{ form.DELETE }}
@@ -254,6 +267,9 @@
           </td>
           <td>
             {{ view.project_form.software_development }}
+            {% for error in view.project_form.software_development.errors %}
+              <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
           </td>
           <td>
           </td>
@@ -266,6 +282,9 @@
           </td>
           <td>
             {{ view.project_form.profit }}
+            {% for error in view.project_form.profit.errors %}
+              <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
           </td>
           <td>
           </td>

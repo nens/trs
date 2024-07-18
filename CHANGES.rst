@@ -12,6 +12,9 @@ Changelog of TRS
 - Fixed person creation. Name wasn't getting set. All name updates to User are
   handled now, fixing the problem.
 
+- Fixed 'projectbegroting' form, which didn't display errors (and the form itself)
+  properly when there was a validation error.
+
 
 2.1 (2022-08-08)
 ----------------

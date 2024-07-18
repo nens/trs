@@ -2178,7 +2178,7 @@ class ProjectBudgetEditView(BaseView):
             and self.budget_item_formset.is_valid()
             and self.project_member_formset.is_valid()
         ):
-
+            logger.debug("All forms are valid")
             self.project_form.save()
             self.estimate_formset.save()
             self.budget_item_formset.save()
@@ -2197,7 +2197,14 @@ class ProjectBudgetEditView(BaseView):
 
             return HttpResponseRedirect(self.success_url)
         else:
+            messages.error(self.request, "Corrigeer de fouten hieronder")
             context = self.get_context_data(**kwargs)
+            context["project_form"] = self.project_form
+            context["new_member_form"] = self.new_member_form
+            context["estimate_formset"] = self.estimate_formset
+            context["budget_item_formset"] = self.budget_item_formset
+            context["project_member_formset"] = self.project_member_formset
+            self.adjust_project_member_formset()
             return self.render_to_response(context)
 
     def add_team_member(self, id):
