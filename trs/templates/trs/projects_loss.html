@@ -90,7 +90,7 @@
             {% if not line.project.budget_ok %}
               <a href="{{ line.project.get_absolute_url }}#budget">
                 <span class="{{ view.project.budget_not_ok_style }} glyphicon glyphicon-warning-sign"
-                      title="Budget is niet goed verdeeld"></span>
+                      title="Budget is niet goed verdeeld: {{ line.project.left_to_dish_out }}"></span>
               </a>
             {% endif %}
           </td>
