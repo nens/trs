@@ -681,12 +681,15 @@ class Project(models.Model):
         return round(self.overbooked() / self.hour_budget() * 100)
 
     def left_to_dish_out(self):
-        return self.total_income() - self.total_costs()
-
-    def budget_ok(self):
+        raw = self.total_income() - self.total_costs()
         # Note: a little margin around zero is allowed to account for contract
         # amounts not always being rounded.
-        return -1 < self.left_to_dish_out() < 1
+        if (-1 < raw < 1):
+            return 0
+        return raw
+
+    def budget_ok(self):
+        return not self.left_to_dish_out()
 
     def budget_not_ok_style(self):
         """Return orange/red style depending on whether were above/below zero."""
