@@ -3614,6 +3614,114 @@ class WbsoExcelView(ExcelResponseMixin, WbsoProjectsOverview):
             yield line
 
 
+class WbsoExcelView2(ExcelResponseMixin, WbsoProjectsOverview):
+
+    YEAR = 2023
+
+
+    @property
+    def header_line(self):
+        return ["Project", "Projectnummer"] # Plus data.
+
+    # @cached_property
+    # def names_per_wbso_project_number(self):
+    #     """Return dict of {number: name} for all WBSO projects"""
+    #     numbers_and_names = WbsoProject.objects.all().values("number", "title")
+    #     return {item["number"]: item["title"] for item in numbers_and_names}
+
+    @cached_property
+    def bookings_per_week_per_wbso_project_per_person(self):
+        return (
+            Booking.objects.filter(
+                booked_on__wbso_project__id__gt=0, year_week__year=self.YEAR
+            )
+            .values(
+                "booked_by__name",
+                "year_week",
+                "booked_on__wbso_percentage",
+                "booked_on__wbso_project",
+                "booked_on__wbso_project__title",
+            )
+            .annotate(models.Sum("hours"))
+        )
+    #RRR
+
+    @cached_property
+    def relevant_wbso_projects(self):
+        wbso_projects = set([(item["booked_on__wbso_project__title"], item["booked_on__wbso_project"])
+                             for item in self.bookings_per_week_per_wbso_project_per_person])
+        return sorted(wbso_projects)
+
+    @cached_property
+    def relevant_persons(self):
+        persons = set([item["booked_by__name"] for item in self.bookings_per_week_per_wbso_project_per_person])
+        return sorted(persons)
+
+    def prepend_lines(self, person):
+        # Different from normal prepend_lines(): we get a person as parameter.
+        return [
+            ["Medewerker", person],
+            ["Naam en BSN-nummer"],
+            ["Functie"],
+            ["Jaar", self.YEAR],
+        ]
+
+    def excel_lines(self, person):
+        # Different from normal excel_lines(): we get a person as parameter.
+        for (wbso_project_name, wbso_project_id) in self.relevant_wbso_projects:
+            line = [wbso_project_name, wbso_project_id]  # TODO: uren/dag
+            # this_persons_bookings_per_week_per_wbso_project = [
+            #     item
+            #     for item in self.bookings_per_week_per_person_per_wbso_project
+            #     if item["booked_by__name"] == person
+            # ]
+
+            # for text, year_weeks in self.half_years:
+            #     for wbso_project in self.found_wbso_projects:
+            #         hours = [
+            #             round(
+            #                 item["hours__sum"]
+            #                 * (item["booked_on__wbso_percentage"] or 0)
+            #                 / 100
+            #             )
+            #             for item in this_persons_bookings_per_week_per_wbso_project
+            #             if item["year_week"] in year_weeks
+            #             and item["booked_on__wbso_project"] == wbso_project
+            #         ]
+            #         line.append(sum(hours))
+            yield line
+
+    def render_to_response(self, context, **response_kwargs):
+        """Return a excel response instead of a rendered template."""
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  # noqa
+        )
+        filename = self.excel_filename + ".xlsx"
+        response["Content-Disposition"] = 'attachment; filename="%s"' % filename
+
+        workbook = xlsxwriter.Workbook(response)
+
+        for person in self.relevant_persons:
+            worksheet = workbook.add_worksheet(person)
+            worksheet.add_write_handler(Group, _django_model_instance_to_string)
+            worksheet.add_write_handler(Person, _django_model_instance_to_string)
+            worksheet.add_write_handler(Project, _django_model_instance_to_string)
+
+            row_number = 0
+            for line in self.prepend_lines(person):
+                worksheet.write_row(row_number, 0, line)
+                row_number += 1  # yeah, right...
+            worksheet.write_row(row_number, 0, self.header_line)
+            row_number += 1
+            for line in self.excel_lines(person):
+                # Note: line should be a list of values.
+                worksheet.write_row(row_number, 0, line)
+                row_number += 1
+
+        workbook.close()
+        return response
+
+
 class FinancialOverview(BaseView):
     template_name = "trs/financial_overview.html"
     title = "Overzicht financiën (als excel)"

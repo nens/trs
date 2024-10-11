@@ -145,6 +145,11 @@ urlpatterns = [
         name="trs.wbso.excel",
     ),
     re_path(
+        r"^overviews/wbso_projects/excel2/$",
+        views.WbsoExcelView2.as_view(),
+        name="trs.wbso.excel2",
+    ),
+    re_path(
         r"^overviews/financial_excel/$",
         views.FinancialExcelView.as_view(),
         name="trs.financial.excel",
