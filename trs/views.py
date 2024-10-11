@@ -1,3 +1,4 @@
+import calendar
 from collections import defaultdict
 from collections import OrderedDict
 from copy import deepcopy
@@ -3618,16 +3619,19 @@ class WbsoExcelView2(ExcelResponseMixin, WbsoProjectsOverview):
 
     YEAR = 2023
 
+    @cached_property
+    def dates(self):
+        result = []
+        for month, num_of_days in enumerate(calendar.mdays):
+            if month == 0:
+                continue
+            for day in range(num_of_days):
+                result.append(datetime.date(self.YEAR, month, day+1))
+        return result
 
     @property
     def header_line(self):
-        return ["Project", "Projectnummer"] # Plus data.
-
-    # @cached_property
-    # def names_per_wbso_project_number(self):
-    #     """Return dict of {number: name} for all WBSO projects"""
-    #     numbers_and_names = WbsoProject.objects.all().values("number", "title")
-    #     return {item["number"]: item["title"] for item in numbers_and_names}
+        return ["Project", "Projectnummer"] + [day.strftime("%d %b") for day in self.dates]
 
     @cached_property
     def bookings_per_week_per_wbso_project_per_person(self):
@@ -3637,7 +3641,7 @@ class WbsoExcelView2(ExcelResponseMixin, WbsoProjectsOverview):
             )
             .values(
                 "booked_by__name",
-                "year_week",
+                "year_week__first_day",
                 "booked_on__wbso_percentage",
                 "booked_on__wbso_project",
                 "booked_on__wbso_project__title",
@@ -3648,7 +3652,7 @@ class WbsoExcelView2(ExcelResponseMixin, WbsoProjectsOverview):
 
     @cached_property
     def relevant_wbso_projects(self):
-        wbso_projects = set([(item["booked_on__wbso_project__title"], item["booked_on__wbso_project"])
+        wbso_projects = set([(item["booked_on__wbso_project"], item["booked_on__wbso_project__title"])
                              for item in self.bookings_per_week_per_wbso_project_per_person])
         return sorted(wbso_projects)
 
@@ -3664,12 +3668,20 @@ class WbsoExcelView2(ExcelResponseMixin, WbsoProjectsOverview):
             ["Naam en BSN-nummer"],
             ["Functie"],
             ["Jaar", self.YEAR],
+            [],
         ]
 
     def excel_lines(self, person):
         # Different from normal excel_lines(): we get a person as parameter.
-        for (wbso_project_name, wbso_project_id) in self.relevant_wbso_projects:
+        for (wbso_project_id, wbso_project_name) in self.relevant_wbso_projects:
             line = [wbso_project_name, wbso_project_id]  # TODO: uren/dag
+            filled_in = {item["year_week__first_day"]: item["hours__sum"]
+                         for item in self.bookings_per_week_per_wbso_project_per_person
+                         if item["booked_on__wbso_project"] == wbso_project_id
+                         and item["booked_by__name"] == person}
+            for day in self.dates:
+                line.append(filled_in.get(day, ""))
+
             # this_persons_bookings_per_week_per_wbso_project = [
             #     item
             #     for item in self.bookings_per_week_per_person_per_wbso_project
