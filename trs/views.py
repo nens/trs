@@ -3673,9 +3673,17 @@ class WbsoExcelView2(ExcelResponseMixin, WbsoProjectsOverview):
 
     def excel_lines(self, person):
         # Different from normal excel_lines(): we get a person as parameter.
+
+        def _wbso_hours(item):
+            return round(
+                item["hours__sum"]
+                * (item["booked_on__wbso_percentage"] or 0)
+                / 100
+            )
+
         for (wbso_project_id, wbso_project_name) in self.relevant_wbso_projects:
             line = [wbso_project_name, wbso_project_id]  # TODO: uren/dag
-            filled_in = {item["year_week__first_day"]: item["hours__sum"]
+            filled_in = {item["year_week__first_day"]: _wbso_hours(item)
                          for item in self.bookings_per_week_per_wbso_project_per_person
                          if item["booked_on__wbso_project"] == wbso_project_id
                          and item["booked_by__name"] == person}
