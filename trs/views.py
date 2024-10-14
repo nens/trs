@@ -3683,32 +3683,17 @@ class WbsoExcelView2(ExcelResponseMixin, WbsoProjectsOverview):
 
         for (wbso_project_id, wbso_project_name) in self.relevant_wbso_projects:
             line = [wbso_project_name, wbso_project_id]  # TODO: uren/dag
-            filled_in = {item["year_week__first_day"]: _wbso_hours(item)
-                         for item in self.bookings_per_week_per_wbso_project_per_person
+            filled_in = {}
+            bookings = [item for item in self.bookings_per_week_per_wbso_project_per_person
                          if item["booked_on__wbso_project"] == wbso_project_id
-                         and item["booked_by__name"] == person}
+                         and item["booked_by__name"] == person]
+            for item in bookings:
+                key = item["year_week__first_day"]
+                existing = filled_in.get(key, 0)
+                filled_in[key] = existing + _wbso_hours(item)
             for day in self.dates:
                 line.append(filled_in.get(day, ""))
 
-            # this_persons_bookings_per_week_per_wbso_project = [
-            #     item
-            #     for item in self.bookings_per_week_per_person_per_wbso_project
-            #     if item["booked_by__name"] == person
-            # ]
-
-            # for text, year_weeks in self.half_years:
-            #     for wbso_project in self.found_wbso_projects:
-            #         hours = [
-            #             round(
-            #                 item["hours__sum"]
-            #                 * (item["booked_on__wbso_percentage"] or 0)
-            #                 / 100
-            #             )
-            #             for item in this_persons_bookings_per_week_per_wbso_project
-            #             if item["year_week"] in year_weeks
-            #             and item["booked_on__wbso_project"] == wbso_project
-            #         ]
-            #         line.append(sum(hours))
             yield line
 
     def render_to_response(self, context, **response_kwargs):
