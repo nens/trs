@@ -126,6 +126,28 @@ class Group(models.Model):
         return self.name
 
 
+class MPC(models.Model):
+    # The implementation is the same as for "group".
+    name = models.CharField(verbose_name="naam", max_length=255)
+    description = models.CharField(
+        verbose_name="omschrijving", blank=True, max_length=255
+    )
+    target = models.DecimalField(
+        max_digits=12,
+        decimal_places=DECIMAL_PLACES,
+        default=0,
+        verbose_name="omzetdoelstelling",
+    )
+
+    class Meta:
+        verbose_name = "Markt-product-combinatie"
+        verbose_name_plural = "Markt-product-combinaties"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class Person(models.Model):
     name = models.CharField(verbose_name="naam", max_length=255)
     user = models.OneToOneField(
@@ -152,6 +174,14 @@ class Person(models.Model):
         blank=True,
         null=True,
         verbose_name="groep",
+        related_name="persons",
+        on_delete=models.CASCADE,
+    )
+    mpc = models.ForeignKey(
+        MPC,
+        blank=True,
+        null=True,
+        verbose_name="markt-product-combinatie",
         related_name="persons",
         on_delete=models.CASCADE,
     )
@@ -495,6 +525,14 @@ class Project(models.Model):
         blank=True,
         null=True,
         verbose_name="groep",
+        related_name="projects",
+        on_delete=models.CASCADE,
+    )
+    mpc = models.ForeignKey(
+        MPC,
+        blank=True,
+        null=True,
+        verbose_name="markt-product-combinatie",
         related_name="projects",
         on_delete=models.CASCADE,
     )
