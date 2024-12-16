@@ -795,16 +795,6 @@ class ProjectsView(BaseView):
                 ],
             },
             {
-                "title": "Geaccepteerd",
-                "param": "is_accepted",
-                "default": "all",
-                "choices": [
-                    {"value": "all", "title": "Geen filter", "q": Q()},
-                    {"value": "false", "title": "niet", "q": Q(is_accepted=False)},
-                    {"value": "true", "title": "wel", "q": Q(is_accepted=True)},
-                ],
-            },
-            {
                 "title": "Groep",
                 "param": "group",
                 "default": "all",
@@ -931,7 +921,6 @@ class ProjectsView(BaseView):
         if self.can_see_everything:
             result += [
                 "is_subsidized",
-                "is_accepted",
                 "started",
                 "ended",
                 "ratings",
@@ -1153,8 +1142,6 @@ class ProjectView(BaseView):
     @cached_property
     def can_edit_financials(self):
         if self.project.archived:
-            return False
-        if self.project.is_accepted:
             return False
         if self.is_project_management:
             return True
@@ -1636,8 +1623,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
                 "end",
                 "project_leader",
                 "project_manager",
-                # Note: the next two are shown only on the edit view!
-                "is_accepted",
+                # Note: the next one is shown only on the edit view!
                 "remark",
                 "financial_remark",
                 "rating_projectteam",
@@ -1656,11 +1642,6 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
             "rating_customer",
             "rating_customer_reason",
         ]
-        if self.active_person == self.project.project_manager:
-            # if not self.project.is_accepted:
-            #     result.append('is_accepted')
-            # ^^^^ TODO: previously the PM could not un-accept the project.
-            result.append("is_accepted")
         return result
 
     @cached_property
@@ -2086,8 +2067,6 @@ class ProjectBudgetEditView(BaseView):
 
     def has_form_permissions(self):
         if self.project.archived:
-            return False
-        if self.project.is_accepted:
             return False
         if self.is_project_management:
             return True
@@ -3052,7 +3031,6 @@ class ProjectsExcelView(ExcelResponseMixin, ProjectsView):
         "Software ontwikkeling",
         "Afdracht",
         "Opdrachtbevestiging binnen",
-        "Geaccepteerd",
         "Cijfer team",
         "Cijfer klant",
         "Gefactureerd",
@@ -3112,7 +3090,6 @@ class ProjectsExcelView(ExcelResponseMixin, ProjectsView):
                 project.software_development,
                 project.profit,
                 project.confirmation_date,
-                project.is_accepted,
                 project.rating_projectteam,
                 project.rating_customer,
                 line["invoice_amount"],

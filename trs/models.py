@@ -550,14 +550,6 @@ class Project(models.Model):
         verbose_name="WBSO percentage",
         help_text="Percentage dat meetelt voor de WBSO (0-100)",
     )
-    is_accepted = models.BooleanField(
-        verbose_name="goedgekeurd",
-        help_text=(
-            "Project is goedgekeurd door de PM  en kan qua begroting "
-            + "niet meer gewijzigd worden."
-        ),
-        default=False,
-    )
     is_subsidized = models.BooleanField(
         verbose_name="subsidieproject",
         help_text=(
