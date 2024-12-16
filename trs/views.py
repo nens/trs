@@ -805,20 +805,6 @@ class ProjectsView(BaseView):
                 ],
             },
             {
-                "title": "Startoverleg",
-                "param": "startup_meeting_done",
-                "default": "all",
-                "choices": [
-                    {"value": "all", "title": "Geen filter", "q": Q()},
-                    {"value": "false", "title": "nog niet", "q": Q(is_accepted=False)},
-                    {
-                        "value": "true",
-                        "title": "wel gehouden",
-                        "q": Q(is_accepted=True),
-                    },
-                ],
-            },
-            {
                 "title": "Groep",
                 "param": "group",
                 "default": "all",
@@ -946,7 +932,6 @@ class ProjectsView(BaseView):
             result += [
                 "is_subsidized",
                 "is_accepted",
-                "startup_meeting_done",
                 "started",
                 "ended",
                 "ratings",
@@ -1652,7 +1637,6 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
                 "project_leader",
                 "project_manager",
                 # Note: the next two are shown only on the edit view!
-                "startup_meeting_done",
                 "is_accepted",
                 "remark",
                 "financial_remark",
@@ -1672,9 +1656,6 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
             "rating_customer",
             "rating_customer_reason",
         ]
-        if self.active_person == self.project.project_leader:
-            if not self.project.startup_meeting_done:
-                result.append("startup_meeting_done")
         if self.active_person == self.project.project_manager:
             # if not self.project.is_accepted:
             #     result.append('is_accepted')
@@ -3071,7 +3052,6 @@ class ProjectsExcelView(ExcelResponseMixin, ProjectsView):
         "Software ontwikkeling",
         "Afdracht",
         "Opdrachtbevestiging binnen",
-        "Startoverleg",
         "Geaccepteerd",
         "Cijfer team",
         "Cijfer klant",
@@ -3132,7 +3112,6 @@ class ProjectsExcelView(ExcelResponseMixin, ProjectsView):
                 project.software_development,
                 project.profit,
                 project.confirmation_date,
-                project.startup_meeting_done,
                 project.is_accepted,
                 project.rating_projectteam,
                 project.rating_customer,

@@ -119,17 +119,6 @@
         <td>{{ view.project.end.friendly|default:"Niet ingevuld" }}</td>
       </tr>
       <tr>
-        <th>Startoverleg</th>
-        <td>
-          {% if view.project.startup_meeting_done %}
-            <span class="glyphicon glyphicon-ok"></span>
-            Het startoverleg heeft plaatsgevonden
-          {% else %}
-            <span class="glyphicon glyphicon-remove"></span>
-          {% endif %}
-        </td>
-      </tr>
-      <tr>
         <th>Goedgekeurd</th>
         <td>
           {% if view.project.is_accepted %}

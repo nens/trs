@@ -558,9 +558,6 @@ class Project(models.Model):
         ),
         default=False,
     )
-    startup_meeting_done = models.BooleanField(
-        verbose_name="startoverleg heeft plaatsgevonden", default=False
-    )
     is_subsidized = models.BooleanField(
         verbose_name="subsidieproject",
         help_text=(
