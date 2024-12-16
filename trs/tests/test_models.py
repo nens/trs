@@ -113,6 +113,12 @@ class ProjectTestCase(TestCase):
         # before .10 as it isn't normally a numerical sort.
         self.assertEqual(models.Project.objects.all()[0].code, "P1234.10")
 
+    def test_sorting4(self):
+        factories.ProjectFactory.create(code="Z1234.1")
+        factories.ProjectFactory.create(code="20251234.1")
+        # Sort new-style yyyy projects before a-z projects.
+        self.assertEqual(models.Project.objects.all()[0].code, "20251234.1")
+
     def test_make_code_sortable1(self):
         self.assertEqual(models.make_code_sortable("P1234"), "p1234")
 
