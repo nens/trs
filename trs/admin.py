@@ -6,17 +6,22 @@ class GroupAdmin(admin.ModelAdmin):
     list_display = ["name", "description"]
 
 
+class MPCAdmin(admin.ModelAdmin):
+    list_display = ["name", "description"]
+
+
 class PersonAdmin(admin.ModelAdmin):
     list_display = [
         "name",
         "group",
+        "mpc",
         "archived",
         "user",
         "is_office_management",
         "is_management",
     ]
-    list_editable = ["group", "archived", "is_office_management"]
-    list_filter = ["archived", "group", "is_management", "is_office_management"]
+    list_editable = ["group", "mpc", "archived", "is_office_management"]
+    list_filter = ["archived", "group", "mpc", "is_management", "is_office_management"]
     search_fields = ["name"]
 
 
@@ -25,13 +30,14 @@ class ProjectAdmin(admin.ModelAdmin):
         "code",
         "description",
         "group",
+        "mpc",
         "wbso_project",
         "wbso_percentage",
         "internal",
         "archived",
     ]
-    list_filter = ["internal", "archived", "group", "wbso_project"]
-    list_editable = ["group", "wbso_project", "wbso_percentage"]
+    list_filter = ["internal", "archived", "group", "mpc", "wbso_project"]
+    list_editable = ["group", "mpc", "wbso_project", "wbso_percentage"]
     search_fields = ["code", "description"]
 
 
@@ -76,6 +82,7 @@ class ThirdPartyEstimateAdmin(admin.ModelAdmin):
 
 
 admin.site.register(models.Group, GroupAdmin)
+admin.site.register(models.MPC, MPCAdmin)
 admin.site.register(models.Person, PersonAdmin)
 admin.site.register(models.Project, ProjectAdmin)
 admin.site.register(models.WbsoProject, WbsoProjectAdmin)

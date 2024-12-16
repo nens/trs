@@ -104,6 +104,12 @@
           <td>{{ view.project.group }}</td>
         </tr>
       {% endif %}
+      {% if view.project.mpc %}
+        <tr>
+          <th>Markt-product-combinatie</th>
+          <td>{{ view.project.mpc }}</td>
+        </tr>
+      {% endif %}
       <tr>
         <th>Startweek</th>
         <td>{{ view.project.start.friendly|default:"Niet ingevuld" }}</td>

@@ -39,6 +39,11 @@
           <th>Groep</th>
           <td>{{ view.person.group }}</td>
         </tr>
+      {% if view.person.mpc %}
+        <tr>
+          <th>Markt-product-combinatie</th>
+          <td>{{ view.person.mpc }}</td>
+        </tr>
       {% endif %}
       <tr>
         <th>Extra rollen</th>
