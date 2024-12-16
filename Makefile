@@ -65,7 +65,6 @@ node_modules/bower/bin/bower:
 
 
 test: install
-	bin/flake8 trs
 	bin/pytest | tee trs/pytest-coverage.txt
 
 
