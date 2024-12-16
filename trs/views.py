@@ -36,6 +36,7 @@ from trs.forms import SearchForm
 from trs.models import Booking
 from trs.models import BudgetItem
 from trs.models import Group
+from trs.models import MPC
 from trs.models import Invoice
 from trs.models import Payable
 from trs.models import Person
@@ -333,6 +334,10 @@ class BaseMixin(object):
     def group_choices(self):
         return list(Group.objects.all().values_list("pk", "name"))
 
+    @cached_property
+    def mpc_choices(self):
+        return list(MPC.objects.all().values_list("pk", "name"))
+
 
 class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
     pass
@@ -341,7 +346,7 @@ class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
 class PersonsView(BaseView):
 
     title = "Medewerkers"
-    normally_visible_filters = ["status", "group", "year"]
+    normally_visible_filters = ["status", "group", "mpc", "year"]
 
     @cached_property
     def results_for_selection_pager(self):
@@ -396,6 +401,21 @@ class PersonsView(BaseView):
                     for group in Group.objects.all()
                 ]
                 + [{"value": "geen", "title": "Zonder groep", "q": Q(group=None)}],
+            },
+            {
+                "title": "MPC",
+                "param": "mpc",
+                "default": "all",
+                "choices": [{"value": "all", "title": "Geen filter", "q": Q()}]
+                + [
+                    {
+                        "value": str(mpc.id),
+                        "title": mpc.name,
+                        "q": Q(mpc=mpc.id),
+                    }
+                    for mpc in MPC.objects.all()
+                ]
+                + [{"value": "geen", "title": "Zonder MPC", "q": Q(mpc=None)}],
             },
             {
                 "title": "Jaar",
@@ -775,30 +795,6 @@ class ProjectsView(BaseView):
                 ],
             },
             {
-                "title": "Geaccepteerd",
-                "param": "is_accepted",
-                "default": "all",
-                "choices": [
-                    {"value": "all", "title": "Geen filter", "q": Q()},
-                    {"value": "false", "title": "niet", "q": Q(is_accepted=False)},
-                    {"value": "true", "title": "wel", "q": Q(is_accepted=True)},
-                ],
-            },
-            {
-                "title": "Startoverleg",
-                "param": "startup_meeting_done",
-                "default": "all",
-                "choices": [
-                    {"value": "all", "title": "Geen filter", "q": Q()},
-                    {"value": "false", "title": "nog niet", "q": Q(is_accepted=False)},
-                    {
-                        "value": "true",
-                        "title": "wel gehouden",
-                        "q": Q(is_accepted=True),
-                    },
-                ],
-            },
-            {
                 "title": "Groep",
                 "param": "group",
                 "default": "all",
@@ -812,6 +808,21 @@ class ProjectsView(BaseView):
                     for group in Group.objects.all()
                 ]
                 + [{"value": "geen", "title": "Zonder groep", "q": Q(group=None)}],
+            },
+            {
+                "title": "MPC",
+                "param": "mpc",
+                "default": "all",
+                "choices": [{"value": "all", "title": "Geen filter", "q": Q()}]
+                + [
+                    {
+                        "value": str(mpc.id),
+                        "title": mpc.name,
+                        "q": Q(mpc=mpc.id),
+                    }
+                    for mpc in MPC.objects.all()
+                ]
+                + [{"value": "geen", "title": "Zonder MPC", "q": Q(mpc=None)}],
             },
             {
                 "title": "Projectleider",
@@ -906,12 +917,10 @@ class ProjectsView(BaseView):
 
     @cached_property
     def normally_visible_filters(self):
-        result = ["status", "group", "year"]
+        result = ["status", "group", "mpc", "year"]
         if self.can_see_everything:
             result += [
                 "is_subsidized",
-                "is_accepted",
-                "startup_meeting_done",
                 "started",
                 "ended",
                 "ratings",
@@ -1133,8 +1142,6 @@ class ProjectView(BaseView):
     @cached_property
     def can_edit_financials(self):
         if self.project.archived:
-            return False
-        if self.project.is_accepted:
             return False
         if self.is_project_management:
             return True
@@ -1602,6 +1609,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
                 "code",
                 "description",
                 "group",
+                "mpc",
                 "internal",
                 "hidden",
                 "hourless",
@@ -1615,9 +1623,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
                 "end",
                 "project_leader",
                 "project_manager",
-                # Note: the next two are shown only on the edit view!
-                "startup_meeting_done",
-                "is_accepted",
+                # Note: the next one is shown only on the edit view!
                 "remark",
                 "financial_remark",
                 "rating_projectteam",
@@ -1636,14 +1642,6 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
             "rating_customer",
             "rating_customer_reason",
         ]
-        if self.active_person == self.project.project_leader:
-            if not self.project.startup_meeting_done:
-                result.append("startup_meeting_done")
-        if self.active_person == self.project.project_manager:
-            # if not self.project.is_accepted:
-            #     result.append('is_accepted')
-            # ^^^^ TODO: previously the PM could not un-accept the project.
-            result.append("is_accepted")
         return result
 
     @cached_property
@@ -1689,6 +1687,7 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin)
         "code",
         "description",
         "group",
+        "mpc",
         "internal",
         "hidden",
         "hourless",
@@ -1863,7 +1862,7 @@ class PayableEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
 class PersonEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
     template_name = "trs/edit.html"
     model = Person
-    fields = ["name", "user", "group", "is_management", "archived"]
+    fields = ["name", "user", "group", "mpc", "is_management", "archived"]
 
     @cached_property
     def person(self):
@@ -2068,8 +2067,6 @@ class ProjectBudgetEditView(BaseView):
 
     def has_form_permissions(self):
         if self.project.archived:
-            return False
-        if self.project.is_accepted:
             return False
         if self.is_project_management:
             return True
@@ -2631,7 +2628,7 @@ class InvoicesPerMonthOverview(BaseView):
 
 class PayablesView(BaseView):
     template_name = "trs/payables.html"
-    normally_visible_filters = ["status", "year", "projectstatus", "group"]
+    normally_visible_filters = ["status", "year", "projectstatus", "group", "mpc"]
 
     @cached_property
     def results_for_selection_pager(self):
@@ -2706,6 +2703,21 @@ class PayablesView(BaseView):
                         "q": Q(project__group=None),
                     }
                 ],
+            },
+            {
+                "title": "MPC",
+                "param": "mpc",
+                "default": "all",
+                "choices": [{"value": "all", "title": "Geen filter", "q": Q()}]
+                + [
+                    {
+                        "value": str(mpc.id),
+                        "title": mpc.name,
+                        "q": Q(mpc=mpc.id),
+                    }
+                    for mpc in MPC.objects.all()
+                ]
+                + [{"value": "geen", "title": "Zonder MPC", "q": Q(mpc=None)}],
             },
         ]
 
@@ -2977,6 +2989,7 @@ class ExcelResponseMixin(object):
         workbook = xlsxwriter.Workbook(response)
         worksheet = workbook.add_worksheet()
         worksheet.add_write_handler(Group, _django_model_instance_to_string)
+        worksheet.add_write_handler(MPC, _django_model_instance_to_string)
         worksheet.add_write_handler(Person, _django_model_instance_to_string)
         worksheet.add_write_handler(Project, _django_model_instance_to_string)
 
@@ -3004,6 +3017,7 @@ class ProjectsExcelView(ExcelResponseMixin, ProjectsView):
         "Omschrijving",
         "Opdrachtgever",
         "Groep",
+        "MPC",
         "Intern",
         "Gesubsidieerd",
         "Gearchiveerd",
@@ -3017,8 +3031,6 @@ class ProjectsExcelView(ExcelResponseMixin, ProjectsView):
         "Software ontwikkeling",
         "Afdracht",
         "Opdrachtbevestiging binnen",
-        "Startoverleg",
-        "Geaccepteerd",
         "Cijfer team",
         "Cijfer klant",
         "Gefactureerd",
@@ -3064,6 +3076,7 @@ class ProjectsExcelView(ExcelResponseMixin, ProjectsView):
                 project.description.replace(",", " "),
                 project.principal,
                 project.group,
+                project.mpc,
                 project.internal,
                 project.is_subsidized,
                 project.archived,
@@ -3077,8 +3090,6 @@ class ProjectsExcelView(ExcelResponseMixin, ProjectsView):
                 project.software_development,
                 project.profit,
                 project.confirmation_date,
-                project.startup_meeting_done,
-                project.is_accepted,
                 project.rating_projectteam,
                 project.rating_customer,
                 line["invoice_amount"],
@@ -3709,6 +3720,7 @@ class WbsoExcelView2(ExcelResponseMixin, WbsoProjectsOverview):
         for person in self.relevant_persons:
             worksheet = workbook.add_worksheet(person)
             worksheet.add_write_handler(Group, _django_model_instance_to_string)
+            worksheet.add_write_handler(MPC, _django_model_instance_to_string)
             worksheet.add_write_handler(Person, _django_model_instance_to_string)
             worksheet.add_write_handler(Project, _django_model_instance_to_string)
 
@@ -3743,7 +3755,12 @@ class FinancialOverview(BaseView):
         for pk, name in Group.objects.all().values_list("pk", "name"):
             yield {
                 "name": name,
-                "url": reverse("trs.financial.excel", kwargs={"pk": pk}),
+                "url": reverse("trs.financial.excel", kwargs={"group_pk": pk}),
+            }
+        for pk, name in MPC.objects.all().values_list("pk", "name"):
+            yield {
+                "name": "MPC: " + name,
+                "url": reverse("trs.financial.excel", kwargs={"mpc_pk": pk}),
             }
 
 
@@ -3761,8 +3778,14 @@ class FinancialExcelView(ExcelResponseMixin, ProjectsView):
 
     @cached_property
     def group(self):
-        if "pk" in self.kwargs:
-            return Group.objects.get(id=self.kwargs["pk"])
+        if "group_pk" in self.kwargs:
+            return Group.objects.get(id=self.kwargs["group_pk"])
+        return
+
+    @cached_property
+    def mpc(self):
+        if "mpc_pk" in self.kwargs:
+            return MPC.objects.get(id=self.kwargs["mpc_pk"])
         return
 
     @property
@@ -3770,19 +3793,24 @@ class FinancialExcelView(ExcelResponseMixin, ProjectsView):
         queryset = Project.objects.filter(internal=False)
         if self.group:
             queryset = queryset.filter(group=self.group)
+        if self.mpc:
+            queryset = queryset.filter(mpc=self.mpc)
         return queryset
 
     @property
     def persons(self):
         if self.group:
             return Person.objects.filter(group=self.group)
-        else:
-            return Person.objects.all()
+        if self.mpc:
+            return Person.objects.filter(mpc=self.mpc)
+        return Person.objects.all()
 
     @cached_property
     def for_who(self):
         if self.group:
             return self.group.name
+        elif self.mpc:
+            return self.mpc.name
         else:
             return "het gehele bedrijf"
 
@@ -3797,6 +3825,8 @@ class FinancialExcelView(ExcelResponseMixin, ProjectsView):
         relevant_persons = Person.objects.filter(id__in=relevant_person_ids)
         if self.group:
             relevant_persons = relevant_persons.filter(group=self.group)
+        if self.mpc:
+            relevant_persons = relevant_persons.filter(mpc=self.mpc)
         pycs = [core.get_pyc(person=person, year=year) for person in relevant_persons]
         return {
             "turnover": sum([pyc.turnover for pyc in pycs]),
@@ -3840,6 +3870,8 @@ class FinancialExcelView(ExcelResponseMixin, ProjectsView):
         invoices = Invoice.objects.all()
         if self.group:
             invoices = invoices.filter(project__group=self.group)
+        if self.mpc:
+            invoices = invoices.filter(project__mpc=self.mpc)
         # For both defaultdicts, the first key is year, the second the month.
         invoiced_per_year_month = defaultdict(dict)
         cumulative_per_year_month = defaultdict(dict)
@@ -3926,9 +3958,12 @@ class FinancialExcelView(ExcelResponseMixin, ProjectsView):
     def target(self):
         if self.group:
             return self.group.target
+        elif self.mpc:
+            return self.mpc.target
         else:
             # The target of the whole company is the sum of all groups'
             # targets.
+            # TODO: this doesn't match MPC's, really
             return Group.objects.all().aggregate(models.Sum("target"))["target__sum"]
 
     @cached_property
@@ -4072,6 +4107,7 @@ class PayablesExcelView(ExcelResponseMixin, PayablesView):
         "Factuurdatum",
         "Factuurnummer",
         "Groep",
+        "MPC",
         "Project",
         "Gearchiveerd",
         "Opdrachtgever",
@@ -4087,6 +4123,7 @@ class PayablesExcelView(ExcelResponseMixin, PayablesView):
                 payable.date,
                 payable.number,
                 payable.project.group,
+                payable.project.mpc,
                 payable.project.code,
                 payable.project.archived,
                 payable.project.principal,

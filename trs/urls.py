@@ -154,8 +154,14 @@ urlpatterns = [
         views.FinancialExcelView.as_view(),
         name="trs.financial.excel",
     ),
+    # The next two differentiate in their pk.
     re_path(
-        r"^overviews/financial_excel/(?P<pk>\d+)/$",
+        r"^overviews/financial_excel/group/(?P<group_pk>\d+)/$",
+        views.FinancialExcelView.as_view(),
+        name="trs.financial.excel",
+    ),
+    re_path(
+        r"^overviews/financial_excel/mpc/(?P<mpc_pk>\d+)/$",
         views.FinancialExcelView.as_view(),
         name="trs.financial.excel",
     ),

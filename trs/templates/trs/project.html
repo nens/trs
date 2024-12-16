@@ -104,6 +104,12 @@
           <td>{{ view.project.group }}</td>
         </tr>
       {% endif %}
+      {% if view.project.mpc %}
+        <tr>
+          <th>Markt-product-combinatie</th>
+          <td>{{ view.project.mpc }}</td>
+        </tr>
+      {% endif %}
       <tr>
         <th>Startweek</th>
         <td>{{ view.project.start.friendly|default:"Niet ingevuld" }}</td>
@@ -111,28 +117,6 @@
       <tr>
         <th>Laatste week</th>
         <td>{{ view.project.end.friendly|default:"Niet ingevuld" }}</td>
-      </tr>
-      <tr>
-        <th>Startoverleg</th>
-        <td>
-          {% if view.project.startup_meeting_done %}
-            <span class="glyphicon glyphicon-ok"></span>
-            Het startoverleg heeft plaatsgevonden
-          {% else %}
-            <span class="glyphicon glyphicon-remove"></span>
-          {% endif %}
-        </td>
-      </tr>
-      <tr>
-        <th>Goedgekeurd</th>
-        <td>
-          {% if view.project.is_accepted %}
-            <span class="text-success glyphicon glyphicon-ok"></span>
-            Het project is goedgekeurd door de PM.
-          {% else %}
-            <span class="glyphicon glyphicon-remove"></span>
-          {% endif %}
-        </td>
       </tr>
 
       {% if view.project.rating_projectteam %}
@@ -270,19 +254,6 @@
                 title="Budget is niet goed verdeeld"></span>
         {% endif %}
       </h2>
-
-      {% if view.can_edit_project and view.project.is_accepted %}
-        <p>
-          Het project is goedgekeurd, dus de begroting kan niet meer worden
-          aangepast.
-          De PM zal het
-          <a href="{% url 'trs.project.edit' pk=view.project.pk %}#id_is_accepted">
-            goedkeurings-vinkje
-          </a>
-          eerst uit moeten zetten.
-        </p>
-      {% endif %}
-
 
       <div class="table-responsive">
         <table class="table table-hover">
