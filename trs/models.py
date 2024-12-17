@@ -177,14 +177,6 @@ class Person(models.Model):
         related_name="persons",
         on_delete=models.CASCADE,
     )
-    mpc = models.ForeignKey(
-        MPC,
-        blank=True,
-        null=True,
-        verbose_name="markt-product-combinatie",
-        related_name="persons",
-        on_delete=models.CASCADE,
-    )
     is_office_management = models.BooleanField(
         verbose_name="office management",
         help_text="Office management can edit and add everything",

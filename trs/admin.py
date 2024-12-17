@@ -14,14 +14,13 @@ class PersonAdmin(admin.ModelAdmin):
     list_display = [
         "name",
         "group",
-        "mpc",
         "archived",
         "user",
         "is_office_management",
         "is_management",
     ]
-    list_editable = ["group", "mpc", "archived", "is_office_management"]
-    list_filter = ["archived", "group", "mpc", "is_management", "is_office_management"]
+    list_editable = ["group", "archived", "is_office_management"]
+    list_filter = ["archived", "group", "is_management", "is_office_management"]
     search_fields = ["name"]
 
 
