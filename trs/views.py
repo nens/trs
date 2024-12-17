@@ -346,7 +346,7 @@ class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
 class PersonsView(BaseView):
 
     title = "Medewerkers"
-    normally_visible_filters = ["status", "group", "mpc", "year"]
+    normally_visible_filters = ["status", "group", "year"]
 
     @cached_property
     def results_for_selection_pager(self):
@@ -401,21 +401,6 @@ class PersonsView(BaseView):
                     for group in Group.objects.all()
                 ]
                 + [{"value": "geen", "title": "Zonder groep", "q": Q(group=None)}],
-            },
-            {
-                "title": "MPC",
-                "param": "mpc",
-                "default": "all",
-                "choices": [{"value": "all", "title": "Geen filter", "q": Q()}]
-                + [
-                    {
-                        "value": str(mpc.id),
-                        "title": mpc.name,
-                        "q": Q(mpc=mpc.id),
-                    }
-                    for mpc in MPC.objects.all()
-                ]
-                + [{"value": "geen", "title": "Zonder MPC", "q": Q(mpc=None)}],
             },
             {
                 "title": "Jaar",
@@ -1862,7 +1847,7 @@ class PayableEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
 class PersonEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
     template_name = "trs/edit.html"
     model = Person
-    fields = ["name", "user", "group", "mpc", "is_management", "archived"]
+    fields = ["name", "user", "group", "is_management", "archived"]
 
     @cached_property
     def person(self):
@@ -3801,8 +3786,6 @@ class FinancialExcelView(ExcelResponseMixin, ProjectsView):
     def persons(self):
         if self.group:
             return Person.objects.filter(group=self.group)
-        if self.mpc:
-            return Person.objects.filter(mpc=self.mpc)
         return Person.objects.all()
 
     @cached_property
@@ -3825,8 +3808,6 @@ class FinancialExcelView(ExcelResponseMixin, ProjectsView):
         relevant_persons = Person.objects.filter(id__in=relevant_person_ids)
         if self.group:
             relevant_persons = relevant_persons.filter(group=self.group)
-        if self.mpc:
-            relevant_persons = relevant_persons.filter(mpc=self.mpc)
         pycs = [core.get_pyc(person=person, year=year) for person in relevant_persons]
         return {
             "turnover": sum([pyc.turnover for pyc in pycs]),
