@@ -706,7 +706,7 @@ class Project(models.Model):
         raw = self.total_income() - self.total_costs()
         # Note: a little margin around zero is allowed to account for contract
         # amounts not always being rounded.
-        if (-1 < raw < 1):
+        if -1 < raw < 1:
             return 0
         return raw
 

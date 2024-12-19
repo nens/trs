@@ -263,6 +263,11 @@
                     <a href="{% url 'trs.person.kpi' pk=view.sidebar_person.id %}">
                       percentages</a>.
                   </div>
+                  <div>
+                    Afas en TRS qua vrije dagen gelijktrekken?
+                    <a href="{% url 'trs.booking.free-overview' pk=view.sidebar_person.id %}">
+                      Zie het verlofoverzicht</a>.
+                  </div>
 
                 {% endif %}
               {% endblock %}
