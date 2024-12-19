@@ -21,7 +21,15 @@
             <th class="text-right">
               <a href="{{ project.get_absolute_url }}">
                 {{ project.code }}
-              </a><br>
+              </a>
+            </th>
+            {% endfor %}
+          </tr>
+          <tr>
+            <th></th>
+            <th></th>
+            {% for project in view.free_projects %}
+            <th class="text-right">
               {{ project.description }}
             </th>
             {% endfor %}
