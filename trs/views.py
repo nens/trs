@@ -764,11 +764,17 @@ class FreeOverview(PersonView):
         return years_i_booked_in
 
     @cached_property
-    def free_projects(self):
-        return Project.objects.filter(
+    def free_project_ids(self):
+        return sorted(self.person.assigned_projects().filter(
             Q(description__icontains="verlof") | Q(description__icontains="feest")
-        ).filter(
-            bookings__year_week__year=self.year, bookings__booked_by=self.active_person
+        ).values_list("id", flat=True))
+
+    @cached_property
+    def free_projects(self):
+        my_bookings = self.person.bookings.filter(year_week__year=self.year)
+        return Project.objects.filter(
+            bookings__in=my_bookings,
+            id__in=self.free_project_ids
         ).distinct()
 
     @cached_property
