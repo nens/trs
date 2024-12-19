@@ -18,7 +18,12 @@
             <th>Week</th>
             <th>Begindag</th>
             {% for project in view.free_projects %}
-            <th class="text-right">{{ project.as_widget }}</th>
+            <th class="text-right">
+              <a href="{{ project.get_absolute_url }}">
+                {{ project.code }}
+              </a><br>
+              {{ project.description }}
+            </th>
             {% endfor %}
           </tr>
         </thead>
