@@ -1,4 +1,3 @@
-import calendar
 from collections import defaultdict
 from collections import OrderedDict
 from copy import deepcopy
@@ -36,8 +35,8 @@ from trs.forms import SearchForm
 from trs.models import Booking
 from trs.models import BudgetItem
 from trs.models import Group
-from trs.models import MPC
 from trs.models import Invoice
+from trs.models import MPC
 from trs.models import Payable
 from trs.models import Person
 from trs.models import PersonChange
@@ -49,6 +48,7 @@ from trs.models import WorkAssignment
 from trs.models import YearWeek
 from trs.templatetags.trs_formatting import hours as format_as_hours
 
+import calendar
 import datetime
 import logging
 import statistics
@@ -766,15 +766,19 @@ class FreeOverview(PersonView):
     @cached_property
     def free_projects(self):
         return self.all_projects.filter(
-            Q(description__icontains="verlof") | Q(description__icontains="feest")).filter(
-                bookings__year_week__year=self.year,
-                bookings__booked_by=self.active_person
-            )
+            Q(description__icontains="verlof") | Q(description__icontains="feest")
+        ).filter(
+            bookings__year_week__year=self.year, bookings__booked_by=self.active_person
+        )
 
     @cached_property
     def lines(self):
         booked_this_year_per_week_per_project = (
-            Booking.objects.filter(booked_by=self.person, year_week__year=self.year, booked_on__in=self.free_projects)
+            Booking.objects.filter(
+                booked_by=self.person,
+                year_week__year=self.year,
+                booked_on__in=self.free_projects,
+            )
             .values("year_week__week", "booked_on")
             .annotate(models.Sum("hours"))
         )
@@ -785,10 +789,14 @@ class FreeOverview(PersonView):
         for year_week in YearWeek.objects.filter(year=self.year):
             weeks[year_week.week] = deepcopy(empty_week)
         for booking in booked_this_year_per_week_per_project:
-            weeks[booking["year_week__week"]][booking["booked_on"]] = booking["hours__sum"]
+            weeks[booking["year_week__week"]][booking["booked_on"]] = booking[
+                "hours__sum"
+            ]
         result = []
         for year_week in YearWeek.objects.filter(year=self.year):
-            hours = [weeks[year_week.week][project.id] for project in self.free_projects]
+            hours = [
+                weeks[year_week.week][project.id] for project in self.free_projects
+            ]
             line = {"year_week": year_week, "hours": hours}
             result.append(line)
         return result
@@ -3681,12 +3689,14 @@ class WbsoExcelView2(ExcelResponseMixin, WbsoProjectsOverview):
             if month == 0:
                 continue
             for day in range(num_of_days):
-                result.append(datetime.date(self.YEAR, month, day+1))
+                result.append(datetime.date(self.YEAR, month, day + 1))
         return result
 
     @property
     def header_line(self):
-        return ["Project", "Projectnummer"] + [day.strftime("%d %b") for day in self.dates]
+        return ["Project", "Projectnummer"] + [
+            day.strftime("%d %b") for day in self.dates
+        ]
 
     @cached_property
     def bookings_per_week_per_wbso_project_per_person(self):
@@ -3703,17 +3713,30 @@ class WbsoExcelView2(ExcelResponseMixin, WbsoProjectsOverview):
             )
             .annotate(models.Sum("hours"))
         )
-    #RRR
+
+    # RRR
 
     @cached_property
     def relevant_wbso_projects(self):
-        wbso_projects = set([(item["booked_on__wbso_project"], item["booked_on__wbso_project__title"])
-                             for item in self.bookings_per_week_per_wbso_project_per_person])
+        wbso_projects = set(
+            [
+                (
+                    item["booked_on__wbso_project"],
+                    item["booked_on__wbso_project__title"],
+                )
+                for item in self.bookings_per_week_per_wbso_project_per_person
+            ]
+        )
         return sorted(wbso_projects)
 
     @cached_property
     def relevant_persons(self):
-        persons = set([item["booked_by__name"] for item in self.bookings_per_week_per_wbso_project_per_person])
+        persons = set(
+            [
+                item["booked_by__name"]
+                for item in self.bookings_per_week_per_wbso_project_per_person
+            ]
+        )
         return sorted(persons)
 
     def prepend_lines(self, person):
@@ -3731,17 +3754,18 @@ class WbsoExcelView2(ExcelResponseMixin, WbsoProjectsOverview):
 
         def _wbso_hours(item):
             return round(
-                item["hours__sum"]
-                * (item["booked_on__wbso_percentage"] or 0)
-                / 100
+                item["hours__sum"] * (item["booked_on__wbso_percentage"] or 0) / 100
             )
 
         for (wbso_project_id, wbso_project_name) in self.relevant_wbso_projects:
             line = [wbso_project_name, wbso_project_id]  # TODO: uren/dag
             filled_in = {}
-            bookings = [item for item in self.bookings_per_week_per_wbso_project_per_person
-                         if item["booked_on__wbso_project"] == wbso_project_id
-                         and item["booked_by__name"] == person]
+            bookings = [
+                item
+                for item in self.bookings_per_week_per_wbso_project_per_person
+                if item["booked_on__wbso_project"] == wbso_project_id
+                and item["booked_by__name"] == person
+            ]
             for item in bookings:
                 key = item["year_week__first_day"]
                 existing = filled_in.get(key, 0)
