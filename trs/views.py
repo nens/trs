@@ -83,7 +83,7 @@ TOTAL_COMPANY = "Totaal"
 class LoginAndPermissionsRequiredMixin(object):
     """See http://stackoverflow.com/a/10304880/27401"""
 
-    def has_form_permissions(self):
+    def has_form_permissions(self) -> bool:
         """Especially for forms, return whether we have the necessary perms.
 
         Overwrite this in subclasses.
@@ -732,6 +732,65 @@ class BookingOverview(PersonView):
             result.append(
                 {"year_week": year_week, "booked": booked, "klass": klass, "hint": hint}
             )
+        return result
+
+
+class FreeOverview(PersonView):
+    template_name = "trs/free_overview.html"
+
+    def has_form_permissions(self):
+        if self.can_see_everything:
+            return True
+        if self.active_person == self.person:
+            return True
+        return False
+
+    @cached_property
+    def year(self):
+        return int(self.request.GET.get("year", this_year_week().year))
+
+    @cached_property
+    def available_years(self):
+        years_i_booked_in = list(
+            Booking.objects.filter(booked_by=self.person)
+            .values("year_week__year")
+            .distinct()
+            .values_list("year_week__year", flat=True)
+        )
+        current_year = this_year_week().year
+        if current_year not in years_i_booked_in:
+            # Corner case if you haven't booked yet in this year :-)
+            years_i_booked_in.append(current_year)
+        return years_i_booked_in
+
+    @cached_property
+    def free_projects(self):
+        return self.all_projects.filter(
+            Q(description__icontains="verlof") | Q(description__icontains="feest")).filter(
+                bookings__year_week__year=self.year,
+                bookings__booked_by=self.active_person
+            )
+
+    @cached_property
+    def lines(self):
+        booked_this_year_per_week_per_project = (
+            Booking.objects.filter(booked_by=self.person, year_week__year=self.year, booked_on__in=self.free_projects)
+            .values("year_week__week", "booked_on")
+            .annotate(models.Sum("hours"))
+        )
+        weeks = {}
+        empty_week = {}
+        for project in self.free_projects:
+            empty_week[project.id] = 0
+        for year_week in YearWeek.objects.filter(year=self.year):
+            weeks[year_week.week] = deepcopy(empty_week)
+        for booking in booked_this_year_per_week_per_project:
+            weeks[booking["year_week__week"]][booking["booked_on"]] = booking["hours__sum"]
+        result = []
+        for year_week in YearWeek.objects.filter(year=self.year):
+            hours = [weeks[year_week.week][project.id] for project in self.free_projects]
+            line = {"year_week": year_week, "hours": hours}
+            result.append(line)
         return result
 
 

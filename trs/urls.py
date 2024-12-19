@@ -135,6 +135,11 @@ urlpatterns = [
         name="trs.booking.overview",
     ),
     re_path(
+        r"^persons/(?P<pk>\d+)/freeoverview/$",
+        views.FreeOverview.as_view(),
+        name="trs.booking.free-overview",
+    ),
+    re_path(
         r"^overviews/wbso_projects/(?P<pk>\d+)/$",
         views.WbsoProjectView.as_view(),
         name="trs.wbso_project",
