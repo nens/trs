@@ -765,11 +765,11 @@ class FreeOverview(PersonView):
 
     @cached_property
     def free_projects(self):
-        return self.all_projects.filter(
+        return Project.objects.filter(
             Q(description__icontains="verlof") | Q(description__icontains="feest")
         ).filter(
             bookings__year_week__year=self.year, bookings__booked_by=self.active_person
-        )
+        ).distinct()
 
     @cached_property
     def lines(self):
