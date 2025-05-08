@@ -1,7 +1,6 @@
-from trs.models import Person
-from trs.models import Project
-
 import django.forms as django_forms
+
+from trs.models import Person, Project
 
 
 class ProjectTeamForm(django_forms.ModelForm):
@@ -29,7 +28,6 @@ class NewMemberForm(django_forms.Form):
 
 
 class ProjectMemberForm(django_forms.Form):
-
     person_id = django_forms.IntegerField(
         min_value=0,
         widget=django_forms.HiddenInput(),

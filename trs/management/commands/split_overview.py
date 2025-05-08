@@ -1,10 +1,10 @@
+import logging
+
+import xlsxwriter
 from django.core.management.base import BaseCommand
 from django.db.models import Sum
+
 from trs import models
-
-import logging
-import xlsxwriter
-
 
 YEAR = 2022
 FILENAME = "var/split_overview.xlsx"

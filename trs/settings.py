@@ -1,13 +1,12 @@
 # Note: there are no separate development settings! DEBUG is handled through
 # enviroment variables. Likewise the secret key.
 
-from django.contrib.messages import constants as messages
-from sentry_sdk.integrations.django import DjangoIntegration
+import os
 
 import environ
-import os
 import sentry_sdk
-
+from django.contrib.messages import constants as messages
+from sentry_sdk.integrations.django import DjangoIntegration
 
 env = environ.Env()
 

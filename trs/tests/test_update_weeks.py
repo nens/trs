@@ -1,9 +1,10 @@
+import datetime
+import unittest  # Note: this is 3.3's unittest2!
+
+import pytest
+
 from trs import models
 from trs.management.commands import update_weeks
-
-import datetime
-import pytest
-import unittest  # Note: this is 3.3's unittest2!
 
 
 @pytest.mark.django_db

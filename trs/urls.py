@@ -2,8 +2,8 @@ from django.conf.urls import include
 from django.contrib import admin
 from django.urls import re_path
 from nens_auth_client.urls import override_admin_auth
-from trs import views
 
+from trs import views
 
 admin.autodiscover()
 

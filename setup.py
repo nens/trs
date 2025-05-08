@@ -1,6 +1,6 @@
-from __future__ import unicode_literals
-import monkeypatch_setuptools
 from setuptools import setup
+
+import monkeypatch_setuptools  # noqa
 
 version = "2.2.dev0"
 

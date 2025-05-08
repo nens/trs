@@ -1,11 +1,12 @@
 # import unittest  # Note: this is 3.3's unittest2!
+import datetime
+from unittest import mock
+
 from django.test import TestCase
+
 from trs import models
 from trs.management.commands.update_weeks import ensure_year_weeks_are_present
 from trs.tests import factories
-
-import datetime
-import mock
 
 
 class PersonTestCase(TestCase):

@@ -1,10 +1,10 @@
-from django.core.management.base import BaseCommand
-from trs import models
-
 import csv
 import datetime
 import logging
 
+from django.core.management.base import BaseCommand
+
+from trs import models
 
 logger = logging.getLogger(__name__)
 

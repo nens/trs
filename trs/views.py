@@ -1,61 +1,52 @@
-from collections import defaultdict
-from collections import OrderedDict
-from copy import deepcopy
-from decimal import Decimal
-from django import forms
-from django.conf import settings
-from django.contrib import messages
-from django.contrib.auth import authenticate
-from django.contrib.auth import login
-from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
-from django.core.exceptions import PermissionDenied
-from django.core.paginator import EmptyPage
-from django.core.paginator import PageNotAnInteger
-from django.core.paginator import Paginator
-from django.db import models
-from django.db.models import Q
-from django.http import HttpResponse
-from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
-from django.urls import reverse
-from django.utils.decorators import method_decorator
-from django.utils.functional import cached_property
-from django.utils.safestring import mark_safe
-from django.views.generic.base import TemplateView
-from django.views.generic.edit import CreateView
-from django.views.generic.edit import FormView
-from django.views.generic.edit import UpdateView
-from trs import core
-from trs.forms import NewMemberForm
-from trs.forms import ProjectMemberForm
-from trs.forms import ProjectTeamForm
-from trs.forms import SearchForm
-from trs.models import Booking
-from trs.models import BudgetItem
-from trs.models import Group
-from trs.models import Invoice
-from trs.models import MPC
-from trs.models import Payable
-from trs.models import Person
-from trs.models import PersonChange
-from trs.models import Project
-from trs.models import ThirdPartyEstimate
-from trs.models import this_year_week
-from trs.models import WbsoProject
-from trs.models import WorkAssignment
-from trs.models import YearWeek
-from trs.templatetags.trs_formatting import hours as format_as_hours
-
 import calendar
 import datetime
 import logging
 import statistics
 import time
 import urllib
-import xlsxwriter
+from collections import OrderedDict, defaultdict
+from copy import deepcopy
+from decimal import Decimal
 
+import xlsxwriter
+from django import forms
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
+from django.core.exceptions import PermissionDenied
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db import models
+from django.db.models import Q
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import redirect
+from django.urls import reverse
+from django.utils.decorators import method_decorator
+from django.utils.functional import cached_property
+from django.utils.safestring import mark_safe
+from django.views.generic.base import TemplateView
+from django.views.generic.edit import CreateView, FormView, UpdateView
+
+from trs import core
+from trs.forms import NewMemberForm, ProjectMemberForm, ProjectTeamForm, SearchForm
+from trs.models import (
+    MPC,
+    Booking,
+    BudgetItem,
+    Group,
+    Invoice,
+    Payable,
+    Person,
+    PersonChange,
+    Project,
+    ThirdPartyEstimate,
+    WbsoProject,
+    WorkAssignment,
+    YearWeek,
+    this_year_week,
+)
+from trs.templatetags.trs_formatting import hours as format_as_hours
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +71,7 @@ MONTHS = [
 TOTAL_COMPANY = "Totaal"
 
 
-class LoginAndPermissionsRequiredMixin(object):
+class LoginAndPermissionsRequiredMixin:
     """See http://stackoverflow.com/a/10304880/27401"""
 
     def has_form_permissions(self) -> bool:
@@ -119,7 +110,7 @@ def home(request):
     return redirect("trs.booking")
 
 
-class BaseMixin(object):
+class BaseMixin:
     template_name = "trs/base.html"
     title = "TRS tijdregistratiesysteem"
     filters_and_choices = []
@@ -344,7 +335,6 @@ class BaseView(LoginAndPermissionsRequiredMixin, TemplateView, BaseMixin):
 
 
 class PersonsView(BaseView):
-
     title = "Medewerkers"
     normally_visible_filters = ["status", "group", "year"]
 
@@ -765,16 +755,19 @@ class FreeOverview(PersonView):
 
     @cached_property
     def free_project_ids(self):
-        return sorted(self.person.assigned_projects().filter(
-            Q(description__icontains="verlof") | Q(description__icontains="feest")
-        ).values_list("id", flat=True))
+        return sorted(
+            self.person.assigned_projects()
+            .filter(
+                Q(description__icontains="verlof") | Q(description__icontains="feest")
+            )
+            .values_list("id", flat=True)
+        )
 
     @cached_property
     def free_projects(self):
         my_bookings = self.person.bookings.filter(year_week__year=self.year)
         return Project.objects.filter(
-            bookings__in=my_bookings,
-            id__in=self.free_project_ids
+            bookings__in=my_bookings, id__in=self.free_project_ids
         ).distinct()
 
     @cached_property
@@ -1998,7 +1991,6 @@ class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
 
 class SearchView(BaseView):
-
     template_name = "trs/search.html"
     form_class = SearchForm
 
@@ -3014,8 +3006,7 @@ def _django_model_instance_to_string(worksheet, row, col, instance, format=None)
     return worksheet.write_string(row, col, str(instance), format)
 
 
-class ExcelResponseMixin(object):
-
+class ExcelResponseMixin:
     prepend_lines = []
     header_line = []
     excel_lines = []
@@ -3566,7 +3557,6 @@ class WbsoProjectView(BaseView):
 
 
 class WbsoExcelView(ExcelResponseMixin, WbsoProjectsOverview):
-
     START_YEAR = 2016
 
     @cached_property
@@ -3685,7 +3675,6 @@ class WbsoExcelView(ExcelResponseMixin, WbsoProjectsOverview):
 
 
 class WbsoExcelView2(ExcelResponseMixin, WbsoProjectsOverview):
-
     YEAR = 2023
 
     @cached_property
@@ -3763,7 +3752,7 @@ class WbsoExcelView2(ExcelResponseMixin, WbsoProjectsOverview):
                 item["hours__sum"] * (item["booked_on__wbso_percentage"] or 0) / 100
             )
 
-        for (wbso_project_id, wbso_project_name) in self.relevant_wbso_projects:
+        for wbso_project_id, wbso_project_name in self.relevant_wbso_projects:
             line = [wbso_project_name, wbso_project_id]  # TODO: uren/dag
             filled_in = {}
             bookings = [
@@ -4172,7 +4161,6 @@ class FinancialExcelView(ExcelResponseMixin, ProjectsView):
 
 
 class PayablesExcelView(ExcelResponseMixin, PayablesView):
-
     header_line = [
         "Factuurdatum",
         "Factuurnummer",
@@ -4205,7 +4193,6 @@ class PayablesExcelView(ExcelResponseMixin, PayablesView):
 
 
 class CombinedFinancialExcelView(ExcelResponseMixin, ProjectsView):
-
     title = "Gecombineerd overzicht financien"
 
     def has_form_permissions(self):

@@ -1,22 +1,20 @@
 # Calculation core around the models.
-from django.core.cache import cache
-from django.db import models
-from django.utils.functional import cached_property
-from trs.models import Booking
-from trs.models import WorkAssignment
-from trs.models import YearWeek
-
 import datetime
 import logging
 import time
 
+from django.core.cache import cache
+from django.db import models
+from django.utils.functional import cached_property
+
+from trs.models import Booking, WorkAssignment, YearWeek
 
 logger = logging.getLogger(__name__)
 
 ALL = "ALL"
 
 
-class PersonYearCombination(object):
+class PersonYearCombination:
     PYC_KEYS = [
         "target",
         "turnover",

@@ -1,13 +1,13 @@
+import datetime
+from unittest import mock
+
 from django.contrib.auth.models import AnonymousUser
 from django.test import TestCase
 from django.test.client import RequestFactory
+
 from trs import views
 from trs.management.commands.update_weeks import ensure_year_weeks_are_present
 from trs.tests import factories
-
-import datetime
-import mock
-
 
 REINOUTS_BIRTHDATE = datetime.date(year=1972, month=12, day=25)
 

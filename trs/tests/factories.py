@@ -1,8 +1,9 @@
-from django.contrib.auth.models import User
-from trs import models
-
 import datetime
+
 import factory
+from django.contrib.auth.models import User
+
+from trs import models
 
 
 class YearWeekFactory(factory.django.DjangoModelFactory):
@@ -24,7 +25,7 @@ class UserFactory(factory.django.DjangoModelFactory):
         model = User
 
     first_name = "Reinout"
-    username = factory.Sequence(lambda n: "user{0}".format(n))
+    username = factory.Sequence(lambda n: f"user{n}")
 
 
 class PersonFactory(factory.django.DjangoModelFactory):

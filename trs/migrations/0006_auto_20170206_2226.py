@@ -1,14 +1,8 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
-from django.db import migrations
-from django.db import models
-
 import django.core.validators
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("trs", "0005_auto_20170206_2128")]
 
     operations = [

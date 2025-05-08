@@ -1,9 +1,8 @@
-from django.core.management.base import BaseCommand
-from trs import core
-from trs import models
-
 import logging
 
+from django.core.management.base import BaseCommand
+
+from trs import core, models
 
 logger = logging.getLogger(__name__)
 

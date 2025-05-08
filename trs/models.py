@@ -1,17 +1,15 @@
+import datetime
+import logging
+
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.core.validators import MaxValueValidator
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.template.defaultfilters import date as datelocalizer
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from tls import request as tls_request
-
-import datetime
-import logging
-
 
 # TODO: add django-appconf
 
@@ -1092,7 +1090,7 @@ class YearWeek(models.Model):
         ordering = ["year", "week"]
 
     def __str__(self):
-        return "{} (week {:02d})".format(self.formatted_first_day, self.week)
+        return f"{self.formatted_first_day} (week {self.week:02d})"
 
     def __lt__(self, other):
         return "%s %02d" % (self.year, self.week) < "%s %02d" % (other.year, other.week)
@@ -1103,7 +1101,7 @@ class YearWeek(models.Model):
 
     def as_param(self):
         """Return string representation for in url parameters."""
-        return "{}-{:02d}".format(self.year, self.week)
+        return f"{self.year}-{self.week:02d}"
 
     def friendly(self):
         return mark_safe(
