@@ -11,7 +11,7 @@ class ProjectTeamForm(django_forms.ModelForm):
 
 class NewMemberForm(django_forms.Form):
     def __init__(self, project, has_permission, *args, **kwargs):
-        super(NewMemberForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if not has_permission:
             return
 

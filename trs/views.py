@@ -85,7 +85,7 @@ class LoginAndPermissionsRequiredMixin:
     def dispatch(self, *args, **kwargs):
         if not self.has_form_permissions():
             raise PermissionDenied
-        return super(LoginAndPermissionsRequiredMixin, self).dispatch(*args, **kwargs)
+        return super().dispatch(*args, **kwargs)
 
 
 def try_and_find_matching_person(user):
@@ -265,7 +265,7 @@ class BaseMixin:
             return
         to_book["link"] = (
             reverse("trs.booking.overview", kwargs={"pk": self.sidebar_person.id})
-            + "?year=%s" % previous_year
+            + f"?year={previous_year}"
         )
         return to_book
 
@@ -273,7 +273,7 @@ class BaseMixin:
     def selected_tab(self):
         recognized = ["booking", "projects", "persons", "overviews"]
         for path_element in recognized:
-            path_start = "/%s/" % path_element
+            path_start = f"/{path_element}/"
             if self.request.path.startswith(path_start):
                 return path_element
 
@@ -597,9 +597,9 @@ class PersonView(BaseView):
         )
         roles = []
         if num_project_leader_roles:
-            roles.append("%s keer projectleider" % num_project_leader_roles)
+            roles.append(f"{num_project_leader_roles} keer projectleider")
         if num_project_manager_roles:
-            roles.append("%s keer projectmanager" % num_project_manager_roles)
+            roles.append(f"{num_project_manager_roles} keer projectmanager")
         if self.person.is_management:
             roles.append("in management")
         if self.person.is_office_management:
@@ -712,7 +712,7 @@ class BookingOverview(PersonView):
             hint = ""
             if booked < to_book_this_week:
                 klass = "danger"
-                hint = "Te boeken: %s" % round(to_book_this_week)
+                hint = f"Te boeken: {round(to_book_this_week)}"
             if (
                 year_week.year == this_year_week().year
                 and year_week.week >= this_year_week().week
@@ -1092,15 +1092,15 @@ class ProjectsView(BaseView):
             line["overbooked"] = project.overbooked()
             line["left_to_book"] = project.left_to_book()
             line["person_loss"] = project.person_loss()
-            line[
-                "person_costs_incl_reservation"
-            ] = project.person_costs_incl_reservation()
+            line["person_costs_incl_reservation"] = (
+                project.person_costs_incl_reservation()
+            )
             line["left_to_turn_over"] = project.left_to_turn_over()
 
             line["invoice_amount_percentage"] = invoice_amount_percentage
-            line[
-                "invoice_versus_turnover_percentage"
-            ] = invoice_versus_turnover_percentage
+            line["invoice_versus_turnover_percentage"] = (
+                invoice_versus_turnover_percentage
+            )
             result.append(line)
         return result
 
@@ -1165,7 +1165,7 @@ class ProjectView(BaseView):
 
     @cached_property
     def title(self):
-        return "Project %s: %s" % (self.project.code, self.project.description)
+        return f"Project {self.project.code}: {self.project.description}"
 
     @cached_property
     def can_view_team(self):
@@ -1363,7 +1363,7 @@ class LoginView(FormView, BaseMixin):
         password = form.cleaned_data["password"]
         user = authenticate(username=username, password=password)
         login(self.request, user)
-        return super(LoginView, self).form_valid(form)
+        return super().form_valid(form)
 
 
 def logout_view(request):
@@ -1411,7 +1411,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     @cached_property
     def title(self):
         if self.active_person != self.person:
-            return "Boekingen van %s" % self.person
+            return f"Boekingen van {self.person}"
         return "Uren boeken"
 
     @cached_property
@@ -1540,20 +1540,20 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             if total_difference < 0:
                 indicator = total_difference
             elif total_difference > 0:
-                indicator = "+%s" % total_difference
+                indicator = f"+{total_difference}"
             else:  # 0
                 indicator = "alleen verschoven"
             if self.editing_for_someone_else:
                 messages.warning(
-                    self.request, "Uren van iemand anders aangepast (%s)." % indicator
+                    self.request, f"Uren van iemand anders aangepast ({indicator})."
                 )
             else:
-                messages.success(self.request, "Uren aangepast (%s)." % indicator)
+                messages.success(self.request, f"Uren aangepast ({indicator}).")
         else:
             messages.info(self.request, "Niets aan de uren gewijzigd.")
         elapsed = time.time() - start_time
         logger.debug("Handled booking in %s secs", elapsed)
-        return super(BookingView, self).form_valid(form)
+        return super().form_valid(form)
 
     @cached_property
     def tabindex_submit_button(self):
@@ -1617,7 +1617,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             line = {"project": project}
             for index, year_week in enumerate(self.year_weeks_to_display):
                 booked = bookings.get((project.id, year_week.id), 0)
-                key = "hours%s" % index
+                key = f"hours{index}"
                 line[key] = booked
 
             if fields:
@@ -1645,7 +1645,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     def totals(self):
         return [
-            sum([line["hours%s" % index] for line in self.lines]) for index in range(4)
+            sum([line[f"hours{index}"] for line in self.lines]) for index in range(4)
         ]
 
 
@@ -1719,7 +1719,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
 
     def form_valid(self, form):
         messages.success(self.request, "Project aangepast")
-        return super(ProjectEditView, self).form_valid(form)
+        return super().form_valid(form)
 
 
 class ProjectRemarksEditView(ProjectEditView):
@@ -1761,7 +1761,7 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin)
 
     def form_valid(self, form):
         messages.success(self.request, "Project aangemaakt")
-        return super(ProjectCreateView, self).form_valid(form)
+        return super().form_valid(form)
 
     def latest_projects(self):
         # Note: they're reverse sorted, so we want the first :-)
@@ -1793,7 +1793,7 @@ class InvoiceCreateView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin)
     def form_valid(self, form):
         form.instance.project = self.project
         messages.success(self.request, "Factuur toegevoegd")
-        return super(InvoiceCreateView, self).form_valid(form)
+        return super().form_valid(form)
 
 
 class InvoiceEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
@@ -1803,7 +1803,7 @@ class InvoiceEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
 
     @property
     def title(self):
-        return "Aanpassen factuur voor %s" % self.project.code
+        return f"Aanpassen factuur voor {self.project.code}"
 
     def has_form_permissions(self):
         if self.project.archived:
@@ -1828,7 +1828,7 @@ class InvoiceEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
     @cached_property
     def success_url(self):
         if "from_invoice_overview" in self.request.GET:
-            params = "?year=%s#%s" % (self.invoice.date.year, self.invoice.id)
+            params = f"?year={self.invoice.date.year}#{self.invoice.id}"
             return reverse("trs.overviews.invoices") + params
         if "from_selection_pager" in self.request.GET:
             return ".?from_selection_pager"
@@ -1836,7 +1836,7 @@ class InvoiceEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
 
     def form_valid(self, form):
         messages.success(self.request, "Factuur aangepast")
-        return super(InvoiceEditView, self).form_valid(form)
+        return super().form_valid(form)
 
 
 class PayableCreateView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
@@ -1862,7 +1862,7 @@ class PayableCreateView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin)
     def form_valid(self, form):
         form.instance.project = self.project
         messages.success(self.request, "Kosten derden toegevoegd")
-        return super(PayableCreateView, self).form_valid(form)
+        return super().form_valid(form)
 
 
 class PayableEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
@@ -1874,7 +1874,7 @@ class PayableEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
 
     @property
     def title(self):
-        return "Aanpassen kosten derden voor %s" % self.project.code
+        return f"Aanpassen kosten derden voor {self.project.code}"
 
     def has_form_permissions(self):
         if self.project.archived:
@@ -1899,7 +1899,7 @@ class PayableEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
     @cached_property
     def success_url(self):
         if "from_payable_overview" in self.request.GET:
-            params = "?year=%s#%s" % (self.payable.date.year, self.payable.id)
+            params = f"?year={self.payable.date.year}#{self.payable.id}"
             return reverse("trs.overviews.payables") + params
         if "from_selection_pager" in self.request.GET:
             return ".?from_selection_pager"
@@ -1907,7 +1907,7 @@ class PayableEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
 
     def form_valid(self, form):
         messages.success(self.request, "Kosten derden aangepast")
-        return super(PayableEditView, self).form_valid(form)
+        return super().form_valid(form)
 
 
 class PersonEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
@@ -1934,7 +1934,7 @@ class PersonEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
 
     def form_valid(self, form):
         messages.success(self.request, "Medewerker aangepast")
-        return super(PersonEditView, self).form_valid(form)
+        return super().form_valid(form)
 
 
 class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
@@ -1954,7 +1954,7 @@ class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def title(self):
-        return "Projectteam updaten voor %s" % self.project.code
+        return f"Projectteam updaten voor {self.project.code}"
 
     form_class = forms.Form  # Yes, an empty form.
 
@@ -1976,8 +1976,8 @@ class TeamUpdateView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 assigned_on=self.project, assigned_to=person
             )
             num_added += 1
-        messages.success(self.request, "%s teamleden toegevoegd" % num_added)
-        return super(TeamUpdateView, self).form_valid(form)
+        messages.success(self.request, f"{num_added} teamleden toegevoegd")
+        return super().form_valid(form)
 
     @cached_property
     def success_url(self):
@@ -2064,16 +2064,16 @@ class InvoiceDeleteView(DeleteView):
 
     @cached_property
     def title(self):
-        return "Verwijder factuur %s uit %s" % (self.invoice.number, self.project.code)
+        return f"Verwijder factuur {self.invoice.number} uit {self.project.code}"
 
     def form_valid(self, form):
         self.invoice.delete()
         self.project.save()  # Increment cache key.
         messages.success(
             self.request,
-            "%s verwijderd uit %s" % (self.invoice.number, self.project.code),
+            f"{self.invoice.number} verwijderd uit {self.project.code}",
         )
-        return super(InvoiceDeleteView, self).form_valid(form)
+        return super().form_valid(form)
 
     @cached_property
     def success_url(self):
@@ -2093,19 +2093,16 @@ class PayableDeleteView(DeleteView):
 
     @cached_property
     def title(self):
-        return "Verwijder kosten derden %s uit %s" % (
-            self.payable.number,
-            self.project.code,
-        )
+        return f"Verwijder kosten derden {self.payable.number} uit {self.project.code}"
 
     def form_valid(self, form):
         self.payable.delete()
         self.project.save()  # Increment cache key.
         messages.success(
             self.request,
-            "%s verwijderd uit %s" % (self.payable.number, self.project.code),
+            f"{self.payable.number} verwijderd uit {self.project.code}",
         )
-        return super(PayableDeleteView, self).form_valid(form)
+        return super().form_valid(form)
 
     @cached_property
     def success_url(self):
@@ -2127,7 +2124,7 @@ class ProjectBudgetEditView(BaseView):
 
     @cached_property
     def title(self):
-        return "Projectbegroting van %s bewerken" % (self.project.code)
+        return f"Projectbegroting van {self.project.code} bewerken"
 
     @cached_property
     def can_edit_hours(self):
@@ -2193,7 +2190,7 @@ class ProjectBudgetEditView(BaseView):
         )
         self.adjust_project_member_formset()
         # fields['amount'].widget.attrs['disabled'] = 'disabled'
-        return super(ProjectBudgetEditView, self).get(*args, **kwargs)
+        return super().get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         self.project_form = ProjectTeamForm(
@@ -2238,9 +2235,7 @@ class ProjectBudgetEditView(BaseView):
 
             self.project.refresh_from_db()
             if self.project.left_to_dish_out() < -1:
-                msg = "Je boekt %s in het rood" % (
-                    round(self.project.left_to_dish_out())
-                )
+                msg = f"Je boekt {round(self.project.left_to_dish_out())} in het rood"
                 messages.error(self.request, msg)
 
             return HttpResponseRedirect(self.success_url)
@@ -2257,7 +2252,7 @@ class ProjectBudgetEditView(BaseView):
 
     def add_team_member(self, id):
         person = Person.objects.get(id=id)
-        msg = "%s is aan het team toegevoegd" % person.name
+        msg = f"{person.name} is aan het team toegevoegd"
         work_assignment = WorkAssignment(assigned_on=self.project, assigned_to=person)
         work_assignment.save()
         logger.info(msg)
@@ -2362,7 +2357,7 @@ class ProjectBudgetEditView(BaseView):
                     person.save()  # Increment cache key.
                     messages.success(
                         self.request,
-                        "%s verwijderd uit %s" % (person.name, self.project.code),
+                        f"{person.name} verwijderd uit {self.project.code}",
                     )
 
             if person.archived:
@@ -2398,7 +2393,7 @@ class ProjectBudgetEditView(BaseView):
                 work_assignment.save()
                 logger.info("Added work assignment")
         if num_changes:
-            messages.success(self.request, "Teamleden: %s gewijzigd" % num_changes)
+            messages.success(self.request, f"Teamleden: {num_changes} gewijzigd")
 
 
 class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
@@ -2423,10 +2418,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
 
     @cached_property
     def title(self):
-        return "Wijzig gegevens voor %s (stand %s)" % (
-            self.person.name,
-            self.chosen_year_week,
-        )
+        return f"Wijzig gegevens voor {self.person.name} (stand {self.chosen_year_week})"
 
     @cached_property
     def success_url(self):
@@ -2434,7 +2426,7 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
 
     @cached_property
     def edit_action(self):
-        return ".?year_week=%s" % self.chosen_year_week.as_param()
+        return f".?year_week={self.chosen_year_week.as_param()}"
 
     @cached_property
     def chosen_year_week(self):
@@ -2454,12 +2446,12 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
             # (yyyy-ww, title)
             (
                 YearWeek.objects.filter(year=current_year).first().as_param(),
-                "Begin %s (begin dit jaar)" % current_year,
+                f"Begin {current_year} (begin dit jaar)",
             ),
             (this_year_week().as_param(), "Nu"),
             (
                 YearWeek.objects.filter(year=next_year).first().as_param(),
-                "Begin %s (begin volgend jaar)" % next_year,
+                f"Begin {next_year} (begin volgend jaar)",
             ),
         ]
 
@@ -2534,12 +2526,12 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
             adjusted.append("target")
         if adjusted:
             msg = " en ".join(adjusted)
-            msg = "%s aangepast" % msg.capitalize()
-            msg += " (ingaande %s)" % self.chosen_year_week.formatted_first_day
+            msg = f"{msg.capitalize()} aangepast"
+            msg += f" (ingaande {self.chosen_year_week.formatted_first_day})"
             messages.success(self.request, msg)
         else:
             messages.info(self.request, "Niets aan te passen")
-        return super(PersonChangeView, self).form_valid(form)
+        return super().form_valid(form)
 
 
 class OverviewsView(BaseView):
@@ -3033,7 +3025,7 @@ class ExcelResponseMixin:
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  # noqa
         )
         filename = self.excel_filename + ".xlsx"
-        response["Content-Disposition"] = 'attachment; filename="%s"' % filename
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
         workbook = xlsxwriter.Workbook(response)
         worksheet = workbook.add_worksheet()
@@ -3575,8 +3567,8 @@ class WbsoExcelView(ExcelResponseMixin, WbsoProjectsOverview):
             second_half = YearWeek.objects.filter(
                 first_day__gte=jul1, year=year
             ).values_list("id", flat=True)
-            result.append(["eerste helft %s" % year, first_half])
-            result.append(["tweede helft %s" % year, second_half])
+            result.append([f"eerste helft {year}", first_half])
+            result.append([f"tweede helft {year}", second_half])
         return result
 
     @cached_property
@@ -3776,7 +3768,7 @@ class WbsoExcelView2(ExcelResponseMixin, WbsoProjectsOverview):
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  # noqa
         )
         filename = self.excel_filename + ".xlsx"
-        response["Content-Disposition"] = 'attachment; filename="%s"' % filename
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
         workbook = xlsxwriter.Workbook(response)
 
@@ -4601,7 +4593,7 @@ class CombinedFinancialExcelView(ExcelResponseMixin, ProjectsView):
         for title, info in [
             ["Omzetdoelstelling/fte (jaar)", targets_per_fte],
             [
-                "Omzetdoelstelling/fte (%s%% jaar)" % year_percentage,
+                f"Omzetdoelstelling/fte ({year_percentage}% jaar)",
                 targets_per_fte_relative,
             ],
             ["Gerealiseerde omzet/fte (tot nu toe)", realized_turnover_per_fte],
@@ -4775,7 +4767,7 @@ class CombinedFinancialExcelView(ExcelResponseMixin, ProjectsView):
         for title, info in [
             ["Verkoopdoelstelling (jaar)", sell_targets],
             [
-                "Verkoopdoelstelling (%s%% jaar)" % year_percentage,
+                f"Verkoopdoelstelling ({year_percentage}% jaar)",
                 sell_targets_relative,
             ],
             ["Gerealiseerde verkoop (% tot nu toe)", realized_relative],

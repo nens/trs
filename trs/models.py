@@ -201,7 +201,7 @@ class Person(models.Model):
 
     def save(self, *args, **kwargs):
         self.cache_indicator += 1
-        return super(Person, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -209,24 +209,12 @@ class Person(models.Model):
     def cache_key(self, for_what, year_week=None):
         cache_version = 12
         week_id = year_week and year_week.id or this_year_week().id
-        return "person-%s-%s-%s-%s-%s" % (
-            self.id,
-            self.cache_indicator,
-            for_what,
-            week_id,
-            cache_version,
-        )
+        return f"person-{self.id}-{self.cache_indicator}-{for_what}-{week_id}-{cache_version}"
 
     def person_change_cache_key(self, for_what, year_week=None):
         cache_version = 6
         week_id = year_week and year_week.id or this_year_week().id
-        return "person-%s-pc%s-%s-%s-%s" % (
-            self.id,
-            self.cache_indicator_person_change,
-            for_what,
-            week_id,
-            cache_version,
-        )
+        return f"person-{self.id}-pc{self.cache_indicator_person_change}-{for_what}-{week_id}-{cache_version}"
 
     def get_absolute_url(self):
         return reverse("trs.person", kwargs={"pk": self.pk})
@@ -374,20 +362,20 @@ class Person(models.Model):
 
         if weeks_to_book > 1:
             klass = "danger"
-            friendly = "%s weken" % weeks_to_book
-            short = "%sw" % weeks_to_book
+            friendly = f"{weeks_to_book} weken"
+            short = f"{weeks_to_book}w"
         elif weeks_to_book == 1:
             klass = "warning"
-            friendly = "%s week" % weeks_to_book
-            short = "%sw" % weeks_to_book
+            friendly = f"{weeks_to_book} week"
+            short = f"{weeks_to_book}w"
         elif days_to_book > 1:
             klass = "warning"
-            friendly = "%s dagen" % days_to_book
-            short = "%sd" % days_to_book
+            friendly = f"{days_to_book} dagen"
+            short = f"{days_to_book}d"
         elif days_to_book == 1:
             klass = "warning"
-            friendly = "%s dag" % days_to_book
-            short = "%sd" % days_to_book
+            friendly = f"{days_to_book} dag"
+            short = f"{days_to_book}d"
         else:
             klass = "success"
             friendly = 0
@@ -588,7 +576,7 @@ class Project(models.Model):
     def save(self, *args, **kwargs):
         self.cache_indicator += 1
         self.code_for_sorting = make_code_sortable(self.code)
-        result = super(Project, self).save(*args, **kwargs)
+        result = super().save(*args, **kwargs)
         # We need to be saved before adding foreign keys to ourselves.
         if tls_request:
             # If not tls_request, we're in some automated import loop.
@@ -616,12 +604,7 @@ class Project(models.Model):
 
     def cache_key(self, for_what):
         cache_version = 21
-        return "project-%s-%s-%s-%s" % (
-            self.id,
-            self.cache_indicator,
-            for_what,
-            cache_version,
-        )
+        return f"project-{self.id}-{self.cache_indicator}-{for_what}-{cache_version}"
 
     @cache_until_any_change
     def as_widget(self):
@@ -855,7 +838,7 @@ class WbsoProject(models.Model):
         verbose_name_plural = "WBSO projecten"
 
     def __str__(self):
-        return "%s: %s" % (self.number, self.title)
+        return f"{self.number}: {self.title}"
 
 
 class FinancialBase(models.Model):
@@ -883,7 +866,7 @@ class FinancialBase(models.Model):
         self.project.save()
         # ^^^ Project is available on subclasses. This increments the cache
         # key.
-        return super(FinancialBase, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
 
 class Invoice(FinancialBase):
@@ -1035,12 +1018,12 @@ class BudgetItem(FinancialBase):
     def save(self, *args, **kwargs):
         if self.to_project:
             self.to_project.save()  # Increment cache key.
-        return super(BudgetItem, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         if self.to_project:
             self.to_project.save()  # Increment cache key.
-        return super(BudgetItem, self).delete(*args, **kwargs)
+        return super().delete(*args, **kwargs)
 
 
 class ThirdPartyEstimate(FinancialBase):
@@ -1139,7 +1122,7 @@ class EventBase(models.Model):
                 # If tls_request doesn't exist we're running tests. Adding
                 # this 'if' is handier than mocking it the whole time :-)
                 self.added_by = tls_request.user
-        return super(EventBase, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
 
 class PersonChange(EventBase):
@@ -1185,10 +1168,10 @@ class PersonChange(EventBase):
     def save(self, *args, **kwargs):
         self.person.cache_indicator_person_change += 1  # Specially for us.
         self.person.save()  # Increments cache indicator.
-        return super(PersonChange, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def __str__(self):
-        return "PersonChange on %s" % self.person
+        return f"PersonChange on {self.person}"
 
     class Meta:
         verbose_name = "verandering aan persoon"
@@ -1228,7 +1211,7 @@ class Booking(EventBase):
     def save(self, *args, **kwargs):
         self.booked_by.save()  # Increments cache indicator.
         self.booked_on.save()  # Increments cache indicator.
-        return super(Booking, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
 
 class WorkAssignment(EventBase):
@@ -1272,4 +1255,4 @@ class WorkAssignment(EventBase):
         self.assigned_to.save()  # Increments cache indicator.
         if save_assigned_on:
             self.assigned_on.save()  # Increments cache indicator.
-        return super(WorkAssignment, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)

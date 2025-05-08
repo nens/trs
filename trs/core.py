@@ -48,12 +48,7 @@ class PersonYearCombination:
             year = self.current_year
         self.year = int(year)
         cache_version = 38
-        self.cache_key = "pycdata-%s-%s-%s-%s" % (
-            person.id,
-            person.cache_indicator,
-            year,
-            cache_version,
-        )
+        self.cache_key = f"pycdata-{person.id}-{person.cache_indicator}-{year}-{cache_version}"
         has_cached_data = self.get_cache()
         if not has_cached_data:
             self.just_calculate_everything()
@@ -72,7 +67,7 @@ class PersonYearCombination:
             # Mimick the 'interface'
             hours_to_book = self.to_book_this_year - self.all_booked_hours
             days_to_book = round(hours_to_book / 8)
-            friendly = "%s dagen" % days_to_book
+            friendly = f"{days_to_book} dagen"
             if days_to_book > 5:
                 klass = "danger"
             elif days_to_book > 1:
