@@ -18,7 +18,7 @@ def get_or_create_wbso_project(wbso_number):
         return matching[0]
     wbso_project = models.WbsoProject(
         number=number,
-        title="TODO titel voor %s" % wbso_number,
+        title=f"TODO titel voor {wbso_number}",
         start_date=datetime.date(2013, 1, 1),
         end_date=datetime.date(2015, 12, 31),
     )

@@ -14,7 +14,7 @@ def money(value):
     except:  # noqa: E722
         # Yes, a bare except: filters should not raise exceptions
         return value
-    return mark_safe("<tt>%s</tt>" % intcomma(rounded))
+    return mark_safe(f"<tt>{intcomma(rounded)}</tt>")
 
 
 @register.filter
@@ -45,8 +45,8 @@ def moneydiff(value):
         # Yes, a bare except: filters should not raise exceptions
         return value
     if rounded > 0:
-        return mark_safe("<tt>+%s</tt>" % intcomma(rounded))
-    return mark_safe("<tt>%s</tt>" % intcomma(rounded))
+        return mark_safe(f"<tt>+{intcomma(rounded)}</tt>")
+    return mark_safe(f"<tt>{intcomma(rounded)}</tt>")
 
 
 @register.filter
@@ -69,7 +69,7 @@ def hoursdiff(value):
         # Yes, a bare except: filters should not raise exceptions
         return value
     if rounded > 0:
-        return "+%s" % rounded
+        return f"+{rounded}"
     return str(rounded)
 
 
