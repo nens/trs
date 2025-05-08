@@ -39,7 +39,7 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Project
 
-    code = factory.Sequence(lambda n: "P%s" % str(1234 + n))
+    code = factory.Sequence(lambda n: f"P{str(1234 + n)}")
     description = ""
     internal = False
     archived = False

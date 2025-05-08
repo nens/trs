@@ -48,7 +48,9 @@ class PersonYearCombination:
             year = self.current_year
         self.year = int(year)
         cache_version = 38
-        self.cache_key = f"pycdata-{person.id}-{person.cache_indicator}-{year}-{cache_version}"
+        self.cache_key = (
+            f"pycdata-{person.id}-{person.cache_indicator}-{year}-{cache_version}"
+        )
         has_cached_data = self.get_cache()
         if not has_cached_data:
             self.just_calculate_everything()

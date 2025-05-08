@@ -2418,7 +2418,9 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
 
     @cached_property
     def title(self):
-        return f"Wijzig gegevens voor {self.person.name} (stand {self.chosen_year_week})"
+        return (
+            f"Wijzig gegevens voor {self.person.name} (stand {self.chosen_year_week})"
+        )
 
     @cached_property
     def success_url(self):
