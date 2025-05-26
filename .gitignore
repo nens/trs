@@ -44,8 +44,8 @@ docker-compose.override.yml
 ### Extra lines below are preserved ###
 /.env
 /ansible
-/trs/local_testsettings.py
-/trs/pytest-coverage.txt
+/src/trs/local_testsettings.py
+/src/trs/pytest-coverage.txt
 /package.json
 /staticfiles/
 /package-lock.json
