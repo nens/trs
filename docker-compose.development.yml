@@ -7,6 +7,3 @@ services:
     # Mount the changing directories that change during development.
     volumes:
       - ./trs/:/code/trs/
-    environment:
-      # The next is only for during upgrades.
-      - PYTHONWARNINGS=always

@@ -8,9 +8,8 @@ services:
 
   web:
     build: .
-    command: "gunicorn -b 0.0.0.0:${PORT:-5000} --workers=3 --timeout 90 --preload --max-requests=10000 trs.wsgi"
     ports:
-      - "${PORT:-5000}:${PORT:-5000}"
+      - 5000:5000
     volumes:
       - ./var:/code/var
     links:
