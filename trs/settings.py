@@ -43,6 +43,7 @@ DATABASES = {
         "NAME": os.path.join(BASE_DIR, "var/db/trs.db"),
     }
 }
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 INSTALLED_APPS = [
     "trs",
     "gunicorn",
