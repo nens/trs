@@ -1,9 +1,0 @@
-version: '2'
-services:
-
-  web:
-    # Run debug webserver.
-    command: python manage.py runserver 0.0.0.0:5000
-    # Mount the changing directories that change during development.
-    volumes:
-      - ./trs/:/code/trs/
