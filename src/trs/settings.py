@@ -11,7 +11,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 env = environ.Env()
 
 SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
-BASE_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, ".."))
+BASE_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, "..", ".."))
 
 ROOT_URLCONF = "trs.urls"
 
