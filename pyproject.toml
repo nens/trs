@@ -5,9 +5,11 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I", "UP"]
+ignore = ["UP031"]
+# UP031 = %-formatting like "<tt>%s,%02d</tt>"
 
 [tool.pytest.ini_options]
-addopts = --cov --cache-clear --fail-on-template-vars trs/
+addopts = "--cov --cache-clear --fail-on-template-vars trs/"
 
 [tool.zest-releaser]
 release = false
