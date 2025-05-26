@@ -4,6 +4,7 @@ FROM ubuntu:jammy
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
+WORKDIR /code
 
 # system dependencies
 RUN apt-get update && apt-get install -y \
@@ -21,6 +22,10 @@ RUN apt-get update && apt-get install -y \
     memcached \
 && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /code
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY pyproject.toml uv.lock ./
+RUN uv sync
+ENV PATH="/code/.venv/bin:$PATH"
+
 COPY . .
 RUN make install
