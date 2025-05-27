@@ -40,7 +40,9 @@ url = "https://packages.lizard.net/"
 default = true
 
 [tool.pytest.ini_options]
-addopts = "--cov --cache-clear --fail-on-template-vars trs/"
+addopts = "--cov --cache-clear --fail-on-template-vars src/"
+DJANGO_SETTINGS_MODULE = "trs.settings"
+django_find_project = false
 
 [tool.zest-releaser]
 release = false

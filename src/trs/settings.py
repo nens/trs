@@ -15,9 +15,14 @@ BASE_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, "..", ".."))
 
 ROOT_URLCONF = "trs.urls"
 
+# Settings from the environment
 DEBUG = env.bool("DEBUG", default=True)
 SECRET_KEY = env("SECRET_KEY", default="sleutel van het secreet")
 SENTRY_DSN = env("SENTRY_DSN", default="")
+MEMCACHE_ADDRESS = env("MEMCACHE_ADDRESS", default="")
+NENS_AUTH_ISSUER = env("NENS_AUTH_ISSUER", default="")
+NENS_AUTH_CLIENT_ID = env("NENS_AUTH_CLIENT_ID", default="")
+NENS_AUTH_CLIENT_SECRET = env("NENS_AUTH_CLIENT_SECRET", default="")
 
 
 ALLOWED_HOSTS = ["trs.lizard.net", "localhost", "trs.nelen-schuurmans.nl"]
@@ -80,15 +85,16 @@ STATICFILES_DIRS = [
 ]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
-        "LOCATION": "memcache:11211",
-        "TIMEOUT": 60 * 60 * 24 * 29,
-        # ^^^ 29 days, memcached has a practical limit at 30 days
-        "KEY_PREFIX": "trs",
+if MEMCACHE_ADDRESS:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
+            "LOCATION": MEMCACHE_ADDRESS,
+            "TIMEOUT": 60 * 60 * 24 * 29,
+            # ^^^ 29 days, memcached has a practical limit at 30 days
+            "KEY_PREFIX": "trs",
+        }
     }
-}
 
 LOGGING = {
     "version": 1,
@@ -174,9 +180,6 @@ AUTHENTICATION_BACKENDS = [
     "nens_auth_client.backends.AcceptNensBackend",
     "nens_auth_client.backends.SSOMigrationBackend",
 ]
-NENS_AUTH_ISSUER = env("NENS_AUTH_ISSUER", default="")
-NENS_AUTH_CLIENT_ID = env("NENS_AUTH_CLIENT_ID", default="")
-NENS_AUTH_CLIENT_SECRET = env("NENS_AUTH_CLIENT_SECRET", default="")
 
 # Apparently this is needed now that we run gunicorn directly?
 USE_X_FORWARDED_HOST = True

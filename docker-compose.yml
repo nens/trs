@@ -17,6 +17,7 @@ services:
     restart: unless-stopped
     environment:
       - DJANGO_SETTINGS_MODULE=trs.settings
+      - MEMCACHE_ADDRESS=memcache:11211
       # Can be set in .env, we'll pass them on.
       - SECRET_KEY
       - DEBUG
