@@ -155,16 +155,16 @@ wheels = [
 
 [[package]]
 name = "django"
-version = "4.1.13"
+version = "4.2.21"
 source = { registry = "https://packages.lizard.net/" }
 dependencies = [
     { name = "asgiref" },
     { name = "sqlparse" },
     { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/34/09/300498ca0a5f37e0621b90a94c71fc8a4227be5488a3bd5550869c6e0049/Django-4.1.13.tar.gz", hash = "sha256:94a3f471e833c8f124ee7a2de11e92f633991d975e3fa5bdd91e8abd66426318", size = 10515104, upload-time = "2023-11-01T06:59:24.955Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c1/bb/2fad5edc1af2945cb499a2e322ac28e4714fc310bd5201ed1f5a9f73a342/django-4.2.21.tar.gz", hash = "sha256:b54ac28d6aa964fc7c2f7335138a54d78980232011e0cd2231d04eed393dcb0d", size = 10424638, upload-time = "2025-05-07T14:07:07.992Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ad/ac/203ce7fd2e03fb0392e0a6160f4b27d0d1efe1614cb65f1d29e6bbf2ef69/Django-4.1.13-py3-none-any.whl", hash = "sha256:04ab3f6f46d084a0bba5a2c9a93a3a2eb3fe81589512367a75f79ee8acf790ce", size = 8104299, upload-time = "2023-11-01T06:59:10.387Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/4f/aeaa3098da18b625ed672f3da6d1cd94e188d1b2cc27c2c841b2f9666282/django-4.2.21-py3-none-any.whl", hash = "sha256:1d658c7bf5d31c7d0cac1cab58bc1f822df89255080fec81909256c30e6180b3", size = 7993839, upload-time = "2025-05-07T14:07:01.318Z" },
 ]
 
 [[package]]
@@ -492,7 +492,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4" },
-    { name = "django", specifier = "==4.1.*" },
+    { name = "django", specifier = "==4.2.*" },
     { name = "django-environ" },
     { name = "django-extensions", specifier = ">3.0.0" },
     { name = "django-tls-rvanlaar", specifier = "==0.0.3" },
