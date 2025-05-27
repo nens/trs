@@ -6,7 +6,7 @@ name = "trs"
 version = "2.2.dev0"
 requires-python = "==3.13.*"
 dependencies = [
-    "Django == 5.0.*",
+    "Django == 5.1.*",
     "Werkzeug",
     "beautifulsoup4",
     "django-environ",
