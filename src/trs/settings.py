@@ -159,9 +159,8 @@ TRS_END_YEAR = 2028
 # ^^^ TODO: appconf defaults.
 
 USE_I18N = True
-USE_TZ = (
-    False  # False is the pre-5.0 default. We want those tz-less datetimes in the db.
-)
+USE_TZ = False
+# ^^^ False is the pre-5.0 default. We want those tz-less datetimes in the db.
 LANGUAGE_CODE = "nl-nl"
 TIME_ZONE = "Europe/Amsterdam"
 
