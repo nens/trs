@@ -57,3 +57,9 @@ dev = [
     "pytest-cov>=6.1.1",
     "pytest-django>=4.11.1",
 ]
+
+[tool.pyright]
+# Out-of-the-box vscode support, provided you created .venv as mentioned in the readme.
+venvPath = "."
+venv = ".venv"
+include = "src"
