@@ -3,3 +3,5 @@ bower_components/
 ansible/
 # Temp backups or copied from the server.
 *.db
+.venv/
+staticfiles/

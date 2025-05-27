@@ -15,6 +15,9 @@ Changelog of TRS
 - Fixed 'projectbegroting' form, which didn't display errors (and the form itself)
   properly when there was a validation error.
 
+- Big upgrade from python 3.10 to 3.13, django 3.2 to 5.2. And updated the setup to use
+  ``uv`` instead of pip-tools. Locally, docker isn't used anymore.
+
 
 2.1 (2022-08-08)
 ----------------

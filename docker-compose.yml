@@ -8,9 +8,8 @@ services:
 
   web:
     build: .
-    command: "bin/gunicorn -b 0.0.0.0:${PORT:-5000} --workers=3 --timeout 90 --preload --max-requests=10000 trs.wsgi"
     ports:
-      - "${PORT:-5000}:${PORT:-5000}"
+      - 5000:5000
     volumes:
       - ./var:/code/var
     links:
@@ -18,6 +17,7 @@ services:
     restart: unless-stopped
     environment:
       - DJANGO_SETTINGS_MODULE=trs.settings
+      - MEMCACHE_ADDRESS=memcache:11211
       # Can be set in .env, we'll pass them on.
       - SECRET_KEY
       - DEBUG

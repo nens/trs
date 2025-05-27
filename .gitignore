@@ -1,61 +1,51 @@
-# From https://github.com/github/gitignore/blob/master/Python.gitignore
-
-# Pyc/pyo files.
+# Pyc/pyo/backup files.
 *.py[co]
+*~
+*.swp
+*.pyc
+.DS_Store
 
-# Packages
+# Packages/buildout/pip/pipenv
 *.egg
 *.egg-info
-dist
-build
-eggs
-parts
-bin
-var
 sdist
-develop-eggs
-.installed.cfg
-
-# Installer logs
 pip-log.txt
+bower_components/
+node_modules/
+doc/build/
+ansible/*.retry
+.venv
+venv
+bin/
+lib/
+pyvenv.cfg
+dist/
+var/
+*.suggestion
+
+# Our generated files
+for_step_summary.md
 
 # Unit test / coverage reports
 .coverage
 .tox
-nosetests.xml
 htmlcov
-coverage.xml
+.codeintel
+coverage.*
+.pytest_cache
 
-#Translations
-# *.mo
-# ^^^ No, django needs the .mo files as it doesn't compile them on the fly.
+# Pycharm, visual studio
+.idea
+.vscode
 
-#Mr Developer
-.mr.developer.cfg
-src
-
-# Ignore generated config files
-etc/*.nginx.conf
-etc/*.supervisord.conf
-etc/*.logrotate
-
-
-# Bower
-bower_components
-
-trs/local_testsettings.py
-
-buildout.cfg
-*~
-scriptjes/
-trs.db
-lib
-lib64
-man/
-pyvenv.cfg
-share/
-node_modules/
+# Docker
 docker-compose.override.yml
-trs/pytest-coverage.txt
-.env
-ansible
+
+### Extra lines below are preserved ###
+/.env
+/ansible
+/src/trs/local_testsettings.py
+pytest-coverage.txt
+/package.json
+/staticfiles/
+/package-lock.json

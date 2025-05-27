@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=69"]
+
+[project]
+name = "trs"
+version = "2.2.dev0"
+requires-python = "==3.13.*"
+dependencies = [
+    "Django == 5.2.*",
+    "Werkzeug",
+    "beautifulsoup4",
+    "django-environ",
+    "django-extensions > 3.0.0",
+    "django-tls_rvanlaar == 0.0.3",
+    "gunicorn",
+    "nens-auth-client",
+    "pymemcache",
+    "requests",
+    "sentry-sdk",
+    "setuptools",
+    "whitenoise",
+    "xlsxwriter",
+]
+authors = [
+    {name = "Reinout van Rees", email = "reinout.vanrees@nelen-schuurmans.nl"},
+]
+readme = "README.rst"
+
+
+[tool.ruff]
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP"]
+ignore = ["UP031"]
+# UP031 = %-formatting like "<tt>%s,%02d</tt>"
+
+[[tool.uv.index]]
+url = "https://packages.lizard.net/"
+default = true
+
+[tool.pytest.ini_options]
+addopts = "--cov --cache-clear --fail-on-template-vars src/"
+DJANGO_SETTINGS_MODULE = "trs.settings"
+django_find_project = false
+
+[tool.zest-releaser]
+release = false
+
+[dependency-groups]
+dev = [
+    "coverage>=7.8.2",
+    "django-upgrade>=1.25.0",
+    "factory-boy>=3.3.3",
+    "mock>=5.2.0",
+    "pytest>=8.3.5",
+    "pytest-cov>=6.1.1",
+    "pytest-django>=4.11.1",
+]
+
+[tool.pyright]
+# Out-of-the-box vscode support, provided you created .venv as mentioned in the readme.
+venvPath = "."
+venv = ".venv"
+include = "src"
