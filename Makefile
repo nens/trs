@@ -47,7 +47,7 @@ node_modules/bower/bin/bower:
 
 
 test: install
-	PYTHONWARNINGS=always uv run pytest | tee trs/pytest-coverage.txt
+	PYTHONWARNINGS=always uv run pytest | tee pytest-coverage.txt
 
 
 beautiful:

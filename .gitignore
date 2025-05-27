@@ -45,7 +45,7 @@ docker-compose.override.yml
 /.env
 /ansible
 /src/trs/local_testsettings.py
-/src/trs/pytest-coverage.txt
+pytest-coverage.txt
 /package.json
 /staticfiles/
 /package-lock.json

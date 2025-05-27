@@ -10,16 +10,20 @@ on:
 
 jobs:
   build_and_test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Build
-        run: |
-          ln -s docker-compose.development.yml docker-compose.override.yml
-          docker compose build
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+      - name: Install everything
+        run: make install
       - name: Test
-        run: docker compose run --rm web make test
+        run: make test
       - name: Add coverage comment for better visibility
         uses: coroo/pytest-coverage-commentator@v1.0.2
         with:
-          pytest-coverage: trs/pytest-coverage.txt
+          pytest-coverage: pytest-coverage.txt
