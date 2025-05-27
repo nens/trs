@@ -2,7 +2,7 @@ Changelog of TRS
 ===================================================
 
 
-2.2 (unreleased)
+2.2 (2025-05-27)
 ----------------
 
 - Switched from csv to excel export. xlsxwriter wasn't available when the
