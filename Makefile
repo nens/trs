@@ -23,6 +23,7 @@ run_uv:
 
 upgrade:
 	uv sync --upgrade
+	pre-commit autoupdate
 
 
 # Note: no var/static anymore.
