@@ -480,7 +480,7 @@ wheels = [
 
 [[package]]
 name = "trs"
-version = "2.2.dev0"
+version = "2.3.dev0"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },

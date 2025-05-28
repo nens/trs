@@ -49,3 +49,4 @@ pytest-coverage.txt
 /package.json
 /staticfiles/
 /package-lock.json
+/*.db
