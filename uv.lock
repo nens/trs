@@ -224,6 +224,18 @@ wheels = [
 ]
 
 [[package]]
+name = "django-types"
+version = "0.20.0"
+source = { registry = "https://packages.lizard.net/" }
+dependencies = [
+    { name = "types-psycopg2" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/12/a1/a17e5d2222f963fd1714325c2869adf27fab1299f1430d8913bfecc6e5c0/django_types-0.20.0.tar.gz", hash = "sha256:4e55d2c56155e3d69d75def9eb1d95a891303f2ac19fccf6fe8056da4293fae7", size = 178278, upload-time = "2024-12-12T00:57:40.897Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/44/ee/d4cd24637f31cb131e629df64133f7960fcdc48a183918a352f02db0cd6f/django_types-0.20.0-py3-none-any.whl", hash = "sha256:a0b5c2c9a1e591684bb21a93b64e50ca6cb2d3eab48f49faff1eac706bd3a9c7", size = 374226, upload-time = "2024-12-12T00:57:37.702Z" },
+]
+
+[[package]]
 name = "django-upgrade"
 version = "1.25.0"
 source = { registry = "https://packages.lizard.net/" }
@@ -488,6 +500,7 @@ dependencies = [
     { name = "django-environ" },
     { name = "django-extensions" },
     { name = "django-tls-rvanlaar" },
+    { name = "django-types" },
     { name = "gunicorn" },
     { name = "nens-auth-client" },
     { name = "pymemcache" },
@@ -517,6 +530,7 @@ requires-dist = [
     { name = "django-environ" },
     { name = "django-extensions", specifier = ">3.0.0" },
     { name = "django-tls-rvanlaar", specifier = "==0.0.3" },
+    { name = "django-types", specifier = ">=0.20.0" },
     { name = "gunicorn" },
     { name = "nens-auth-client" },
     { name = "pymemcache" },
@@ -537,6 +551,15 @@ dev = [
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-cov", specifier = ">=6.1.1" },
     { name = "pytest-django", specifier = ">=4.11.1" },
+]
+
+[[package]]
+name = "types-psycopg2"
+version = "2.9.21.20250516"
+source = { registry = "https://packages.lizard.net/" }
+sdist = { url = "https://files.pythonhosted.org/packages/68/55/3f94eff9d1a1402f39e19523a90117fe6c97d7fc61957e7ee3e3052c75e1/types_psycopg2-2.9.21.20250516.tar.gz", hash = "sha256:6721018279175cce10b9582202e2a2b4a0da667857ccf82a97691bdb5ecd610f", size = 26514, upload-time = "2025-05-16T03:07:45.786Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/39/50/f5d74945ab09b9a3e966ad39027ac55998f917eca72ede7929eab962b5db/types_psycopg2-2.9.21.20250516-py3-none-any.whl", hash = "sha256:2a9212d1e5e507017b31486ce8147634d06b85d652769d7a2d91d53cb4edbd41", size = 24846, upload-time = "2025-05-16T03:07:44.849Z" },
 ]
 
 [[package]]

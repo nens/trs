@@ -12,6 +12,7 @@ dependencies = [
     "django-environ",
     "django-extensions > 3.0.0",
     "django-tls_rvanlaar == 0.0.3",
+    "django-types>=0.20.0",
     "gunicorn",
     "nens-auth-client",
     "pymemcache",

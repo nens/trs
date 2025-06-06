@@ -3,7 +3,7 @@ import datetime
 import logging
 import statistics
 import time
-import urllib
+import urllib.parse
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from decimal import Decimal
