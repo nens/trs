@@ -136,6 +136,7 @@ LOGGING = {
             "handlers": ["console", "logfile"],
             "propagate": True,
             "level": "DEBUG",
+            "disable_existing_loggers": False,
         },
         "django.db.backends": {
             # 'handlers': ['sqllogfile'],  # For demo purposes.
