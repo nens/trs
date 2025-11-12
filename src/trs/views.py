@@ -50,11 +50,11 @@ from trs.templatetags.trs_formatting import hours as format_as_hours
 
 logger = logging.getLogger(__name__)
 
-BIG_PROJECT_SIZE = 200  # hours
-MAX_BAR_HEIGHT = 50  # px
-BAR_WIDTH = 75  # px
-BACK_TEMPLATE = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
-MONTHS = [
+BIG_PROJECT_SIZE: int = 200  # hours
+MAX_BAR_HEIGHT: int = 50  # px
+BAR_WIDTH: int = 75  # px
+BACK_TEMPLATE: str = '<div><small><a href="{url}">&larr; {text}</a></small></div>'
+MONTHS: list[str] = [
     "Januari",
     "Februari",
     "Maart",
@@ -68,7 +68,7 @@ MONTHS = [
     "November",
     "December",
 ]
-TOTAL_COMPANY = "Totaal"
+TOTAL_COMPANY: str = "Totaal"
 
 
 class LoginAndPermissionsRequiredMixin:
@@ -111,8 +111,8 @@ def home(request):
 
 
 class BaseMixin:
-    template_name = "trs/base.html"
-    title = "TRS tijdregistratiesysteem"
+    template_name: str = "trs/base.html"
+    title: str = "TRS tijdregistratiesysteem"
     filters_and_choices = []
     normally_visible_filters = None
     results_for_selection_pager = None
