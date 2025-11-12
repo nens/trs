@@ -16,9 +16,13 @@ basically, booking our hours and managing projects.
 Local development installation
 ------------------------------
 
+Make a copy of the database on the server::
+
+  $ sqlite3 var/db/trs.db ".backup trs_`date +%Y-%m-%d`.db"
+
 Grab the sqlite db from the server::
 
-  $ scp the.server.name:/srv/trs.nelen-schuurmans.nl/var/db/trs.db var/db/
+  $ scp the.server.name:/srv/trs.nelen-schuurmans.nl/trs_YYYY-MM-DD.db var/db/trs.db
 
 Add a ``.env`` with the nens-auth-client cognito settings for localhost.
 
