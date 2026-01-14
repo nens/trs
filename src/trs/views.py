@@ -1034,7 +1034,7 @@ class ProjectsView(BaseView):
 
         # Pagination, mostly for the looooooong archive projects list.
         page = self.request.GET.get("page")
-        paginator = Paginator(result, 200)
+        paginator = Paginator(result, 150)
         try:
             result = paginator.page(page)
         except PageNotAnInteger:
