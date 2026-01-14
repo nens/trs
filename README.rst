@@ -41,6 +41,15 @@ To test the docker setup::
   $ docker compose build
   $ docker compose up
 
+For local development, you need some additional environment variables. Set them in a
+`.env` or use "direnv":
+
+    export DEBUG=True
+    export SECRET_KEY="xxx"
+    export NENS_AUTH_ISSUER="xxx
+    export NENS_AUTH_CLIENT_ID="xxx"
+    export NENS_AUTH_CLIENT_SECRET="xxx"
+
 
 Server installation
 -------------------
