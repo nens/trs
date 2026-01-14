@@ -32,6 +32,7 @@
             <a class="navbar-brand"
                href="/"
                title="&larr; Beginpagina">TRS</a>
+            <!-- <img class="htmx-indicator" src="{% static 'svg-loaders/oval.svg' %}" /> -->
           </div>
 
           <!-- Start of collapsible part -->
@@ -293,6 +294,10 @@
       </div>
 
     {% endblock %}
+
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
+            integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
+            crossorigin="anonymous"></script>
 
     <script type="text/javascript">
       {% if view.for_selection_pager %}
