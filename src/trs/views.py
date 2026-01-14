@@ -804,7 +804,10 @@ class FreeOverview(PersonView):
 class ProjectsView(BaseView):
     @cached_property
     def results_for_selection_pager(self):
-        return self.projects
+        if not self.projects.has_next():
+            # List is too long, no use grabbing the full list just for pagination now
+            # that we have "infinite scrolling" with htmx.
+            return self.projects
 
     @cached_property
     def filters_and_choices(self):
@@ -1025,7 +1028,7 @@ class ProjectsView(BaseView):
 
         # Pagination, mostly for the looooooong archive projects list.
         page = self.request.GET.get("page")
-        paginator = Paginator(result, 500)
+        paginator = Paginator(result, 200)
         try:
             result = paginator.page(page)
         except PageNotAnInteger:

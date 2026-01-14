@@ -26,8 +26,6 @@
     </div>
   {% endif %}
 
-  {% include "trs/project-pagination.html" %}
-
   <table class="table table-hover table-condensed table-fixed-header">
     <thead class="header">
       <tr>
@@ -58,9 +56,16 @@
         </th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="project-lines">
       {% for line in view.lines %}
-        <tr>
+        <tr {% if view.projects.has_next and forloop.last %}
+            hx-get="?page={{ view.projects.next_page_number }}&{{ view.current_get_params }}"
+            hx-swap="beforeend"
+            hx-target="#project-lines"
+            hx-select="#project-lines tr"
+            hx-trigger="revealed"
+
+        {% endif %}>
           <td style="white-space: nowrap;">
             {{ line.project.as_widget }}
           </td>
@@ -111,18 +116,21 @@
         </tr>
       {% endfor %}
     </tbody>
-    <tfoot>
-      <tr>
-        <th>Totaal</th>
-        <th colspan="4"></th>
-        <th class="text-right">{{ view.totals.turnover|money }}</th>
-        <th class="text-right">{{ view.totals.person_costs_incl_reservation|money }}</th>
-        <th class="text-right">{{ view.totals.other_costs|money }}</th>
-        <th colspan="2"></th>
-      </tr>
-    </tfoot>
+
+    {% if not view.projects.has_next %}
+      <!-- Only show totals if there's just a single page -->
+      <tfoot>
+        <tr>
+          <th>Totaal</th>
+          <th colspan="4"></th>
+          <th class="text-right">{{ view.totals.turnover|money }}</th>
+          <th class="text-right">{{ view.totals.person_costs_incl_reservation|money }}</th>
+          <th class="text-right">{{ view.totals.other_costs|money }}</th>
+          <th colspan="2"></th>
+        </tr>
+      </tfoot>
+    {% endif %}
   </table>
 
-  {% include "trs/project-pagination.html" %}
 
 {% endblock %}
