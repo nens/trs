@@ -71,6 +71,7 @@ MONTHS: list[str] = [
 TOTAL_COMPANY: str = "Totaal"
 NO_FILTER = "---"
 
+
 class LoginAndPermissionsRequiredMixin:
     """See http://stackoverflow.com/a/10304880/27401"""
 
