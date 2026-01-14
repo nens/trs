@@ -1,23 +1,31 @@
-{% for filter in view.prepared_filters %}
-  {% if not filter.hidden %}
-    <div {% if not filter.active %}class="text-muted"{% endif %}>
-      <span class="filter-title">
-        {{ filter.title }}:
-      </span>
-      {% for choice in filter.choices %}
-        {% if choice.active %}
-          <b class="active-choice">
-            {{ choice.title }}
-          </b>
-        {% else %}
-          <a href="?{{ choice.query_string }}">
-            {{ choice.title }}
-          </a>
+{% if view.prepared_filters %}
+  <table class="table table-condensed"
+         style="width: auto;">
+    <tbody>
+      {% for filter in view.prepared_filters %}
+
+        {% if not filter.hidden %}
+          <tr {% if filter.active %}class="active"{% endif %}>
+            <td style="border-top: 0;">
+              {{ filter.title }}:
+            </td>
+            <td style="border-top: 0;">
+              <select name="{{ filter.param }}"
+                      hx-get="?{{ filter.url }}"
+                      hx-replace-url="true"
+                      hx-target="body">
+                {% for choice in filter.choices %}
+                  <option value="{{ choice.value }}"
+                          {% if choice.active %}selected=selected{% endif %}>
+                    {{ choice.title }}
+                  </option>
+                {% endfor %}
+              </select>
+            </td>
+          </tr>
         {% endif %}
-        {% if not forloop.last %}
-          |
-        {% endif %}
+
       {% endfor %}
-    </div>
-  {% endif %}
-{% endfor %}
+    </tbody>
+  </table>
+{% endif %}

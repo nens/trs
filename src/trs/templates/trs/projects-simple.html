@@ -6,8 +6,6 @@
 
   {% include "trs/filter-snippet.html" %}
 
-  {% include "trs/project-pagination.html" %}
-
   <table class="table table-hover table-condensed table-fixed-header">
     <thead class="header">
       <tr>
@@ -16,9 +14,15 @@
         <th class="text-right">Opdrachtsom</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="project-lines">
       {% for project in view.projects %}
-        <tr>
+        <tr {% if view.projects.has_next and forloop.last %}
+            hx-get="?page={{ view.projects.next_page_number }}&{{ view.current_get_params }}"
+            hx-swap="beforeend"
+            hx-target="#project-lines"
+            hx-select="#project-lines tr"
+            hx-trigger="revealed"
+            {% endif %}>
           <td>{{ project.as_widget }}</td>
           <td>
             <span class="text-muted">{{ project.description }}</span>
@@ -30,7 +34,5 @@
       {% endfor %}
     </tbody>
   </table>
-
-  {% include "trs/project-pagination.html" %}
 
 {% endblock %}

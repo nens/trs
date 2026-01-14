@@ -69,6 +69,7 @@ MONTHS: list[str] = [
     "December",
 ]
 TOTAL_COMPANY: str = "Totaal"
+NO_FILTER = "---"
 
 
 class LoginAndPermissionsRequiredMixin:
@@ -159,6 +160,12 @@ class BaseMixin:
 
             active_value = get_params.get(param, filter["default"])
             filter["active_value"] = active_value
+
+            if param in get_params:
+                # Do not include our own previous value
+                get_params.pop(param)
+
+            filter["url"] = urllib.parse.urlencode(get_params)
             for choice in filter["choices"]:
                 get_params[param] = choice["value"]
                 choice["query_string"] = urllib.parse.urlencode(get_params)
@@ -381,7 +388,7 @@ class PersonsView(BaseView):
                 "title": "Groep",
                 "param": "group",
                 "default": "all",
-                "choices": [{"value": "all", "title": "Geen filter", "q": Q()}]
+                "choices": [{"value": "all", "title": NO_FILTER, "q": Q()}]
                 + [
                     {
                         "value": str(group.id),
@@ -804,7 +811,10 @@ class FreeOverview(PersonView):
 class ProjectsView(BaseView):
     @cached_property
     def results_for_selection_pager(self):
-        return self.projects
+        if not self.projects.has_next():
+            # List is too long, no use grabbing the full list just for pagination now
+            # that we have "infinite scrolling" with htmx.
+            return self.projects
 
     @cached_property
     def filters_and_choices(self):
@@ -824,7 +834,7 @@ class ProjectsView(BaseView):
                         "title": "gearchiveerde projecten",
                         "q": Q(archived=True),
                     },
-                    {"value": "all", "title": "Geen filter", "q": Q()},
+                    {"value": "all", "title": NO_FILTER, "q": Q()},
                 ],
             },
             {
@@ -832,7 +842,7 @@ class ProjectsView(BaseView):
                 "param": "is_subsidized",
                 "default": "all",
                 "choices": [
-                    {"value": "all", "title": "Geen filter", "q": Q()},
+                    {"value": "all", "title": NO_FILTER, "q": Q()},
                     {
                         "value": "false",
                         "title": "geen subsidie",
@@ -849,7 +859,7 @@ class ProjectsView(BaseView):
                 "title": "Groep",
                 "param": "group",
                 "default": "all",
-                "choices": [{"value": "all", "title": "Geen filter", "q": Q()}]
+                "choices": [{"value": "all", "title": NO_FILTER, "q": Q()}]
                 + [
                     {
                         "value": str(group.id),
@@ -864,7 +874,7 @@ class ProjectsView(BaseView):
                 "title": "MPC",
                 "param": "mpc",
                 "default": "all",
-                "choices": [{"value": "all", "title": "Geen filter", "q": Q()}]
+                "choices": [{"value": "all", "title": NO_FILTER, "q": Q()}]
                 + [
                     {
                         "value": str(mpc.id),
@@ -879,7 +889,7 @@ class ProjectsView(BaseView):
                 "title": "Projectleider",
                 "param": "project_leader",
                 "default": "all",
-                "choices": [{"value": "all", "title": "Geen filter", "q": Q()}]
+                "choices": [{"value": "all", "title": NO_FILTER, "q": Q()}]
                 + [
                     {
                         "value": str(person.id),
@@ -896,7 +906,7 @@ class ProjectsView(BaseView):
                 "title": "Projectmanager",
                 "param": "project_manager",
                 "default": "all",
-                "choices": [{"value": "all", "title": "Geen filter", "q": Q()}]
+                "choices": [{"value": "all", "title": NO_FILTER, "q": Q()}]
                 + [
                     {
                         "value": str(person.id),
@@ -918,7 +928,7 @@ class ProjectsView(BaseView):
                 "param": "started",
                 "default": "all",
                 "choices": [
-                    {"value": "all", "title": "Geen filter", "q": Q()},
+                    {"value": "all", "title": NO_FILTER, "q": Q()},
                     {
                         "value": "true",
                         "title": "ja",
@@ -936,7 +946,7 @@ class ProjectsView(BaseView):
                 "param": "ended",
                 "default": "all",
                 "choices": [
-                    {"value": "all", "title": "Geen filter", "q": Q()},
+                    {"value": "all", "title": NO_FILTER, "q": Q()},
                     {"value": "true", "title": "ja", "q": Q(end__lt=this_year_week())},
                     {
                         "value": "false",
@@ -950,7 +960,7 @@ class ProjectsView(BaseView):
                 "param": "ratings",
                 "default": "all",
                 "choices": [
-                    {"value": "all", "title": "Geen filter", "q": Q()},
+                    {"value": "all", "title": NO_FILTER, "q": Q()},
                     {
                         "value": "both",
                         "title": "allebei ingevuld",
@@ -1025,7 +1035,7 @@ class ProjectsView(BaseView):
 
         # Pagination, mostly for the looooooong archive projects list.
         page = self.request.GET.get("page")
-        paginator = Paginator(result, 500)
+        paginator = Paginator(result, 150)
         try:
             result = paginator.page(page)
         except PageNotAnInteger:
@@ -2731,7 +2741,7 @@ class PayablesView(BaseView):
                 "title": "Groep",
                 "param": "group",
                 "default": "all",
-                "choices": [{"value": "all", "title": "Geen filter", "q": Q()}]
+                "choices": [{"value": "all", "title": NO_FILTER, "q": Q()}]
                 + [
                     {
                         "value": str(group.id),
@@ -2752,7 +2762,7 @@ class PayablesView(BaseView):
                 "title": "MPC",
                 "param": "mpc",
                 "default": "all",
-                "choices": [{"value": "all", "title": "Geen filter", "q": Q()}]
+                "choices": [{"value": "all", "title": NO_FILTER, "q": Q()}]
                 + [
                     {
                         "value": str(mpc.id),

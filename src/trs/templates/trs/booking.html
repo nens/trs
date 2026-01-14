@@ -3,6 +3,7 @@
 {% load trs_formatting %}
 
 {% block main-column %}
+<div hx-boost="true">
   <h1>{{ view.title }}</h1>
   <div class="text-muted">
     Zie
@@ -122,5 +123,5 @@
       </tfoot>
     </table>
   </form>
-
+</div>
 {% endblock %}
