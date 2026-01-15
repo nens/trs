@@ -22,6 +22,7 @@
             hx-target="#project-lines"
             hx-select="#project-lines tr"
             hx-trigger="revealed"
+            hx-indicator="#project-load-indicator"
             {% endif %}>
           <td>{{ project.as_widget }}</td>
           <td>
@@ -33,6 +34,13 @@
         </tr>
       {% endfor %}
     </tbody>
+    {% if view.projects.has_next %}
+      <tfoot id="project-load-indicator" class="htmx-indicator">
+        <tr>
+          <th class="text-center" colspan="3">Volgende set wordt opgehaald...</th>
+        </tr>
+      </tfoot>
+    {% endif %}
   </table>
 
 {% endblock %}

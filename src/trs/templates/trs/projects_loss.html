@@ -54,6 +54,7 @@
             hx-target="#project-lines"
             hx-select="#project-lines tr"
             hx-trigger="revealed"
+            hx-indicator="#project-load-indicator"
             {% endif %}>
           <td style="white-space: nowrap;">
             {{ line.project.as_widget }}
@@ -103,7 +104,13 @@
         </tr>
       {% endfor %}
     </tbody>
-    {% if not view.projects.has_next %}
+    {% if view.projects.has_next %}
+      <tfoot id="project-load-indicator" class="htmx-indicator">
+        <tr>
+          <th class="text-center" colspan="9">Volgende set wordt opgehaald...</th>
+        </tr>
+      </tfoot>
+    {% else %}
       <!-- Only show totals if there's just a single page -->
       <tfoot>
         <tr>
