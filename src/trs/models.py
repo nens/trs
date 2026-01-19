@@ -1218,15 +1218,13 @@ class WorkAssignment(models.Model):
     hours = models.DecimalField(
         max_digits=MAX_DIGITS,
         decimal_places=DECIMAL_PLACES,
-        blank=True,
-        null=True,
+        default=0,
         verbose_name="uren",
     )
     hourly_tariff = models.DecimalField(
         max_digits=MAX_DIGITS,
         decimal_places=DECIMAL_PLACES,
-        blank=True,
-        null=True,
+        default=0,
         verbose_name="uurtarief",
     )
 
@@ -1250,6 +1248,11 @@ class WorkAssignment(models.Model):
     class Meta:
         verbose_name = "toekenning van werk"
         verbose_name_plural = "toekenningen van werk"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["assigned_on", "assigned_to"], name="unique_work_assignment"
+            ),
+        ]
 
     def save(self, save_assigned_on=True, *args, **kwargs):
         self.assigned_to.save()  # Increments cache indicator.
