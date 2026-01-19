@@ -479,6 +479,10 @@ class PersonView(BaseView):
         return Person.objects.get(pk=self.kwargs["pk"])
 
     @cached_property
+    def title(self):
+        return self.person.name
+
+    @cached_property
     def sidebar_person(self):
         if self.can_see_everything:
             return self.person
