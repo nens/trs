@@ -536,15 +536,11 @@ class PersonView(BaseView):
         # TODO: somewhat similar to BookingView.
         result = []
         # Budget query.
-        budget_per_project = (
-            WorkAssignment.objects.filter(
-                assigned_to=self.person, assigned_on__in=self.projects
-            )
-            .values("assigned_on", "hours", "hourly_tariff")
-        )
+        budget_per_project = WorkAssignment.objects.filter(
+            assigned_to=self.person, assigned_on__in=self.projects
+        ).values("assigned_on", "hours", "hourly_tariff")
         budgets = {
-            item["assigned_on"]: round(item["hours"])
-            for item in budget_per_project
+            item["assigned_on"]: round(item["hours"]) for item in budget_per_project
         }
         hourly_tariffs = {
             item["assigned_on"]: round(item["hourly_tariff"])
@@ -1264,15 +1260,11 @@ class ProjectView(BaseView):
     def lines(self):
         result = []
         # Budget query.
-        budget_per_person = (
-            WorkAssignment.objects.filter(
-                assigned_to__in=self.persons, assigned_on=self.project
-            )
-            .values("assigned_to", "hours", "hourly_tariff")
-        )
+        budget_per_person = WorkAssignment.objects.filter(
+            assigned_to__in=self.persons, assigned_on=self.project
+        ).values("assigned_to", "hours", "hourly_tariff")
         budgets = {
-            item["assigned_to"]: round(item["hours"])
-            for item in budget_per_person
+            item["assigned_to"]: round(item["hours"]) for item in budget_per_person
         }
         hourly_tariffs = {
             item["assigned_to"]: round(item["hourly_tariff"])
@@ -1601,15 +1593,11 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             for item in booking_table
         }
         # Idem for budget
-        budget_per_project = (
-            WorkAssignment.objects.filter(
-                assigned_to=self.person, assigned_on__in=self.relevant_projects
-            )
-            .values("assigned_on", "hours")
-        )
+        budget_per_project = WorkAssignment.objects.filter(
+            assigned_to=self.person, assigned_on__in=self.relevant_projects
+        ).values("assigned_on", "hours")
         budgets = {
-            item["assigned_on"]: round(item["hours"])
-            for item in budget_per_project
+            item["assigned_on"]: round(item["hours"]) for item in budget_per_project
         }
         # Item for hours worked.
         booked_per_project = (
@@ -2198,6 +2186,7 @@ class ProjectBudgetEditView(BaseView):
         )
         self.project_member_formset = ProjectMemberFormSet(
             initial=self.initial_data_for_project_members()
+            # TODO: perhaps just a regular set of WorkAssignments suffices?
         )
         self.adjust_project_member_formset()
         # fields['amount'].widget.attrs['disabled'] = 'disabled'
@@ -2224,7 +2213,9 @@ class ProjectBudgetEditView(BaseView):
             ProjectMemberForm, extra=0, can_delete=True
         )
         self.project_member_formset = ProjectMemberFormSet(
-            data=self.request.POST, initial=self.initial_data_for_project_members()
+            data=self.request.POST,
+            initial=self.initial_data_for_project_members(),
+            # TODO: perhaps just a regular set of WorkAssignments suffices?
         )
 
         if (
@@ -2264,7 +2255,9 @@ class ProjectBudgetEditView(BaseView):
     def add_team_member(self, id):
         person = Person.objects.get(id=id)
         msg = f"{person.name} is aan het team toegevoegd"
-        WorkAssignment.objects.get_or_create(assigned_on=self.project, assigned_to=person)
+        WorkAssignment.objects.get_or_create(
+            assigned_on=self.project, assigned_to=person
+        )
         logger.info(msg)
         messages.success(self.request, msg)
 
@@ -2275,13 +2268,12 @@ class ProjectBudgetEditView(BaseView):
 
     @cached_property
     def budgets_and_tariffs(self):
-        budget_per_person = (
-            WorkAssignment.objects.filter(assigned_on=self.project)
-            .values("assigned_to", "hours", "hourly_tariff")
-        )
+        # TODO: perhaps just a regular set of WorkAssignments suffices?
+        budget_per_person = WorkAssignment.objects.filter(
+            assigned_on=self.project
+        ).values("assigned_to", "hours", "hourly_tariff")
         budgets = {
-            item["assigned_to"]: round(item["hours"])
-            for item in budget_per_person
+            item["assigned_to"]: round(item["hours"]) for item in budget_per_person
         }
         hourly_tariffs = {
             item["assigned_to"]: round(item["hourly_tariff"])
@@ -2290,6 +2282,7 @@ class ProjectBudgetEditView(BaseView):
         return budgets, hourly_tariffs
 
     def initial_data_for_project_members(self):
+        # TODO: perhaps just a regular set of WorkAssignments suffices?
         budgets, hourly_tariffs = self.budgets_and_tariffs
         result = []
         for person in self.project.assigned_persons():
@@ -2308,6 +2301,7 @@ class ProjectBudgetEditView(BaseView):
         TODO: adjust to the real 'disabled=True' when using django 1.9+.
 
         """
+        # TODO: perhaps just a regular set of WorkAssignments suffices?
         budgets, hourly_tariffs = self.budgets_and_tariffs
         booked_per_person = (
             Booking.objects.filter(booked_on=self.project)
@@ -2337,8 +2331,6 @@ class ProjectBudgetEditView(BaseView):
             form.is_project_leader = self.project.project_leader_id == person.id
 
     def process_project_member_formset(self):
-        num_changes = 0
-        original_hours, original_hourly_tariffs = self.budgets_and_tariffs
         new_hours = {}
         new_hourly_tariffs = {}
         to_delete = [
@@ -2346,7 +2338,6 @@ class ProjectBudgetEditView(BaseView):
             for form in self.project_member_formset.deleted_forms
         ]
         for form in self.project_member_formset:
-            print(form.cleaned_data)
             person_id = form.cleaned_data["person_id"]
             new_hours[person_id] = form.cleaned_data["hours"]
             new_hourly_tariffs[person_id] = form.cleaned_data["hourly_tariff"]
