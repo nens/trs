@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_extensions",
     "nens_auth_client",
+    "django_htmx",
     "django.contrib.humanize",
     "django.contrib.messages",
     "django.contrib.admin",
@@ -67,6 +68,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     # Whitenoise should be first.
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django_htmx.middleware.HtmxMiddleware",
     # Default stuff below.
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

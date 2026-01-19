@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 {% load static %}
 {% load trs_formatting %}
+{% load django_htmx %}
 <html>
   <head>
     <title>{{ view.title }}</title>
@@ -10,14 +11,19 @@
     <link href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet" media="screen">
     <link href="{% static 'fira/fira.css' %}" rel="stylesheet">
     <link href="{% static 'trs/layout.css' %}" rel="stylesheet" media="screen">
+    {% htmx_script %}
 
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'trs/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'trs/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'trs/favicon-16x16.png' %}">
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
       <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body hx-boost="true">
+  <body hx-boost="true"
+         hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
     <div class="container">
       {% block whole-page %}
 
@@ -293,10 +299,6 @@
       </div>
 
     {% endblock %}
-
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
-            integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
-            crossorigin="anonymous"></script>
 
     <script type="text/javascript">
       {% if view.for_selection_pager %}
