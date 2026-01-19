@@ -1214,7 +1214,7 @@ class Booking(EventBase):
         return super().save(*args, **kwargs)
 
 
-class WorkAssignment(EventBase):
+class WorkAssignment(models.Model):
     hours = models.DecimalField(
         max_digits=MAX_DIGITS,
         decimal_places=DECIMAL_PLACES,

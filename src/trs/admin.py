@@ -63,9 +63,9 @@ class BookingAdmin(admin.ModelAdmin):
 
 
 class WorkAssignmentAdmin(admin.ModelAdmin):
-    list_display = ["assigned_on", "year_week", "assigned_to", "hours", "hourly_tariff"]
+    list_display = ["assigned_on", "assigned_to", "hours", "hourly_tariff"]
     search_fields = ["assigned_on__code", "assigned_to__name"]
-    ordering = ["assigned_on", "year_week", "added"]
+    ordering = ["assigned_on", "assigned_to"]
 
 
 class BudgetItemAdmin(admin.ModelAdmin):
