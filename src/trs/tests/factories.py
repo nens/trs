@@ -85,7 +85,6 @@ class WorkAssignmentFactory(factory.django.DjangoModelFactory):
     hourly_tariff = 0
     assigned_to = factory.SubFactory(PersonFactory)
     assigned_on = factory.SubFactory(ProjectFactory)
-    year_week = factory.SubFactory(YearWeekFactory)
 
 
 class BudgetItemFactory(factory.django.DjangoModelFactory):
