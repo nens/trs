@@ -706,15 +706,14 @@ class Project(models.Model):
         # The big calculation from which the rest derives.
         work_per_person = (
             WorkAssignment.objects.filter(assigned_on=self)
-            .values("assigned_to")
-            .annotate(models.Sum("hours"), models.Sum("hourly_tariff"))
+            .values("assigned_to", "hours", "hourly_tariff")
         )
         budget_per_person = {
-            item["assigned_to"]: round(item["hours__sum"] or 0)
+            item["assigned_to"]: round(item["hours"])
             for item in work_per_person
         }
         hourly_tariff_per_person = {
-            item["assigned_to"]: round(item["hourly_tariff__sum"] or 0)
+            item["assigned_to"]: round(item["hourly_tariff"])
             for item in work_per_person
         }
         ids = budget_per_person.keys()
