@@ -11,79 +11,14 @@
 
   {% if view.are_there_changes %}
 
+    <h2>
+      ... aan
+      {% if view.filters.total %} alle {% else %} jouw {% endif %}
+      projecten
+    </h2>
+
     <div class="row">
       <div class="col-md-6">
-        <h2>... aan jou</h2>
-        {% if view.person_changes %}
-          <!-- Changes on you -->
-
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              Verandering aan jouw instellingen
-            </div>
-            <div class="panel-body">
-              {% if view.person_changes.hours_per_week__sum %}
-                <div>
-                  <b>Werkweek:</b>
-                  {{ view.active_person.hours_per_week|hours }}
-                  ({{ view.person_changes.hours_per_week__sum|hoursdiff }})
-                </div>
-              {% endif %}
-              {% if view.person_changes.target__sum %}
-                <div>
-                  <b>Target:</b>
-                  {{ view.active_person.target|money }}
-                  ({{ view.person_changes.target__sum|moneydiff }})
-                </div>
-              {% endif %}
-              {% if view.person_changes.standard_hourly_tariff__sum %}
-                <div>
-                  <b>Standaard uurtarief:</b>
-                  {{ view.active_person.standard_hourly_tariff|money }}
-                  ({{ view.person_changes.standard_hourly_tariff__sum|moneydiff }})
-                </div>
-              {% endif %}
-              {% if view.person_changes.minimum_hourly_tariff__sum %}
-                <div>
-                  <b>Minimum uurtarief:</b>
-                  {{ view.active_person.minimum_hourly_tariff|money }}
-                  ({{ view.person_changes.minimum_hourly_tariff__sum|moneydiff }})
-                </div>
-              {% endif %}
-            </div>
-          </div>
-        {% endif %}
-
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            Verandering aan je werk op projecten
-          </div>
-          <div class="panel-body">
-            <ul>
-              {% for change in view.work_changes %}
-                <li>
-                  {{ change.project.as_widget }}<br>
-                  <span class="text-muted">{{ change.project.description }}</span><br>
-                  <b>Toegekende uren:</b>
-                  {{ change.current.hours|hours }}
-                  ({{ change.hours|hoursdiff }})<br>
-                  <b>Uurtarief:</b>
-                  {{ change.current.hourly_tariff|money }}
-                  ({{ change.hourly_tariff|moneydiff }})
-                </li>
-              {% endfor %}
-            </ul>
-          </div>
-        </div>
-
-      </div>
-      <div class="col-md-6">
-        <h2>
-          ... aan
-          {% if view.filters.total %} alle {% else %} jouw {% endif %}
-          projecten
-        </h2>
-
 
         <div class="panel panel-default">
           <div class="panel-heading">
@@ -118,7 +53,9 @@
             </ul>
           </div>
         </div>
+      </div>
 
+      <div class="col-md-6">
         <div class="panel panel-default">
           <div class="panel-heading">
             Nieuwe of betaalde facturen bij
@@ -172,25 +109,5 @@
   {% else %}
     <p>Er zijn de laatste tijd geen wijzigingen.</p>
   {% endif %}
-
-  <div class="row">
-    <div class="col-md-6">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          Resterende vakantieuren
-        </div>
-        <div class="panel-body">
-          {% if view.vacation_left %}
-            <b>In weken:</b> {{ view.vacation_left.weeks|floatformat }}<br>
-            <b>In uren:</b> {{ view.vacation_left.hours }}
-          {% else %}
-            Hm. Geen project gevonden dat 'verlof' heet. Jammer, dat wordt
-            doorwerken dit jaar.
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-
 
 {% endblock %}
