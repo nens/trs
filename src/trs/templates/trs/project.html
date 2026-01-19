@@ -28,6 +28,7 @@
     {% if view.can_see_project_financials %}
       <a class="pull-right"
          title="Download excel"
+         hx-boost="false"
          href="{% url 'trs.project.excel' pk=view.project.id %}">
         <span class="glyphicon glyphicon-download-alt"></span>
       </a>
@@ -36,6 +37,7 @@
       {% if view.can_see_everything %}
         <a class="pull-right"
            title="Download subsidie-verantwoordings-excel"
+           hx-boost="false"
            href="{% url 'trs.project.persons.excel' pk=view.project.id %}">
           <span class="glyphicon text-muted glyphicon-download-alt"></span>
         </a>

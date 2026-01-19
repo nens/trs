@@ -9,6 +9,7 @@
     {% endif %}
     <a class="pull-right"
        title="Download excel"
+       hx-boost="false"
        href="{% url 'trs.persons.excel' %}?{{ view.request.GET.urlencode }}">
       <span class="glyphicon glyphicon-download-alt"></span>
     </a>
