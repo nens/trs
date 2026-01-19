@@ -4,22 +4,21 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('trs', '0013_remove_person_mpc'),
+        ("trs", "0013_remove_person_mpc"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='workassignment',
-            name='added',
+            model_name="workassignment",
+            name="added",
         ),
         migrations.RemoveField(
-            model_name='workassignment',
-            name='added_by',
+            model_name="workassignment",
+            name="added_by",
         ),
         migrations.RemoveField(
-            model_name='workassignment',
-            name='year_week',
+            model_name="workassignment",
+            name="year_week",
         ),
     ]
