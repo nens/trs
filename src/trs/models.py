@@ -627,7 +627,7 @@ class Project(models.Model):
         return self.end.first_day < this_year_week().first_day
 
     def assigned_persons(self):
-        return Person.objects.filter(work_assignments__assigned_on=self).distinct()
+        return self.members.all()
 
     def hour_budget(self):
         return self.work_calculation()["budget"]
