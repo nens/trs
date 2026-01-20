@@ -89,16 +89,19 @@
           <th>Standaardtarief</th>
           <th colspan="3"></th>
         </tr>
-        {{ view.project_member_formset.management_form }}
-        {% for form in view.project_member_formset %}
+        {{ view.work_assignment_formset.management_form }}
+        {% for form in view.work_assignment_formset %}
           <tr>
-            {{ form.person_id }}
+            {{ form.id }}
             {% for error in form.non_field_errors %}
               <div class="alert alert-danger">{{ error }}</div>
             {% endfor %}
             <td>
               &nbsp;&nbsp;&nbsp;
-              {{ form.person.as_widget }}
+              {{ form.assigned_to }}
+              {% for error in form.assigned_to.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
             </td>
             <td>
               {% if form.person.to_book.friendly %}
@@ -153,20 +156,6 @@
             <td colspan="9">&nbsp;&nbsp;&nbsp;Geen</td>
           </tr>
         {% endfor %}
-
-        {% if view.can_add_team_member %}
-          <tr>
-            <td>
-              &nbsp;&nbsp;&nbsp;
-              Nieuw teamlid
-            </td>
-            <td>
-              {{ view.new_member_form.new_team_member }}
-            </td>
-            <td colspan="7">
-            </td>
-          </tr>
-        {% endif %}
 
         <tr>
           <td>

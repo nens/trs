@@ -29,7 +29,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, FormView, UpdateView
 
 from trs import core
-from trs.forms import NewMemberForm, ProjectMemberForm, ProjectTeamForm, SearchForm
+from trs.forms import ProjectTeamForm, SearchForm
 from trs.models import (
     MPC,
     Booking,
@@ -2153,34 +2153,29 @@ class ProjectBudgetEditView(BaseView):
             extra=3,
         )
 
+    def work_assignment_formset_factory(self):
+        return forms.inlineformset_factory(
+            Project,
+            WorkAssignment,
+            fields=["assigned_to", "hours", "hourly_tariff"],
+            extra=4,
+        )
+
     def get(self, *args, **kwargs):
         self.project_form = ProjectTeamForm(instance=self.project)
-        self.new_member_form = NewMemberForm(
-            project=self.project, has_permission=self.can_add_team_member
-        )
         ThirdPartyEstimateFormSet = self.estimate_formset_factory()
         self.estimate_formset = ThirdPartyEstimateFormSet(instance=self.project)
         BudgetItemFormSet = self.budget_item_formset_factory()
         self.budget_item_formset = BudgetItemFormSet(instance=self.project)
-        ProjectMemberFormSet = forms.formset_factory(
-            ProjectMemberForm, extra=0, can_delete=True
-        )
-        self.project_member_formset = ProjectMemberFormSet(
-            initial=self.initial_data_for_project_members()
-            # TODO: perhaps just a regular set of WorkAssignments suffices?
-        )
-        self.adjust_project_member_formset()
+        WorkAssignmentFormset = self.work_assignment_formset_factory()
+        self.work_assignment_formset = WorkAssignmentFormset(instance=self.project)
+        self.adjust_work_assignment_formset()
         # fields['amount'].widget.attrs['disabled'] = 'disabled'
         return super().get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         self.project_form = ProjectTeamForm(
             data=self.request.POST, instance=self.project
-        )
-        self.new_member_form = NewMemberForm(
-            data=self.request.POST,
-            project=self.project,
-            has_permission=self.can_add_team_member,
         )
         ThirdPartyEstimateFormSet = self.estimate_formset_factory()
         self.estimate_formset = ThirdPartyEstimateFormSet(
@@ -2190,31 +2185,43 @@ class ProjectBudgetEditView(BaseView):
         self.budget_item_formset = BudgetItemFormSet(
             data=self.request.POST, instance=self.project
         )
-        ProjectMemberFormSet = forms.formset_factory(
-            ProjectMemberForm, extra=0, can_delete=True
+        WorkAssignmentFormset = self.work_assignment_formset_factory()
+        self.work_assignment_formset = WorkAssignmentFormset(
+            data=self.request.POST, instance=self.project
         )
-        self.project_member_formset = ProjectMemberFormSet(
-            data=self.request.POST,
-            initial=self.initial_data_for_project_members(),
-            # TODO: perhaps just a regular set of WorkAssignments suffices?
-        )
+        self.adjust_work_assignment_formset()
 
         if (
             self.project_form.is_valid()
-            and self.new_member_form.is_valid()
             and self.estimate_formset.is_valid()
             and self.budget_item_formset.is_valid()
-            and self.project_member_formset.is_valid()
+            and self.work_assignment_formset.is_valid()
         ):
             logger.debug("All forms are valid")
             self.project_form.save()
             self.estimate_formset.save()
             self.budget_item_formset.save()
-            self.process_project_member_formset()
-            if self.can_add_team_member:
-                person_id = self.new_member_form.cleaned_data.get("new_team_member")
-                if person_id:
-                    self.add_team_member(person_id)
+            self.work_assignment_formset.save()
+            # xxx
+            if self.project.code.endswith(".0"):
+                # .0 = offertetraject, dus nultarief.
+                for work_assignment, _ in self.work_assignment_formset.changed_objects:
+                    if work_assignment.hourly_tariff != 0:
+                        work_assignment.hourly_tariff = 0
+                        work_assignment.save()
+                        msg = f".0 project: uurtarief {work_assignment.assigned_to} op 0 gezet"
+                        messages.info(self.request, msg)
+            else:
+                # Geen standaard nultarief, dus geef nieuwe projectleden het
+                # standaardtarief (tenzij het al op een andere waarde gezet is).
+                for work_assignment in self.work_assignment_formset.new_objects:
+                    if work_assignment.hourly_tariff == 0:
+                        work_assignment.hourly_tariff = (
+                            work_assignment.assigned_to.standard_hourly_tariff()
+                        )
+                        work_assignment.save()
+                        msg = f"Uurtarief {work_assignment.assigned_to} aangepast naar standaardtarief"
+                        messages.info(self.request, msg)
 
             self.project.refresh_from_db()
             if self.project.left_to_dish_out() < -1:
@@ -2226,11 +2233,9 @@ class ProjectBudgetEditView(BaseView):
             messages.error(self.request, "Corrigeer de fouten hieronder")
             context = self.get_context_data(**kwargs)
             context["project_form"] = self.project_form
-            context["new_member_form"] = self.new_member_form
             context["estimate_formset"] = self.estimate_formset
             context["budget_item_formset"] = self.budget_item_formset
-            context["project_member_formset"] = self.project_member_formset
-            self.adjust_project_member_formset()
+            context["work_assignment_formset"] = self.work_assignment_formset
             return self.render_to_response(context)
 
     def add_team_member(self, id):
@@ -2247,9 +2252,8 @@ class ProjectBudgetEditView(BaseView):
         if self.is_project_management:
             return True
 
-    @cached_property
+    @property
     def budgets_and_tariffs(self):
-        # TODO: perhaps just a regular set of WorkAssignments suffices?
         budget_per_person = WorkAssignment.objects.filter(
             assigned_on=self.project
         ).values("assigned_to", "hours", "hourly_tariff")
@@ -2262,27 +2266,8 @@ class ProjectBudgetEditView(BaseView):
         }
         return budgets, hourly_tariffs
 
-    def initial_data_for_project_members(self):
-        # TODO: perhaps just a regular set of WorkAssignments suffices?
-        budgets, hourly_tariffs = self.budgets_and_tariffs
-        result = []
-        for person in self.project.assigned_persons():
-            result.append(
-                {
-                    "person_id": person.id,
-                    "hours": round(budgets.get(person.id, 0)),
-                    "hourly_tariff": round(hourly_tariffs.get(person.id, 0)),
-                }
-            )
-        return result
-
-    def adjust_project_member_formset(self):
-        """Mark fields as disabled.
-
-        TODO: adjust to the real 'disabled=True' when using django 1.9+.
-
-        """
-        # TODO: perhaps just a regular set of WorkAssignments suffices?
+    def adjust_work_assignment_formset(self):
+        """Mark fields as disabled and add some extra info."""
         budgets, hourly_tariffs = self.budgets_and_tariffs
         booked_per_person = (
             Booking.objects.filter(booked_on=self.project)
@@ -2293,72 +2278,81 @@ class ProjectBudgetEditView(BaseView):
             item["booked_by"]: round(item["hours__sum"] or 0)
             for item in booked_per_person
         }
-        # The order in the formset is the same as that in
-        # self.project.assigned_persons()!
-        for index, person in enumerate(self.project.assigned_persons()):
-            form = self.project_member_formset[index]
-            if person.archived or (not self.can_edit_hours):
-                form.fields["hours"].widget.attrs["disabled"] = "disabled"
-            if person.archived or (not self.can_edit_hourly_tariff):
-                form.fields["hourly_tariff"].widget.attrs["disabled"] = "disabled"
-            if booked.get(person.id) or not self.can_delete_team_member:
-                form.fields["DELETE"].widget.attrs["disabled"] = "disabled"
 
-            # Add a few attributes to help the template that renders it.
-            form.person = person
-            form.booked = format_as_hours(booked.get(person.id, 0))
-            form.costs = hourly_tariffs.get(person.id, 0) * budgets.get(person.id, 0)
-            form.is_project_manager = self.project.project_manager_id == person.id
-            form.is_project_leader = self.project.project_leader_id == person.id
+        for form in self.work_assignment_formset:
+            if form.initial:
+                print("initial")
+                # We don't want the person to be swapped.
+                form.fields["assigned_to"].disabled = True
+                person = Person.objects.get(id=form.initial["assigned_to"])
+                if person.archived or (not self.can_edit_hours):
+                    form.fields["hours"].disabled = True
+                if person.archived or (not self.can_edit_hourly_tariff):
+                    form.fields["hourly_tariff"].disabled = True
+                if booked.get(person.id) or not self.can_delete_team_member:
+                    form.fields["DELETE"].disabled = True
 
-    def process_project_member_formset(self):
-        new_hours = {}
-        new_hourly_tariffs = {}
-        to_delete = [
-            form.cleaned_data["person_id"]
-            for form in self.project_member_formset.deleted_forms
-        ]
-        for form in self.project_member_formset:
-            person_id = form.cleaned_data["person_id"]
-            new_hours[person_id] = form.cleaned_data["hours"]
-            new_hourly_tariffs[person_id] = form.cleaned_data["hourly_tariff"]
-        for person in self.project.assigned_persons():
-            work_assignment = WorkAssignment.objects.get(
-                assigned_on=self.project,
-                assigned_to=person,
-            )
+                # Add a few attributes to help the template that renders it.
+                form.person = person
+                form.booked = format_as_hours(booked.get(person.id, 0))
+                form.costs = hourly_tariffs.get(person.id, 0) * budgets.get(
+                    person.id, 0
+                )
+                form.is_project_manager = self.project.project_manager_id == person.id
+                form.is_project_leader = self.project.project_leader_id == person.id
 
-            if person.id in to_delete:
-                has_booked = Booking.objects.filter(
-                    booked_on=self.project, booked_by=person
-                ).exists()
-                if self.can_delete_team_member and not has_booked:
-                    WorkAssignment.objects.filter(
-                        assigned_on=self.project, assigned_to=person
-                    ).delete()
-                    self.project.save()  # Increment cache key.
-                    person.save()  # Increment cache key.
-                    messages.success(
-                        self.request,
-                        f"{person.name} verwijderd uit {self.project.code}",
-                    )
-                    continue
-            if person.archived:
-                continue
-            if self.can_edit_hours:
-                work_assignment.hours = new_hours.get(person.id)
-            if self.can_edit_hourly_tariff:
-                hourly_tariff = new_hourly_tariffs.get(person.id)
-                if self.project.code.endswith(".0"):
-                    # Offertetraject, dus nultarief.
-                    if hourly_tariff != 0:
-                        hourly_tariff = 0
-                        messages.warning(
-                            self.request, ".0 project, dus tarieven zijn op 0 gezet"
-                        )
-                work_assignment.hourly_tariff = hourly_tariff
+                # Don't delete the PM/PL.
+                if form.is_project_leader or form.is_project_manager:
+                    form.fields["DELETE"].disabled = True
 
-            work_assignment.save()
+    # def process_work_assignment_formset(self):
+    #     new_hours = {}
+    #     new_hourly_tariffs = {}
+    #     to_delete = [
+    #         form.cleaned_data["person_id"]
+    #         for form in self.work_assignment_formset.deleted_forms
+    #     ]
+    #     for form in self.work_assignment_formset:
+    #         person_id = form.cleaned_data["person_id"]
+    #         new_hours[person_id] = form.cleaned_data["hours"]
+    #         new_hourly_tariffs[person_id] = form.cleaned_data["hourly_tariff"]
+    #     for person in self.project.assigned_persons():
+    #         work_assignment = WorkAssignment.objects.get(
+    #             assigned_on=self.project,
+    #             assigned_to=person,
+    #         )
+
+    #         if person.id in to_delete:
+    #             has_booked = Booking.objects.filter(
+    #                 booked_on=self.project, booked_by=person
+    #             ).exists()
+    #             if self.can_delete_team_member and not has_booked:
+    #                 WorkAssignment.objects.filter(
+    #                     assigned_on=self.project, assigned_to=person
+    #                 ).delete()
+    #                 self.project.save()  # Increment cache key.
+    #                 person.save()  # Increment cache key.
+    #                 messages.success(
+    #                     self.request,
+    #                     f"{person.name} verwijderd uit {self.project.code}",
+    #                 )
+    #                 continue
+    #         if person.archived:
+    #             continue
+    #         if self.can_edit_hours:
+    #             work_assignment.hours = new_hours.get(person.id)
+    #         if self.can_edit_hourly_tariff:
+    #             hourly_tariff = new_hourly_tariffs.get(person.id)
+    #             if self.project.code.endswith(".0"):
+    #                 # Offertetraject, dus nultarief.
+    #                 if hourly_tariff != 0:
+    #                     hourly_tariff = 0
+    #                     messages.warning(
+    #                         self.request, ".0 project, dus tarieven zijn op 0 gezet"
+    #                     )
+    #             work_assignment.hourly_tariff = hourly_tariff
+
+    #         work_assignment.save()
 
 
 class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
