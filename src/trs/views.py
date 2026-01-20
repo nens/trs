@@ -2361,7 +2361,7 @@ class ProjectBudgetEditView(BaseView):
                         self.request,
                         f"{person.name} verwijderd uit {self.project.code}",
                     )
-
+                    continue
             if person.archived:
                 continue
             if self.can_edit_hours:
