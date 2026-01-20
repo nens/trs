@@ -46,6 +46,19 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": os.path.join(BASE_DIR, "var/db/trs.db"),
+        # Production-ready settings from
+        # https://alldjango.com/articles/definitive-guide-to-using-django-sqlite-in-production
+        "OPTIONS": {
+            "transaction_mode": "IMMEDIATE",
+            "timeout": 5,
+            "init_command": """
+                PRAGMA journal_mode=WAL;
+                PRAGMA synchronous=NORMAL;
+                PRAGMA mmap_size=134217728;
+                PRAGMA journal_size_limit=27103364;
+                PRAGMA cache_size=2000;
+            """,
+        },
     }
 }
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
