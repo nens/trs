@@ -785,8 +785,7 @@ class FreeOverview(PersonView):
                 year_week__year=self.year,
                 booked_on__in=self.free_projects,
             )
-            .values("year_week__week", "booked_on")
-            .annotate(models.Sum("hours"))
+            .values("year_week__week", "booked_on", "hours")
         )
         weeks = {}
         empty_week = {}
@@ -796,7 +795,7 @@ class FreeOverview(PersonView):
             weeks[year_week.week] = deepcopy(empty_week)
         for booking in booked_this_year_per_week_per_project:
             weeks[booking["year_week__week"]][booking["booked_on"]] = booking[
-                "hours__sum"
+                "hours"
             ]
         result = []
         for year_week in YearWeek.objects.filter(year=self.year):
@@ -1499,11 +1498,10 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 booked_by=self.person,
                 booked_on__in=self.relevant_projects,
             )
-            .values("booked_on__code")
-            .annotate(models.Sum("hours"))
+            .values("booked_on__code", "hours")
         )
         result = {
-            item["booked_on__code"]: round(item["hours__sum"] or 0) for item in bookings
+            item["booked_on__code"]: round(item["hours"]) for item in bookings
         }
         return {
             project.code: result.get(project.code, 0)
@@ -1528,12 +1526,12 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                     for project in self.relevant_projects
                     if project.code == project_code
                 ][0]
-                booking = Booking(
-                    hours=difference,
+                booking, _ = Booking.objects.get_or_create(
                     booked_by=self.person,
                     booked_on=project,
                     year_week=self.active_year_week,
                 )
+                booking.hours = new_hours
                 booking.save()
 
         if absolute_difference:
@@ -1581,11 +1579,10 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             Booking.objects.filter(
                 year_week__in=self.year_weeks_to_display, booked_by=self.person
             )
-            .values("booked_on", "year_week")
-            .annotate(models.Sum("hours"))
+            .values("booked_on", "year_week", "hours")
         )
         bookings = {
-            (item["booked_on"], item["year_week"]): item["hours__sum"] or 0
+            (item["booked_on"], item["year_week"]): item["hours"]
             for item in booking_table
         }
         # Idem for budget
@@ -3236,12 +3233,11 @@ class ProjectPersonsExcelView(ExcelResponseMixin, ProjectView):
     def bookings_per_week_per_person_per_project(self):
         bookings = (
             Booking.objects.filter(year_week__in=self.weeks)
-            .values("booked_by", "booked_on", "year_week")
-            .annotate(models.Sum("hours"))
+            .values("booked_by", "booked_on", "year_week", "hours")
         )
         return {
             (booking["booked_by"], booking["booked_on"], booking["year_week"]): round(
-                booking["hours__sum"]
+                booking["hours"]
             )
             for booking in bookings
         }
@@ -3493,8 +3489,8 @@ class WbsoExcelView(ExcelResponseMixin, WbsoProjectsOverview):
                 "year_week",
                 "booked_on__wbso_percentage",
                 "booked_on__wbso_project",
+                "hours",
             )
-            .annotate(models.Sum("hours"))
         )
 
     @property
@@ -3551,7 +3547,7 @@ class WbsoExcelView(ExcelResponseMixin, WbsoProjectsOverview):
                 for wbso_project in self.found_wbso_projects:
                     hours = [
                         round(
-                            item["hours__sum"]
+                            item["hours"]
                             * (item["booked_on__wbso_percentage"] or 0)
                             / 100
                         )
