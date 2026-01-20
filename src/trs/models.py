@@ -1181,15 +1181,21 @@ class PersonChange(EventBase):
         verbose_name_plural = "veranderingen aan personen"
 
 
-class Booking(EventBase):
+class Booking(models.Model):
     hours = models.DecimalField(
         max_digits=MAX_DIGITS,
         decimal_places=DECIMAL_PLACES,
+        verbose_name="uren",
+        default=0,
+    )
+    year_week = models.ForeignKey(
+        YearWeek,
         blank=True,
         null=True,
-        verbose_name="uren",
+        verbose_name="jaar en week",
+        help_text="Week waarin geboekt wordt",
+        on_delete=models.CASCADE,
     )
-
     booked_by = models.ForeignKey(
         Person,
         blank=True,
@@ -1210,6 +1216,11 @@ class Booking(EventBase):
     class Meta:
         verbose_name = "boeking"
         verbose_name_plural = "boekingen"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["booked_by", "booked_on", "year_week"], name="unique_booking"
+            ),
+        ]
 
     def save(self, *args, **kwargs):
         self.booked_by.save()  # Increments cache indicator.
