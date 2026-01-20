@@ -50,6 +50,9 @@
                 title="{{ form.description.label }}">
               &nbsp;&nbsp;&nbsp;
               {{ form.description }}
+              {% for error in form.description.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
             </td>
             <td title="{{ form.amount.label }}">
               {{ form.amount }}
