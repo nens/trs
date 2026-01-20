@@ -536,15 +536,16 @@ class PersonView(BaseView):
         # TODO: somewhat similar to BookingView.
         result = []
         # Budget query.
-        budget_per_project = WorkAssignment.objects.filter(
+        relevant_work_assignments = WorkAssignment.objects.filter(
             assigned_to=self.person, assigned_on__in=self.projects
         ).values("assigned_on", "hours", "hourly_tariff")
         budgets = {
-            item["assigned_on"]: round(item["hours"]) for item in budget_per_project
+            item["assigned_on"]: round(item["hours"])
+            for item in relevant_work_assignments
         }
         hourly_tariffs = {
             item["assigned_on"]: round(item["hourly_tariff"])
-            for item in budget_per_project
+            for item in relevant_work_assignments
         }
         # Hours worked query.
         booked_per_project = (
@@ -1587,11 +1588,11 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             for item in booking_table
         }
         # Idem for budget
-        budget_per_project = WorkAssignment.objects.filter(
+        relevant_work_assignments = WorkAssignment.objects.filter(
             assigned_to=self.person, assigned_on__in=self.relevant_projects
         ).values("assigned_on", "hours")
         budgets = {
-            item["assigned_on"]: round(item["hours"]) for item in budget_per_project
+            item["assigned_on"]: round(item["hours"]) for item in relevant_work_assignments
         }
         # Item for hours worked.
         booked_per_project = (
