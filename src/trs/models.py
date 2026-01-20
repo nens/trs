@@ -1185,9 +1185,8 @@ class Booking(models.Model):
     hours = models.DecimalField(
         max_digits=MAX_DIGITS,
         decimal_places=DECIMAL_PLACES,
-        blank=True,
-        null=True,
         verbose_name="uren",
+        default=0,
     )
     year_week = models.ForeignKey(
         YearWeek,
