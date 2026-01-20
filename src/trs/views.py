@@ -1255,15 +1255,15 @@ class ProjectView(BaseView):
     def lines(self):
         result = []
         # Budget query.
-        budget_per_person = WorkAssignment.objects.filter(
+        relevant_work_assignments = WorkAssignment.objects.filter(
             assigned_to__in=self.persons, assigned_on=self.project
         ).values("assigned_to", "hours", "hourly_tariff")
         budgets = {
-            item["assigned_to"]: round(item["hours"]) for item in budget_per_person
+            item["assigned_to"]: round(item["hours"]) for item in relevant_work_assignments
         }
         hourly_tariffs = {
             item["assigned_to"]: round(item["hourly_tariff"])
-            for item in budget_per_person
+            for item in relevant_work_assignments
         }
         # Hours worked query.
         booked_per_person = (
