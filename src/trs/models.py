@@ -704,11 +704,12 @@ class Project(models.Model):
     @cache_until_any_change
     def work_calculation(self):
         # The big calculation from which the rest derives.
-        relevant_work_assignments = WorkAssignment.objects.filter(assigned_on=self).values(
-            "assigned_to", "hours", "hourly_tariff"
-        )
+        relevant_work_assignments = WorkAssignment.objects.filter(
+            assigned_on=self
+        ).values("assigned_to", "hours", "hourly_tariff")
         budget_per_person = {
-            item["assigned_to"]: round(item["hours"]) for item in relevant_work_assignments
+            item["assigned_to"]: round(item["hours"])
+            for item in relevant_work_assignments
         }
         hourly_tariff_per_person = {
             item["assigned_to"]: round(item["hourly_tariff"])
