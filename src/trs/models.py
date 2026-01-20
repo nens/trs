@@ -1181,7 +1181,7 @@ class PersonChange(EventBase):
         verbose_name_plural = "veranderingen aan personen"
 
 
-class Booking(EventBase):
+class Booking(models.Model):
     hours = models.DecimalField(
         max_digits=MAX_DIGITS,
         decimal_places=DECIMAL_PLACES,
@@ -1189,7 +1189,14 @@ class Booking(EventBase):
         null=True,
         verbose_name="uren",
     )
-
+    year_week = models.ForeignKey(
+        YearWeek,
+        blank=True,
+        null=True,
+        verbose_name="jaar en week",
+        help_text="Week waarin geboekt wordt",
+        on_delete=models.CASCADE,
+    )
     booked_by = models.ForeignKey(
         Person,
         blank=True,
