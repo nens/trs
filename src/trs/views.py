@@ -779,14 +779,11 @@ class FreeOverview(PersonView):
 
     @cached_property
     def lines(self):
-        booked_this_year_per_week_per_project = (
-            Booking.objects.filter(
-                booked_by=self.person,
-                year_week__year=self.year,
-                booked_on__in=self.free_projects,
-            )
-            .values("year_week__week", "booked_on", "hours")
-        )
+        booked_this_year_per_week_per_project = Booking.objects.filter(
+            booked_by=self.person,
+            year_week__year=self.year,
+            booked_on__in=self.free_projects,
+        ).values("year_week__week", "booked_on", "hours")
         weeks = {}
         empty_week = {}
         for project in self.free_projects:
@@ -794,9 +791,7 @@ class FreeOverview(PersonView):
         for year_week in YearWeek.objects.filter(year=self.year):
             weeks[year_week.week] = deepcopy(empty_week)
         for booking in booked_this_year_per_week_per_project:
-            weeks[booking["year_week__week"]][booking["booked_on"]] = booking[
-                "hours"
-            ]
+            weeks[booking["year_week__week"]][booking["booked_on"]] = booking["hours"]
         result = []
         for year_week in YearWeek.objects.filter(year=self.year):
             hours = [
@@ -1492,17 +1487,12 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
         Turn the decimals into integers already."""
         result = {}
-        bookings = (
-            Booking.objects.filter(
-                year_week=self.active_year_week,
-                booked_by=self.person,
-                booked_on__in=self.relevant_projects,
-            )
-            .values("booked_on__code", "hours")
-        )
-        result = {
-            item["booked_on__code"]: round(item["hours"]) for item in bookings
-        }
+        bookings = Booking.objects.filter(
+            year_week=self.active_year_week,
+            booked_by=self.person,
+            booked_on__in=self.relevant_projects,
+        ).values("booked_on__code", "hours")
+        result = {item["booked_on__code"]: round(item["hours"]) for item in bookings}
         return {
             project.code: result.get(project.code, 0)
             for project in self.relevant_projects
@@ -1575,12 +1565,9 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         form = self.get_form(self.get_form_class())
         fields = list(form)  # A form's __iter__ returns 'bound fields'.
         # Prepare booking info as one query.
-        booking_table = (
-            Booking.objects.filter(
-                year_week__in=self.year_weeks_to_display, booked_by=self.person
-            )
-            .values("booked_on", "year_week", "hours")
-        )
+        booking_table = Booking.objects.filter(
+            year_week__in=self.year_weeks_to_display, booked_by=self.person
+        ).values("booked_on", "year_week", "hours")
         bookings = {
             (item["booked_on"], item["year_week"]): item["hours"]
             for item in booking_table
@@ -3231,9 +3218,8 @@ class ProjectPersonsExcelView(ExcelResponseMixin, ProjectView):
 
     @cached_property
     def bookings_per_week_per_person_per_project(self):
-        bookings = (
-            Booking.objects.filter(year_week__in=self.weeks)
-            .values("booked_by", "booked_on", "year_week", "hours")
+        bookings = Booking.objects.filter(year_week__in=self.weeks).values(
+            "booked_by", "booked_on", "year_week", "hours"
         )
         return {
             (booking["booked_by"], booking["booked_on"], booking["year_week"]): round(
@@ -3480,17 +3466,14 @@ class WbsoExcelView(ExcelResponseMixin, WbsoProjectsOverview):
 
     @cached_property
     def bookings_per_week_per_person_per_wbso_project(self):
-        return (
-            Booking.objects.filter(
-                booked_on__wbso_project__id__gt=0, year_week__in=self.weeks
-            )
-            .values(
-                "booked_by__name",
-                "year_week",
-                "booked_on__wbso_percentage",
-                "booked_on__wbso_project",
-                "hours",
-            )
+        return Booking.objects.filter(
+            booked_on__wbso_project__id__gt=0, year_week__in=self.weeks
+        ).values(
+            "booked_by__name",
+            "year_week",
+            "booked_on__wbso_percentage",
+            "booked_on__wbso_project",
+            "hours",
         )
 
     @property
