@@ -1217,6 +1217,11 @@ class Booking(models.Model):
     class Meta:
         verbose_name = "boeking"
         verbose_name_plural = "boekingen"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["booked_by", "booked_on", "year_week"], name="unique_booking"
+            ),
+        ]
 
     def save(self, *args, **kwargs):
         self.booked_by.save()  # Increments cache indicator.
