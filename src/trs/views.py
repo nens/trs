@@ -536,20 +536,16 @@ class PersonView(BaseView):
         # TODO: somewhat similar to BookingView.
         result = []
         # Budget query.
-        budget_per_project = (
-            WorkAssignment.objects.filter(
-                assigned_to=self.person, assigned_on__in=self.projects
-            )
-            .values("assigned_on")
-            .annotate(models.Sum("hours"), models.Sum("hourly_tariff"))
-        )
+        relevant_work_assignments = WorkAssignment.objects.filter(
+            assigned_to=self.person, assigned_on__in=self.projects
+        ).values("assigned_on", "hours", "hourly_tariff")
         budgets = {
-            item["assigned_on"]: round(item["hours__sum"] or 0)
-            for item in budget_per_project
+            item["assigned_on"]: round(item["hours"])
+            for item in relevant_work_assignments
         }
         hourly_tariffs = {
-            item["assigned_on"]: round(item["hourly_tariff__sum"] or 0)
-            for item in budget_per_project
+            item["assigned_on"]: round(item["hourly_tariff"])
+            for item in relevant_work_assignments
         }
         # Hours worked query.
         booked_per_project = (
@@ -982,7 +978,7 @@ class ProjectsView(BaseView):
 
     @cached_property
     def normally_visible_filters(self):
-        result = ["status", "group", "mpc", "year"]
+        result = ["status", "group", "mpc", "project_leader", "project_manager"]
         if self.can_see_everything:
             result += [
                 "is_subsidized",
@@ -990,12 +986,6 @@ class ProjectsView(BaseView):
                 "ended",
                 "ratings",
             ]
-        # Chicken/egg problem.
-        if (
-            "project_leader" in self.request.GET
-            or "project_manager" in self.request.GET
-        ):
-            result += ["project_leader", "project_manager"]
         return result
 
     title = "Projecten"
@@ -1265,20 +1255,16 @@ class ProjectView(BaseView):
     def lines(self):
         result = []
         # Budget query.
-        budget_per_person = (
-            WorkAssignment.objects.filter(
-                assigned_to__in=self.persons, assigned_on=self.project
-            )
-            .values("assigned_to")
-            .annotate(models.Sum("hours"), models.Sum("hourly_tariff"))
-        )
+        relevant_work_assignments = WorkAssignment.objects.filter(
+            assigned_to__in=self.persons, assigned_on=self.project
+        ).values("assigned_to", "hours", "hourly_tariff")
         budgets = {
-            item["assigned_to"]: round(item["hours__sum"] or 0)
-            for item in budget_per_person
+            item["assigned_to"]: round(item["hours"])
+            for item in relevant_work_assignments
         }
         hourly_tariffs = {
-            item["assigned_to"]: round(item["hourly_tariff__sum"] or 0)
-            for item in budget_per_person
+            item["assigned_to"]: round(item["hourly_tariff"])
+            for item in relevant_work_assignments
         }
         # Hours worked query.
         booked_per_person = (
@@ -1603,16 +1589,12 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             for item in booking_table
         }
         # Idem for budget
-        budget_per_project = (
-            WorkAssignment.objects.filter(
-                assigned_to=self.person, assigned_on__in=self.relevant_projects
-            )
-            .values("assigned_on")
-            .annotate(models.Sum("hours"))
-        )
+        relevant_work_assignments = WorkAssignment.objects.filter(
+            assigned_to=self.person, assigned_on__in=self.relevant_projects
+        ).values("assigned_on", "hours")
         budgets = {
-            item["assigned_on"]: round(item["hours__sum"] or 0)
-            for item in budget_per_project
+            item["assigned_on"]: round(item["hours"])
+            for item in relevant_work_assignments
         }
         # Item for hours worked.
         booked_per_project = (
@@ -2201,6 +2183,7 @@ class ProjectBudgetEditView(BaseView):
         )
         self.project_member_formset = ProjectMemberFormSet(
             initial=self.initial_data_for_project_members()
+            # TODO: perhaps just a regular set of WorkAssignments suffices?
         )
         self.adjust_project_member_formset()
         # fields['amount'].widget.attrs['disabled'] = 'disabled'
@@ -2227,7 +2210,9 @@ class ProjectBudgetEditView(BaseView):
             ProjectMemberForm, extra=0, can_delete=True
         )
         self.project_member_formset = ProjectMemberFormSet(
-            data=self.request.POST, initial=self.initial_data_for_project_members()
+            data=self.request.POST,
+            initial=self.initial_data_for_project_members(),
+            # TODO: perhaps just a regular set of WorkAssignments suffices?
         )
 
         if (
@@ -2267,8 +2252,9 @@ class ProjectBudgetEditView(BaseView):
     def add_team_member(self, id):
         person = Person.objects.get(id=id)
         msg = f"{person.name} is aan het team toegevoegd"
-        work_assignment = WorkAssignment(assigned_on=self.project, assigned_to=person)
-        work_assignment.save()
+        WorkAssignment.objects.get_or_create(
+            assigned_on=self.project, assigned_to=person
+        )
         logger.info(msg)
         messages.success(self.request, msg)
 
@@ -2279,22 +2265,21 @@ class ProjectBudgetEditView(BaseView):
 
     @cached_property
     def budgets_and_tariffs(self):
-        budget_per_person = (
-            WorkAssignment.objects.filter(assigned_on=self.project)
-            .values("assigned_to")
-            .annotate(models.Sum("hours"), models.Sum("hourly_tariff"))
-        )
+        # TODO: perhaps just a regular set of WorkAssignments suffices?
+        budget_per_person = WorkAssignment.objects.filter(
+            assigned_on=self.project
+        ).values("assigned_to", "hours", "hourly_tariff")
         budgets = {
-            item["assigned_to"]: round(item["hours__sum"] or 0)
-            for item in budget_per_person
+            item["assigned_to"]: round(item["hours"]) for item in budget_per_person
         }
         hourly_tariffs = {
-            item["assigned_to"]: round(item["hourly_tariff__sum"] or 0)
+            item["assigned_to"]: round(item["hourly_tariff"])
             for item in budget_per_person
         }
         return budgets, hourly_tariffs
 
     def initial_data_for_project_members(self):
+        # TODO: perhaps just a regular set of WorkAssignments suffices?
         budgets, hourly_tariffs = self.budgets_and_tariffs
         result = []
         for person in self.project.assigned_persons():
@@ -2313,6 +2298,7 @@ class ProjectBudgetEditView(BaseView):
         TODO: adjust to the real 'disabled=True' when using django 1.9+.
 
         """
+        # TODO: perhaps just a regular set of WorkAssignments suffices?
         budgets, hourly_tariffs = self.budgets_and_tariffs
         booked_per_person = (
             Booking.objects.filter(booked_on=self.project)
@@ -2342,8 +2328,6 @@ class ProjectBudgetEditView(BaseView):
             form.is_project_leader = self.project.project_leader_id == person.id
 
     def process_project_member_formset(self):
-        num_changes = 0
-        original_hours, original_hourly_tariffs = self.budgets_and_tariffs
         new_hours = {}
         new_hourly_tariffs = {}
         to_delete = [
@@ -2351,13 +2335,14 @@ class ProjectBudgetEditView(BaseView):
             for form in self.project_member_formset.deleted_forms
         ]
         for form in self.project_member_formset:
-            print(form.cleaned_data)
             person_id = form.cleaned_data["person_id"]
             new_hours[person_id] = form.cleaned_data["hours"]
             new_hourly_tariffs[person_id] = form.cleaned_data["hourly_tariff"]
         for person in self.project.assigned_persons():
-            hours = 0
-            hourly_tariff = 0
+            work_assignment = WorkAssignment.objects.get(
+                assigned_on=self.project,
+                assigned_to=person,
+            )
 
             if person.id in to_delete:
                 has_booked = Booking.objects.filter(
@@ -2373,41 +2358,23 @@ class ProjectBudgetEditView(BaseView):
                         self.request,
                         f"{person.name} verwijderd uit {self.project.code}",
                     )
-
+                    continue
             if person.archived:
                 continue
             if self.can_edit_hours:
-                original = original_hours.get(person.id, 0)
-                new = new_hours.get(person.id)
-                if new is None:
-                    continue
-                hours = new - original
+                work_assignment.hours = new_hours.get(person.id)
             if self.can_edit_hourly_tariff:
-                original = original_hourly_tariffs.get(person.id, 0)
-                new = new_hourly_tariffs.get(person.id)
+                hourly_tariff = new_hourly_tariffs.get(person.id)
                 if self.project.code.endswith(".0"):
                     # Offertetraject, dus nultarief.
-                    if new != 0:
-                        new = 0
+                    if hourly_tariff != 0:
+                        hourly_tariff = 0
                         messages.warning(
                             self.request, ".0 project, dus tarieven zijn op 0 gezet"
                         )
+                work_assignment.hourly_tariff = hourly_tariff
 
-                if new is None:
-                    continue
-                hourly_tariff = new - original
-            if hours or hourly_tariff:
-                num_changes += 1
-                work_assignment = WorkAssignment(
-                    hours=hours,
-                    hourly_tariff=hourly_tariff,
-                    assigned_on=self.project,
-                    assigned_to=person,
-                )
-                work_assignment.save()
-                logger.info("Added work assignment")
-        if num_changes:
-            messages.success(self.request, f"Teamleden: {num_changes} gewijzigd")
+            work_assignment.save()
 
 
 class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
@@ -2858,59 +2825,6 @@ class ChangesOverview(BaseView):
         return self.relevant_year_weeks[0]
 
     @cached_property
-    def person_changes(self):
-        changes = self.active_person.person_changes.filter(
-            year_week__in=self.relevant_year_weeks
-        ).aggregate(
-            models.Sum("hours_per_week"),
-            models.Sum("target"),
-            models.Sum("standard_hourly_tariff"),
-            models.Sum("minimum_hourly_tariff"),
-        )
-        changes = {k: v for k, v in changes.items() if v}
-        return changes
-
-    @cached_property
-    def work_changes(self):
-        result = []
-        changes = (
-            self.active_person.work_assignments.filter(
-                year_week__in=self.relevant_year_weeks,
-                assigned_on__in=self.active_person.filtered_assigned_projects(),
-            )
-            .values("assigned_on")
-            .annotate(models.Sum("hours"), models.Sum("hourly_tariff"))
-        )
-        changes = {
-            change["assigned_on"]: {
-                "hours": change["hours__sum"] or 0,
-                "hourly_tariff": change["hourly_tariff__sum"] or 0,
-            }
-            for change in changes
-        }
-        all_work_assignments = (
-            self.active_person.work_assignments.filter(
-                assigned_on__in=self.active_person.filtered_assigned_projects()
-            )
-            .values("assigned_on")
-            .annotate(models.Sum("hours"), models.Sum("hourly_tariff"))
-        )
-        current_values = {
-            work_assignment["assigned_on"]: {
-                "hours": work_assignment["hours__sum"] or 0,
-                "hourly_tariff": work_assignment["hourly_tariff__sum"] or 0,
-            }
-            for work_assignment in all_work_assignments
-        }
-        for project in self.active_person.filtered_assigned_projects():
-            if project.id in changes:
-                change = changes[project.id]
-                change["project"] = project
-                change["current"] = current_values[project.id]
-                result.append(change)
-        return result
-
-    @cached_property
     def project_budget_changes(self):
         start = self.start_week.first_day
         is_project_leader = models.Q(project__project_leader=self.active_person)
@@ -2961,40 +2875,7 @@ class ChangesOverview(BaseView):
 
     @cached_property
     def are_there_changes(self):
-        return (
-            self.person_changes
-            or self.work_changes
-            or self.project_budget_changes
-            or self.project_invoice_changes
-        )
-
-    @cached_property
-    def vacation_left(self):
-        """Return weeks and hours of vacation left."""
-        vacation_projects = [
-            project
-            for project in self.active_projects
-            if project.description.lower() == "verlof"
-        ]
-        if not vacation_projects:
-            logger.warning("Couldn't find a project named 'verlof'")
-            return
-        vacation_project = vacation_projects[0]
-        available = (
-            self.active_person.work_assignments.filter(
-                assigned_on=vacation_project
-            ).aggregate(models.Sum("hours"))["hours__sum"]
-            or 0
-        )
-        used = (
-            self.active_person.bookings.filter(booked_on=vacation_project).aggregate(
-                models.Sum("hours")
-            )["hours__sum"]
-            or 0
-        )
-        hours_left = round(available - used)
-        weeks_available = hours_left / (self.active_person.hours_per_week() or 40)
-        return {"hours": hours_left, "weeks": weeks_available}
+        return self.project_budget_changes or self.project_invoice_changes
 
 
 class ProjectLeadersAndManagersView(BaseView):

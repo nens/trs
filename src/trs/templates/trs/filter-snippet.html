@@ -12,7 +12,7 @@
             <td style="border-top: 0;">
               <select name="{{ filter.param }}"
                       hx-get="?{{ filter.url }}"
-                      hx-replace-url="true"
+                      hx-push-url="true"
                       hx-target="body">
                 {% for choice in filter.choices %}
                   <option value="{{ choice.value }}"

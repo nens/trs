@@ -400,6 +400,11 @@ class Project(models.Model):
         verbose_name="omschrijving", blank=True, max_length=255
     )
     added = models.DateTimeField(auto_now_add=True, verbose_name="toegevoegd op")
+
+    members = models.ManyToManyField(
+        Person, through="WorkAssignment", related_name="projects"
+    )
+
     internal = models.BooleanField(verbose_name="intern project", default=False)
     hidden = models.BooleanField(
         verbose_name="afgeschermd project",
@@ -622,7 +627,7 @@ class Project(models.Model):
         return self.end.first_day < this_year_week().first_day
 
     def assigned_persons(self):
-        return Person.objects.filter(work_assignments__assigned_on=self).distinct()
+        return self.members.all()
 
     def hour_budget(self):
         return self.work_calculation()["budget"]
@@ -704,18 +709,16 @@ class Project(models.Model):
     @cache_until_any_change
     def work_calculation(self):
         # The big calculation from which the rest derives.
-        work_per_person = (
-            WorkAssignment.objects.filter(assigned_on=self)
-            .values("assigned_to")
-            .annotate(models.Sum("hours"), models.Sum("hourly_tariff"))
-        )
+        relevant_work_assignments = WorkAssignment.objects.filter(
+            assigned_on=self
+        ).values("assigned_to", "hours", "hourly_tariff")
         budget_per_person = {
-            item["assigned_to"]: round(item["hours__sum"] or 0)
-            for item in work_per_person
+            item["assigned_to"]: round(item["hours"])
+            for item in relevant_work_assignments
         }
         hourly_tariff_per_person = {
-            item["assigned_to"]: round(item["hourly_tariff__sum"] or 0)
-            for item in work_per_person
+            item["assigned_to"]: round(item["hourly_tariff"])
+            for item in relevant_work_assignments
         }
         ids = budget_per_person.keys()
 
@@ -1214,19 +1217,17 @@ class Booking(EventBase):
         return super().save(*args, **kwargs)
 
 
-class WorkAssignment(EventBase):
+class WorkAssignment(models.Model):
     hours = models.DecimalField(
         max_digits=MAX_DIGITS,
         decimal_places=DECIMAL_PLACES,
-        blank=True,
-        null=True,
+        default=0,
         verbose_name="uren",
     )
     hourly_tariff = models.DecimalField(
         max_digits=MAX_DIGITS,
         decimal_places=DECIMAL_PLACES,
-        blank=True,
-        null=True,
+        default=0,
         verbose_name="uurtarief",
     )
 
@@ -1250,6 +1251,11 @@ class WorkAssignment(EventBase):
     class Meta:
         verbose_name = "toekenning van werk"
         verbose_name_plural = "toekenningen van werk"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["assigned_on", "assigned_to"], name="unique_work_assignment"
+            ),
+        ]
 
     def save(self, save_assigned_on=True, *args, **kwargs):
         self.assigned_to.save()  # Increments cache indicator.

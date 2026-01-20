@@ -42,7 +42,7 @@ url = "https://packages.lizard.net/"
 default = true
 
 [tool.pytest.ini_options]
-addopts = "--cov --cache-clear --fail-on-template-vars src/"
+addopts = "--cov=trs --cache-clear --fail-on-template-vars src/"
 DJANGO_SETTINGS_MODULE = "trs.settings"
 django_find_project = false
 
