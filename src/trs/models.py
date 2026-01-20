@@ -400,6 +400,11 @@ class Project(models.Model):
         verbose_name="omschrijving", blank=True, max_length=255
     )
     added = models.DateTimeField(auto_now_add=True, verbose_name="toegevoegd op")
+
+    members = models.ManyToManyField(
+        Person, through="WorkAssignment", related_name="projects"
+    )
+
     internal = models.BooleanField(verbose_name="intern project", default=False)
     hidden = models.BooleanField(
         verbose_name="afgeschermd project",
