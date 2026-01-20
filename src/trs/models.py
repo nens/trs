@@ -1036,9 +1036,7 @@ class ThirdPartyEstimate(FinancialBase):
         verbose_name="project",
         on_delete=models.CASCADE,
     )
-    description = models.CharField(
-        verbose_name="omschrijving", blank=True, max_length=255
-    )
+    description = models.CharField(verbose_name="omschrijving", max_length=255)
     amount = models.DecimalField(
         max_digits=12,  # We don't mind a metric ton of hard cash.
         decimal_places=DECIMAL_PLACES,
