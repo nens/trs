@@ -977,7 +977,7 @@ class ProjectsView(BaseView):
 
     @cached_property
     def normally_visible_filters(self):
-        result = ["status", "group", "mpc", "year"]
+        result = ["status", "group", "mpc", "project_leader", "project_manager"]
         if self.can_see_everything:
             result += [
                 "is_subsidized",
@@ -985,12 +985,6 @@ class ProjectsView(BaseView):
                 "ended",
                 "ratings",
             ]
-        # Chicken/egg problem.
-        if (
-            "project_leader" in self.request.GET
-            or "project_manager" in self.request.GET
-        ):
-            result += ["project_leader", "project_manager"]
         return result
 
     title = "Projecten"
