@@ -1259,7 +1259,8 @@ class ProjectView(BaseView):
             assigned_to__in=self.persons, assigned_on=self.project
         ).values("assigned_to", "hours", "hourly_tariff")
         budgets = {
-            item["assigned_to"]: round(item["hours"]) for item in relevant_work_assignments
+            item["assigned_to"]: round(item["hours"])
+            for item in relevant_work_assignments
         }
         hourly_tariffs = {
             item["assigned_to"]: round(item["hourly_tariff"])
@@ -1592,7 +1593,8 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             assigned_to=self.person, assigned_on__in=self.relevant_projects
         ).values("assigned_on", "hours")
         budgets = {
-            item["assigned_on"]: round(item["hours"]) for item in relevant_work_assignments
+            item["assigned_on"]: round(item["hours"])
+            for item in relevant_work_assignments
         }
         # Item for hours worked.
         booked_per_project = (
