@@ -3,16 +3,23 @@
 from django.db import migrations, models
 
 
-class Migration(migrations.Migration):
+def fix_empty_descriptions(apps, schema_editor):
+    ThirdPartyEstimate = apps.get_model("trs", "ThirdPartyEstimate")
+    ThirdPartyEstimate.objects.filter(description="").update(
+        description="Niet ingevuld"
+    )
 
+
+class Migration(migrations.Migration):
     dependencies = [
-        ('trs', '0022_alter_booking_hours'),
+        ("trs", "0022_alter_booking_hours"),
     ]
 
     operations = [
+        migrations.RunPython(fix_empty_descriptions),
         migrations.AlterField(
-            model_name='thirdpartyestimate',
-            name='description',
-            field=models.CharField(max_length=255, verbose_name='omschrijving'),
+            model_name="thirdpartyestimate",
+            name="description",
+            field=models.CharField(max_length=255, verbose_name="omschrijving"),
         ),
     ]
