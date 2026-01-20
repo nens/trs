@@ -2141,7 +2141,7 @@ class ProjectBudgetEditView(BaseView):
 
     def estimate_formset_factory(self):
         return forms.inlineformset_factory(
-            Project, ThirdPartyEstimate, fields=["description", "amount"], extra=1
+            Project, ThirdPartyEstimate, fields=["description", "amount"], extra=3
         )
 
     def budget_item_formset_factory(self):
@@ -2150,7 +2150,7 @@ class ProjectBudgetEditView(BaseView):
             BudgetItem,
             fk_name="project",
             fields=["description", "amount", "to_project"],
-            extra=1,
+            extra=3,
         )
 
     def get(self, *args, **kwargs):
