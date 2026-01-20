@@ -2305,55 +2305,6 @@ class ProjectBudgetEditView(BaseView):
                 if form.is_project_leader or form.is_project_manager:
                     form.fields["DELETE"].disabled = True
 
-    # def process_work_assignment_formset(self):
-    #     new_hours = {}
-    #     new_hourly_tariffs = {}
-    #     to_delete = [
-    #         form.cleaned_data["person_id"]
-    #         for form in self.work_assignment_formset.deleted_forms
-    #     ]
-    #     for form in self.work_assignment_formset:
-    #         person_id = form.cleaned_data["person_id"]
-    #         new_hours[person_id] = form.cleaned_data["hours"]
-    #         new_hourly_tariffs[person_id] = form.cleaned_data["hourly_tariff"]
-    #     for person in self.project.assigned_persons():
-    #         work_assignment = WorkAssignment.objects.get(
-    #             assigned_on=self.project,
-    #             assigned_to=person,
-    #         )
-
-    #         if person.id in to_delete:
-    #             has_booked = Booking.objects.filter(
-    #                 booked_on=self.project, booked_by=person
-    #             ).exists()
-    #             if self.can_delete_team_member and not has_booked:
-    #                 WorkAssignment.objects.filter(
-    #                     assigned_on=self.project, assigned_to=person
-    #                 ).delete()
-    #                 self.project.save()  # Increment cache key.
-    #                 person.save()  # Increment cache key.
-    #                 messages.success(
-    #                     self.request,
-    #                     f"{person.name} verwijderd uit {self.project.code}",
-    #                 )
-    #                 continue
-    #         if person.archived:
-    #             continue
-    #         if self.can_edit_hours:
-    #             work_assignment.hours = new_hours.get(person.id)
-    #         if self.can_edit_hourly_tariff:
-    #             hourly_tariff = new_hourly_tariffs.get(person.id)
-    #             if self.project.code.endswith(".0"):
-    #                 # Offertetraject, dus nultarief.
-    #                 if hourly_tariff != 0:
-    #                     hourly_tariff = 0
-    #                     messages.warning(
-    #                         self.request, ".0 project, dus tarieven zijn op 0 gezet"
-    #                     )
-    #             work_assignment.hourly_tariff = hourly_tariff
-
-    #         work_assignment.save()
-
 
 class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
     template_name = "trs/person-change.html"
