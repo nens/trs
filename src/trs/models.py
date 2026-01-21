@@ -1186,6 +1186,9 @@ class Booking(models.Model):
         on_delete=models.CASCADE,
     )
 
+    def __str__(self):
+        return f"Booking {self.date}"
+
     class Meta:
         verbose_name = "boeking"
         verbose_name_plural = "boekingen"
