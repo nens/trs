@@ -2186,7 +2186,7 @@ class ProjectBudgetEditView(BaseView):
             self.estimate_formset.save()
             self.budget_item_formset.save()
             self.work_assignment_formset.save()
-            # xxx
+
             if self.project.code.endswith(".0"):
                 # .0 = offertetraject, dus nultarief.
                 for work_assignment, _ in self.work_assignment_formset.changed_objects:
@@ -2236,7 +2236,7 @@ class ProjectBudgetEditView(BaseView):
         if self.is_project_management:
             return True
 
-    @property
+    @cached_property
     def budgets_and_tariffs(self):
         budget_per_person = WorkAssignment.objects.filter(
             assigned_on=self.project
