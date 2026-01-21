@@ -11,12 +11,9 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from tls import request as tls_request
 
-# TODO: add django-appconf
-
-# Hours are always an integer. You cannot work 2.5 hours. At least, that's
-# what they assure me right now. I'm only 60% sure that it stays that way, so
-# I use DecimalField instead of IntegerField. I want to use it for targets,
-# too. 999999.99 should be possible, so that's 8 digits with 2 decimal places.
+# I use DecimalField for actual financial numbers, but not for targets and hourly
+# tariffs, those are integers. Financially, 999999.99 should be possible, so that's 8
+# digits with 2 decimal places.
 MAX_DIGITS = 8
 DECIMAL_PLACES = 2
 
@@ -227,7 +224,7 @@ class Person(models.Model):
     def hours_per_week(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return round(
+        return (
             self.person_changes.filter(year_week__lte=year_week).aggregate(
                 models.Sum("hours_per_week")
             )["hours_per_week__sum"]
@@ -238,7 +235,7 @@ class Person(models.Model):
     def standard_hourly_tariff(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return round(
+        return (
             self.person_changes.filter(year_week__lte=year_week).aggregate(
                 models.Sum("standard_hourly_tariff")
             )["standard_hourly_tariff__sum"]
@@ -246,21 +243,10 @@ class Person(models.Model):
         )
 
     @cache_until_personchange_or_new_week
-    def minimum_hourly_tariff(self, year_week=None):
-        if year_week is None:
-            year_week = this_year_week()
-        return round(
-            self.person_changes.filter(year_week__lte=year_week).aggregate(
-                models.Sum("minimum_hourly_tariff")
-            )["minimum_hourly_tariff__sum"]
-            or 0
-        )
-
-    @cache_until_personchange_or_new_week
     def target(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
-        return round(
+        return (
             self.person_changes.filter(year_week__lte=year_week).aggregate(
                 models.Sum("target")
             )["target__sum"]
@@ -297,7 +283,7 @@ class Person(models.Model):
         if year_week is None:
             year_week = this_year_week()
         this_year = year_week.year
-        hours_per_week = round(
+        hours_per_week = (
             self.person_changes.filter(year_week__year__lt=this_year).aggregate(
                 models.Sum("hours_per_week")
             )["hours_per_week__sum"]
@@ -311,7 +297,7 @@ class Person(models.Model):
             .annotate(models.Sum("hours_per_week"))
         )
         changes_per_week = {
-            change["year_week__week"]: round(change["hours_per_week__sum"])
+            change["year_week__week"]: change["hours_per_week__sum"]
             for change in changes_this_year
         }
         result = 0
@@ -381,13 +367,13 @@ class Person(models.Model):
             friendly = 0
             short = ""
         return {
-            "hours": round(hours_to_book),
+            "hours": hours_to_book,
             "days": days_to_book,
             "weeks": weeks_to_book,
             "friendly": friendly,
             "short": short,
             "klass": klass,
-            "left_to_book_this_week": round(left_to_book_this_week),
+            "left_to_book_this_week": left_to_book_this_week,
         }
 
 
@@ -713,11 +699,10 @@ class Project(models.Model):
             assigned_on=self
         ).values("assigned_to", "hours", "hourly_tariff")
         budget_per_person = {
-            item["assigned_to"]: round(item["hours"])
-            for item in relevant_work_assignments
+            item["assigned_to"]: item["hours"] for item in relevant_work_assignments
         }
         hourly_tariff_per_person = {
-            item["assigned_to"]: round(item["hourly_tariff"])
+            item["assigned_to"]: item["hourly_tariff"]
             for item in relevant_work_assignments
         }
         ids = budget_per_person.keys()
@@ -728,7 +713,7 @@ class Project(models.Model):
             .annotate(models.Sum("hours"))
         )
         total_booked_per_person = {
-            item["booked_by"]: round(item["hours__sum"])
+            item["booked_by"]: item["hours__sum"]
             for item in booked_this_year_per_person
         }
 
@@ -1036,9 +1021,7 @@ class ThirdPartyEstimate(FinancialBase):
         verbose_name="project",
         on_delete=models.CASCADE,
     )
-    description = models.CharField(
-        verbose_name="omschrijving", blank=True, max_length=255
-    )
+    description = models.CharField(verbose_name="omschrijving", max_length=255)
     amount = models.DecimalField(
         max_digits=12,  # We don't mind a metric ton of hard cash.
         decimal_places=DECIMAL_PLACES,
@@ -1129,33 +1112,20 @@ class EventBase(models.Model):
 
 
 class PersonChange(EventBase):
-    hours_per_week = models.DecimalField(
-        max_digits=MAX_DIGITS,
-        decimal_places=DECIMAL_PLACES,
+    hours_per_week = models.IntegerField(
         blank=True,
         null=True,
         verbose_name="uren per week",
     )
-    target = models.DecimalField(
-        max_digits=MAX_DIGITS,
-        decimal_places=DECIMAL_PLACES,
+    target = models.IntegerField(
         blank=True,
         null=True,
         verbose_name="target",
     )
-    standard_hourly_tariff = models.DecimalField(
-        max_digits=MAX_DIGITS,
-        decimal_places=DECIMAL_PLACES,
+    standard_hourly_tariff = models.IntegerField(
         blank=True,
         null=True,
         verbose_name="standaard uurtarief",
-    )
-    minimum_hourly_tariff = models.DecimalField(
-        max_digits=MAX_DIGITS,
-        decimal_places=DECIMAL_PLACES,
-        blank=True,
-        null=True,
-        verbose_name="minimum uurtarief",
     )
 
     person = models.ForeignKey(
@@ -1182,9 +1152,7 @@ class PersonChange(EventBase):
 
 
 class Booking(models.Model):
-    hours = models.DecimalField(
-        max_digits=MAX_DIGITS,
-        decimal_places=DECIMAL_PLACES,
+    hours = models.IntegerField(
         verbose_name="uren",
         default=0,
     )
@@ -1229,15 +1197,11 @@ class Booking(models.Model):
 
 
 class WorkAssignment(models.Model):
-    hours = models.DecimalField(
-        max_digits=MAX_DIGITS,
-        decimal_places=DECIMAL_PLACES,
+    hours = models.IntegerField(
         default=0,
         verbose_name="uren",
     )
-    hourly_tariff = models.DecimalField(
-        max_digits=MAX_DIGITS,
-        decimal_places=DECIMAL_PLACES,
+    hourly_tariff = models.IntegerField(
         default=0,
         verbose_name="uurtarief",
     )

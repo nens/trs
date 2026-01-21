@@ -13,6 +13,7 @@
   </div>
   <form action="."
         method="post"
+        hx-boost="true"
         id="booking-form">
     {% csrf_token %}
     {% for error in form.errors %}

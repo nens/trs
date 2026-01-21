@@ -78,7 +78,7 @@ class PersonYearCombination:
                 klass = "success"
                 friendly = 0
             self.to_book = {
-                "hours": round(hours_to_book),
+                "hours": hours_to_book,
                 "klass": klass,
                 "friendly": friendly,
             }
@@ -118,11 +118,11 @@ class PersonYearCombination:
             .annotate(models.Sum("hours"), models.Sum("hourly_tariff"))
         )
         budget = {
-            item["assigned_on"]: round(item["hours__sum"] or 0)
+            item["assigned_on"]: (item["hours__sum"] or 0)
             for item in budget_per_project
         }
         hourly_tariff = {
-            item["assigned_on"]: round(item["hourly_tariff__sum"] or 0)
+            item["assigned_on"]: (item["hourly_tariff__sum"] or 0)
             for item in budget_per_project
         }
         is_internal = {
@@ -142,7 +142,7 @@ class PersonYearCombination:
             .annotate(models.Sum("hours"))
         )
         booked_this_year = {
-            item["booked_on"]: round(item["hours__sum"])
+            item["booked_on"]: (item["hours__sum"])
             for item in booked_this_year_per_project
         }
 
@@ -156,7 +156,7 @@ class PersonYearCombination:
             .annotate(models.Sum("hours"))
         )
         booked_before_this_year = {
-            item["booked_on"]: round(item["hours__sum"])
+            item["booked_on"]: (item["hours__sum"])
             for item in booked_up_to_this_year_per_project
         }
 
@@ -201,7 +201,7 @@ class PersonYearCombination:
             per_project[id] = project_info
 
         # year-based person.to_work_up_till_now() implementation.
-        hours_per_week = round(
+        hours_per_week = (
             self.person.person_changes.filter(year_week__year__lt=self.year).aggregate(
                 models.Sum("hours_per_week")
             )["hours_per_week__sum"]
@@ -213,7 +213,7 @@ class PersonYearCombination:
             .annotate(models.Sum("hours_per_week"))
         )
         changes_per_week = {
-            change["year_week__week"]: round(change["hours_per_week__sum"])
+            change["year_week__week"]: (change["hours_per_week__sum"])
             for change in changes_this_year
         }
         year_weeks = YearWeek.objects.filter(year=self.year).values(
@@ -227,7 +227,7 @@ class PersonYearCombination:
                 hours_per_week += changes_per_week[week]
             self.to_book_this_year += hours_per_week
         self.to_book_this_year -= missing_days * 8
-        self.all_booked_hours = round(
+        self.all_booked_hours = (
             self.person.bookings.filter(year_week__year=self.year).aggregate(
                 models.Sum("hours")
             )["hours__sum"]
@@ -236,7 +236,7 @@ class PersonYearCombination:
         # ^^^ self.all_booked_hours *includes* the 'hourless' projects that
         # are filtered out in the rest of this calculation.
         if self.to_book_this_year:
-            self.all_bookings_percentage = round(
+            self.all_bookings_percentage = (
                 100 * self.all_booked_hours / self.to_book_this_year
             )
         else:  # Division by zero
@@ -294,9 +294,9 @@ class PersonYearCombination:
         external = 0
         for result in query_result:
             if result["booked_on__internal"]:
-                internal = round(result["hours__sum"])
+                internal = result["hours__sum"]
             else:
-                external = round(result["hours__sum"])
+                external = result["hours__sum"]
         if not internal + external:  # Division by zero
             return 100
         return round(100 * external / (internal + external))

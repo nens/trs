@@ -1,6 +1,7 @@
 {% if view.prepared_filters %}
   <table class="table table-condensed"
-         style="width: auto;">
+         style="width: auto;"
+         hx-boost="true">
     <tbody>
       {% for filter in view.prepared_filters %}
 
