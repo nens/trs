@@ -11,12 +11,9 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from tls import request as tls_request
 
-# TODO: add django-appconf
-
-# Hours are always an integer. You cannot work 2.5 hours. At least, that's
-# what they assure me right now. I'm only 60% sure that it stays that way, so
-# I use DecimalField instead of IntegerField. I want to use it for targets,
-# too. 999999.99 should be possible, so that's 8 digits with 2 decimal places.
+# I use DecimalField for actual financial numbers, but not for targets and hourly
+# tariffs, those are integers. Financially, 999999.99 should be possible, so that's 8
+# digits with 2 decimal places.
 MAX_DIGITS = 8
 DECIMAL_PLACES = 2
 
@@ -1116,23 +1113,17 @@ class EventBase(models.Model):
 
 
 class PersonChange(EventBase):
-    hours_per_week = models.DecimalField(
-        max_digits=MAX_DIGITS,
-        decimal_places=DECIMAL_PLACES,
+    hours_per_week = models.IntegerField(
         blank=True,
         null=True,
         verbose_name="uren per week",
     )
-    target = models.DecimalField(
-        max_digits=MAX_DIGITS,
-        decimal_places=DECIMAL_PLACES,
+    target = models.IntegerField(
         blank=True,
         null=True,
         verbose_name="target",
     )
-    standard_hourly_tariff = models.DecimalField(
-        max_digits=MAX_DIGITS,
-        decimal_places=DECIMAL_PLACES,
+    standard_hourly_tariff = models.IntegerField(
         blank=True,
         null=True,
         verbose_name="standaard uurtarief",
@@ -1162,9 +1153,7 @@ class PersonChange(EventBase):
 
 
 class Booking(models.Model):
-    hours = models.DecimalField(
-        max_digits=MAX_DIGITS,
-        decimal_places=DECIMAL_PLACES,
+    hours = models.IntegerField(
         verbose_name="uren",
         default=0,
     )
@@ -1209,15 +1198,11 @@ class Booking(models.Model):
 
 
 class WorkAssignment(models.Model):
-    hours = models.DecimalField(
-        max_digits=MAX_DIGITS,
-        decimal_places=DECIMAL_PLACES,
+    hours = models.IntegerField(
         default=0,
         verbose_name="uren",
     )
-    hourly_tariff = models.DecimalField(
-        max_digits=MAX_DIGITS,
-        decimal_places=DECIMAL_PLACES,
+    hourly_tariff = models.IntegerField(
         default=0,
         verbose_name="uurtarief",
     )
