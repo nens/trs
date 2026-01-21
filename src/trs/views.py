@@ -1477,15 +1477,14 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
 
     @cached_property
     def initial(self):
-        """Return initial form values.
-
-        Turn the decimals into integers already."""
+        """Return initial form values."""
         result = {}
         bookings = Booking.objects.filter(
             year_week=self.active_year_week,
             booked_by=self.person,
             booked_on__in=self.relevant_projects,
         ).values("booked_on__code", "hours")
+        # TODO: this is per week, it should be per day.
         result = {item["booked_on__code"]: (item["hours"]) for item in bookings}
         return {
             project.code: result.get(project.code, 0)
@@ -1562,6 +1561,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         booking_table = Booking.objects.filter(
             year_week__in=self.year_weeks_to_display, booked_by=self.person
         ).values("booked_on", "year_week", "hours")
+        # ^^^ TODO sum
         bookings = {
             (item["booked_on"], item["year_week"]): item["hours"]
             for item in booking_table
@@ -3134,11 +3134,10 @@ class ProjectPersonsExcelView(ExcelResponseMixin, ProjectView):
     @cached_property
     def bookings_per_week_per_person_per_project(self):
         bookings = Booking.objects.filter(year_week__in=self.weeks).values(
-            "booked_by", "booked_on", "year_week", "hours"
-        )
+            "booked_by", "booked_on", "year_week").annotate(models.Sum("hours"))
         return {
             (booking["booked_by"], booking["booked_on"], booking["year_week"]): (
-                booking["hours"]
+                booking["hours__sum"]
             )
             for booking in bookings
         }
