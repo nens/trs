@@ -2209,7 +2209,7 @@ class ProjectBudgetEditView(BaseView):
 
             self.project.refresh_from_db()
             if self.project.left_to_dish_out() < -1:
-                msg = f"Je boekt {(self.project.left_to_dish_out())} in het rood"
+                msg = f"Je boekt {round(self.project.left_to_dish_out())} in het rood"
                 messages.error(self.request, msg)
 
             return HttpResponseRedirect(self.success_url)
