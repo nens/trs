@@ -43,6 +43,7 @@
         Pas, op: als je hier iets aanpast, pas je andermans boekingen aan!
       </div>
     {% endif %}
+
     <table id="booking-table"
            class="table table-hover table-condensed table-fixed-header">
       <thead class="header">
@@ -53,6 +54,7 @@
           <th class="text-right">Geboekt</th>
           <th class="text-right">Over</th>
           <th>&nbsp;</th>
+
           {% for year_week in view.year_weeks_to_display %}
             {% if forloop.counter == view.highlight_column %}
               <th class="text-right">
@@ -102,13 +104,17 @@
             <td class="text-right text-muted">{{ line.hours0|hours }}</td>
             <td class="text-right text-muted">{{ line.hours1|hours }}</td>
             <td class="text-right hour-for-total">
-              {{ line.field }}
+              {% for field in line.fields %}
+                {{ field }}
+                {% for error in field.errors %}
+                  <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+                <br>
+              {% endfor %}
+
               {% if line.show_uneditable_value %}
                 {{ line.hours2|hours }}
               {% endif %}
-              {% for error in line.field.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
-              {% endfor %}
             </td>
             <td class="text-right text-muted">{{ line.hours3|hours }}</td>
           </tr>

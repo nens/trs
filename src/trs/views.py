@@ -2,7 +2,6 @@ import calendar
 import datetime
 import logging
 import statistics
-import time
 import urllib.parse
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
@@ -1367,6 +1366,7 @@ def logout_view(request):
 
 class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     template_name = "trs/booking.html"
+    PER_DAY = True
 
     def has_form_permissions(self):
         # Warning: this is used as "permission to view the page", not directly
@@ -1465,20 +1465,40 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             return 0
         return column_index + 1
 
+    @property
+    def active_dates(self):
+        if self.PER_DAY:
+            return self.active_year_week.days()
+        else:
+            return self.active_year_week.first_day
+
+    def _field_name(self, project, date):
+        return f"{project.id}__{date.toordinal()}"
+
     def get_form_class(self):
         """Return dynamically generated form class."""
         fields = OrderedDict()
+        index = 1
         if self.has_edit_permissions:
             # If not, we cannot edit anything, just view.
-            for index, project in enumerate(self.relevant_projects):
-                field_type = forms.IntegerField(
-                    min_value=0,
-                    max_value=100,
-                    widget=forms.TextInput(
-                        attrs={"size": 2, "type": "number", "tabindex": index + 1}
-                    ),
+            for project in self.relevant_projects:
+                disabled = (
+                    project.archived
+                    or project.start > self.active_year_week
+                    or project.end < self.active_year_week
                 )
-                fields[project.code] = field_type
+
+                for date in self.active_dates:
+                    field_type = forms.IntegerField(
+                        min_value=0,
+                        max_value=100,
+                        widget=forms.TextInput(
+                            attrs={"size": 2, "type": "number", "tabindex": index}
+                        ),
+                        disabled=disabled,
+                    )
+                    fields[self._field_name(project, date)] = field_type
+                    index += 1
         return type("GeneratedBookingForm", (forms.Form,), fields)
 
     @cached_property
@@ -1489,36 +1509,43 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             year_week=self.active_year_week,
             booked_by=self.person,
             booked_on__in=self.relevant_projects,
-        ).values("booked_on__code", "hours")
-        # TODO: this is per week, it should be per day.
-        result = {item["booked_on__code"]: (item["hours"]) for item in bookings}
-        return {
-            project.code: result.get(project.code, 0)
-            for project in self.relevant_projects
+        )
+        found = {
+            self._field_name(booking.booked_on, booking.date): booking.hours
+            for booking in bookings
         }
+        result = {}
+        for project in self.relevant_projects:
+            for date in self.active_dates:
+                field_name = self._field_name(project, date)
+                result[field_name] = found.get(field_name, 0)
+        return result
 
     def form_valid(self, form):
         # Note: filtering on inactive (start/end date) projects and on booking
         # year is done in the visual part of the view. It isn't enforced here
-        # yet. To do once we start using this as an API.
-        start_time = time.time()
+        # yet.
         total_difference = 0
         absolute_difference = 0
-        for project_code, new_hours in form.cleaned_data.items():
-            old_hours = self.initial[project_code]
+
+        mapping = {}
+        for project in self.relevant_projects:
+            for date in self.active_dates:
+                field_name = self._field_name(project, date)
+                mapping[field_name] = [project, date]
+
+        for field_name, new_hours in form.cleaned_data.items():
+            project, date = mapping[field_name]
+            old_hours = self.initial[field_name]
             difference = new_hours - old_hours
             total_difference += difference
             absolute_difference += abs(difference)
             if difference:
-                project = [
-                    project
-                    for project in self.relevant_projects
-                    if project.code == project_code
-                ][0]
                 booking, _ = Booking.objects.get_or_create(
                     booked_by=self.person,
                     booked_on=project,
                     year_week=self.active_year_week,
+                    date=date,
                 )
                 booking.hours = new_hours
                 booking.save()
@@ -1538,13 +1565,11 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 messages.success(self.request, f"Uren aangepast ({indicator}).")
         else:
             messages.info(self.request, "Niets aan de uren gewijzigd.")
-        elapsed = time.time() - start_time
-        logger.debug("Handled booking in %s secs", elapsed)
         return super().form_valid(form)
 
     @cached_property
     def tabindex_submit_button(self):
-        return len(self.relevant_projects) + 1
+        return len(self.relevant_projects) * len(self.active_dates) + 1
 
     @cached_property
     def success_url(self):
@@ -1564,12 +1589,15 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         form = self.get_form(self.get_form_class())
         fields = list(form)  # A form's __iter__ returns 'bound fields'.
         # Prepare booking info as one query.
-        booking_table = Booking.objects.filter(
-            year_week__in=self.year_weeks_to_display, booked_by=self.person
-        ).values("booked_on", "year_week", "hours")
-        # ^^^ TODO sum
+        booking_table = (
+            Booking.objects.filter(
+                year_week__in=self.year_weeks_to_display, booked_by=self.person
+            )
+            .values("booked_on", "year_week")
+            .annotate(models.Sum("hours"))
+        )
         bookings = {
-            (item["booked_on"], item["year_week"]): item["hours"]
+            (item["booked_on"], item["year_week"]): item["hours__sum"]
             for item in booking_table
         }
         # Idem for budget
@@ -1591,6 +1619,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             item["booked_on"]: (item["hours__sum"] or 0) for item in booked_per_project
         }
 
+        field_index = 0
         for project_index, project in enumerate(self.relevant_projects):
             line = {"project": project}
             for index, year_week in enumerate(self.year_weeks_to_display):
@@ -1599,20 +1628,11 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 line[key] = booked
 
             if fields:
-                line["field"] = fields[project_index]
-                if (
-                    project.archived
-                    or project.start > self.active_year_week
-                    or project.end < self.active_year_week
-                    # or self.active_year_week.year < this_year
-                ):
-                    # Filtering if we're allowed to book or not.
-                    line["field"].field.widget.attrs["hidden"] = True
-                    line["show_uneditable_value"] = True
-            else:
-                # No fields: we're only allowed to view the data, not edit it.
-                line["field"] = ""
-                line["show_uneditable_value"] = True
+                line["fields"] = []
+                for date in self.active_dates:
+                    field = fields[field_index]
+                    line["fields"].append(field)
+                    field_index += 1
 
             line["budget"] = budgets.get(project.id, 0)
             line["booked_total"] = booked_total.get(project.id, 0)
@@ -2160,7 +2180,6 @@ class ProjectBudgetEditView(BaseView):
         WorkAssignmentFormset = self.work_assignment_formset_factory()
         self.work_assignment_formset = WorkAssignmentFormset(instance=self.project)
         self.adjust_work_assignment_formset()
-        # fields['amount'].widget.attrs['disabled'] = 'disabled'
         return super().get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
