@@ -41,7 +41,7 @@ class Command(BaseCommand):
                 }
             persons[name]["booked_per_projectgroup"][
                 query_result["booked_on__group__name"]
-            ] = round(query_result["hours__sum"])
+            ] = query_result["hours__sum"]
 
         workbook = xlsxwriter.Workbook(FILENAME)
         worksheet = workbook.add_worksheet()

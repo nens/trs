@@ -32,7 +32,7 @@ class Command(BaseCommand):
             to_work = person.hours_per_week()
             for year_week in year_weeks:
                 to_work_this_week = to_work - year_week.num_days_missing * 8
-                already_booked = round(
+                already_booked = (
                     models.Booking.objects.filter(
                         booked_by=person, year_week=year_week
                     ).aggregate(Sum("hours"))["hours__sum"]

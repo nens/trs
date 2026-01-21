@@ -540,11 +540,10 @@ class PersonView(BaseView):
             assigned_to=self.person, assigned_on__in=self.projects
         ).values("assigned_on", "hours", "hourly_tariff")
         budgets = {
-            item["assigned_on"]: round(item["hours"])
-            for item in relevant_work_assignments
+            item["assigned_on"]: (item["hours"]) for item in relevant_work_assignments
         }
         hourly_tariffs = {
-            item["assigned_on"]: round(item["hourly_tariff"])
+            item["assigned_on"]: (item["hourly_tariff"])
             for item in relevant_work_assignments
         }
         # Hours worked query.
@@ -563,11 +562,10 @@ class PersonView(BaseView):
             .annotate(models.Sum("hours"))
         )
         booked = {
-            item["booked_on"]: round(item["hours__sum"] or 0)
-            for item in booked_per_project
+            item["booked_on"]: (item["hours__sum"] or 0) for item in booked_per_project
         }
         booked_this_year = {
-            item["booked_on"]: round(item["hours__sum"] or 0)
+            item["booked_on"]: (item["hours__sum"] or 0)
             for item in booked_this_year_per_project
         }
 
@@ -689,10 +687,10 @@ class BookingOverview(PersonView):
             .annotate(models.Sum("hours"))
         )
         booked_per_week = {
-            item["year_week__week"]: round(item["hours__sum"] or 0)
+            item["year_week__week"]: (item["hours__sum"] or 0)
             for item in booked_this_year_per_week
         }
-        start_hours_amount = round(
+        start_hours_amount = (
             self.person.person_changes.filter(year_week__year__lt=self.year).aggregate(
                 models.Sum("hours_per_week")
             )["hours_per_week__sum"]
@@ -704,7 +702,7 @@ class BookingOverview(PersonView):
             .annotate(models.Sum("hours_per_week"))
         )
         changes_per_week = {
-            change["year_week__week"]: round(change["hours_per_week__sum"])
+            change["year_week__week"]: (change["hours_per_week__sum"])
             for change in changes_this_year
         }
         result = []
@@ -719,7 +717,7 @@ class BookingOverview(PersonView):
             hint = ""
             if booked < to_book_this_week:
                 klass = "danger"
-                hint = f"Te boeken: {round(to_book_this_week)}"
+                hint = f"Te boeken: {(to_book_this_week)}"
             if (
                 year_week.year == this_year_week().year
                 and year_week.week >= this_year_week().week
@@ -1253,11 +1251,10 @@ class ProjectView(BaseView):
             assigned_to__in=self.persons, assigned_on=self.project
         ).values("assigned_to", "hours", "hourly_tariff")
         budgets = {
-            item["assigned_to"]: round(item["hours"])
-            for item in relevant_work_assignments
+            item["assigned_to"]: (item["hours"]) for item in relevant_work_assignments
         }
         hourly_tariffs = {
-            item["assigned_to"]: round(item["hourly_tariff"])
+            item["assigned_to"]: (item["hourly_tariff"])
             for item in relevant_work_assignments
         }
         # Hours worked query.
@@ -1267,8 +1264,7 @@ class ProjectView(BaseView):
             .annotate(models.Sum("hours"))
         )
         booked = {
-            item["booked_by"]: round(item["hours__sum"] or 0)
-            for item in booked_per_person
+            item["booked_by"]: (item["hours__sum"] or 0) for item in booked_per_person
         }
 
         for person in self.persons:
@@ -1285,11 +1281,9 @@ class ProjectView(BaseView):
             line["loss"] = max(0, (line["booked"] - line["budget"])) * tariff
             line["left_to_turn_over"] = line["left_to_book"] * tariff
             line["planned_turnover"] = line["budget"] * tariff
-            line["desired_hourly_tariff"] = round(
-                min(
-                    person.standard_hourly_tariff(year_week=self.project.start),
-                    person.standard_hourly_tariff(),
-                )
+            line["desired_hourly_tariff"] = min(
+                person.standard_hourly_tariff(year_week=self.project.start),
+                person.standard_hourly_tariff(),
             )
             result.append(line)
         return result
@@ -1492,7 +1486,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             booked_by=self.person,
             booked_on__in=self.relevant_projects,
         ).values("booked_on__code", "hours")
-        result = {item["booked_on__code"]: round(item["hours"]) for item in bookings}
+        result = {item["booked_on__code"]: (item["hours"]) for item in bookings}
         return {
             project.code: result.get(project.code, 0)
             for project in self.relevant_projects
@@ -1577,8 +1571,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             assigned_to=self.person, assigned_on__in=self.relevant_projects
         ).values("assigned_on", "hours")
         budgets = {
-            item["assigned_on"]: round(item["hours"])
-            for item in relevant_work_assignments
+            item["assigned_on"]: (item["hours"]) for item in relevant_work_assignments
         }
         # Item for hours worked.
         booked_per_project = (
@@ -1589,8 +1582,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             .annotate(models.Sum("hours"))
         )
         booked_total = {
-            item["booked_on"]: round(item["hours__sum"] or 0)
-            for item in booked_per_project
+            item["booked_on"]: (item["hours__sum"] or 0) for item in booked_per_project
         }
 
         for project_index, project in enumerate(self.relevant_projects):
@@ -2217,7 +2209,7 @@ class ProjectBudgetEditView(BaseView):
 
             self.project.refresh_from_db()
             if self.project.left_to_dish_out() < -1:
-                msg = f"Je boekt {round(self.project.left_to_dish_out())} in het rood"
+                msg = f"Je boekt {(self.project.left_to_dish_out())} in het rood"
                 messages.error(self.request, msg)
 
             return HttpResponseRedirect(self.success_url)
@@ -2249,12 +2241,9 @@ class ProjectBudgetEditView(BaseView):
         budget_per_person = WorkAssignment.objects.filter(
             assigned_on=self.project
         ).values("assigned_to", "hours", "hourly_tariff")
-        budgets = {
-            item["assigned_to"]: round(item["hours"]) for item in budget_per_person
-        }
+        budgets = {item["assigned_to"]: (item["hours"]) for item in budget_per_person}
         hourly_tariffs = {
-            item["assigned_to"]: round(item["hourly_tariff"])
-            for item in budget_per_person
+            item["assigned_to"]: (item["hourly_tariff"]) for item in budget_per_person
         }
         return budgets, hourly_tariffs
 
@@ -2267,8 +2256,7 @@ class ProjectBudgetEditView(BaseView):
             .annotate(models.Sum("hours"))
         )
         booked = {
-            item["booked_by"]: round(item["hours__sum"] or 0)
-            for item in booked_per_person
+            item["booked_by"]: (item["hours__sum"] or 0) for item in booked_per_person
         }
 
         for form in self.work_assignment_formset:
@@ -3032,7 +3020,7 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
             .annotate(models.Sum("hours"))
         )
         return {
-            (booking["booked_by"], booking["year_week"]): round(booking["hours__sum"])
+            (booking["booked_by"], booking["year_week"]): (booking["hours__sum"])
             for booking in bookings
         }
 
@@ -3148,7 +3136,7 @@ class ProjectPersonsExcelView(ExcelResponseMixin, ProjectView):
             "booked_by", "booked_on", "year_week", "hours"
         )
         return {
-            (booking["booked_by"], booking["booked_on"], booking["year_week"]): round(
+            (booking["booked_by"], booking["booked_on"], booking["year_week"]): (
                 booking["hours"]
             )
             for booking in bookings
