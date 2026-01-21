@@ -58,7 +58,7 @@ class PersonChangeAdmin(admin.ModelAdmin):
 
 
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ["date", "year_week", "hours", "booked_by", "booked_on"]
+    list_display = ["date", "hours", "booked_by", "booked_on"]
     list_filter = ["date", "booked_by", "booked_on"]
     ordering = ["-date", "-id"]
 
