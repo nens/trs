@@ -777,11 +777,15 @@ class FreeOverview(PersonView):
 
     @cached_property
     def lines(self):
-        booked_this_year_per_week_per_project = Booking.objects.filter(
-            booked_by=self.person,
-            year_week__year=self.year,
-            booked_on__in=self.free_projects,
-        ).values("year_week__week", "booked_on", "hours")
+        booked_this_year_per_week_per_project = (
+            Booking.objects.filter(
+                booked_by=self.person,
+                year_week__year=self.year,
+                booked_on__in=self.free_projects,
+            )
+            .values("year_week__week", "booked_on")
+            .annotate(models.Sum("hours"))
+        )
         weeks = {}
         empty_week = {}
         for project in self.free_projects:
@@ -789,7 +793,9 @@ class FreeOverview(PersonView):
         for year_week in YearWeek.objects.filter(year=self.year):
             weeks[year_week.week] = deepcopy(empty_week)
         for booking in booked_this_year_per_week_per_project:
-            weeks[booking["year_week__week"]][booking["booked_on"]] = booking["hours"]
+            weeks[booking["year_week__week"]][booking["booked_on"]] = booking[
+                "hours__sum"
+            ]
         result = []
         for year_week in YearWeek.objects.filter(year=self.year):
             hours = [
@@ -3133,8 +3139,11 @@ class ProjectPersonsExcelView(ExcelResponseMixin, ProjectView):
 
     @cached_property
     def bookings_per_week_per_person_per_project(self):
-        bookings = Booking.objects.filter(year_week__in=self.weeks).values(
-            "booked_by", "booked_on", "year_week").annotate(models.Sum("hours"))
+        bookings = (
+            Booking.objects.filter(year_week__in=self.weeks)
+            .values("booked_by", "booked_on", "year_week")
+            .annotate(models.Sum("hours"))
+        )
         return {
             (booking["booked_by"], booking["booked_on"], booking["year_week"]): (
                 booking["hours__sum"]
@@ -3380,14 +3389,17 @@ class WbsoExcelView(ExcelResponseMixin, WbsoProjectsOverview):
 
     @cached_property
     def bookings_per_week_per_person_per_wbso_project(self):
-        return Booking.objects.filter(
-            booked_on__wbso_project__id__gt=0, year_week__in=self.weeks
-        ).values(
-            "booked_by__name",
-            "year_week",
-            "booked_on__wbso_percentage",
-            "booked_on__wbso_project",
-            "hours",
+        return (
+            Booking.objects.filter(
+                booked_on__wbso_project__id__gt=0, year_week__in=self.weeks
+            )
+            .values(
+                "booked_by__name",
+                "year_week",
+                "booked_on__wbso_percentage",
+                "booked_on__wbso_project",
+            )
+            .annotate(models.Sum("hours"))
         )
 
     @property
@@ -3444,7 +3456,7 @@ class WbsoExcelView(ExcelResponseMixin, WbsoProjectsOverview):
                 for wbso_project in self.found_wbso_projects:
                     hours = [
                         round(
-                            item["hours"]
+                            item["hours__sum"]
                             * (item["booked_on__wbso_percentage"] or 0)
                             / 100
                         )
