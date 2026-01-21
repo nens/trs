@@ -2,8 +2,19 @@
 {% load static %}
 {% load trs_formatting %}
 
-{% block main-column %}
+{% block full-width %}
   <h1>{{ view.title }}</h1>
+
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissable">
+      <button type="button"
+              class="close"
+              data-dismiss="alert"
+              aria-hidden="true">&times;</button>
+      {{ message }}
+    </div>
+  {% endfor %}
+
   <div class="text-muted">
     Zie
     <a href="{% url 'trs.booking.overview' pk=view.person.id %}">
@@ -11,6 +22,14 @@
     </a>
     als je nog in oude weken moet boeken.
   </div>
+  <div class="text-muted">
+    Zie
+    <a href="{% url 'trs.overviews' %}">
+      de pagina met overzichten
+    </a>
+    voor de handige links die vroeger in de rechterkolom stonden.
+  </div>
+
   <form action="."
         method="post"
         hx-boost="true"

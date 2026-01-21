@@ -1156,6 +1156,12 @@ class Booking(models.Model):
         verbose_name="uren",
         default=0,
     )
+    date = models.DateField(
+        verbose_name="datum",
+        blank=True,
+        null=True,
+        db_index=True,
+    )
     year_week = models.ForeignKey(
         YearWeek,
         blank=True,
@@ -1181,6 +1187,9 @@ class Booking(models.Model):
         on_delete=models.CASCADE,
     )
 
+    def __str__(self):
+        return f"Booking {self.date}"
+
     class Meta:
         verbose_name = "boeking"
         verbose_name_plural = "boekingen"
@@ -1188,11 +1197,14 @@ class Booking(models.Model):
             models.UniqueConstraint(
                 fields=["booked_by", "booked_on", "year_week"], name="unique_booking"
             ),
+            # TODO ^^^ adjust to date being unique after all databases have been migrated
         ]
 
     def save(self, *args, **kwargs):
         self.booked_by.save()  # Increments cache indicator.
         self.booked_on.save()  # Increments cache indicator.
+        if not self.date:
+            self.date = self.year_week.first_day
         return super().save(*args, **kwargs)
 
 
