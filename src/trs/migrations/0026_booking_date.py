@@ -11,16 +11,15 @@ def set_initial_date(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('trs', '0025_alter_booking_hours_and_more'),
+        ("trs", "0025_alter_booking_hours_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='booking',
-            name='date',
-            field=models.DateField(blank=True, null=True, verbose_name='datum'),
+            model_name="booking",
+            name="date",
+            field=models.DateField(blank=True, null=True, verbose_name="datum"),
         ),
         migrations.RunPython(set_initial_date),
     ]
