@@ -1160,6 +1160,7 @@ class Booking(models.Model):
         verbose_name="datum",
         blank=True,
         null=True,
+        db_index=True,
     )
     year_week = models.ForeignKey(
         YearWeek,
