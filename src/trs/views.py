@@ -2261,8 +2261,8 @@ class ProjectBudgetEditView(BaseView):
 
         for form in self.work_assignment_formset:
             if form.initial:
-                print("initial")
-                # We don't want the person to be swapped.
+                # Existing work assignment. We don't want the person to be swapped, so
+                # we disable the person dropdown, for instance.
                 form.fields["assigned_to"].disabled = True
                 person = Person.objects.get(id=form.initial["assigned_to"])
                 if person.archived or (not self.can_edit_hours):
