@@ -2828,6 +2828,7 @@ class ExcelResponseMixin:
         worksheet.add_write_handler(MPC, _django_model_instance_to_string)
         worksheet.add_write_handler(Person, _django_model_instance_to_string)
         worksheet.add_write_handler(Project, _django_model_instance_to_string)
+        worksheet.add_write_handler(YearWeek, _django_model_instance_to_string)
 
         row_number = 0
         for line in self.prepend_lines:
