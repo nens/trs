@@ -5,7 +5,18 @@ Changelog of TRS
 2.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Removed "minimum hourly tariff" as it wasn't used.
+
+- Added htmx for better interaction (infinite scroll for the project list, nicer
+  filtering on person/project lists, quicker interaction on booking page).
+
+- "Hours" and "hourly tariff" and so are integer fields now instead of decimal fields:
+  after 10 years, there's no risk of them becoming non-integers now.
+
+- No more change history for bookings and work assignments, simplifying the code and
+  some views.
+
+- Improved the project team edit form.
 
 
 
