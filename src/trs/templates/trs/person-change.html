@@ -51,9 +51,6 @@
         {% if change.standard_hourly_tariff__sum %}
           Standaard uurtarief: {{ change.standard_hourly_tariff__sum|moneydiff }}<br>
         {% endif %}
-        {% if change.minimum_hourly_tariff__sum %}
-          Minimum uurtarief: {{ change.minimum_hourly_tariff__sum|moneydiff }}<br>
-        {% endif %}
       </li>
     {% endfor %}
   </ul>

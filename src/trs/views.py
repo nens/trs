@@ -2305,7 +2305,6 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
         "hours_per_week",
         "target",
         "standard_hourly_tariff",
-        "minimum_hourly_tariff",
     ]
 
     def has_form_permissions(self):
@@ -2372,7 +2371,6 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
                 models.Sum("hours_per_week"),
                 models.Sum("target"),
                 models.Sum("standard_hourly_tariff"),
-                models.Sum("minimum_hourly_tariff"),
             )
         )
         relevant_weeks = YearWeek.objects.filter(
@@ -2394,9 +2392,6 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
             "standard_hourly_tariff": int(
                 self.person.standard_hourly_tariff(year_week=self.chosen_year_week)
             ),
-            "minimum_hourly_tariff": int(
-                self.person.minimum_hourly_tariff(year_week=self.chosen_year_week)
-            ),
             "target": int(self.person.target(year_week=self.chosen_year_week)),
         }
 
@@ -2407,14 +2402,10 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
         # values.
         hours_per_week = form.instance.hours_per_week or 0  # Adjust for None
         standard_hourly_tariff = form.instance.standard_hourly_tariff or 0
-        minimum_hourly_tariff = form.instance.minimum_hourly_tariff or 0
         target = form.instance.target or 0  # Adjust for None
         form.instance.hours_per_week = hours_per_week - self.initial["hours_per_week"]
         form.instance.standard_hourly_tariff = (
             standard_hourly_tariff - self.initial["standard_hourly_tariff"]
-        )
-        form.instance.minimum_hourly_tariff = (
-            minimum_hourly_tariff - self.initial["minimum_hourly_tariff"]
         )
         form.instance.target = target - self.initial["target"]
         form.instance.year_week = self.chosen_year_week
@@ -2424,8 +2415,6 @@ class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
             adjusted.append("werkweek")
         if form.instance.standard_hourly_tariff:
             adjusted.append("standaard uurtarief")
-        if form.instance.minimum_hourly_tariff:
-            adjusted.append("minimum uurtarief")
         if form.instance.target:
             adjusted.append("target")
         if adjusted:

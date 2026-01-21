@@ -246,17 +246,6 @@ class Person(models.Model):
         )
 
     @cache_until_personchange_or_new_week
-    def minimum_hourly_tariff(self, year_week=None):
-        if year_week is None:
-            year_week = this_year_week()
-        return round(
-            self.person_changes.filter(year_week__lte=year_week).aggregate(
-                models.Sum("minimum_hourly_tariff")
-            )["minimum_hourly_tariff__sum"]
-            or 0
-        )
-
-    @cache_until_personchange_or_new_week
     def target(self, year_week=None):
         if year_week is None:
             year_week = this_year_week()
@@ -1147,13 +1136,6 @@ class PersonChange(EventBase):
         blank=True,
         null=True,
         verbose_name="standaard uurtarief",
-    )
-    minimum_hourly_tariff = models.DecimalField(
-        max_digits=MAX_DIGITS,
-        decimal_places=DECIMAL_PLACES,
-        blank=True,
-        null=True,
-        verbose_name="minimum uurtarief",
     )
 
     person = models.ForeignKey(
