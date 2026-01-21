@@ -57,11 +57,6 @@ urlpatterns = [
         name="trs.project.edit",
     ),
     path(
-        "projects/<int:pk>/editremarks/",
-        views.ProjectRemarksEditView.as_view(),
-        name="trs.project.editremarks",
-    ),
-    path(
         "projects/<int:pk>/budget/",
         views.ProjectBudgetEditView.as_view(),
         name="trs.project.budget",
