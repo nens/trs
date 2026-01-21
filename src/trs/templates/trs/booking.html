@@ -54,18 +54,33 @@
           <th class="text-right">Geboekt</th>
           <th class="text-right">Over</th>
           <th>&nbsp;</th>
-
           {% for year_week in view.year_weeks_to_display %}
-            {% if forloop.counter == view.highlight_column %}
-              <th class="text-right">
-                <a href="{% url 'trs.booking' pk=view.person.id %}">
-                  Huidige<br>week
-                </a>
-              </th>
+            {% if forloop.counter == 3 %}
+
+              {# display the dates #}
+              {% for date in view.active_dates %}
+                <th class="text-right">
+                  {% if forloop.counter == 1 %}
+                    <a href="{% url 'trs.booking' pk=view.person.id year=year_week.year week=year_week.week %}">
+                      {% if year_week == view.this_year_week %}
+                        Huidige
+                      {% else %}
+                        Week {{ year_week.week }}
+                      {% endif %}
+                    </a><br>
+                  {% endif %}
+                  {{ date|date:"D j b" }}
+                </th>
+              {% endfor %}
+
             {% else %}
               <th class="text-right">
                 <a href="{% url 'trs.booking' pk=view.person.id year=year_week.year week=year_week.week %}">
-                  Week {{ year_week.week }}
+                  {% if year_week == view.this_year_week %}
+                    Huidige
+                  {% else %}
+                    Week {{ year_week.week }}
+                  {% endif %}
                 </a><br>
                 <span class="year-date-hint">
                   {{ year_week.first_day|date:"j b" }}
@@ -103,19 +118,20 @@
             <td style="border-left: 1px solid rgb(221, 221, 221);">&nbsp;&nbsp;&nbsp;</td>
             <td class="text-right text-muted">{{ line.hours0|hours }}</td>
             <td class="text-right text-muted">{{ line.hours1|hours }}</td>
-            <td class="text-right hour-for-total">
-              {% for field in line.fields %}
+
+            {% for field in line.fields %}
+              <td class="text-right hour-for-total">
                 {{ field }}
                 {% for error in field.errors %}
                   <div class="alert alert-danger">{{ error }}</div>
                 {% endfor %}
-                <br>
-              {% endfor %}
 
-              {% if line.show_uneditable_value %}
-                {{ line.hours2|hours }}
-              {% endif %}
-            </td>
+                {% if line.show_uneditable_value %}
+                  {{ line.hours2|hours }}
+                {% endif %}
+              </td>
+            {% endfor %}
+
             <td class="text-right text-muted">{{ line.hours3|hours }}</td>
           </tr>
         {% endfor %}

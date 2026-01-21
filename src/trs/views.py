@@ -1382,6 +1382,10 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
             return True
         return self.active_person == self.person
 
+    def this_year_week(self):
+        # For the view, to show "huidige" instead of weeknumber.
+        return this_year_week()
+
     @cached_property
     def editing_for_someone_else(self):
         if not self.has_edit_permissions():
