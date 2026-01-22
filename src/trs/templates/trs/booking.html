@@ -144,15 +144,21 @@
           <th></th>
           <th></th>
           <th></th>
-          {% for total in view.totals %}
-            <th class="text-right"
-                {% if forloop.counter == 3 %}id="hour-total"{% endif %}
-                >{{ total|hours }}</th>
-          {% endfor %}
+          <th class="text-right">{{ view.totals.0|hours }}</th>
+          <th class="text-right">{{ view.totals.1|hours }}</th>
+
+          <th class="text-right"
+              id="hour-total"
+              colspan="{{ view.active_dates|length }}">
+            {{ view.totals.2|hours }}
+          </th>
+
+          <th class="text-right">{{ view.totals.3|hours }}</th>
         </tr>
         {% if view.has_edit_permissions %}
           <tr>
-            <th colspan="8"></th>
+            <th colspan="7"></th>
+            <th colspan="{{ view.active_dates|length }}"></th>
             <th colspan="2">
               <input type="submit"
                      class="btn btn-primary"
