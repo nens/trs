@@ -1474,7 +1474,7 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
         if self.PER_DAY:
             return self.active_year_week.days()
         else:
-            return self.active_year_week.first_day
+            return [self.active_year_week.first_day]
 
     def _field_name(self, project, date):
         return f"{project.id}__{date.toordinal()}"
