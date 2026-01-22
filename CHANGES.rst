@@ -18,6 +18,9 @@ Changelog of TRS
 
 - Improved the project team edit form.
 
+- Got booking-per-day to work. Everything works as before with bookings attached to
+  year/weeks, but bookings *also* have a date. So everything that looks up bookings per
+  year/week works and everything that would rather query per month works.
 
 
 2.2 (2025-05-27)
