@@ -43,6 +43,7 @@
         Pas, op: als je hier iets aanpast, pas je andermans boekingen aan!
       </div>
     {% endif %}
+
     <table id="booking-table"
            class="table table-hover table-condensed table-fixed-header">
       <thead class="header">
@@ -54,16 +55,32 @@
           <th class="text-right">Over</th>
           <th>&nbsp;</th>
           {% for year_week in view.year_weeks_to_display %}
-            {% if forloop.counter == view.highlight_column %}
-              <th class="text-right">
-                <a href="{% url 'trs.booking' pk=view.person.id %}">
-                  Huidige<br>week
-                </a>
-              </th>
+            {% if forloop.counter == 3 %}
+
+              {# display the dates #}
+              {% for date in view.active_dates %}
+                <th class="text-right">
+                  {% if forloop.counter == 1 %}
+                    <a href="{% url 'trs.booking' pk=view.person.id year=year_week.year week=year_week.week %}">
+                      {% if year_week == view.this_year_week %}
+                        Huidige
+                      {% else %}
+                        Week {{ year_week.week }}
+                      {% endif %}
+                    </a><br>
+                  {% endif %}
+                  {{ date|date:"D j b" }}
+                </th>
+              {% endfor %}
+
             {% else %}
               <th class="text-right">
                 <a href="{% url 'trs.booking' pk=view.person.id year=year_week.year week=year_week.week %}">
-                  Week {{ year_week.week }}
+                  {% if year_week == view.this_year_week %}
+                    Huidige
+                  {% else %}
+                    Week {{ year_week.week }}
+                  {% endif %}
                 </a><br>
                 <span class="year-date-hint">
                   {{ year_week.first_day|date:"j b" }}
@@ -101,15 +118,20 @@
             <td style="border-left: 1px solid rgb(221, 221, 221);">&nbsp;&nbsp;&nbsp;</td>
             <td class="text-right text-muted">{{ line.hours0|hours }}</td>
             <td class="text-right text-muted">{{ line.hours1|hours }}</td>
-            <td class="text-right hour-for-total">
-              {{ line.field }}
-              {% if line.show_uneditable_value %}
-                {{ line.hours2|hours }}
-              {% endif %}
-              {% for error in line.field.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
-              {% endfor %}
-            </td>
+
+            {% for field in line.fields %}
+              <td class="text-right hour-for-total">
+                {{ field }}
+                {% for error in field.errors %}
+                  <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+
+                {% if line.show_uneditable_value %}
+                  {{ line.hours2|hours }}
+                {% endif %}
+              </td>
+            {% endfor %}
+
             <td class="text-right text-muted">{{ line.hours3|hours }}</td>
           </tr>
         {% endfor %}
@@ -122,15 +144,21 @@
           <th></th>
           <th></th>
           <th></th>
-          {% for total in view.totals %}
-            <th class="text-right"
-                {% if forloop.counter == 3 %}id="hour-total"{% endif %}
-                >{{ total|hours }}</th>
-          {% endfor %}
+          <th class="text-right">{{ view.totals.0|hours }}</th>
+          <th class="text-right">{{ view.totals.1|hours }}</th>
+
+          <th class="text-right"
+              id="hour-total"
+              colspan="{{ view.active_dates|length }}">
+            {{ view.totals.2|hours }}
+          </th>
+
+          <th class="text-right">{{ view.totals.3|hours }}</th>
         </tr>
         {% if view.has_edit_permissions %}
           <tr>
-            <th colspan="8"></th>
+            <th colspan="7"></th>
+            <th colspan="{{ view.active_dates|length }}"></th>
             <th colspan="2">
               <input type="submit"
                      class="btn btn-primary"

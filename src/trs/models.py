@@ -1077,6 +1077,11 @@ class YearWeek(models.Model):
             render_to_string("trs/year-week-friendly.html", {"year_week": self})
         )
 
+    def days(self):
+        """Return the working days that belong to this yearweek."""
+        num_days = 5 - self.num_days_missing
+        return [self.first_day + datetime.timedelta(days=i) for i in range(num_days)]
+
 
 class EventBase(models.Model):
     added = models.DateTimeField(auto_now_add=True, verbose_name="toegevoegd op")
@@ -1195,9 +1200,8 @@ class Booking(models.Model):
         verbose_name_plural = "boekingen"
         constraints = [
             models.UniqueConstraint(
-                fields=["booked_by", "booked_on", "year_week"], name="unique_booking"
+                fields=["booked_by", "booked_on", "date"], name="unique_booking_per_day"
             ),
-            # TODO ^^^ adjust to date being unique after all databases have been migrated
         ]
 
     def save(self, *args, **kwargs):
