@@ -120,14 +120,13 @@
             <td class="text-right text-muted">{{ line.hours1|hours }}</td>
 
             {% for field in line.fields %}
-              <td class="text-right hour-for-total">
+              <td class="text-right hour-for-total hour-for-col{{ forloop.counter }}">
                 {{ field }}
                 {% for error in field.errors %}
                   <div class="alert alert-danger">{{ error }}</div>
                 {% endfor %}
-
-                {% if line.show_uneditable_value %}
-                  {{ line.hours2|hours }}
+                {% if field.is_hidden %}
+                  {{ field.value|hours }}
                 {% endif %}
               </td>
             {% endfor %}
@@ -147,11 +146,17 @@
           <th class="text-right">{{ view.totals.0|hours }}</th>
           <th class="text-right">{{ view.totals.1|hours }}</th>
 
-          <th class="text-right"
-              id="hour-total"
-              colspan="{{ view.active_dates|length }}">
-            {{ view.totals.2|hours }}
-          </th>
+          {% for data in view.active_dates %}
+            <th class="text-right">
+              <div id="hour-total-col{{ forloop.counter }}"></div>
+              {% if forloop.last %}
+                <div>
+                  Week:
+                  <span id="hour-total">{{ view.totals.2|hours }}</span>
+                </div>
+              {% endif %}
+            </th>
+          {% endfor %}
 
           <th class="text-right">{{ view.totals.3|hours }}</th>
         </tr>
