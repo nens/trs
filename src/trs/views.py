@@ -1493,12 +1493,16 @@ class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
                 )
 
                 for date in self.active_dates:
+                    if not disabled:
+                        widget = forms.TextInput(
+                            attrs={"size": 2, "type": "number", "tabindex": index}
+                        )
+                    else:
+                        widget = forms.HiddenInput()
                     field_type = forms.IntegerField(
                         min_value=0,
                         max_value=100,
-                        widget=forms.TextInput(
-                            attrs={"size": 2, "type": "number", "tabindex": index}
-                        ),
+                        widget=widget,
                         disabled=disabled,
                     )
                     fields[self._field_name(project, date)] = field_type
