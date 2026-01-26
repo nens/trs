@@ -2,7 +2,7 @@ Changelog of TRS
 ===================================================
 
 
-2.3 (unreleased)
+3.0 (2026-01-26)
 ----------------
 
 - Removed "minimum hourly tariff" as it wasn't used.
