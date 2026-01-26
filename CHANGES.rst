@@ -22,6 +22,8 @@ Changelog of TRS
   year/weeks, but bookings *also* have a date. So everything that looks up bookings per
   year/week works and everything that would rather query per month works.
 
+- Switched on booking-per-day on 2026-01-26.
+
 
 2.2 (2025-05-27)
 ----------------

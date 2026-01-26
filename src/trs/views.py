@@ -1366,7 +1366,7 @@ def logout_view(request):
 
 class BookingView(LoginAndPermissionsRequiredMixin, FormView, BaseMixin):
     template_name = "trs/booking.html"
-    PER_DAY = False
+    PER_DAY = True
 
     def has_form_permissions(self):
         # Warning: this is used as "permission to view the page", not directly
