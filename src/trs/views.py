@@ -2168,7 +2168,7 @@ class ProjectBudgetEditView(BaseView):
             BudgetItem,
             fk_name="project",
             fields=["description", "amount", "to_project"],
-            extra=3,
+            extra=1,
         )
 
     def work_assignment_formset_factory(self):
@@ -2188,6 +2188,7 @@ class ProjectBudgetEditView(BaseView):
         WorkAssignmentFormset = self.work_assignment_formset_factory()
         self.work_assignment_formset = WorkAssignmentFormset(instance=self.project)
         self.adjust_work_assignment_formset()
+        self.adjust_budget_item_formset()
         return super().get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
@@ -2207,6 +2208,7 @@ class ProjectBudgetEditView(BaseView):
             data=self.request.POST, instance=self.project
         )
         self.adjust_work_assignment_formset()
+        self.adjust_budget_item_formset()
 
         if (
             self.project_form.is_valid()
@@ -2317,6 +2319,21 @@ class ProjectBudgetEditView(BaseView):
                 # Don't delete the PM/PL.
                 if form.is_project_leader or form.is_project_manager:
                     form.fields["DELETE"].disabled = True
+
+            else:
+                # Form for a new work assignment
+                form.fields["assigned_to"].queryset = Person.objects.filter(
+                    archived=False
+                )
+
+    def adjust_budget_item_formset(self):
+        """Limit choices for new budget items"""
+        for form in self.budget_item_formset:
+            if not form.initial:
+                # Form for a new budget item, limit the choices
+                form.fields["to_project"].queryset = Project.objects.filter(
+                    archived=False
+                )
 
 
 class PersonChangeView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin):
