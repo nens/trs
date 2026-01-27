@@ -114,7 +114,7 @@ $(document).ready(function () {
     SumColumnHours("col4");
     SumColumnHours("col5");
     window.form_changed = false;
-    $(".hour-for-total input").keyup(function() {
+    $(".hour-for-total input").on("input", function() {
         SumTotalHours();
         SumColumnHours("col1");
         SumColumnHours("col2");
