@@ -426,13 +426,11 @@ class Project(models.Model):
         verbose_name="offerte verzonden",
         blank=True,
         null=True,
-        help_text="Formaat: 25-12-1972, dd-mm-jjjj",
     )
     confirmation_date = models.DateField(
         verbose_name="opdrachtbevestiging binnen",
         blank=True,
         null=True,
-        help_text="Formaat: 25-12-1972, dd-mm-jjjj",
     )
     reservation = models.DecimalField(
         max_digits=12,
@@ -813,12 +811,8 @@ class WbsoProject(models.Model):
         verbose_name="Nummer", help_text="Gebruikt voor sortering"
     )
     title = models.CharField(verbose_name="titel", unique=True, max_length=255)
-    start_date = models.DateField(
-        verbose_name="startdatum", help_text="Formaat: 25-12-1972, dd-mm-jjjj"
-    )
-    end_date = models.DateField(
-        verbose_name="einddatum", help_text="Formaat: 25-12-1972, dd-mm-jjjj"
-    )
+    start_date = models.DateField(verbose_name="startdatum")
+    end_date = models.DateField(verbose_name="einddatum")
 
     class Meta:
         ordering = ["number"]
@@ -864,9 +858,7 @@ class Invoice(FinancialBase):
         verbose_name="project",
         on_delete=models.CASCADE,
     )
-    date = models.DateField(
-        verbose_name="factuurdatum", help_text="Formaat: 25-12-1972, dd-mm-jjjj"
-    )
+    date = models.DateField(verbose_name="factuurdatum")
     number = models.CharField(verbose_name="factuurnummer", max_length=255)
     description = models.CharField(
         verbose_name="omschrijving", blank=True, max_length=255
@@ -884,7 +876,6 @@ class Invoice(FinancialBase):
         blank=True,
         null=True,
         verbose_name="betaald op",
-        help_text="Formaat: 25-12-1972, dd-mm-jjjj",
     )
 
     class Meta:
@@ -912,9 +903,7 @@ class Payable(FinancialBase):
         verbose_name="project",
         on_delete=models.CASCADE,
     )
-    date = models.DateField(
-        verbose_name="factuurdatum", help_text="Formaat: 25-12-1972, dd-mm-jjjj"
-    )
+    date = models.DateField(verbose_name="factuurdatum")
     number = models.CharField(verbose_name="factuurnummer", max_length=255)
     description = models.CharField(
         verbose_name="omschrijving", blank=True, max_length=255
@@ -933,7 +922,6 @@ class Payable(FinancialBase):
         blank=True,
         null=True,
         verbose_name="overgemaakt op",
-        help_text="Formaat: 25-12-1972, dd-mm-jjjj",
     )
 
     class Meta:

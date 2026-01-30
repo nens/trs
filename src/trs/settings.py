@@ -184,6 +184,8 @@ TRS_END_YEAR = 2028
 USE_I18N = True
 USE_TZ = False
 # ^^^ False is the pre-5.0 default. We want those tz-less datetimes in the db.
+DATE_INPUT_FORMATS = ["%Y-%m-%d"]  # Just the one used by html's datefield.
+
 LANGUAGE_CODE = "nl-nl"
 TIME_ZONE = "Europe/Amsterdam"
 
