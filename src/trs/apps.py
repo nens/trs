@@ -1,5 +1,7 @@
 from django.apps import AppConfig
 
+from trs import fix_dateinput
+
 
 class TRSAppConfig(AppConfig):
     name = "trs"
@@ -9,3 +11,4 @@ class TRSAppConfig(AppConfig):
     def ready(self):
         # Enable the signals
         from trs.signal_handlers import create_person  # NOQA
+        fix_dateinput.fix_it()
