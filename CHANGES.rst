@@ -5,7 +5,7 @@ Changelog of TRS
 3.1 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Date input fields now use the browser's much nicer regular date input widget.
 
 
 3.0 (2026-01-26)
