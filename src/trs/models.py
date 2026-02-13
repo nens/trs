@@ -1230,6 +1230,7 @@ class WorkAssignment(models.Model):
     class Meta:
         verbose_name = "toekenning van werk"
         verbose_name_plural = "toekenningen van werk"
+        ordering = ["assigned_to__name"]
         constraints = [
             models.UniqueConstraint(
                 fields=["assigned_on", "assigned_to"], name="unique_work_assignment"
