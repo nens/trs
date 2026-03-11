@@ -352,14 +352,7 @@
         var for_selection_pager = null;
       {% endif %}
     </script>
-    <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
-    <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
-    {% if view.sentry_javascript_dsn %}
-      <script src="https://cdn.ravenjs.com/3.16.0/raven.min.js" crossorigin="anonymous"></script>
-      <script>
-        Raven.config('{{ view.sentry_javascript_dsn }}').install()
-      </script>
-    {% endif %}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="{% static 'trs/table-fixed-header.js' %}"></script>
     <script src="{% static 'trs/trs.js' %}"></script>
   </body>
