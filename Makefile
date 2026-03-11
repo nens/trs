@@ -5,7 +5,8 @@ SHELL=/bin/bash -o pipefail
 
 
 message:
-	@echo "make install: install everything"
+	@echo "make install: install everything (excludes css build, btw)"
+	@echo "make css: re-generate the css"
 	@echo "make clean: remove .venv and staticfiles"
 	@echo "make test: run the tests"
 	@echo "make beautiful: flake8, black, isort"
@@ -34,17 +35,9 @@ var/%:
 	mkdir -p var/$*
 
 
-src/trs/static/trs/trs.css: node_modules/.bin/tailwindcss tailwind-input.css src/trs/templates/trs/*.html
-	node_modules/.bin/tailwindcss -i tailwind-input.css -o src/trs/static/trs/trs.css
-
-
-staticfiles/.installed: src/trs/static/trs/trs.css
+staticfiles/.installed:
 	uv run manage.py collectstatic --noinput
 	touch $@
-
-
-node_modules/.bin/tailwindcss: package.json
-	npm install .
 
 
 test: install
@@ -53,3 +46,11 @@ test: install
 
 beautiful:
 	pre-commit run --all
+
+
+css: directories node_modules/.bin/tailwindcss
+	node_modules/.bin/tailwindcss -i tailwind-input.css -o src/trs/static/trs/trs.css
+
+
+node_modules/.bin/tailwindcss: package.json
+	npm install .
