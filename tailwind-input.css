@@ -82,6 +82,16 @@
   --noise: 0;
 }
 
+.navbar-nens {
+  @apply navbar bg-primary text-primary-content text-2xl;
+}
+
+.navbar-nens a {
+  @apply btn btn-ghost text-2xl;
+}
+
+
+
 .prose-vanrees {
     @apply prose-headings:text-primary prose-a:text-secondary
            prose-headings:mb-2 prose-li:mb-0
