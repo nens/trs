@@ -20,54 +20,114 @@
       {% block whole-page %}
 
         <div class="navbar-nens" role="navigation">
+
           <div class="navbar-start">
             <a href="/"
-               title="&larr; Beginpagina">TRS</a>
-          </div>
+               title="&larr; Beginpagina"
+               class="logo">TRS</a>
+          </div><!-- navbar-start>
 
           <!-- Start of collapsible part -->
-          <div class="collapse navbar-collapse navbar-ex1-collapse">
-            <ul class="nav navbar-nav">
-              <li {% if view.selected_tab == 'booking' %}class="active"{% endif %}>
-                <a href="{% url 'trs.booking' %}">
-                  Boeken
-                  {% if view.active_person.to_book.friendly %}
+          <div class="navbar-center hidden md:flex">
+
+            <div>
+              <a href="{% url 'trs.booking' %}"
+                 {% if view.selected_tab == 'booking' %}class="active"{% endif %}>
+                Boeken
+                {% if view.active_person.to_book.friendly %}
+                <span class="badge"
+                      title="Achter met boeken: {{ view.active_person.to_book.friendly }}">
+                  {{ view.active_person.to_book.short }}
+                </span>
+                {% endif %}
+              </a>
+            </div>
+
+            <div>
+              <a href="{% url 'trs.projects' %}"
+                 {% if view.selected_tab == 'projects' %}class="active"{% endif %}>
+                Projecten
+              </a>
+            </div>
+
+            <div>
+              <a href="{% url 'trs.persons' %}"
+                 {% if view.selected_tab == 'persons' %}class="active"{% endif %}>
+                Medewerkers
+              </a>
+            </div>
+
+            <div>
+              <a href="{% url 'trs.overviews' %}"
+                 {% if view.selected_tab == 'overviews' %}class="active"{% endif %}>
+                overzichten
+              </a>
+            </div>
+          </div><!-- navbar-center -->
+
+          <div class="navbar-end">
+            <form class="navbar-form"
+                  method="get"
+                  action="{% url 'trs.search' %}" >
+              <input type="text"
+                     class="input input-neutral text-base-content"
+                     name="q"
+                     placeholder="Zoek...">
+            </form>
+
+            <div class="hidden md:block">
+              {% if user.is_authenticated %}
+                <a hx-boost="false" href="{% url 'auth:logout' %}">Log uit</a>
+              {% else %}
+                <a hx-boost="false" href="{% url 'auth:login' %}">Log in</a>
+              {% endif %}
+            </div>
+
+            <div class="dropdown dropdown-end md:hidden"><!-- hamburger menu on small screen sizes -->
+              <div role="button" class="btn btn-primary" tabindex="0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="32"
+                  height="32"
+                  viewBox="0 0 512 512">
+                  <path d="M64,384H448V341.33H64Zm0-106.67H448V234.67H64ZM64,128v42.67H448V128Z" />
+                </svg>
+              </div>
+              <ul class="menu menu-sm dropdown-content z-1 mt-3 w-52"
+                  tabindex="-1">
+                <li>
+                  <a href="{% url 'trs.booking' %}">
+                    Boeken
+                    {% if view.active_person.to_book.friendly %}
                     <span class="badge"
                           title="Achter met boeken: {{ view.active_person.to_book.friendly }}">
                       {{ view.active_person.to_book.short }}
                     </span>
-                  {% endif %}
-                </a>
-              </li>
-              <li {% if view.selected_tab == 'projects' %}class="active"{% endif %}>
-                <a href="{% url 'trs.projects' %}">Projecten</a>
-              </li>
-              <li {% if view.selected_tab == 'persons' %}class="active"{% endif %}>
-                <a href="{% url 'trs.persons' %}">Medewerkers</a>
-              </li>
-              <li {% if view.selected_tab == 'overviews' %}class="active"{% endif %}>
-                <a href="{% url 'trs.overviews' %}">Overzichten</a>
-              </li>
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-              <li>
-                <form class="navbar-form"
-                      method="get"
-                      action="{% url 'trs.search' %}" >
-                  <input type="text"
-                         class="search-query"
-                         name="q"
-                         placeholder="Zoek...">
-                </form>
-              </li>
-              {% if user.is_authenticated %}
-                <li><a hx-boost="false" href="{% url 'auth:logout' %}">Log uit</a></li>
-              {% else %}
-                <li><a hx-boost="false" href="{% url 'auth:login' %}">Log in</a></li>
-              {% endif %}
-            </ul>
-          </div><!-- /.navbar-collapse -->
-        </div>
+                    {% endif %}
+                  </a>
+                </li>
+                <li>
+                  <a href="{% url 'trs.projects' %}">
+                    Projecten
+                  </a>
+                </li>
+                <li>
+                  <a href="{% url 'trs.persons' %}">
+                    Medewerkers
+                  </a>
+                </li>
+
+                <li>
+                  <a href="{% url 'trs.overviews' %}">
+                    overzichten
+                  </a>
+                </li>
+              </ul>
+            </div><!-- end of hamburger menu for small screen sizes -->
+
+          </div><!-- navbar-end -->
+
+        </div><!-- navbar -->
 
         <div id="enable-selection-pager" class="collapse">
           <a href="#">

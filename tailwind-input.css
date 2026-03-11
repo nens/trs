@@ -12,7 +12,7 @@
 }
 
 @plugin "daisyui/theme" {
-  name: "reinoutlight";
+  name: "nenslight";
   default: true;
   prefersdark: false;
   color-scheme: "light";
@@ -48,7 +48,7 @@
 
 
 @plugin "daisyui/theme" {
-  name: "reinoutdark";
+  name: "nensdark";
   default: false;
   prefersdark: true;
   color-scheme: "dark";
@@ -83,16 +83,26 @@
 }
 
 .navbar-nens {
-  @apply navbar bg-primary text-primary-content text-2xl;
+  @apply navbar bg-primary text-primary-content;
 }
 
 .navbar-nens a {
-  @apply btn btn-ghost text-2xl;
+  @apply btn btn-primary;
+}
+
+.navbar-nens a.active {
+  @apply border border-primary-content;
+}
+
+.navbar-nens a.logo {
+  @apply text-4xl;
 }
 
 
 
-.prose-vanrees {
+
+
+.prose-nens {
     @apply prose-headings:text-primary prose-a:text-secondary
            prose-headings:mb-2 prose-li:mb-0
            prose-dt:mt-0 prose-p:mt-0 prose-dd:mt-0 prose-li:mt-0 prose-dl:mt-0;
