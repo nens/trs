@@ -74,5 +74,4 @@ after 2028: adjust the ``TRS_END_YEAR`` setting and run the command again :-)
 CSS, javascript
 ---------------
 
-Bootstrap, the "fira" font and some other things are downloaded using "bower", see
-`bower.json`. `make install` handles it.
+TODO: tailwindcss, fira font, etc.

@@ -95,9 +95,6 @@ MIDDLEWARE = [
 
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # Note: not var/static/!
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "bower_components"),
-]
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",

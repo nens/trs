@@ -16,7 +16,7 @@ install: run_uv directories staticfiles/.installed
 
 
 clean:
-	rm -rf .venv staticfiles/ bin/ lib/ share/ pyvenv.cfg bower_components/ node_modules/
+	rm -rf .venv staticfiles/ pyvenv.cfg node_modules/ src/trs/static/trs/trs.css
 
 run_uv:
 	uv sync
@@ -34,17 +34,17 @@ var/%:
 	mkdir -p var/$*
 
 
-staticfiles/.installed: bower_components
+src/trs/static/trs/trs.css: node_modules/.bin/tailwindcss tailwind-input.css src/trs/templates/trs/*.html
+	node_modules/.bin/tailwindcss -i tailwind-input.css -o src/trs/static/trs/trs.css
+
+
+staticfiles/.installed: src/trs/static/trs/trs.css
 	uv run manage.py collectstatic --noinput
 	touch $@
 
 
-bower_components: bower.json node_modules/bower/bin/bower
-	node_modules/bower/bin/bower --allow-root install
-
-
-node_modules/bower/bin/bower:
-	npm install bower
+node_modules/.bin/tailwindcss: package.json
+	npm install .
 
 
 test: install
