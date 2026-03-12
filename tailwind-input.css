@@ -2,11 +2,10 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @plugin "daisyui";
-@plugin "@iconify/tailwind4" {
-  scale: 1.2;
-  /* I've added 'heroicons', see https://iconify.design/docs/usage/css/tailwind/tailwind4/
-   and https://icon-sets.iconify.design/heroicons/ */
-};
+@plugin "@iconify/tailwind4";
+/* I've added 'material design icons', see
+   https://iconify.design/docs/usage/css/tailwind/tailwind4/ and
+   https://icon-sets.iconify.design/mdi/ and https://pictogrammers.com/library/mdi/ */
 
 /* Source templates to determine what css classes we're using */
 @source "src/trs/templates/trs/*.html";
@@ -117,6 +116,10 @@
 }
 
 
+.inline-icon {
+  @apply align-[-0.125em];
+  /* See https://iconify.design/docs/iconify-icon/inline.html */
+}
 
 
 .prose-nens {
