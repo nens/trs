@@ -2,6 +2,11 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @plugin "daisyui";
+@plugin "@iconify/tailwind4" {
+  scale: 1.2;
+  /* I've added 'heroicons', see https://iconify.design/docs/usage/css/tailwind/tailwind4/
+   and https://icon-sets.iconify.design/heroicons/ */
+};
 
 /* Source templates to determine what css classes we're using */
 @source "src/trs/templates/trs/*.html";
@@ -98,6 +103,18 @@
   @apply text-4xl;
 }
 
+
+#selection-pager {
+  @apply absolute top-20 right-0 w-30 z-1000 hidden bg-base-300 text-sm;
+}
+
+#enable-selection-pager {
+  @apply absolute top-20 right-0 w-30 z-1000 hidden bg-base-300 text-sm;
+}
+
+#selection-pager .selected {
+  @apply font-bold;
+}
 
 
 
