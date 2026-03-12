@@ -104,15 +104,27 @@
 
 
 #selection-pager {
-  @apply absolute top-20 right-0 w-30 z-1000 hidden bg-base-300 text-sm;
+  @apply absolute top-20 right-0 z-1000;
+}
+
+#selection-pager .card {
+  @apply w-30 shadow-md m-1 text-sm;
 }
 
 #enable-selection-pager {
-  @apply absolute top-20 right-0 w-30 z-1000 hidden bg-base-300 text-sm;
+  @apply absolute top-20 right-0 w-30 m-1 p-1 pt-2 pb-2 z-1000 bg-base-300 text-sm;
 }
 
 #selection-pager .selected {
   @apply font-bold;
+}
+
+.card-topbottom { /* custom class */
+  @apply bg-base-300 p-1 pt-2 pb-2;
+}
+
+#selection-pager .card-body a {
+  @apply link text-secondary;
 }
 
 
