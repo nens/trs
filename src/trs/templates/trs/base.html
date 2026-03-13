@@ -61,10 +61,9 @@
       </div>
 
       <!-- Start of main content + sidebar -->
-      <div class="grid grid-cols-1 lg:grid-cols-[auto_30] lg:gap-5">
+      <div class="grid grid-cols-1 lg:grid-cols-[auto_10rem] lg:gap-5">
 
-
-        <div class="col-md-8">
+        <main class="overflow-x-auto">
           {% for message in messages %}
             <div class="alert alert-{{ message.tags }} alert-dismissable">
               <button type="button"
@@ -80,8 +79,9 @@
               Main column
             {% endblock %}
           {% endblock %}
-        </div>
-        <div class="col-md-3 col-md-offset-1">
+        </main>
+
+        <div><!-- Sidebar -->
           {% block overview-column %}
             {% if view.admin_override_active %}
               <p>
@@ -215,12 +215,10 @@
 
             {% endif %}
           {% endblock %}
-        </div>
-      </div>
-      <!-- End of main content + sidebar -->
+        </div> <!-- End of sidebar -->
+      </div> <!-- End of main content + sidebar -->
 
-
-
+      <div class="divider"></div>
 
       <div class="row">
         <div class="col-md-3 col-md-offset-9 text-muted">
