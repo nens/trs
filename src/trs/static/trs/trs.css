@@ -2600,6 +2600,11 @@
       --alert-color: var(--color-warning);
     }
   }
+  .progress-neutral {
+    @layer daisyui.l1.l2 {
+      color: var(--color-neutral);
+    }
+  }
   .text-base-content {
     color: var(--color-base-content);
   }
@@ -2925,16 +2930,24 @@
     margin-top: calc(var(--spacing) * 0);
   }
 }
-.homepage-card {
+#sidebar .card {
+  margin-bottom: calc(var(--spacing) * 5);
+  padding: calc(var(--spacing) * 2);
+  --tw-shadow: 0 4px 6px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 2px 4px -2px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+  box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  @layer daisyui.l1.l2 {
+    border: var(--border) solid var(--color-base-200);
+  }
+}
+#sidebar .card h2 {
+  --tw-font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+#sidebar .card a {
   @layer daisyui.l1.l2.l3 {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    border-radius: var(--radius-box);
-    outline-width: 2px;
-    transition: outline 0.2s ease-in-out;
-    outline: 0 solid #0000;
-    outline-offset: 2px;
+    cursor: pointer;
+    text-decoration-line: underline;
     &:focus {
       --tw-outline-style: none;
       outline-style: none;
@@ -2944,38 +2957,11 @@
       }
     }
     &:focus-visible {
-      outline-color: currentColor;
-    }
-    :where(figure:first-child) {
-      overflow: hidden;
-      border-start-start-radius: inherit;
-      border-start-end-radius: inherit;
-      border-end-start-radius: unset;
-      border-end-end-radius: unset;
-    }
-    :where(figure:last-child) {
-      overflow: hidden;
-      border-start-start-radius: unset;
-      border-start-end-radius: unset;
-      border-end-start-radius: inherit;
-      border-end-end-radius: inherit;
-    }
-    figure {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    &:has(> input:is(input[type="checkbox"], input[type="radio"])) {
-      cursor: pointer;
-      user-select: none;
-    }
-    &:has(> :checked) {
       outline: 2px solid currentColor;
+      outline-offset: 2px;
     }
   }
-  width: 25rem;
-  --tw-shadow: 0 4px 6px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 2px 4px -2px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
-  box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  color: var(--color-secondary);
 }
 a.headerlink {
   color: transparent;

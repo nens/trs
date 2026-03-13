@@ -135,14 +135,24 @@
 
 
 .prose-nens {
-    @apply prose-headings:text-primary prose-a:text-secondary prose-a:link max-w-full
-           prose-headings:mb-2 prose-li:mb-0
-           prose-dt:mt-0 prose-p:mt-0 prose-dd:mt-0 prose-li:mt-0 prose-dl:mt-0;
+  @apply prose-headings:text-primary prose-a:text-secondary prose-a:link max-w-full
+         prose-headings:mb-2 prose-li:mb-0
+         prose-dt:mt-0 prose-p:mt-0 prose-dd:mt-0 prose-li:mt-0 prose-dl:mt-0;
 }
 
-.homepage-card {
-    @apply card shadow-md w-[25rem];
+
+#sidebar .card {
+  @apply card-border shadow-md p-2 mb-5;
 }
+
+#sidebar .card h2 {
+  @apply font-bold text-primary;
+}
+
+#sidebar .card a {
+  @apply text-secondary link;
+}
+
 
 a.headerlink { color: transparent };
 h1:hover a.headerlink, h2:hover a.headerlink { color: inherit };
