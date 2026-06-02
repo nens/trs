@@ -102,9 +102,14 @@
   @apply text-5xl font-bold text-primary;
 }
 
-.dropdown-content {
+.navbar-nens .dropdown-content {
   @apply bg-base-200;
 }
+
+.navbar-nens .badge {
+  @apply badge-soft;
+}
+
 
 #selection-pager {
   @apply absolute top-20 right-0 z-1000;

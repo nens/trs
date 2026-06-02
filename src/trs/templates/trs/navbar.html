@@ -13,7 +13,7 @@
          {% if view.selected_tab == 'booking' %}class="active"{% endif %}>
         Boeken
         {% if view.active_person.to_book.friendly %}
-        <span class="badge"
+        <span class="badge badge-primary"
               title="Achter met boeken: {{ view.active_person.to_book.friendly }}">
           {{ view.active_person.to_book.short }}
         </span>
@@ -71,7 +71,7 @@
           <a href="{% url 'trs.booking' %}">
             Boeken
             {% if view.active_person.to_book.friendly %}
-            <span class="badge"
+            <span class="badge badge-primary"
                   title="Achter met boeken: {{ view.active_person.to_book.friendly }}">
               {{ view.active_person.to_book.short }}
             </span>

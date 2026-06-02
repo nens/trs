@@ -1,32 +1,26 @@
 {% if view.prepared_filters %}
-  <table class="table table-condensed"
-         style="width: auto;"
-         hx-boost="true">
-    <tbody>
-      {% for filter in view.prepared_filters %}
+  <div class="inline-grid grid-cols-[max-content_auto] gap-4"
+       hx-boost="true">
+    {% for filter in view.prepared_filters %}
 
-        {% if not filter.hidden %}
-          <tr {% if filter.active %}class="active"{% endif %}>
-            <td style="border-top: 0;">
-              {{ filter.title }}:
-            </td>
-            <td style="border-top: 0;">
-              <select name="{{ filter.param }}"
-                      hx-get="?{{ filter.url }}"
-                      hx-push-url="true"
-                      hx-target="body">
-                {% for choice in filter.choices %}
-                  <option value="{{ choice.value }}"
-                          {% if choice.active %}selected=selected{% endif %}>
-                    {{ choice.title }}
-                  </option>
-                {% endfor %}
-              </select>
-            </td>
-          </tr>
-        {% endif %}
+      {% if not filter.hidden %}
+        <div {% if filter.active %}class="font-bold"{% endif %}>
+          {{ filter.title }}:
+        </div>
+        <select name="{{ filter.param }}"
+                hx-get="?{{ filter.url }}"
+                hx-push-url="true"
+                hx-target="body"
+                class="select">
+          {% for choice in filter.choices %}
+            <option value="{{ choice.value }}"
+                    {% if choice.active %}selected=selected{% endif %}>
+              {{ choice.title }}
+            </option>
+          {% endfor %}
+        </select>
+      {% endif %}
 
-      {% endfor %}
-    </tbody>
-  </table>
+    {% endfor %}
+  </div>
 {% endif %}
