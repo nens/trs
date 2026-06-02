@@ -2541,6 +2541,9 @@
   .grid-cols-\[max-content_auto\] {
     grid-template-columns: max-content auto;
   }
+  .items-center {
+    align-items: center;
+  }
   .gap-4 {
     gap: calc(var(--spacing) * 4);
   }
