@@ -165,3 +165,16 @@
 a.headerlink { color: transparent };
 h1:hover a.headerlink, h2:hover a.headerlink { color: inherit };
 pre { max-width: 90vw };
+
+.table-compact th,td {
+  @apply pt-1 pb-1;
+  @apply border-b-1 border-base-content;
+}
+
+table.table-hover-row tr:hover {
+  @apply bg-base-300;
+}
+
+.filter-snippet {
+  @apply inline-grid grid-cols-[max-content_auto] gap-2 items-center;
+}

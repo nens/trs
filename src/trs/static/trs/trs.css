@@ -2505,9 +2505,6 @@
   .hidden {
     display: none;
   }
-  .inline-grid {
-    display: inline-grid;
-  }
   .table {
     display: table;
   }
@@ -2538,15 +2535,6 @@
   .grid-cols-1 {
     grid-template-columns: repeat(1, minmax(0, 1fr));
   }
-  .grid-cols-\[max-content_auto\] {
-    grid-template-columns: max-content auto;
-  }
-  .items-center {
-    align-items: center;
-  }
-  .gap-4 {
-    gap: calc(var(--spacing) * 4);
-  }
   .overflow-x-auto {
     overflow-x: auto;
   }
@@ -2566,6 +2554,29 @@
   }
   .rounded {
     border-radius: 0.25rem;
+  }
+  .table-zebra {
+    @layer daisyui.l1.l2 {
+      tbody {
+        tr {
+          &:where(:nth-child(even)) {
+            background-color: var(--color-base-200);
+            :where(.table-pin-cols tr th) {
+              background-color: var(--color-base-200);
+            }
+          }
+          &.row-hover {
+            &, &:where(:nth-child(even)) {
+              &:hover {
+                @media (hover: hover) {
+                  background-color: var(--color-base-300);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
   .p-1 {
     padding: calc(var(--spacing) * 1);
@@ -3045,6 +3056,22 @@ h1:hover a.headerlink, h2:hover a.headerlink {
 pre {
   max-width: 90vw;
 }
+.table-compact th,td {
+  padding-top: calc(var(--spacing) * 1);
+  padding-bottom: calc(var(--spacing) * 1);
+  border-bottom-style: var(--tw-border-style);
+  border-bottom-width: 1px;
+  border-color: var(--color-base-content);
+}
+table.table-hover-row tr:hover {
+  background-color: var(--color-base-300);
+}
+.filter-snippet {
+  display: inline-grid;
+  grid-template-columns: max-content auto;
+  align-items: center;
+  gap: calc(var(--spacing) * 2);
+}
 @layer base {
   :where(:root),:root:has(input.theme-controller[value=light]:checked),[data-theme=light] {
     color-scheme: light;
@@ -3514,6 +3541,11 @@ pre {
   inherits: false;
   initial-value: 0 0 #0000;
 }
+@property --tw-border-style {
+  syntax: "*";
+  inherits: false;
+  initial-value: solid;
+}
 @layer properties {
   @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
     *, ::before, ::after, ::backdrop {
@@ -3545,6 +3577,7 @@ pre {
       --tw-ring-offset-width: 0px;
       --tw-ring-offset-color: #fff;
       --tw-ring-offset-shadow: 0 0 #0000;
+      --tw-border-style: solid;
     }
   }
 }
