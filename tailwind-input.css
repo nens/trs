@@ -87,21 +87,24 @@
 }
 
 .navbar-nens {
-  @apply navbar bg-primary text-primary-content;
+  @apply navbar bg-base-200 text-base-content;
 }
 
 .navbar-nens a {
-  @apply btn btn-primary;
+  @apply btn btn-ghost font-normal;
 }
 
 .navbar-nens a.active {
-  @apply border border-primary-content;
+  @apply btn-outline text-primary;
 }
 
 .navbar-nens a.logo {
-  @apply text-4xl;
+  @apply text-5xl font-bold text-primary;
 }
 
+.dropdown-content {
+  @apply bg-base-200;
+}
 
 #selection-pager {
   @apply absolute top-20 right-0 z-1000;
