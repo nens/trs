@@ -42,7 +42,7 @@ To test the docker setup::
   $ docker compose up
 
 For local development, you need some additional environment variables. Set them in a
-`.env` or use "direnv":
+`.env` or use "direnv"::
 
     export DEBUG=True
     export SECRET_KEY="xxx"
