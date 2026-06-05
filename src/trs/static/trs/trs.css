@@ -3038,7 +3038,7 @@ pre {
   padding-bottom: calc(var(--spacing) * 1);
   border-bottom-style: var(--tw-border-style);
   border-bottom-width: 1px;
-  border-color: var(--color-base-content);
+  border-color: var(--color-base-300);
 }
 table.table-hover-row tr:hover {
   background-color: var(--color-base-300);
