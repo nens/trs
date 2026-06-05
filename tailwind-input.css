@@ -176,7 +176,9 @@ table.table-hover-row tr:hover {
   @apply bg-base-300;
 }
 
-/* borderless-table */
+table.borderless-table th,td {
+  @apply border-0;
+}
 
 
 .filter-snippet {

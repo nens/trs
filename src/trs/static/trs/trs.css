@@ -3043,6 +3043,10 @@ pre {
 table.table-hover-row tr:hover {
   background-color: var(--color-base-300);
 }
+table.borderless-table th,td {
+  border-style: var(--tw-border-style);
+  border-width: 0px;
+}
 .filter-snippet {
   display: inline-grid;
   grid-template-columns: max-content auto;
