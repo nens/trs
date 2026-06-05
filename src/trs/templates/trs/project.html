@@ -197,45 +197,43 @@
   {% if view.can_view_team %}
     {% if not view.can_see_project_financials %}
       <h2>Projectteam</h2>
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead>
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th></th>
+            <th></th>
+            <th class="text-right">Toegekend</th>
+            <th class="text-right">&nbsp;&nbsp;&nbsp;</th>
+            <th class="text-right">Geboekt</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for line in view.lines %}
             <tr>
-              <th></th>
-              <th></th>
-              <th class="text-right">Toegekend</th>
-              <th class="text-right">&nbsp;&nbsp;&nbsp;</th>
-              <th class="text-right">Geboekt</th>
+              <td>
+                {{ line.person.as_widget }}
+              </td>
+              <td>
+                {% if line.is_project_leader %}
+                  <span title="Projectleider: gaat over de uren">PL</span>
+                  &nbsp;
+                {% endif %}
+                {% if line.is_project_manager %}
+                  <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
+                {% endif %}
+              </td>
+              <td class="text-right">{{ line.budget|hours }}</td>
+              <td class="text-right">&nbsp;&nbsp;&nbsp;</td>
+              <td class="text-right
+                         {% if line.is_overbooked %}danger{% endif %}">
+                {{ line.booked|hours }}
+              </td>
             </tr>
-          </thead>
+          {% endfor %}
+        </tbody>
 
-          <tbody>
-            {% for line in view.lines %}
-              <tr>
-                <td>
-                  {{ line.person.as_widget }}
-                </td>
-                <td>
-                  {% if line.is_project_leader %}
-                    <span title="Projectleider: gaat over de uren">PL</span>
-                    &nbsp;
-                  {% endif %}
-                  {% if line.is_project_manager %}
-                    <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
-                  {% endif %}
-                </td>
-                <td class="text-right">{{ line.budget|hours }}</td>
-                <td class="text-right">&nbsp;&nbsp;&nbsp;</td>
-                <td class="text-right
-                           {% if line.is_overbooked %}danger{% endif %}">
-                  {{ line.booked|hours }}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-
-        </table>
-      </div>
+      </table>
 
     {% endif %}
     {% if view.can_see_project_financials %}
@@ -248,227 +246,225 @@
         {% endif %}
       </h2>
 
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th colspan="7"></th>
-              <th class="text-right">Inkomsten</th>
-              <th class="text-right">Kosten</th>
-            </tr>
-          </thead>
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th colspan="7"></th>
+            <th class="text-right">Inkomsten</th>
+            <th class="text-right">Kosten</th>
+          </tr>
+        </thead>
 
-          <tbody>
+        <tbody>
+          <tr>
+            <th colspan="7">Opdrachtsom</th>
+            <td class="text-right">
+              {{ view.project.contract_amount|money_with_decimal }}
+            </td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <th colspan="9">
+              Kosten derden
+            </th>
+          </tr>
+          {% for third_party_estimate in view.project.third_party_estimates.all %}
             <tr>
-              <th colspan="7">Opdrachtsom</th>
-              <td class="text-right">
-                {{ view.project.contract_amount|money_with_decimal }}
+              <td colspan="8">
+                &nbsp;&nbsp;&nbsp;
+                {{ third_party_estimate.description|default:'Niet ingevuld' }}
               </td>
-              <td></td>
+              <td class="text-right">{{ third_party_estimate.amount|money_with_decimal }}</td>
+        </td>
             </tr>
-
+          {% empty %}
             <tr>
-              <th colspan="9">
-                Kosten derden
-              </th>
-            </tr>
-            {% for third_party_estimate in view.project.third_party_estimates.all %}
-              <tr>
-                <td colspan="8">
-                  &nbsp;&nbsp;&nbsp;
-                  {{ third_party_estimate.description|default:'Niet ingevuld' }}
-                </td>
-                <td class="text-right">{{ third_party_estimate.amount|money_with_decimal }}</td>
-                </td>
-              </tr>
-            {% empty %}
-              <tr>
-                <td colspan="9">
-                  &nbsp;&nbsp;&nbsp;
-                  Geen
-                </td>
-              </tr>
-            {% endfor %}
-
-            <tr>
-              <th colspan="7">Netto opdrachtsom</th>
-              <td class="text-right">
-                {{ view.project.net_contract_amount|money_with_decimal }}
-              </td>
-              <td></td>
+              <td colspan="9">
+                &nbsp;&nbsp;&nbsp;
+                Geen
               </td>
             </tr>
-          </tbody>
+          {% endfor %}
 
-          <tbody>
+          <tr>
+            <th colspan="7">Netto opdrachtsom</th>
+            <td class="text-right">
+              {{ view.project.net_contract_amount|money_with_decimal }}
+            </td>
+            <td></td>
+        </td>
+          </tr>
+        </tbody>
+
+        <tbody>
+          <tr>
+            <th>Personele kosten</th>
+            <th></th>
+            <th class="text-right">Toegekend</th>
+            <th class="text-right">Geboekt</th>
+            <th class="text-right">Tarief</th>
+            <th class="text-right">Omzet</th>
+            <th class="text-right">Verlies</th>
+            <th colspan="2"></th>
+          </tr>
+
+          {% for line in view.lines %}
             <tr>
-              <th>Personele kosten</th>
-              <th></th>
-              <th class="text-right">Toegekend</th>
-              <th class="text-right">Geboekt</th>
-              <th class="text-right">Tarief</th>
-              <th class="text-right">Omzet</th>
-              <th class="text-right">Verlies</th>
-              <th colspan="2"></th>
-            </tr>
-
-            {% for line in view.lines %}
-              <tr>
-                <td>
-                  &nbsp;&nbsp;&nbsp;
-                  {{ line.person.as_widget }}
-                </td>
-                <td>
-                  {% if line.person.to_book.friendly %}
-                    <span class="badge"
-                          title="Achter met boeken: {{ line.person.to_book.friendly }}">
-                      {{ line.person.to_book.short }}
-                    </span>
-                  {% endif %}
-                  {% if line.is_project_leader %}
-                    <span title="Projectleider: gaat over de uren">PL</span>
-                    &nbsp;
-                  {% endif %}
-                  {% if line.is_project_manager %}
-                    <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
-                  {% endif %}
-                </td>
-
-                <td class="text-right">{{ line.budget|hours }}</td>
-                <td class="text-right
-                           {% if line.is_overbooked %}danger{% endif %}">
-                  {{ line.booked|hours }}
-                </td>
-                {% if line.desired_hourly_tariff <= line.hourly_tariff  %}
-                  <td class="text-right">
-                    {{ line.hourly_tariff|money }}
-                  </td>
-                {% else %}
-                  <td class="text-right danger">
-                    <span title="Gewenst: {{ line.desired_hourly_tariff }}.">
-                      {{ line.hourly_tariff|money }}
-                    </span>
-                  </td>
+              <td>
+                &nbsp;&nbsp;&nbsp;
+                {{ line.person.as_widget }}
+              </td>
+              <td>
+                {% if line.person.to_book.friendly %}
+                  <span class="badge"
+                        title="Achter met boeken: {{ line.person.to_book.friendly }}">
+                    {{ line.person.to_book.short }}
+                  </span>
                 {% endif %}
-                <td class="text-right">{{ line.turnover|money }}</td>
-                <td class="text-right">{{ line.loss|money }}</td>
-                <td class="text-right">
-                  &nbsp;  {# costs #}
-                </td>
-                <td class="text-right">
-                  {{ line.planned_turnover|money_with_decimal }}
-                </td>
-              </tr>
-            {% endfor %}
-	    <tr>
-	      <td colspan="8">&nbsp;&nbsp;&nbsp;Reservering</td>
-	      <td class="text-right">
-		{{ view.project.reservation|money_with_decimal }}
-	    </tr>
+                {% if line.is_project_leader %}
+                  <span title="Projectleider: gaat over de uren">PL</span>
+                  &nbsp;
+                {% endif %}
+                {% if line.is_project_manager %}
+                  <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
+                {% endif %}
+              </td>
 
+              <td class="text-right">{{ line.budget|hours }}</td>
+              <td class="text-right
+                         {% if line.is_overbooked %}danger{% endif %}">
+                {{ line.booked|hours }}
+              </td>
+              {% if line.desired_hourly_tariff <= line.hourly_tariff  %}
+                <td class="text-right">
+                  {{ line.hourly_tariff|money }}
+                </td>
+              {% else %}
+                <td class="text-right danger">
+                  <span title="Gewenst: {{ line.desired_hourly_tariff }}.">
+                    {{ line.hourly_tariff|money }}
+                  </span>
+                </td>
+              {% endif %}
+              <td class="text-right">{{ line.turnover|money }}</td>
+              <td class="text-right">{{ line.loss|money }}</td>
+              <td class="text-right">
+                &nbsp;  {# costs #}
+              </td>
+              <td class="text-right">
+                {{ line.planned_turnover|money_with_decimal }}
+              </td>
+            </tr>
+          {% endfor %}
+	  <tr>
+	    <td colspan="8">&nbsp;&nbsp;&nbsp;Reservering</td>
+	    <td class="text-right">
+	      {{ view.project.reservation|money_with_decimal }}
+	  </tr>
+
+	  <tr>
+	    <th>
+	      Subtotaal personele kosten
+	    </th>
+	    <td>
+	      {{ view.project.person_costs_incl_reservation|money_with_decimal }}
+	    </td>
+	    <td colspan="7">
+	    </td>
+	  </tr>
+        </tbody>
+
+	<tbody>
+	  <tr>
+	    <th colspan="9">Overige kosten</th>
+	  </tr>
+	  {% for budget_item in view.project.budget_items.all %}
 	    <tr>
-	      <th>
-		Subtotaal personele kosten
-	      </th>
-	      <td>
-		{{ view.project.person_costs_incl_reservation|money_with_decimal }}
-	      </td>
 	      <td colspan="7">
+		&nbsp;&nbsp;&nbsp;
+		{{ budget_item.description|default:'Niet ingevuld' }}
+		{% if budget_item.to_project %}
+		  naar {{ budget_item.to_project.as_widget }}
+		{% endif %}
+	      </td>
+	      {% if budget_item.amount >= 0 %}
+		<td class="text-right"></td>
+		<td class="text-right">{{ budget_item.amount|money_with_decimal }}</td>
+	      {% else %}
+		<td class="text-right">{{ budget_item.amount_as_income|money_with_decimal }}</td>
+		<td class="text-right"></td>
+	      {% endif %}
+	    </tr>
+	  {% empty %}
+	    <tr>
+	      <td colspan="9">
+		&nbsp;&nbsp;&nbsp;
+		Geen
 	      </td>
 	    </tr>
-          </tbody>
+	  {% endfor %}
 
-	  <tbody>
+	  <tr>
+	    <th colspan="9">Overboekingen van andere projecten</th>
+	  </tr>
+	  {% for budget_item in view.project.budget_transfers.all %}
 	    <tr>
-	      <th colspan="9">Overige kosten</th>
+	      <td colspan="7">
+		&nbsp;&nbsp;&nbsp;
+		{{ budget_item.description }}
+		van {{ budget_item.project.as_widget }}
+	      </td>
+	      {% if budget_item.amount < 0 %}
+		<td class="text-right"></td>
+		<td class="text-right">{{ budget_item.amount_as_income|money_with_decimal }}</td>
+	      {% else %}
+		<td class="text-right">{{ budget_item.amount|money_with_decimal }}</td>
+		<td class="text-right"></td>
+	      {% endif %}
 	    </tr>
-	    {% for budget_item in view.project.budget_items.all %}
-	      <tr>
-		<td colspan="7">
-		  &nbsp;&nbsp;&nbsp;
-		  {{ budget_item.description|default:'Niet ingevuld' }}
-		  {% if budget_item.to_project %}
-		    naar {{ budget_item.to_project.as_widget }}
-		  {% endif %}
-		</td>
-		{% if budget_item.amount >= 0 %}
-		  <td class="text-right"></td>
-		  <td class="text-right">{{ budget_item.amount|money_with_decimal }}</td>
-		{% else %}
-		  <td class="text-right">{{ budget_item.amount_as_income|money_with_decimal }}</td>
-		  <td class="text-right"></td>
-		{% endif %}
-	      </tr>
-	    {% empty %}
-	      <tr>
-		<td colspan="9">
-		  &nbsp;&nbsp;&nbsp;
-		  Geen
-		</td>
-	      </tr>
-	    {% endfor %}
-
+	  {% empty %}
 	    <tr>
-	      <th colspan="9">Overboekingen van andere projecten</th>
-	    </tr>
-	    {% for budget_item in view.project.budget_transfers.all %}
-	      <tr>
-		<td colspan="7">
-		  &nbsp;&nbsp;&nbsp;
-		  {{ budget_item.description }}
-		  van {{ budget_item.project.as_widget }}
-		</td>
-		{% if budget_item.amount < 0 %}
-		  <td class="text-right"></td>
-		  <td class="text-right">{{ budget_item.amount_as_income|money_with_decimal }}</td>
-		{% else %}
-		  <td class="text-right">{{ budget_item.amount|money_with_decimal }}</td>
-		  <td class="text-right"></td>
-		{% endif %}
-	      </tr>
-	    {% empty %}
-	      <tr>
-		<td colspan="9">
-		  &nbsp;&nbsp;&nbsp;
-		  Geen
-		</td>
-	      </tr>
-	    {% endfor %}
-
-	    <tr>
-	      <th colspan="8">Software ontwikkeling</th>
-	      <td class="text-right">
-		{{ view.project.software_development|money_with_decimal }}
-	    </tr>
-	    <tr>
-	      <th colspan="8">Afdracht</th>
-	      <td class="text-right">
-		{{ view.project.profit|money_with_decimal }}
-	    </tr>
-	  </tbody>
-
-	  <tfoot>
-	    <tr>
-	      <th colspan="7">Totaal</th>
-	      <th class="text-right">
-		{{ view.total_income|money_with_decimal }}
-	      </th>
-	      <th class="text-right">
-		{{ view.total_costs|money_with_decimal }}
-	      </th>
-	    </tr>
-	    <tr>
-	      <th colspan="8">
-		Nog te verdelen
-	      </th>
-	      <td class="text-right">
-		{{ view.project.left_to_dish_out|money_with_decimal }}
+	      <td colspan="9">
+		&nbsp;&nbsp;&nbsp;
+		Geen
 	      </td>
 	    </tr>
-	  </tfoot>
+	  {% endfor %}
 
-        </table>
-      </div>
+	  <tr>
+	    <th colspan="8">Software ontwikkeling</th>
+	    <td class="text-right">
+	      {{ view.project.software_development|money_with_decimal }}
+	  </tr>
+	  <tr>
+	    <th colspan="8">Afdracht</th>
+	    <td class="text-right">
+	      {{ view.project.profit|money_with_decimal }}
+	  </tr>
+	</tbody>
+
+	<tfoot>
+	  <tr>
+	    <th colspan="7">Totaal</th>
+	    <th class="text-right">
+	      {{ view.total_income|money_with_decimal }}
+	    </th>
+	    <th class="text-right">
+	      {{ view.total_costs|money_with_decimal }}
+	    </th>
+	  </tr>
+	  <tr>
+	    <th colspan="8">
+	      Nog te verdelen
+	    </th>
+	    <td class="text-right">
+	      {{ view.project.left_to_dish_out|money_with_decimal }}
+	    </td>
+	  </tr>
+	</tfoot>
+
+      </table>
 
     {% endif %}
 
@@ -501,68 +497,66 @@
 
   {% if view.can_see_project_financials %}
     <h2>Facturen</h2>
-    <div class="table-responsive">
-      <table class="table table-hover">
-        <thead>
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Factuurnummer</th>
+          <th></th>
+          <th>Omschrijving</th>
+          <th class="text-right">Exclusief</th>
+          <th class="text-right">BTW</th>
+          <th class="text-right">Inclusief</th>
+          <th>Betaald</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for invoice in view.project.invoices.all %}
           <tr>
-            <th>Datum</th>
-            <th>Factuurnummer</th>
-            <th></th>
-            <th>Omschrijving</th>
-            <th class="text-right">Exclusief</th>
-            <th class="text-right">BTW</th>
-            <th class="text-right">Inclusief</th>
-            <th>Betaald</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for invoice in view.project.invoices.all %}
-            <tr>
-              <td>{{ invoice.date|date:"j b Y" }}</td>
-              <td>
-                {% if view.can_edit_financials %}
-                  <a href="{% url 'trs.invoice.edit' project_pk=view.project.pk pk=invoice.pk %}">
-                    {{ invoice.number }}
-                  </a>
-                {% else %}
+            <td>{{ invoice.date|date:"j b Y" }}</td>
+            <td>
+              {% if view.can_edit_financials %}
+                <a href="{% url 'trs.invoice.edit' project_pk=view.project.pk pk=invoice.pk %}">
                   {{ invoice.number }}
-                {% endif %}
-              </td>
-              <td>
-                {% if view.can_edit_financials %}
-                  <a href="{% url 'trs.project.invoice-delete' pk=view.project.pk invoice_pk=invoice.pk %}">
-                    <span class="glyphicon glyphicon-minus-sign text-danger"></span>
-                  </a>
-                {% endif %}
-              </td>
-              <td>{{ invoice.description }}</td>
-              <td class="text-right">{{ invoice.amount_exclusive|money_with_decimal }}</td>
-              <td class="text-right">{{ invoice.vat|money_with_decimal }}</td>
-              <td class="text-right">{{ invoice.amount_inclusive|money_with_decimal }}</td>
-              <td>{{ invoice.payed|date:"j b Y"|default:'Nee' }}</td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="8">
-                <i>Er zijn geen facturen toegevoegd.</i>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-        <tfoot>
-          <tr>
-            <th>Totaal</th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th class="text-right">{{ view.total_invoice_exclusive|money_with_decimal }}</th>
-            <th></th>
-            <th class="text-right">{{ view.total_invoice_inclusive|money_with_decimal }}</th>
-            <th></th>
+                </a>
+              {% else %}
+                {{ invoice.number }}
+              {% endif %}
+            </td>
+            <td>
+              {% if view.can_edit_financials %}
+                <a href="{% url 'trs.project.invoice-delete' pk=view.project.pk invoice_pk=invoice.pk %}">
+                  <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                </a>
+              {% endif %}
+            </td>
+            <td>{{ invoice.description }}</td>
+            <td class="text-right">{{ invoice.amount_exclusive|money_with_decimal }}</td>
+            <td class="text-right">{{ invoice.vat|money_with_decimal }}</td>
+            <td class="text-right">{{ invoice.amount_inclusive|money_with_decimal }}</td>
+            <td>{{ invoice.payed|date:"j b Y"|default:'Nee' }}</td>
           </tr>
-        </tfoot>
-      </table>
-    </div>
+        {% empty %}
+          <tr>
+            <td colspan="8">
+              <i>Er zijn geen facturen toegevoegd.</i>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th>Totaal</th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th class="text-right">{{ view.total_invoice_exclusive|money_with_decimal }}</th>
+          <th></th>
+          <th class="text-right">{{ view.total_invoice_inclusive|money_with_decimal }}</th>
+          <th></th>
+        </tr>
+      </tfoot>
+    </table>
 
     {% if view.can_edit_project_financials %}
       <div>
@@ -577,68 +571,66 @@
 
 
     <h2>Facturen kosten derden</h2>
-    <div class="table-responsive">
-      <table class="table table-hover">
-        <thead>
-          <tr>
-            <th>Datum</th>
-            <th>Factuurnummer</th>
-            <th>{# 'delete' button #}</th>
-            <th>Omschrijving</th>
-            <th class="text-right">Bedrag</th>
-            <th>Betaald</th>
-          </tr>
-        </thead>
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Factuurnummer</th>
+          <th>{# 'delete' button #}</th>
+          <th>Omschrijving</th>
+          <th class="text-right">Bedrag</th>
+          <th>Betaald</th>
+        </tr>
+      </thead>
 
-        <tbody>
-          {% for payable in view.project.payables.all %}
-            <tr>
-              <td>{{ payable.date|date:"j b Y" }}</td>
-              <td>{{ payable.number }}</td>
-              <td>
-                {% if view.can_edit_financials %}
-                  <a href="{% url 'trs.project.payable-delete' pk=view.project.pk payable_pk=payable.pk %}">
-                    <span class="glyphicon glyphicon-minus-sign text-danger"></span>
-                  </a>
-                {% endif %}
-              </td>
-              <td>
-                {% if view.can_edit_financials %}
-                  <a href="{% url 'trs.payable.edit' project_pk=view.project.pk pk=payable.pk %}">
-                    {{ payable.description|default:'Niet ingevuld' }}
-                  </a>
-                {% else %}
+      <tbody>
+        {% for payable in view.project.payables.all %}
+          <tr>
+            <td>{{ payable.date|date:"j b Y" }}</td>
+            <td>{{ payable.number }}</td>
+            <td>
+              {% if view.can_edit_financials %}
+                <a href="{% url 'trs.project.payable-delete' pk=view.project.pk payable_pk=payable.pk %}">
+                  <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                </a>
+              {% endif %}
+            </td>
+            <td>
+              {% if view.can_edit_financials %}
+                <a href="{% url 'trs.payable.edit' project_pk=view.project.pk pk=payable.pk %}">
                   {{ payable.description|default:'Niet ingevuld' }}
-                {% endif %}
-              </td>
-              <td class="text-right">{{ payable.amount|money_with_decimal }}</td>
-              <td class="text-right">
-                {{ payable.payed|date:"j b Y"|default:'Nee' }}
-              </td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="6">
-                <i>Er zijn geen facturen toegevoegd.</i>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-
-        <tfoot>
-          <tr>
-            <th>Totaal</th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th class="text-right">
-              {{ view.total_third_party_invoices|money_with_decimal }}
-            </th>
-            <th></th>
+                </a>
+              {% else %}
+                {{ payable.description|default:'Niet ingevuld' }}
+              {% endif %}
+            </td>
+            <td class="text-right">{{ payable.amount|money_with_decimal }}</td>
+            <td class="text-right">
+              {{ payable.payed|date:"j b Y"|default:'Nee' }}
+            </td>
           </tr>
-        </tfoot>
-      </table>
-    </div>
+        {% empty %}
+          <tr>
+            <td colspan="6">
+              <i>Er zijn geen facturen toegevoegd.</i>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+
+      <tfoot>
+        <tr>
+          <th>Totaal</th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th class="text-right">
+            {{ view.total_third_party_invoices|money_with_decimal }}
+          </th>
+          <th></th>
+        </tr>
+      </tfoot>
+    </table>
 
 
     {% if view.can_edit_financials %}
