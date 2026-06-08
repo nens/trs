@@ -9,7 +9,7 @@
         role="form"
         class="form-horizontal">
     {% for error in form.non_field_errors %}
-      <div class="alert alert-danger">{{ error }}</div>
+      <div class="alert alert-soft alert-danger">{{ error }}</div>
     {% endfor %}
     <fieldset>
       {% csrf_token %}
@@ -19,7 +19,7 @@
           <label class="col-sm-3">{{ field.label }}</label>
           <div class="col-sm-5">
             {% for error in field.errors %}
-              <div class="alert alert-danger">{{ error }}</div>
+              <div class="alert alert-soft alert-danger">{{ error }}</div>
             {% endfor %}
 
             {{ field|tabindex:forloop.counter }}

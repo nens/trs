@@ -1,6 +1,7 @@
 @import url("https://code.cdn.mozilla.net/fonts/fira.css");
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/forms";
 @plugin "daisyui";
 @plugin "@iconify/tailwind4";
 /* I've added 'material design icons', see
