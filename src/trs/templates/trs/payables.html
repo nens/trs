@@ -43,7 +43,7 @@
         <td>
           {% if not payable.project.archived %}
             <a href="{% url 'trs.payable.edit' project_pk=payable.project.pk pk=payable.pk %}?from_payable_overview">
-              <span class="glyphicon glyphicon-pencil"></span>
+              <span class="inline-icon icon-[mdi--pencil]"></span>
               {{ payable.number }}
             </a>
           {% else %}

@@ -8,26 +8,26 @@
 
   {% if project.archived %}
     <span title="Project is gearchiveerd"
-          class="text-muted glyphicon glyphicon-lock"></span>
+          class="inline-icon icon-[mdi--lock]"></span>
   {% endif %}
   {% if project.is_subsidized %}
     <span title="Subsidieproject"
-          class="text-muted glyphicon glyphicon-usd"></span>
+          class="inline-icon icon-[mdi--currency-eur]"></span>
   {% endif %}
   {% if project.hidden %}
     <span title="Afgeschermd project: je ziet elkaars uren niet"
-          class="text-muted glyphicon glyphicon-ban-circle"></span>
+          class="inline-icon icon-[mdi--cancel]"></span>
   {% endif %}
   {% if project.hourless %}
     <span title="Uren tellen niet mee voor totaal"
-          class="text-muted glyphicon glyphicon-picture"></span>
+          class="inline-icon icon-[mdi--camera]"></span>
   {% endif %}
   {% if project.not_yet_started %}
     <span title="Project moet nog starten"
-          class="text-muted glyphicon glyphicon-time"></span>
+          class="inline-icon icon-[mdi--clock-outline]"></span>
   {% endif %}
   {% if project.already_ended %}
     <span title="Project is al ge&euml;indigd"
-          class="text-muted glyphicon glyphicon-time"></span>
+          class="inline-icon icon-[mdi--calendar-check]"></span>
   {% endif %}
 </span>

@@ -21,7 +21,7 @@
     <br>
     <div>
       <a href="{% url 'trs.project.new' %}" class="btn btn-default">
-        <span class="glyphicon glyphicon-plus"></span>
+        <span class="inline-icon icon-[mdi--plus]"></span>
         Voeg nieuw project toe
       </a>
     </div>
@@ -87,7 +87,7 @@
           <td class="text-right">
             {% if not line.project.budget_ok %}
               <a href="{{ line.project.get_absolute_url }}#budget">
-                <span class="{{ line.project.budget_not_ok_style }} glyphicon glyphicon-warning-sign"
+                <span class="{{ line.project.budget_not_ok_style }} inline-icon icon-[mdi--alert-outline]"
                       title="Budget is niet goed verdeeld"></span>
               </a>
             {% endif %}

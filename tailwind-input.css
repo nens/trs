@@ -227,3 +227,11 @@ td.col-odd, td.col-even {
 .filter-snippet {
   @apply inline-grid grid-cols-[max-content_auto] gap-2 items-center;
 }
+
+/* BBB with bootstrap */
+.text-muted {
+  @apply text-base-content/70;
+}
+.text-danger {
+  @apply text-error;
+}

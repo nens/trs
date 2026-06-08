@@ -6,7 +6,7 @@
     {{ view.person.name }}
     {% if view.person.archived %}
       <span title="Werkt hier niet meer"
-            class="text-muted glyphicon glyphicon-lock"></span>
+            class="text-muted inline-icon icon-[mdi--lock]"></span>
     {% endif %}
   </h1>
   <table class="table borderless-table table-compact"
@@ -46,14 +46,14 @@
     <div>
       <a href="{% url 'trs.person.edit' pk=view.person.pk %}"
          class="btn btn-default">
-        <span class="glyphicon glyphicon-pencil"></span>
+        <span class="inline-icon icon-[mdi--pencil]"></span>
         Wijzig
       </a>
       &nbsp;
       {% if view.can_edit_person_changes %}
         <a href="{% url 'trs.person.target' pk=view.person.pk %}"
            class="btn btn-default">
-          <span class="glyphicon glyphicon-pencil"></span>
+          <span class="inline-icon icon-[mdi--pencil]"></span>
           Wijzig target/werkweek/uurtarief
         </a>
       {% endif %}

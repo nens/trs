@@ -7,19 +7,19 @@
     {{ view.project.code }}
     {% if view.project.archived %}
       <span title="Project is gearchiveerd"
-            class="text-muted glyphicon glyphicon-lock"></span>
+            class="inline-icon icon-[mdi--lock]"></span>
     {% endif %}
     {% if view.project.is_subsidized %}
       <span title="Subsidieproject"
-            class="text-muted glyphicon glyphicon-usd"></span>
+            class="inline-icon icon-[mdi--currency-eur]"></span>
     {% endif %}
     {% if view.project.hidden %}
       <span title="Afgeschermd project: je ziet elkaars uren niet"
-            class="text-muted glyphicon glyphicon-ban-circle"></span>
+            class="inline-icon icon-[mdi--cancel]"></span>
     {% endif %}
     {% if view.project.hourless %}
       <span title="Uren tellen niet mee voor totaal"
-            class="text-muted glyphicon glyphicon-picture"></span>
+            class="inline-icon icon-[mdi--camera]"></span>
     {% endif %}
     <small>{{ view.project.description }}</small>
     {% if view.can_see_project_financials %}
@@ -186,7 +186,7 @@
     <p>
       <a href="{% url 'trs.project.edit' pk=view.project.pk %}"
          class="btn btn-default">
-        <span class="glyphicon glyphicon-pencil"></span>
+        <span class="inline-icon icon-[mdi--pencil]"></span>
         Project bewerken
       </a>
     </p>
@@ -239,7 +239,7 @@
       <h2 id="budget">
         Projectbegroting
         {% if not view.project.budget_ok %}
-          <span class="{{ view.project.budget_not_ok_style }} glyphicon glyphicon-warning-sign"
+          <span class="{{ view.project.budget_not_ok_style }} inline-icon icon-[mdi--alert-outline]"
                 title="Budget is niet goed verdeeld"></span>
         {% endif %}
       </h2>
@@ -470,7 +470,7 @@
       {% if view.can_edit_financials %}
         <a href="{% url 'trs.project.budget' pk=view.project.pk %}"
            class="btn btn-default">
-          <span class="glyphicon glyphicon-pencil"></span>
+          <span class="inline-icon icon-[mdi--pencil]"></span>
           Pas projectbegroting aan
         </a>
         &nbsp;&nbsp;
@@ -487,7 +487,7 @@
 
   {% else %}
     <p>
-      <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+      <span class="inline-icon icon-[mdi--alert-outline] text-danger"></span>
       Dit project is afgeschermd, dus je kan niet zien wie er op dit project
       mogen boeken.
     </p>
@@ -524,7 +524,7 @@
             <td>
               {% if view.can_edit_financials %}
                 <a href="{% url 'trs.project.invoice-delete' pk=view.project.pk invoice_pk=invoice.pk %}">
-                  <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                  <span class="inline-icon icon-[mdi--trash-can-outline] text-danger"></span>
                 </a>
               {% endif %}
             </td>
@@ -560,7 +560,7 @@
       <div>
         <a href="{% url 'trs.invoice.add' project_pk=view.project.pk %}"
            class="btn btn-default">
-          <span class="glyphicon glyphicon-plus"></span>
+          <span class="inline-icon icon-[mdi--plus]"></span>
           Voeg factuur toe
         </a>
       </div>
@@ -589,7 +589,7 @@
             <td>
               {% if view.can_edit_financials %}
                 <a href="{% url 'trs.project.payable-delete' pk=view.project.pk payable_pk=payable.pk %}">
-                  <span class="glyphicon glyphicon-minus-sign text-danger"></span>
+                  <span class="inline-icon icon-[mdi--trash-can-outline] text-danger"></span>
                 </a>
               {% endif %}
             </td>
@@ -635,7 +635,7 @@
       <div>
         <a href="{% url 'trs.payable.add' project_pk=view.project.pk %}"
            class="btn btn-default">
-          <span class="glyphicon glyphicon-plus"></span>
+          <span class="inline-icon icon-[mdi--plus]"></span>
           Voeg factuur kosten derden toe
         </a>
       </div>
