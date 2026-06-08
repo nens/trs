@@ -145,10 +145,13 @@
           <th class="text-right">{{ view.totals.3|hours }}</th>
         </tr>
         <tr>
-          <th colspan="13" class="text-right">
-            Week:
+          <th colspan="8"></th>
+          <th colspan="{{ view.active_dates|length }}"
+              class="text-right">
+            Weektotaal:
             <span id="hour-total">{{ view.totals.2|hours }}</span>
           </th>
+          <th></th>
         </tr>
         {% if view.has_edit_permissions %}
           <tr>
