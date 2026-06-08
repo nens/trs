@@ -228,6 +228,10 @@ td.col-odd, td.col-even {
   @apply inline-grid grid-cols-[max-content_auto] gap-2 items-center;
 }
 
+span[title] {
+  @apply border-b-1 border-dotted cursor-help;
+}
+
 /* BBB with bootstrap */
 .text-muted {
   @apply text-base-content/70;
