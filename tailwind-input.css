@@ -172,12 +172,55 @@ pre { max-width: 90vw };
   @apply border-b-1 border-base-300;
 }
 
+#booking-table th.above-form-cells {
+  @apply border-primary;
+}
+
+#booking-table tfoot th {
+  /* Fix weird inconsistency in the booking table */
+  @apply pl-0 pr-2;
+}
+
+#booking-table td:last-child {
+  /* Fix inconsistency in the booking table */
+  @apply pr-2;
+}
+
 table.table-hover-row tr:hover {
   @apply bg-base-300;
 }
 
 table.borderless-table th,td {
   @apply border-0;
+}
+
+table .header-fixed {
+  /* Set by javascript for table-fixed-header copies */
+  position: fixed;
+  top: 0px;
+  z-index: 1020;                /* Perhaps not needed, previously for navbar */
+}
+
+table .hide {
+  /* Used by javascript for table-fixed-header copies */
+  display: none;
+}
+
+thead .rotated-header {
+  writing-mode: vertical-rl;
+  @apply -rotate-180 pl-0 pr-0;
+}
+
+thead .rotated div {
+  /* @apply origin-bottom-left -rotate-90; */
+}
+
+table {
+  @apply border-collapse;
+}
+
+td.col-odd, td.col-even {
+  @apply  border-1 border-primary;
 }
 
 

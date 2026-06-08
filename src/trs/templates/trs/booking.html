@@ -5,16 +5,6 @@
 {% block full-width %}
   <h1>{{ view.title }}</h1>
 
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissable">
-      <button type="button"
-              class="close"
-              data-dismiss="alert"
-              aria-hidden="true">&times;</button>
-      {{ message }}
-    </div>
-  {% endfor %}
-
   <div class="text-muted">
     Zie
     <a href="{% url 'trs.booking.overview' pk=view.person.id %}">
@@ -50,16 +40,16 @@
         <tr>
           <th>Code</th>
           <th>Omschrijving</th>
-          <th class="text-right">Budget</th>
-          <th class="text-right">Geboekt</th>
-          <th class="text-right">Over</th>
+          <th class="rotated-header">Budget</th>
+          <th class="rotated-header">Geboekt</th>
+          <th class="rotated-header">Over</th>
           <th>&nbsp;</th>
           {% for year_week in view.year_weeks_to_display %}
             {% if forloop.counter == 3 %}
 
               {# display the dates #}
               {% for date in view.active_dates %}
-                <th class="text-right">
+                <th class="rotated-header above-form-cells">
                   {% if forloop.counter == 1 %}
                     <a href="{% url 'trs.booking' pk=view.person.id year=year_week.year week=year_week.week %}">
                       {% if year_week == view.this_year_week %}
@@ -74,7 +64,7 @@
               {% endfor %}
 
             {% else %}
-              <th class="text-right">
+              <th class="rotated-header">
                 <a href="{% url 'trs.booking' pk=view.person.id year=year_week.year week=year_week.week %}">
                   {% if year_week == view.this_year_week %}
                     Huidige
@@ -93,7 +83,7 @@
       <tbody>
         {% for line in view.lines %}
           <tr>
-            <td>
+            <td class="whitespace-nowrap">
               <a href="{{ line.project.get_absolute_url }}"
                  title="Voor {{ line.project.principal }}
 {{ line.project.description }}"
@@ -120,7 +110,7 @@
             <td class="text-right text-muted">{{ line.hours1|hours }}</td>
 
             {% for field in line.fields %}
-              <td class="text-right hour-for-total hour-for-col{{ forloop.counter }}">
+              <td class="text-right hour-for-total hour-for-col{{ forloop.counter }} {% if not forloop.counter|divisibleby:2 %}col-odd{% else %}col-even{% endif %}">
                 {{ field }}
                 {% for error in field.errors %}
                   <div class="alert alert-danger">{{ error }}</div>
@@ -149,16 +139,16 @@
           {% for data in view.active_dates %}
             <th class="text-right">
               <div id="hour-total-col{{ forloop.counter }}"></div>
-              {% if forloop.last %}
-                <div>
-                  Week:
-                  <span id="hour-total">{{ view.totals.2|hours }}</span>
-                </div>
-              {% endif %}
             </th>
           {% endfor %}
 
           <th class="text-right">{{ view.totals.3|hours }}</th>
+        </tr>
+        <tr>
+          <th colspan="13" class="text-right">
+            Week:
+            <span id="hour-total">{{ view.totals.2|hours }}</span>
+          </th>
         </tr>
         {% if view.has_edit_permissions %}
           <tr>
