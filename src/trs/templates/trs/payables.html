@@ -10,15 +10,6 @@
       <span class="inline-icon icon-[mdi--file-excel-outline]"></span>
     </a>
   </h1>
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissable">
-      <button type="button"
-              class="close"
-              data-dismiss="alert"
-              aria-hidden="true">&times;</button>
-      {{ message }}
-    </div>
-  {% endfor %}
 
   {% include "trs/filter-snippet.html" %}
 

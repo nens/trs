@@ -235,3 +235,12 @@ td.col-odd, td.col-even {
 .text-danger {
   @apply text-error;
 }
+td.danger {
+  @apply bg-error/20;
+}
+td.warning {
+  @apply bg-warning/20;
+}
+td.success {
+  @apply bg-success/20;
+}
