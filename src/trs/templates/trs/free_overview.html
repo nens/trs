@@ -4,12 +4,24 @@
 {% block full-width %}
   <h1>Overzicht vrije dagen / feestdagen {{ view.person }} {{ view.year }}</h1>
 
+  <div class="text-muted">
+    Jaar:
+    {% for year in view.available_years %}
+      {% if year == view.year %}
+        {{ year }}
+      {% else %}
+        <a href="?year={{ year }}">{{ year }}</a>
+      {% endif %}
+      {% if not forloop.last %}
+        |
+      {% endif %}
+    {% endfor %}
+  </div>
+
   <p>Noot: ik filter op projecten met "feest" en "verlof" in de naam.</p>
 
   <p>
     Je kan op het weeknummer klikken om de uren van die week te bewerken.
-    <a href="#jaren">Onderaan</a>
-    de pagina staan je jaren voor het geval je een vorig jaar wil nakijken.
   </p>
 
   <table class="table table-compact table-fixed-header table-hover-row">
@@ -55,13 +67,5 @@
       {% endfor %}
     </tbody>
   </table>
-
-  <h2 id="jaren">Beschikbare jaren</h2>
-  <ul>
-    {% for year in view.available_years %}
-      <li><a href="?year={{ year }}">{{ year }}</a></li>
-    {% endfor %}
-  </ul>
-
 
 {% endblock %}
