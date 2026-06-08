@@ -7,7 +7,7 @@
     <a class="pull-right"
        title="Download .excel"
        href="{% url 'trs.overviews.payables.excel' %}?{{ view.request.GET.urlencode }}">
-      <span class="glyphicon glyphicon-download-alt"></span>
+      <span class="inline-icon icon-[mdi--file-excel-outline]"></span>
     </a>
   </h1>
   {% for message in messages %}

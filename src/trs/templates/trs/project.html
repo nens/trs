@@ -26,9 +26,7 @@
       <a class="pull-right"
          title="Download excel"
          hx-boost="false"
-         href="{% url 'trs.project.excel' pk=view.project.id %}">
-        <span class="glyphicon glyphicon-download-alt"></span>
-      </a>
+         href="{% url 'trs.project.excel' pk=view.project.id %}"><span class="inline-icon icon-[mdi--file-excel-outline]"></span></a>
     {% endif %}
     {% if view.project.is_subsidized %}
       {% if view.can_see_everything %}
@@ -36,7 +34,7 @@
            title="Download subsidie-verantwoordings-excel"
            hx-boost="false"
            href="{% url 'trs.project.persons.excel' pk=view.project.id %}">
-          <span class="glyphicon text-muted glyphicon-download-alt"></span>
+          <span class="inline-icon icon-[mdi--file-excel]"></span>
         </a>
       {% endif %}
     {% endif %}
