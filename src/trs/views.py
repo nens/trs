@@ -360,7 +360,7 @@ class PersonsView(BaseView):
         if current_year not in years_booked_in:
             # Corner case if no one has booked yet in this year :-)
             years_booked_in.append(current_year)
-        return years_booked_in
+        return sorted(years_booked_in)
 
     @cached_property
     def filters_and_choices(self):
@@ -647,7 +647,7 @@ class PersonKPIView(PersonView):
         if current_year not in years_person_booked_in:
             # Corner case if you haven't booked yet in this year :-)
             years_person_booked_in.append(current_year)
-        return years_person_booked_in
+        return sorted(years_person_booked_in)
 
 
 class BookingOverview(PersonView):
@@ -676,7 +676,7 @@ class BookingOverview(PersonView):
         if current_year not in years_i_booked_in:
             # Corner case if you haven't booked yet in this year :-)
             years_i_booked_in.append(current_year)
-        return years_i_booked_in
+        return sorted(years_i_booked_in)
 
     @cached_property
     def lines(self):
@@ -755,7 +755,7 @@ class FreeOverview(PersonView):
         if current_year not in years_i_booked_in:
             # Corner case if you haven't booked yet in this year :-)
             years_i_booked_in.append(current_year)
-        return years_i_booked_in
+        return sorted(years_i_booked_in)
 
     @cached_property
     def free_project_ids(self):
