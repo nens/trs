@@ -4,14 +4,31 @@
 {% block main-column %}
   <h1>Overzichten</h1>
 
+  <h2>Voor jou</h2>
   <ul>
-    {% if perms.auth.manage_users %}
-      <li>
-        Opgepast: gebruikersbeheer gaat nu via azure AD. Iedereen die daar
-        (nog) mag inloggen mag hier inloggen. Bij aanmaken nieuwe gebruiker
-        hier eenmalig inloggen, dan wordt er een trs-gebruiker aangemaakt.
-      </li>
-    {% endif %}
+    <li>
+      <a href="{% url 'trs.booking.overview' pk=view.active_person.id %}">
+        Overzicht van je boekingen</a>
+    </li>
+    <li>
+      <a href="{% url 'trs.person.kpi' pk=view.sidebar_person.id %}">
+        Jouw voortgang</a>: onderbouwing van de percentages intern/extern geboekt, target, enz.
+    </li>
+    <li>
+      Afas en TRS qua vrije dagen gelijktrekken?
+      <a href="{% url 'trs.booking.free-overview' pk=view.sidebar_person.id %}">
+        Zie het verlofoverzicht</a>.
+    </li>
+  </ul>
+
+  <h2>Projecten</h2>
+
+  <ul>
+    <li>
+      <a href="{% url 'trs.overviews.pl_pm' %}">
+        Overzicht projectleiders en projectmanagers
+      </a>
+    </li>
     {% if view.can_see_everything %}
       <li>
         <a href="{% url 'trs.overviews.invoices' %}">
@@ -59,11 +76,6 @@
         </a>
       </li>
     {% endif %}
-    <li>
-      <a href="{% url 'trs.overviews.pl_pm' %}">
-        Overzicht projectleiders en projectmanagers
-      </a>
-    </li>
   </ul>
 
 {% endblock %}
