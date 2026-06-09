@@ -53,8 +53,7 @@ $.fn.fixedHeader = function (options) {
 
   o.find('thead.header-copy').css({ margin:'0 auto',
                                     'margin-left': '-1px',
-                                    width: o.outerWidth(),
-                                   'background-color':config.bgColor });
+                                    width: o.outerWidth() });
   processScroll();
  });
 };

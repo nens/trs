@@ -193,7 +193,9 @@ table .header-fixed {
   top: 0px;
   z-index: 1020;                /* Perhaps not needed, previously for navbar */
 }
-
+table .header-copy {
+  @apply bg-base-100;           /* Hardcoded background color to help the js */
+}
 table .hide {
   /* Used by javascript for table-fixed-header copies */
   display: none;
@@ -252,6 +254,7 @@ form.form-trs label {
 }
 input, select, textarea {
   @apply pt-0 pb-0;
+  @apply text-base-content bg-base-100;
 }
 input[type=number] {
   /* Too wide */
