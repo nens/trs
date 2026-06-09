@@ -3062,34 +3062,6 @@
     background-image: none;
   }
 }
-#selection-pager {
-  position: absolute;
-  top: calc(var(--spacing) * 20);
-  right: calc(var(--spacing) * 0);
-  z-index: 1000;
-}
-#selection-pager .card {
-  margin: calc(var(--spacing) * 1);
-  width: calc(var(--spacing) * 30);
-  font-size: var(--text-sm);
-  line-height: var(--tw-leading, var(--text-sm--line-height));
-  --tw-shadow: 0 4px 6px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 2px 4px -2px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
-  box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-}
-#enable-selection-pager {
-  position: absolute;
-  top: calc(var(--spacing) * 20);
-  right: calc(var(--spacing) * 0);
-  z-index: 1000;
-  margin: calc(var(--spacing) * 1);
-  width: calc(var(--spacing) * 30);
-  background-color: var(--color-base-300);
-  padding: calc(var(--spacing) * 1);
-  padding-top: calc(var(--spacing) * 2);
-  padding-bottom: calc(var(--spacing) * 2);
-  font-size: var(--text-sm);
-  line-height: var(--tw-leading, var(--text-sm--line-height));
-}
 #selection-pager .selected {
   --tw-font-weight: var(--font-weight-bold);
   font-weight: var(--font-weight-bold);

@@ -21,44 +21,6 @@
 
       {% include "trs/navbar.html" %}
 
-      <div id="enable-selection-pager">
-        <a href="#">
-          <span class="inline-icon icon-[mdi--playlist-plus]"
-                title="Blader door de selectie die links staat"></span>
-          Bladeren
-        </a>
-      </div>
-
-      <div id="selection-pager" class="hidden">
-        <div class="card">
-
-          <h3 id="enable-selection-pager-refresh" class="card-topbottom hidden">
-            <a href="#">
-              <span class="inline-icon icon-[mdi--playlist-edit]"></span>
-              Vervang lijst
-            </a>
-          </h3>
-          <h3 id="selection-pager-next" class="card-topbottom hidden">
-            <a href="#">
-              &rarr; Volgende
-            </a>
-          </h3>
-
-          <div class="card-body p-1">
-            <ul id="selection-pager-contents" class="list-unstyled">
-              <!-- Filled by trs.js when needed -->
-            </ul>
-          </div>
-
-          <div id="disable-selection-pager" class="card-topbottom hidden">
-            <a href="#">
-              <span class="inline-icon icon-[mdi--playlist-remove]"></span>
-              Stop bladeren
-            </a>
-          </div>
-
-        </div>
-      </div>
 
       <!-- Start of main content + sidebar -->
       <div class="grid grid-cols-1 lg:grid-cols-[auto_10rem] lg:gap-5 mt-5">
@@ -93,6 +55,43 @@
                 </p>
               </div>
             {% endif %}
+
+            <div id="enable-selection-pager" class="card hidden">
+              <h2>Bladeren</h2>
+              <a href="#">
+                <span class="inline-icon icon-[mdi--playlist-plus]"
+                      title="Blader door de selectie die links staat"></span>
+                Start met lijst
+              </a>
+            </div>
+
+            <div id="selection-pager" class="card hidden">
+              <h2>Bladeren</h2>
+              <div id="enable-selection-pager-refresh" class="hidden">
+                <a href="#">
+                  <span class="inline-icon icon-[mdi--playlist-edit]"></span>
+                  Vervang lijst
+                </a>
+              </div>
+              <div id="disable-selection-pager" class="hidden">
+                <a href="#">
+                  <span class="inline-icon icon-[mdi--playlist-remove]"></span>
+                  Stop bladeren
+                </a>
+              </div>
+              <div id="selection-pager-next" class="hidden">
+                <a href="#">
+                  &rarr; Volgende
+                </a>
+              </div>
+
+              <div class="card-body p-1">
+                <ul id="selection-pager-contents" class="list-unstyled">
+                  <!-- Filled by trs.js when needed -->
+                </ul>
+              </div>
+
+            </div>
 
             {% if view.sidebar_person %}
 
