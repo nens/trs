@@ -250,6 +250,10 @@ td.success {
   @apply bg-success/20;
 }
 
-form.form-trs {
-
+/* Form stuff */
+form.form-trs label {
+  @apply font-bold;
+}
+input, select, textarea {
+  @apply pt-0 pb-0;
 }
