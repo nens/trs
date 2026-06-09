@@ -3193,6 +3193,10 @@ pre {
   border-bottom-width: 1px;
   border-color: var(--color-base-300);
 }
+.table-compact th {
+  padding-inline-start: calc(var(--spacing) * 0);
+  padding-inline-end: calc(var(--spacing) * 0);
+}
 #booking-table .other-week {
   background-color: var(--color-base-200);
 }

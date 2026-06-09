@@ -161,6 +161,11 @@ pre { max-width: 90vw };
   @apply border-b-1 border-base-300;
 }
 
+.table-compact th {
+  /* Zap weird padding for th fields */
+  @apply ps-0 pe-0;
+}
+
 #booking-table .other-week {
   @apply bg-base-200;
 }

@@ -210,7 +210,7 @@
 
         <tbody>
           <tr>
-            <th colspan="7">Opdrachtsom</th>
+            <th colspan="7" class="not-as-header">Opdrachtsom</th>
             <td class="text-right">
               {{ view.project.contract_amount|money_with_decimal }}
             </td>
@@ -241,11 +241,11 @@
           {% endfor %}
 
           <tr>
-            <th colspan="7">Netto opdrachtsom</th>
+            <th class="not-as-header">Netto opdrachtsom</th>
             <td class="text-right">
               {{ view.project.net_contract_amount|money_with_decimal }}
             </td>
-            <td></td>
+            <td colspan="7"></td>
         </td>
           </tr>
         </tbody>
@@ -317,10 +317,10 @@
 	  </tr>
 
 	  <tr>
-	    <th>
+	    <th class="not-as-header">
 	      Subtotaal personele kosten
 	    </th>
-	    <td>
+	    <td class="text-right">
 	      {{ view.project.person_costs_incl_reservation|money_with_decimal }}
 	    </td>
 	    <td colspan="7">
@@ -386,12 +386,12 @@
 	  {% endfor %}
 
 	  <tr>
-	    <th colspan="8">Software ontwikkeling</th>
+	    <th class="not-as-header" colspan="8">Software ontwikkeling</th>
 	    <td class="text-right">
 	      {{ view.project.software_development|money_with_decimal }}
 	  </tr>
 	  <tr>
-	    <th colspan="8">Afdracht</th>
+	    <th class="not-as-header" colspan="8">Afdracht</th>
 	    <td class="text-right">
 	      {{ view.project.profit|money_with_decimal }}
 	  </tr>
@@ -408,12 +408,13 @@
 	    </th>
 	  </tr>
 	  <tr>
-	    <th colspan="8">
+	    <th class="not-as-header">
 	      Nog te verdelen
 	    </th>
 	    <td class="text-right">
 	      {{ view.project.left_to_dish_out|money_with_decimal }}
 	    </td>
+            <td colspan="7"></td>
 	  </tr>
 	</tfoot>
 
