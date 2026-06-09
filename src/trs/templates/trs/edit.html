@@ -9,7 +9,7 @@
         role="form"
         class="form-trs">
     {% for error in form.non_field_errors %}
-      <div class="alert alert-soft alert-danger">{{ error }}</div>
+      <div class="alert alert-error alert-soft">{{ error }}</div>
     {% endfor %}
     {% csrf_token %}
     <fieldset class="grid grid-cols-[15rem_auto] gap-y-2">
@@ -20,7 +20,7 @@
         </div>
         <div>
           {% for error in field.errors %}
-            <div class="alert alert-soft alert-danger">{{ error }}</div>
+            <div class="alert alert-error alert-soft">{{ error }}</div>
           {% endfor %}
 
           {{ field|tabindex:forloop.counter }}

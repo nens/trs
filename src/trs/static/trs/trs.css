@@ -3219,8 +3219,8 @@ pre {
   border-bottom-width: 1px;
   border-color: var(--color-base-300);
 }
-#booking-table th.above-form-cells {
-  border-color: var(--color-primary);
+#booking-table .other-week {
+  background-color: var(--color-base-200);
 }
 #booking-table tfoot th {
   padding-right: calc(var(--spacing) * 2);
@@ -3229,12 +3229,14 @@ pre {
 #booking-table td:last-child {
   padding-right: calc(var(--spacing) * 2);
 }
-table.table-hover-row tr:hover {
-  background-color: var(--color-base-300);
+input[type='number'] {
+  -moz-appearance: textfield;
 }
-table.borderless-table th,td {
-  border-style: var(--tw-border-style);
-  border-width: 0px;
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+table.table-hover-row tbody tr:hover {
+  background-color: var(--color-base-300);
 }
 table .header-fixed {
   position: fixed;
@@ -3253,16 +3255,16 @@ thead .rotated-header {
 table {
   border-collapse: collapse;
 }
-td.col-odd, td.col-even {
-  border-style: var(--tw-border-style);
-  border-width: 1px;
-  border-color: var(--color-primary);
-}
-.filter-snippet {
+.filter-snippet, .description-table {
   display: inline-grid;
   grid-template-columns: max-content auto;
   align-items: center;
   gap: calc(var(--spacing) * 2);
+  margin-bottom: calc(var(--spacing) * 4);
+}
+.description-table .description-key {
+  --tw-font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-bold);
 }
 span[title] {
   cursor: help;
@@ -3270,6 +3272,9 @@ span[title] {
   border-bottom-width: 1px;
   --tw-border-style: dotted;
   border-style: dotted;
+}
+th[title] {
+  cursor: help;
 }
 .text-muted {
   color: var(--color-base-content);

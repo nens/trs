@@ -26,10 +26,10 @@
         id="booking-form">
     {% csrf_token %}
     {% for error in form.errors %}
-      <div class="alert alert-danger">{{ error }}</div>
+      <!-- <div class="alert alert-error alert-soft">{{ error }}</div> -->
     {% endfor %}
     {% if view.editing_for_someone_else %}
-      <div class="alert alert-danger">
+      <div class="alert alert-error alert-soft">
         Pas, op: als je hier iets aanpast, pas je andermans boekingen aan!
       </div>
     {% endif %}
@@ -47,7 +47,7 @@
           {% for year_week in view.year_weeks_to_display %}
             {% if forloop.counter == 3 %}
 
-              {# display the dates #}
+              {# display the (5) dates instead of the 1 week  #}
               {% for date in view.active_dates %}
                 <th class="rotated-header above-form-cells">
                   {% if forloop.counter == 1 %}
@@ -64,7 +64,7 @@
               {% endfor %}
 
             {% else %}
-              <th class="rotated-header">
+              <th class="rotated-header other-week">
                 <a href="{% url 'trs.booking' pk=view.person.id year=year_week.year week=year_week.week %}">
                   {% if year_week == view.this_year_week %}
                     Huidige
@@ -106,14 +106,14 @@
             </td>
             <td class="text-right">{{ line.left_to_book|hours }}</td>
             <td style="border-left: 1px solid rgb(221, 221, 221);">&nbsp;&nbsp;&nbsp;</td>
-            <td class="text-right text-muted">{{ line.hours0|hours }}</td>
-            <td class="text-right text-muted">{{ line.hours1|hours }}</td>
+            <td class="text-right text-muted other-week">{{ line.hours0|hours }}</td>
+            <td class="text-right text-muted other-week">{{ line.hours1|hours }}</td>
 
             {% for field in line.fields %}
               <td class="text-right hour-for-total hour-for-col{{ forloop.counter }} {% if not forloop.counter|divisibleby:2 %}col-odd{% else %}col-even{% endif %}">
                 {{ field }}
                 {% for error in field.errors %}
-                  <div class="alert alert-danger">{{ error }}</div>
+                  <div class="alert alert-error alert-soft">{{ error }}</div>
                 {% endfor %}
                 {% if field.is_hidden %}
                   {{ field.value|hours }}
@@ -121,7 +121,7 @@
               </td>
             {% endfor %}
 
-            <td class="text-right text-muted">{{ line.hours3|hours }}</td>
+            <td class="text-right text-muted other-week">{{ line.hours3|hours }}</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -133,8 +133,8 @@
           <th></th>
           <th></th>
           <th></th>
-          <th class="text-right">{{ view.totals.0|hours }}</th>
-          <th class="text-right">{{ view.totals.1|hours }}</th>
+          <th class="text-right other-week">{{ view.totals.0|hours }}</th>
+          <th class="text-right other-week">{{ view.totals.1|hours }}</th>
 
           {% for data in view.active_dates %}
             <th class="text-right">
@@ -142,16 +142,17 @@
             </th>
           {% endfor %}
 
-          <th class="text-right">{{ view.totals.3|hours }}</th>
+          <th class="text-right other-week">{{ view.totals.3|hours }}</th>
         </tr>
         <tr>
-          <th colspan="8"></th>
+          <th colspan="6"></th>
+          <th colspan="2" class="other-week"></th>
           <th colspan="{{ view.active_dates|length }}"
               class="text-right">
             Weektotaal:
             <span id="hour-total">{{ view.totals.2|hours }}</span>
           </th>
-          <th></th>
+          <th class="other-week"></th>
         </tr>
         {% if view.has_edit_permissions %}
           <tr>

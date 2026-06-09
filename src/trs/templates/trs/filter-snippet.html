@@ -10,8 +10,7 @@
         <select name="{{ filter.param }}"
                 hx-get="?{{ filter.url }}"
                 hx-push-url="true"
-                hx-target="body"
-                class="select">
+                hx-target="body">
           {% for choice in filter.choices %}
             <option value="{{ choice.value }}"
                     {% if choice.active %}selected=selected{% endif %}>

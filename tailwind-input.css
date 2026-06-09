@@ -173,8 +173,8 @@ pre { max-width: 90vw };
   @apply border-b-1 border-base-300;
 }
 
-#booking-table th.above-form-cells {
-  @apply border-primary;
+#booking-table .other-week {
+  @apply bg-base-200;
 }
 
 #booking-table tfoot th {
@@ -187,12 +187,16 @@ pre { max-width: 90vw };
   @apply pr-2;
 }
 
-table.table-hover-row tr:hover {
-  @apply bg-base-300;
+/* Hack to get rid if the up/down spinners in the booking form */
+input[type='number'] {
+  -moz-appearance:textfield;
+}
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
 }
 
-table.borderless-table th,td {
-  @apply border-0;
+table.table-hover-row tbody tr:hover {
+  @apply bg-base-300;
 }
 
 table .header-fixed {
@@ -220,17 +224,21 @@ table {
   @apply border-collapse;
 }
 
-td.col-odd, td.col-even {
-  @apply  border-1 border-primary;
+.filter-snippet, .description-table {
+  @apply inline-grid grid-cols-[max-content_auto] gap-2 items-center;
+  @apply mb-4;
 }
 
-
-.filter-snippet {
-  @apply inline-grid grid-cols-[max-content_auto] gap-2 items-center;
+.description-table .description-key {
+  @apply font-bold;
 }
 
 span[title] {
   @apply border-b-1 border-dotted cursor-help;
+}
+
+th[title] {
+  @apply cursor-help;
 }
 
 /* BBB with bootstrap */

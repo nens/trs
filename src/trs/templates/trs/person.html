@@ -9,39 +9,26 @@
             class="text-muted inline-icon icon-[mdi--lock]"></span>
     {% endif %}
   </h1>
-  <table class="table borderless-table table-compact"
-         style="width: auto;">
-    <tbody>
-      <tr>
-        <th>Werkweek</th>
-        <td>{{ view.person.hours_per_week|hours }}</td>
-      </tr>
-      <tr>
-        <th>Werkvoorraad op externe projecten</th>
-        <td>{{ view.pyc.left_to_book|hours }}</td>
-      </tr>
-      {% if view.can_see_financials %}
-        <tr>
-          <th>Target</th>
-          <td>{{ view.person.target|money }}</td>
-        </tr>
-        <tr>
-          <th>Standaard uurtarief</th>
-          <td>{{ view.person.standard_hourly_tariff|money }}</td>
-        </tr>
-      {% endif %}
-      {% if view.person.group %}
-        <tr>
-          <th>Groep</th>
-          <td>{{ view.person.group }}</td>
-        </tr>
-      {% endif %}
-      <tr>
-        <th>Extra rollen</th>
-        <td>{{ view.extra_roles }}</td>
-      </tr>
-    </tbody>
-  </table>
+
+  <div class="description-table">
+    <div class="description-key">Werkweek</div>
+    <div>{{ view.person.hours_per_week|hours }}</div>
+    <div class="description-key">Werkvoorraad op externe projecten</div>
+    <div>{{ view.pyc.left_to_book|hours }}</div>
+    {% if view.can_see_financials %}
+      <div class="description-key">Target</div>
+      <div>{{ view.person.target|money }}</div>
+      <div class="description-key">Standaard uurtarief</div>
+      <div>{{ view.person.standard_hourly_tariff|money }}</div>
+    {% endif %}
+    {% if view.person.group %}
+      <div class="description-key">Groep</div>
+      <div>{{ view.person.group }}</div>
+    {% endif %}
+    <div class="description-key">Extra rollen</div>
+    <div>{{ view.extra_roles }}</div>
+  </div>
+
   {% if view.can_edit_person %}
     <div>
       <a href="{% url 'trs.person.edit' pk=view.person.pk %}"
@@ -88,13 +75,13 @@
     <tbody>
       {% for line in view.lines %}
         <tr>
-          <td>
+          <td class="whitespace-nowrap">
             {{ line.project.as_widget }}
           </td>
           <td>
             <span class="text-muted">{{ line.project.description }}</span>
           </td>
-          <td>
+          <td class="whitespace-nowrap">
             {% if line.is_project_leader %}
               <span title="Projectleider: gaat over de uren">PL</span>
             {% endif %}

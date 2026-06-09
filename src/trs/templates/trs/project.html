@@ -40,135 +40,102 @@
     {% endif %}
   </h1>
 
-  <table class="table borderless-table table-compact"
-         style="width: auto;">
-    <tbody>
-      <tr>
-        <th>Opdrachtgever</th>
-        <td>{{ view.project.principal }}</td>
-      </tr>
-      {% if view.show_bid_and_confirmation_dates %}
-	<tr>
-	  <th>Offerte verzonden</th>
-	  <td>{{ view.project.bid_send_date|default:"Nog niet" }}</td>
-	</tr>
-	<tr>
-	  <th>Opdrachtbevestiging binnen</th>
-	  <td>{{ view.project.confirmation_date|default:"Nog niet" }}</td>
-	</tr>
-      {% endif %}
-      <tr>
-        <th>Opdrachtsom</th>
-        <td>
-          {{ view.project.contract_amount|money_with_decimal }}
-        </td>
-      </tr>
+  <div class="description-table">
+    <div class="description-key">Opdrachtgever</div>
+    <div>{{ view.project.principal }}</div>
+    {% if view.show_bid_and_confirmation_dates %}
+      <div class="description-key">Offerte verzonden</div>
+      <div>{{ view.project.bid_send_date|default:"Nog niet" }}</div>
+      <div class="description-key">Opdrachtbevestiging binnen</div>
+      <div>{{ view.project.confirmation_date|default:"Nog niet" }}</div>
+    {% endif %}
+    <div class="description-key">Opdrachtsom</div>
+    <div>
+      {{ view.project.contract_amount|money_with_decimal }}
+    </div>
 
-      {% if view.project.wbso_project %}
-        <tr>
-          <th>
-            WBSO project
-          </th>
-          <td>
-            {% if view.can_see_everything %}
-              <a href="{% url 'trs.wbso_project' pk=view.project.wbso_project.id %}">
-                {{ view.project.wbso_project.title }}
-                (nummer {{ view.project.wbso_project.number }})
-              </a>
-            {% else %}
-              {{ view.project.wbso_project.title }}
-              (nummer {{ view.project.wbso_project.number }})
-            {% endif %}
-          </td>
-        </tr>
-      {% endif %}
-
-      {% if view.project.group %}
-        <tr>
-          <th>Groep</th>
-          <td>{{ view.project.group }}</td>
-        </tr>
-      {% endif %}
-      {% if view.project.mpc %}
-        <tr>
-          <th>Markt-product-combinatie</th>
-          <td>{{ view.project.mpc }}</td>
-        </tr>
-      {% endif %}
-      <tr>
-        <th>Startweek</th>
-        <td>{{ view.project.start.friendly|default:"Niet ingevuld" }}</td>
-      </tr>
-      <tr>
-        <th>Laatste week</th>
-        <td>{{ view.project.end.friendly|default:"Niet ingevuld" }}</td>
-      </tr>
-
-      {% if view.project.rating_projectteam %}
-        <tr>
-          <th>
-            Rapportcijfer v/h projectteam
-          </th>
-          <td>
-            {{ view.project.rating_projectteam }}
-          </td>
-        </tr>
-        {% if view.project.rating_projectteam_reason %}
-          <tr>
-            <td>
-            </td>
-            <td>
-              {{ view.project.rating_projectteam_reason|linebreaksbr }}
-            </td>
-          </tr>
+    {% if view.project.wbso_project %}
+      <div class="description-key">
+        WBSO project
+      </div>
+      <div>
+        {% if view.can_see_everything %}
+          <a href="{% url 'trs.wbso_project' pk=view.project.wbso_project.id %}">
+            {{ view.project.wbso_project.title }}
+            (nummer {{ view.project.wbso_project.number }})
+          </a>
+        {% else %}
+          {{ view.project.wbso_project.title }}
+          (nummer {{ view.project.wbso_project.number }})
         {% endif %}
-      {% endif %}
-      {% if view.project.rating_customer %}
-        <tr>
-          <th>
-            Rapportcijfer v/d klant
-          </th>
-          <td>
-            {{ view.project.rating_customer }}
-          </td>
-        </tr>
-        {% if view.project.rating_customer_reason %}
-          <tr>
-            <td>
-            </td>
-            <td>
-              {{ view.project.rating_customer_reason|linebreaksbr }}
-            </td>
-          </tr>
-        {% endif %}
-      {% endif %}
+      </div>
+    {% endif %}
 
-      <tr>
-        <th>
-          Opmerkingen
-        </th>
-        <td>
-          {% if view.project.remark %}
-            {{ view.project.remark|linebreaksbr }}
-          {% else %}
-            —
-          {% endif %}
-        </td>
-      </tr>
-      <tr>
-        <th>
-          Financiële opmerkingen
-        </th>
-        <td>
-          {% if view.project.financial_remark %}
-            {{ view.project.financial_remark|linebreaksbr }}
-          {% else %}
-            —
-          {% endif %}
-        </td>
-      </tr>
-    </tbody>
-  </table>
+    {% if view.project.group %}
+      <div class="description-key">Groep</div>
+      <div>{{ view.project.group }}</div>
+    {% endif %}
+    {% if view.project.mpc %}
+      <div class="description-key">Markt-product-combinatie</div>
+      <div>{{ view.project.mpc }}</div>
+    {% endif %}
+    <div class="description-key">Startweek</div>
+    <div>{{ view.project.start.friendly|default:"Niet ingevuld" }}</div>
+    <div class="description-key">Laatste week</div>
+    <div>{{ view.project.end.friendly|default:"Niet ingevuld" }}</div>
+
+    {% if view.project.rating_projectteam %}
+      <div class="description-key">
+        Rapportcijfer v/h projectteam
+      </div>
+      <div>
+        {{ view.project.rating_projectteam }}
+      </div>
+      {% if view.project.rating_projectteam_reason %}
+        <div>
+        </div>
+        <div>
+          {{ view.project.rating_projectteam_reason|linebreaksbr }}
+        </div>
+      {% endif %}
+    {% endif %}
+    {% if view.project.rating_customer %}
+      <div class="description-key">
+        Rapportcijfer v/d klant
+      </div>
+      <div>
+        {{ view.project.rating_customer }}
+      </div>
+      {% if view.project.rating_customer_reason %}
+        <div>
+        </div>
+        <div>
+          {{ view.project.rating_customer_reason|linebreaksbr }}
+        </div>
+      {% endif %}
+    {% endif %}
+
+    <div class="description-key">
+      Opmerkingen
+    </div>
+    <div>
+      {% if view.project.remark %}
+        {{ view.project.remark|linebreaksbr }}
+      {% else %}
+        —
+      {% endif %}
+    </div>
+    <div class="description-key">
+      Financiële opmerkingen
+    </div>
+    <div>
+      {% if view.project.financial_remark %}
+        {{ view.project.financial_remark|linebreaksbr }}
+      {% else %}
+        —
+      {% endif %}
+    </div>
+  </div>
 
   {% if view.can_edit_project %}
     <p>

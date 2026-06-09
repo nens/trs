@@ -7,7 +7,7 @@
   </p>
   <form action="." method="post" role="form">
     {% for error in form.non_field_errors %}
-      <div class="alert alert-danger">{{ error }}</div>
+      <div class="alert alert-error alert-soft">{{ error }}</div>
     {% endfor %}
     <fieldset>
       {% csrf_token %}
@@ -16,7 +16,7 @@
         <div class="form-group">
           <label>{{ field.label }}</label><br>
           {% for error in field.errors %}
-            <div class="alert alert-danger">{{ error }}</div>
+            <div class="alert alert-error alert-soft">{{ error }}</div>
           {% endfor %}
           {{ field }}
         </div>

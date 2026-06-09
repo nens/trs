@@ -32,28 +32,24 @@
       <tr>
         <th>Project</th>
         <th>Omschrijving</th>
-        <th class="text-right">Verlies-<br>uren</th>
-        <th class="text-right"
-            title="Opdrachtsom min kosten derden">Opdracht-<br>som netto</th>
+        <th class="rotated-header">Verliesuren</th>
+        <th class="rotated-header">
+          Opdrachtsom
+          <br>min kosten derden</th>
         <th class="text-right">&nbsp;</th>
-        <th class="text-right">Omzet</th>
-        <th class="text-right"
-            title="inclusief reserveringen">Personele<br>kosten</th>
-        <th class="text-right">Overige<br>kosten</th>
-        <th class="text-right"
-            title="Gefactureerd (inclusief nog niet betaalde facturen)">
-          Gefact<br>
-          &euro;
+        <th class="rotated-header">Omzet</th>
+        <th class="rotated-header">
+          Personele kosten<br>inclusief reserveringen</th>
+        <th class="rotated-header">Overige kosten</th>
+        <th class="rotated-header">
+          Gefactureerd (inclusief<br>nog niet betaalde facturen)
         </th>
-        <th class="text-right"
+        <th class="rotated-header"
             title="Gefactureerd t.o.v. opdrachtsom">
-          Gefact<br>
-          %
+          Gefactureerd %
         </th>
-        <th class="text-right"
-            title="Gefactureerd t.o.v. OHW">
-          Gefact<br>
-          OHW
+        <th class="rotated-header">
+          Gefactureerd t.o.v. OHW
         </th>
       </tr>
     </thead>
@@ -67,15 +63,15 @@
             hx-trigger="revealed"
             hx-indicator="#project-load-indicator"
         {% endif %}>
-          <td style="white-space: nowrap;">
+          <td class="whitespace-nowrap">
             {{ line.project.as_widget }}
           </td>
-          <td>
+          <td class="whitespace-nowrap">
             <span class="text-muted"
                   {% if line.project.description|length > 50 %}
                     title="{{ line.project.description }}"
                   {% endif %}>
-              {{ line.project.description|truncatechars:50 }}
+              {{ line.project.description|truncatechars:48 }}
             </span>
           </td>
           <td class="text-right {{ line.klass }}">
