@@ -249,3 +249,7 @@ td.warning {
 td.success {
   @apply bg-success/20;
 }
+
+form.form-trs {
+
+}

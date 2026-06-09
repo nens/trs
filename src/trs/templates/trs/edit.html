@@ -7,36 +7,35 @@
   <form action="{{ view.edit_action|default:'.' }}"
         method="post"
         role="form"
-        class="form-horizontal">
+        class="form-trs">
     {% for error in form.non_field_errors %}
       <div class="alert alert-soft alert-danger">{{ error }}</div>
     {% endfor %}
-    <fieldset>
-      {% csrf_token %}
+    {% csrf_token %}
+    <fieldset class="grid grid-cols-[15rem_auto] gap-y-2">
 
       {% for field in form %}
-        <div class="form-group">
-          <label class="col-sm-3">{{ field.label }}</label>
-          <div class="col-sm-5">
-            {% for error in field.errors %}
-              <div class="alert alert-soft alert-danger">{{ error }}</div>
-            {% endfor %}
+        <div>
+          <label>{{ field.label }}</label>
+        </div>
+        <div>
+          {% for error in field.errors %}
+            <div class="alert alert-soft alert-danger">{{ error }}</div>
+          {% endfor %}
 
-            {{ field|tabindex:forloop.counter }}
-            {% if field.help_text %}
-              <p class="text-muted">{{ field.help_text }}</p>
-            {% endif %}
-          </div>
+          {{ field|tabindex:forloop.counter }}
+          {% if field.help_text %}
+            <p class="text-muted">{{ field.help_text }}</p>
+          {% endif %}
         </div>
       {% endfor %}
 
-      <div class="form-group">
-        <div class="col-sm-offset-3">
-          <input type="submit"
-                 class="btn btn-primary"
-                 tabindex="{{ view.tabindex_submit_button|default:99 }}"
-                 value="Submit" />
-        </div>
+      <div></div>
+      <div>
+        <input type="submit"
+               class="btn btn-primary"
+               tabindex="{{ view.tabindex_submit_button|default:99 }}"
+               value="Submit" />
       </div>
 
     </fieldset>
