@@ -65,7 +65,8 @@ function configureSelectionPager() {
                                  JSON.stringify(for_selection_pager));
             localStorage.setItem('selection_pager_start_url',
                                  document.location.href);
-            document.location.reload();
+            first_url = for_selection_pager[0].url;
+            document.location.href = first_url;
         });
     $("#disable-selection-pager a").click(function(e) {
         e.preventDefault();
