@@ -11,19 +11,19 @@
     <table class="table table-compact table-fixed-header table-hover-row"
            id="project-edit-budget-table">
       {# The table is 9 columns wide. #}
-      <thead>
+      <thead class="header">
         <tr>
           <th colspan="6">
           </th>
           <th>Inkomsten</th>
           <th>Kosten</th>
-          <th>Delete</th>
+          <th class="rotated-header">Delete</th>
         </tr>
       </thead>
 
       <tbody>
         <tr>
-          <th colspan="6">Opdrachtsom</th>
+          <th class="not-as-header" colspan="6">Opdrachtsom</th>
           <td>{{ view.project.contract_amount|money }}</td>
           <td></td>
           <td></td>
@@ -61,7 +61,7 @@
         {% endfor %}
 
         <tr>
-          <th>Netto opdrachtsom</th>
+          <th class="not-as-header">Netto opdrachtsom</th>
           <td>
             {{ view.project.net_contract_amount|money }}
           </td>
@@ -86,14 +86,14 @@
             {% for error in form.non_field_errors %}
               <div class="alert alert-error alert-soft">{{ error }}</div>
             {% endfor %}
-            <td>
+            <td class="whitespace-nowrap">
               &nbsp;&nbsp;&nbsp;
               {{ form.assigned_to }}
               {% for error in form.assigned_to.errors %}
                 <div class="alert alert-error alert-soft">{{ error }}</div>
               {% endfor %}
             </td>
-            <td>
+            <td class="whitespace-nowrap">
               {% if form.person.to_book.friendly %}
                 <span class="badge"
                       title="Achter met boeken: {{ form.person.to_book.friendly }}">
@@ -145,10 +145,9 @@
         {% endfor %}
 
         <tr>
-          <td>
-            &nbsp;&nbsp;&nbsp;
+          <th class="not-as-header">
             {{ view.project_form.reservation.label }}
-          </td>
+          </th>
           <td colspan="6">
           </td>
           <td>
@@ -161,7 +160,7 @@
           </td>
         </tr>
         <tr>
-          <th>
+          <th class="not-as-header">
             Subtotaal personele kosten
           </th>
           <td>
@@ -174,22 +173,25 @@
 
       <tbody>
         <tr>
-          <th colspan="9">
+          <th colspan="2">
             Overige kosten
+          </th>
+          <th colspan="7">
+            Naar project
           </th>
         </tr>
         {{ view.budget_item_formset.management_form }}
         {% for form in view.budget_item_formset %}
           <tr>
             {{ form.id }}
-            <td colspan="5"
+            <td colspan="2"
                 title="{{ form.description.label }}">
               &nbsp;&nbsp;&nbsp;
               {{ form.description }}
             </td>
             <td title="Overboeken naar ander project
                        (vaak niet nodig)"
-                colspan="2">
+                colspan="5">
               {{ form.to_project }}
             </td>
             <td title="{{ form.amount.label }}">
@@ -239,7 +241,7 @@
         {% endfor %}
 
         <tr>
-          <th>
+          <th class="not-as-header">
             {{ view.project_form.software_development.label }}
           </th>
           <td colspan="6">
@@ -254,7 +256,7 @@
           </td>
         </tr>
         <tr>
-          <th>
+          <th class="not-as-header">
             {{ view.project_form.profit.label }}
           </th>
           <td colspan="6">
@@ -288,7 +290,7 @@
           </td>
         </tr>
         <tr>
-          <th>
+          <th class="not-as-header">
             Nog te verdelen
           </th>
           <td>

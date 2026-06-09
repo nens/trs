@@ -265,3 +265,14 @@ form.form-trs label {
 input, select, textarea {
   @apply pt-0 pb-0;
 }
+input[type=number] {
+  /* Too wide */
+  @apply w-20;
+}
+#booking-table input[type=number] {
+  /* Even smaller  */
+  @apply w-11;
+}
+th.not-as-header {
+  @apply text-base-content;
+}

@@ -3311,6 +3311,15 @@ input, select, textarea {
   padding-top: calc(var(--spacing) * 0);
   padding-bottom: calc(var(--spacing) * 0);
 }
+input[type=number] {
+  width: calc(var(--spacing) * 20);
+}
+#booking-table input[type=number] {
+  width: calc(var(--spacing) * 11);
+}
+th.not-as-header {
+  color: var(--color-base-content);
+}
 @layer base {
   input:where([type='text']),input:where(:not([type])),input:where([type='email']),input:where([type='url']),input:where([type='password']),input:where([type='number']),input:where([type='date']),input:where([type='datetime-local']),input:where([type='month']),input:where([type='search']),input:where([type='tel']),input:where([type='time']),input:where([type='week']),select:where([multiple]),textarea,select {
     appearance: none;

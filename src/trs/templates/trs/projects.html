@@ -71,7 +71,7 @@
                   {% if line.project.description|length > 50 %}
                     title="{{ line.project.description }}"
                   {% endif %}>
-              {{ line.project.description|truncatechars:48 }}
+              {{ line.project.description|truncatechars:42 }}
             </span>
           </td>
           <td class="text-right {{ line.klass }}">
