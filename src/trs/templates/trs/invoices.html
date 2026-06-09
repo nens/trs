@@ -9,24 +9,24 @@
   <table class="table table-compact table-fixed-header">
     <thead class="header">
       <tr>
-        <th class="text-right">Datum</th>
-        <th>Factuurnummer</th>
+        <th>Datum</th>
+        <th>Factuurnr</th>
         <th>Project</th>
         <th>Opdrachtgever</th>
         <th>Omschrijving</th>
         <th class="text-right">Exclusief</th>
         <th class="text-right">BTW</th>
         <th class="text-right">Inclusief</th>
-        <th class="text-right">Betaald</th>
+        <th>Betaald</th>
       </tr>
     </thead>
     <tbody>
       {% for invoice in view.invoices %}
       <tr id="{{ invoice.id }}">
-        <td class="text-right">
+        <td>
           <span class="date">{{ invoice.date|date:"j b Y" }}</span>
         </td>
-        <td>
+        <td class="whitespace-nowrap">
           {% if not invoice.project.archived %}
             <a href="{% url 'trs.invoice.edit' project_pk=invoice.project.pk pk=invoice.pk %}?from_invoice_overview">
               <span class="inline-icon icon-[mdi--pencil]"></span>
@@ -36,13 +36,13 @@
             {{ invoice.number }}
           {% endif %}
         </td>
-        <td>{{ invoice.project.as_widget }}</td>
+        <td class="whitespace-nowrap">{{ invoice.project.as_widget }}</td>
         <td>{{ invoice.project.principal }}</td>
         <td>{{ invoice.description }}</td>
         <td class="text-right">{{ invoice.amount_exclusive|money_with_decimal }}</td>
         <td class="text-right">{{ invoice.vat|money_with_decimal }}</td>
         <td class="text-right">{{ invoice.amount_inclusive|money_with_decimal }}</td>
-        <td class="text-right">
+        <td>
           <span class="date">
             {{ invoice.payed|date:"j b Y"|default:'Nee' }}
           </span>

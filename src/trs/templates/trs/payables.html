@@ -16,7 +16,7 @@
   <table class="table table-compact table-fixed-header">
     <thead class="header">
       <tr>
-        <th class="text-right">Factuurdatum</th>
+        <th>Factuurdatum</th>
         <th>Factuurnummer</th>
         <th>Project</th>
         <th>Opdrachtgever</th>
@@ -28,7 +28,7 @@
     <tbody>
       {% for payable in view.payables %}
       <tr id="{{ payable.id }}">
-        <td class="text-right">
+        <td>
           <span class="date">{{ payable.date|date:"j b Y" }}</span>
         </td>
         <td>
@@ -45,7 +45,7 @@
         <td>{{ payable.project.principal }}</td>
         <td>{{ payable.description }}</td>
         <td class="text-right">{{ payable.amount|money_with_decimal }}</td>
-        <td class="text-right">
+        <td class="whitespace-nowrap text-right">
           <span class="date">
             {{ payable.payed|date:"j b Y"|default:'Nee' }}
           </span>
