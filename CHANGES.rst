@@ -7,6 +7,10 @@ Changelog of TRS
 
 - Date input fields now use the browser's much nicer regular date input widget.
 
+- Big UI upgrade: moved from the old bootrap 2 to tailwindcss+daisyui.
+
+- Project xls export is now date-based instead of week-based.
+
 
 3.0 (2026-01-26)
 ----------------
