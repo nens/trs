@@ -2961,14 +2961,19 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
         )
 
     @cached_property
-    def bookings_per_week_per_person(self):
-        bookings = (
-            Booking.objects.filter(booked_on=self.project, year_week__in=self.weeks)
-            .values("booked_by", "year_week")
-            .annotate(models.Sum("hours"))
-        )
+    def days(self):
+        result = []
+        for week in self.weeks:
+            result += week.days()
+        return result
+
+    @cached_property
+    def bookings_per_day_per_person(self):
+        bookings = Booking.objects.filter(
+            booked_on=self.project, year_week__in=self.weeks
+        ).values("booked_by", "date", "hours")
         return {
-            (booking["booked_by"], booking["year_week"]): (booking["hours__sum"])
+            (booking["booked_by"], booking["date"]): (booking["hours"])
             for booking in bookings
         }
 
@@ -2997,7 +3002,7 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
             "Verlies",
             "",
         ]
-        result += [week.as_param() for week in self.weeks]
+        result += [day.isoformat() for day in self.days]
         return result
 
     @property
@@ -3020,8 +3025,8 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
                 "",
             ]
             result += [
-                self.bookings_per_week_per_person.get((person.pk, week.pk), 0)
-                for week in self.weeks
+                self.bookings_per_day_per_person.get((person.pk, day), 0)
+                for day in self.days
             ]
 
             yield result
