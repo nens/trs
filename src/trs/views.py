@@ -360,7 +360,7 @@ class PersonsView(BaseView):
         if current_year not in years_booked_in:
             # Corner case if no one has booked yet in this year :-)
             years_booked_in.append(current_year)
-        return years_booked_in
+        return sorted(years_booked_in)
 
     @cached_property
     def filters_and_choices(self):
@@ -647,7 +647,7 @@ class PersonKPIView(PersonView):
         if current_year not in years_person_booked_in:
             # Corner case if you haven't booked yet in this year :-)
             years_person_booked_in.append(current_year)
-        return years_person_booked_in
+        return sorted(years_person_booked_in)
 
 
 class BookingOverview(PersonView):
@@ -676,7 +676,7 @@ class BookingOverview(PersonView):
         if current_year not in years_i_booked_in:
             # Corner case if you haven't booked yet in this year :-)
             years_i_booked_in.append(current_year)
-        return years_i_booked_in
+        return sorted(years_i_booked_in)
 
     @cached_property
     def lines(self):
@@ -755,7 +755,7 @@ class FreeOverview(PersonView):
         if current_year not in years_i_booked_in:
             # Corner case if you haven't booked yet in this year :-)
             years_i_booked_in.append(current_year)
-        return years_i_booked_in
+        return sorted(years_i_booked_in)
 
     @cached_property
     def free_project_ids(self):
@@ -808,10 +808,7 @@ class FreeOverview(PersonView):
 class ProjectsView(BaseView):
     @cached_property
     def results_for_selection_pager(self):
-        if not self.projects.has_next():
-            # List is too long, no use grabbing the full list just for pagination now
-            # that we have "infinite scrolling" with htmx.
-            return self.projects
+        return self.all_projects()
 
     @cached_property
     def filters_and_choices(self):
@@ -1017,16 +1014,18 @@ class ProjectsView(BaseView):
             if self.filters["project_manager"] == self.active_person.id:
                 return True
 
-    @cached_property
-    def projects(self):
+    def all_projects(self):
         q_objects = [filter["q"] for filter in self.prepared_filters]
         result = Project.objects.filter(*q_objects)
         if not self.can_view_elaborate_version:
             result = result.filter(hidden=False)
+        return result
 
+    @cached_property
+    def projects(self):
         # Pagination, mostly for the looooooong archive projects list.
         page = self.request.GET.get("page")
-        paginator = Paginator(result, 150)
+        paginator = Paginator(self.all_projects(), 100)
         try:
             result = paginator.page(page)
         except PageNotAnInteger:
@@ -2722,108 +2721,6 @@ class PayablesView(BaseView):
     @cached_property
     def total(self):
         return sum([payable.amount or 0 for payable in self.payables])
-
-
-class ChangesOverview(BaseView):
-    template_name = "trs/changes.html"
-
-    @cached_property
-    def filters_and_choices(self):
-        result = [
-            {
-                "title": "Periode",
-                "param": "num_weeks",
-                "default": "1",
-                "choices": [
-                    {"value": "1", "title": "alleen deze week", "q": Q()},
-                    {"value": "2", "title": "ook vorige week", "q": Q()},
-                    {"value": "4", "title": "volledige maand", "q": Q()},
-                ],
-            },
-            {
-                "title": "Projecten",
-                "param": "total",
-                "default": "true",
-                "choices": [
-                    {"value": "true", "title": "alle projecten", "q": Q()},
-                    {
-                        "value": "false",
-                        "title": "alleen de projecten waar je PL/PM voor bent",
-                        "q": Q(),
-                    },
-                ],
-            },
-        ]
-        return result
-
-    @cached_property
-    def num_weeks(self):
-        """Return number of weeks to use for the summaries."""
-        return int(self.filters["num_weeks"])
-
-    @cached_property
-    def relevant_year_weeks(self):
-        end = self.today
-        start = self.today - datetime.timedelta(days=(self.num_weeks + 1) * 7)
-        # ^^^ num_weeks + 1 to get a bit of padding halfway the week.
-        return YearWeek.objects.filter(first_day__lte=end).filter(first_day__gte=start)
-
-    @cached_property
-    def start_week(self):
-        return self.relevant_year_weeks[0]
-
-    @cached_property
-    def project_budget_changes(self):
-        start = self.start_week.first_day
-        is_project_leader = models.Q(project__project_leader=self.active_person)
-        is_project_manager = models.Q(project__project_manager=self.active_person)
-        added_after_start = models.Q(added__gte=start)
-        budget_items = BudgetItem.objects.all()
-        if not (self.can_see_everything and self.filters["total"]):
-            # Normally restrict it to relevant projects for you, but a manager
-            # can see everything if desired.
-            budget_items = budget_items.filter(is_project_manager | is_project_leader)
-        budget_items = budget_items.filter(added_after_start).select_related("project")
-        projects = {
-            budget_item.project.id: {"project": budget_item.project, "added": []}
-            for budget_item in budget_items
-        }
-        for budget_item in budget_items:
-            projects[budget_item.project.id]["added"].append(budget_item)
-            # Hm, this can be done simpler, but now it matches the invoice
-            # changes...
-        return projects.values()
-
-    @cached_property
-    def project_invoice_changes(self):
-        start = self.start_week.first_day
-        is_project_leader = models.Q(project__project_leader=self.active_person)
-        is_project_manager = models.Q(project__project_manager=self.active_person)
-        added_after_start = models.Q(date__gte=start)
-        payed_after_start = models.Q(date__gte=start)
-
-        invoices = Invoice.objects.all()
-        if not (self.can_see_everything and self.filters["total"]):
-            # Normally restrict it to relevant projects for you, but a manager
-            # can see everything if desired.
-            invoices = invoices.filter(is_project_manager | is_project_leader)
-        invoices = invoices.filter(
-            added_after_start | payed_after_start
-        ).select_related("project")
-        projects = {
-            invoice.project.id: {"project": invoice.project, "added": [], "payed": []}
-            for invoice in invoices
-        }
-        for invoice in invoices:
-            if invoice.date >= start:
-                projects[invoice.project.id]["added"].append(invoice)
-            if invoice.payed is not None and invoice.payed >= start:
-                projects[invoice.project.id]["payed"].append(invoice)
-        return projects.values()
-
-    @cached_property
-    def are_there_changes(self):
-        return self.project_budget_changes or self.project_invoice_changes
 
 
 class ProjectLeadersAndManagersView(BaseView):

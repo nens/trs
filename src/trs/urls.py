@@ -174,11 +174,6 @@ urlpatterns = [
         name="trs.overviews.pl_pm",
     ),
     path(
-        "overviews/changes/",
-        views.ChangesOverview.as_view(),
-        name="trs.overviews.changes",
-    ),
-    path(
         "overviews/reservations/",
         views.ReservationsOverview.as_view(),
         name="trs.overviews.reservations",

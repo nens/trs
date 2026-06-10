@@ -5,35 +5,25 @@
   <h1>{{ view.title }}</h1>
   {{ view.back_url }}
 
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissable">
-      <button type="button"
-              class="close"
-              data-dismiss="alert"
-              aria-hidden="true">&times;</button>
-      {{ message }}
-    </div>
-  {% endfor %}
-
   <form action="." method="post">
     {% csrf_token %}
 
-    <table class="table table-hover table-condensed table-fixed-header"
+    <table class="table table-compact table-fixed-header table-hover-row"
            id="project-edit-budget-table">
       {# The table is 9 columns wide. #}
-      <thead>
+      <thead class="header">
         <tr>
           <th colspan="6">
           </th>
           <th>Inkomsten</th>
           <th>Kosten</th>
-          <th>Delete</th>
+          <th class="rotated-header">Delete</th>
         </tr>
       </thead>
 
       <tbody>
         <tr>
-          <th colspan="6">Opdrachtsom</th>
+          <th class="not-as-header" colspan="6">Opdrachtsom</th>
           <td>{{ view.project.contract_amount|money }}</td>
           <td></td>
           <td></td>
@@ -51,13 +41,13 @@
               &nbsp;&nbsp;&nbsp;
               {{ form.description }}
               {% for error in form.description.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
+                <div class="alert alert-error alert-soft">{{ error }}</div>
               {% endfor %}
             </td>
             <td title="{{ form.amount.label }}">
               {{ form.amount }}
               {% for error in form.amount.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
+                <div class="alert alert-error alert-soft">{{ error }}</div>
               {% endfor %}
             </td>
             <td title="delete">
@@ -71,7 +61,7 @@
         {% endfor %}
 
         <tr>
-          <th>Netto opdrachtsom</th>
+          <th class="not-as-header">Netto opdrachtsom</th>
           <td>
             {{ view.project.net_contract_amount|money }}
           </td>
@@ -94,16 +84,16 @@
           <tr>
             {{ form.id }}
             {% for error in form.non_field_errors %}
-              <div class="alert alert-danger">{{ error }}</div>
+              <div class="alert alert-error alert-soft">{{ error }}</div>
             {% endfor %}
-            <td>
+            <td class="whitespace-nowrap">
               &nbsp;&nbsp;&nbsp;
               {{ form.assigned_to }}
               {% for error in form.assigned_to.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
+                <div class="alert alert-error alert-soft">{{ error }}</div>
               {% endfor %}
             </td>
-            <td>
+            <td class="whitespace-nowrap">
               {% if form.person.to_book.friendly %}
                 <span class="badge"
                       title="Achter met boeken: {{ form.person.to_book.friendly }}">
@@ -122,7 +112,7 @@
             <td title="{{ form.hours.label }}">
               {{ form.hours }}
               {% for error in form.hours.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
+                <div class="alert alert-error alert-soft">{{ error }}</div>
               {% endfor %}
             </td>
             <td>
@@ -133,7 +123,7 @@
             <td title="{{ form.hourly_tariff.label }}">
               {{ form.hourly_tariff }}
               {% for error in form.hourly_tariff.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
+                <div class="alert alert-error alert-soft">{{ error }}</div>
               {% endfor %}
             </td>
             <td>
@@ -155,27 +145,26 @@
         {% endfor %}
 
         <tr>
-          <td>
-            &nbsp;&nbsp;&nbsp;
+          <th class="not-as-header">
             {{ view.project_form.reservation.label }}
-          </td>
+          </th>
           <td colspan="6">
           </td>
           <td>
             {{ view.project_form.reservation }}
             {% for error in view.project_form.reservation.errors %}
-              <div class="alert alert-danger">{{ error }}</div>
+              <div class="alert alert-error alert-soft">{{ error }}</div>
             {% endfor %}
           </td>
           <td>
           </td>
         </tr>
         <tr>
-          <th>
+          <th class="not-as-header">
             Subtotaal personele kosten
           </th>
           <td>
-            {{ view.project.person_costs_incl_reservation|money }}
+            {{ view.project.person_costs_incl_reservation|money_with_decimal }}
           </td>
           <td colspan="7">
           </td>
@@ -184,28 +173,31 @@
 
       <tbody>
         <tr>
-          <th colspan="9">
+          <th colspan="2">
             Overige kosten
+          </th>
+          <th colspan="7">
+            Naar project
           </th>
         </tr>
         {{ view.budget_item_formset.management_form }}
         {% for form in view.budget_item_formset %}
           <tr>
             {{ form.id }}
-            <td colspan="5"
+            <td colspan="2"
                 title="{{ form.description.label }}">
               &nbsp;&nbsp;&nbsp;
               {{ form.description }}
             </td>
             <td title="Overboeken naar ander project
                        (vaak niet nodig)"
-                colspan="2">
+                colspan="5">
               {{ form.to_project }}
             </td>
             <td title="{{ form.amount.label }}">
               {{ form.amount }}
               {% for error in form.amount.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
+                <div class="alert alert-error alert-soft">{{ error }}</div>
               {% endfor %}
             </td>
             <td title="delete">
@@ -249,7 +241,7 @@
         {% endfor %}
 
         <tr>
-          <th>
+          <th class="not-as-header">
             {{ view.project_form.software_development.label }}
           </th>
           <td colspan="6">
@@ -257,14 +249,14 @@
           <td>
             {{ view.project_form.software_development }}
             {% for error in view.project_form.software_development.errors %}
-              <div class="alert alert-danger">{{ error }}</div>
+              <div class="alert alert-error alert-soft">{{ error }}</div>
             {% endfor %}
           </td>
           <td>
           </td>
         </tr>
         <tr>
-          <th>
+          <th class="not-as-header">
             {{ view.project_form.profit.label }}
           </th>
           <td colspan="6">
@@ -272,7 +264,7 @@
           <td>
             {{ view.project_form.profit }}
             {% for error in view.project_form.profit.errors %}
-              <div class="alert alert-danger">{{ error }}</div>
+              <div class="alert alert-error alert-soft">{{ error }}</div>
             {% endfor %}
           </td>
           <td>
@@ -298,7 +290,7 @@
           </td>
         </tr>
         <tr>
-          <th>
+          <th class="not-as-header">
             Nog te verdelen
           </th>
           <td>

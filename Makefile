@@ -5,7 +5,8 @@ SHELL=/bin/bash -o pipefail
 
 
 message:
-	@echo "make install: install everything"
+	@echo "make install: install everything (excludes css build, btw)"
+	@echo "make css: re-generate the css"
 	@echo "make clean: remove .venv and staticfiles"
 	@echo "make test: run the tests"
 	@echo "make beautiful: flake8, black, isort"
@@ -16,7 +17,7 @@ install: run_uv directories staticfiles/.installed
 
 
 clean:
-	rm -rf .venv staticfiles/ bin/ lib/ share/ pyvenv.cfg bower_components/ node_modules/
+	rm -rf .venv staticfiles/ pyvenv.cfg node_modules/ src/trs/static/trs/trs.css
 
 run_uv:
 	uv sync
@@ -34,17 +35,9 @@ var/%:
 	mkdir -p var/$*
 
 
-staticfiles/.installed: bower_components
+staticfiles/.installed:
 	uv run manage.py collectstatic --noinput
 	touch $@
-
-
-bower_components: bower.json node_modules/bower/bin/bower
-	node_modules/bower/bin/bower --allow-root install
-
-
-node_modules/bower/bin/bower:
-	npm install bower
 
 
 test: install
@@ -53,3 +46,11 @@ test: install
 
 beautiful:
 	pre-commit run --all
+
+
+css: directories node_modules/.bin/tailwindcss
+	node_modules/.bin/tailwindcss -i tailwind-input.css -o src/trs/static/trs/trs.css
+
+
+node_modules/.bin/tailwindcss: package.json
+	npm install .

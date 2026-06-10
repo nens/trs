@@ -23,11 +23,11 @@
           <td>
             <span class="text-muted"
                   style="white-space: nowrap;"
-                  {% if project.description|length > 35 %}
+                  {% if project.description|length > 60 %}
                     title="{{ project.description }}"
                   {% endif %}>
               &nbsp;
-              {{ project.description|truncatechars:35 }}
+              {{ project.description|truncatechars:60 }}
             </span>
           </td>
           <td class="text-right">{{ project.reservation | money }}</td>

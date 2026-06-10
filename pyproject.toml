@@ -7,8 +7,6 @@ version = "3.1.dev0"
 requires-python = "==3.13.*"
 dependencies = [
     "Django == 5.2.*",
-    "Werkzeug",
-    "beautifulsoup4",
     "django-environ",
     "django-extensions > 3.0.0",
     "django-htmx>=1.27.0",
@@ -17,9 +15,7 @@ dependencies = [
     "gunicorn",
     "nens-auth-client",
     "pymemcache",
-    "requests",
     "sentry-sdk",
-    "setuptools",
     "whitenoise",
     "xlsxwriter",
 ]
@@ -65,3 +61,10 @@ dev = [
 venvPath = "."
 venv = ".venv"
 include = "src"
+
+[tool.dependencychecker]
+ignore-packages = ["pymemcache", "django-types"]
+
+django-environ = ['environ']
+django-tls_rvanlaar = ["tls"]
+factory-boy = ["factory"]

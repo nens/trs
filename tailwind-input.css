@@ -1,0 +1,278 @@
+@import url("https://code.cdn.mozilla.net/fonts/fira.css");
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/forms";
+@plugin "daisyui";
+@plugin "@iconify/tailwind4";
+/* I've added 'material design icons', see
+   https://iconify.design/docs/usage/css/tailwind/tailwind4/ and
+   https://icon-sets.iconify.design/mdi/ and https://pictogrammers.com/library/mdi/ */
+
+/* Source templates to determine what css classes we're using */
+@source "src/trs/templates/trs/*.html";
+
+@theme {
+  --font-sans: "Fira Sans", sans-serif;
+  --font-mono: "Fira Mono", monospace;
+}
+
+@plugin "daisyui/theme" {
+  name: "nenslight";
+  default: true;
+  prefersdark: false;
+  color-scheme: "light";
+  --color-base-100: oklch(100% 0 0);
+  --color-base-200: oklch(98% 0 0);
+  --color-base-300: oklch(95% 0 0);
+  --color-base-content: oklch(21% 0.006 285.885);
+  --color-primary: #d66d00;
+  --color-primary-content: oklch(100% 0 0);
+  --color-secondary: #7290d5;
+  --color-secondary-content: oklch(100% 0 0);
+  --color-accent: oklch(77% 0.152 181.912);
+  --color-accent-content: oklch(38% 0.063 188.416);
+  --color-neutral: oklch(14% 0.005 285.823);
+  --color-neutral-content: oklch(92% 0.004 286.32);
+  --color-info: oklch(74% 0.16 232.661);
+  --color-info-content: oklch(29% 0.066 243.157);
+  --color-success: oklch(76% 0.177 163.223);
+  --color-success-content: oklch(37% 0.077 168.94);
+  --color-warning: oklch(82% 0.189 84.429);
+  --color-warning-content: oklch(41% 0.112 45.904);
+  --color-error: oklch(71% 0.194 13.428);
+  --color-error-content: oklch(27% 0.105 12.094);
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+
+@plugin "daisyui/theme" {
+  name: "nensdark";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+  --color-base-100: oklch(25.33% 0.016 252.42);
+  --color-base-200: oklch(23.26% 0.014 253.1);
+  --color-base-300: oklch(21.15% 0.012 254.09);
+  --color-base-content: oklch(97.807% 0.029 256.847);
+  --color-primary: #d66d00;
+  --color-primary-content: oklch(100% 0 0);
+  --color-secondary: #7290d5;
+  --color-secondary-content: oklch(100% 0 0);
+  --color-accent: oklch(77% 0.152 181.912);
+  --color-accent-content: oklch(38% 0.063 188.416);
+  --color-neutral: oklch(14% 0.005 285.823);
+  --color-neutral-content: oklch(92% 0.004 286.32);
+  --color-info: oklch(74% 0.16 232.661);
+  --color-info-content: oklch(29% 0.066 243.157);
+  --color-success: oklch(76% 0.177 163.223);
+  --color-success-content: oklch(37% 0.077 168.94);
+  --color-warning: oklch(82% 0.189 84.429);
+  --color-warning-content: oklch(41% 0.112 45.904);
+  --color-error: oklch(71% 0.194 13.428);
+  --color-error-content: oklch(27% 0.105 12.094);
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+.navbar-nens {
+  @apply navbar bg-base-200 text-base-content;
+}
+
+.navbar-nens a {
+  @apply btn btn-ghost font-normal;
+}
+
+.navbar-nens a.active {
+  @apply btn-outline text-primary;
+}
+
+.navbar-nens a.logo {
+  @apply text-5xl font-bold text-primary;
+}
+
+.navbar-nens .dropdown-content {
+  @apply bg-base-200;
+}
+
+.navbar-nens .badge {
+  @apply badge-soft;
+}
+
+
+#selection-pager .selected {
+  @apply font-bold;
+}
+
+.card-topbottom { /* custom class */
+  @apply bg-base-300 p-1 pt-2 pb-2;
+}
+
+#selection-pager .card-body a {
+  @apply link text-secondary;
+}
+
+
+.inline-icon {
+  @apply align-[-0.125em];
+  /* See https://iconify.design/docs/iconify-icon/inline.html */
+}
+
+
+.prose-nens {
+  @apply prose-headings:text-primary prose-a:text-secondary prose-a:link max-w-full
+         prose-headings:mb-2 prose-li:mb-0
+         prose-dt:mt-0 prose-p:mt-0 prose-dd:mt-0 prose-li:mt-0 prose-dl:mt-0;
+}
+
+
+#sidebar .card {
+  @apply card-border shadow-md p-2 mb-5;
+}
+
+#sidebar .card h2 {
+  @apply font-bold text-primary;
+}
+
+#sidebar .card a {
+  @apply text-secondary link;
+}
+
+
+a.headerlink { color: transparent };
+h1:hover a.headerlink, h2:hover a.headerlink { color: inherit };
+pre { max-width: 90vw };
+
+
+.table-compact th,td {
+  @apply pt-1 pb-1;
+  @apply border-b-1 border-base-300;
+}
+
+.table-compact th:first-child {
+  /* Zap weird padding for th fields */
+  @apply ps-0;
+}
+.table-compact th:last-child {
+  /* Zap weird padding for th fields */
+  @apply pe-0;
+}
+
+#booking-table .other-week {
+  @apply bg-base-200;
+}
+
+#booking-table tfoot tr th:first {
+  /* Fix weird inconsistency in the booking table */
+  @apply pl-0 pr-2;
+}
+
+#booking-table td:last-child {
+  /* Fix inconsistency in the booking table */
+  @apply pr-2;
+}
+
+/* Hack to get rid if the up/down spinners in the booking form */
+input[type='number'] {
+  -moz-appearance:textfield;
+}
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+table.table-hover-row tbody tr:hover {
+  @apply bg-base-300;
+}
+
+table .header-fixed {
+  /* Set by javascript for table-fixed-header copies */
+  position: fixed;
+  top: 0px;
+  z-index: 1020;                /* Perhaps not needed, previously for navbar */
+}
+table .header-copy {
+  @apply bg-base-100;           /* Hardcoded background color to help the js */
+}
+table .hide {
+  /* Used by javascript for table-fixed-header copies */
+  display: none;
+}
+
+thead .rotated-header {
+  writing-mode: vertical-rl;
+  @apply -rotate-180 pl-0 pr-0;
+}
+
+thead .rotated div {
+  /* @apply origin-bottom-left -rotate-90; */
+}
+
+table {
+  @apply border-collapse;
+}
+
+.filter-snippet, .description-table {
+  @apply inline-grid grid-cols-[max-content_auto] gap-2 items-center;
+  @apply mb-4;
+}
+
+.description-table .description-key {
+  @apply font-bold;
+}
+
+span[title] {
+  @apply border-b-1 border-dotted cursor-help;
+}
+
+th[title] {
+  @apply cursor-help;
+}
+
+/* BBB with bootstrap */
+.text-muted {
+  @apply text-base-content/70;
+}
+.text-danger {
+  @apply text-error;
+}
+td.danger {
+  @apply bg-error/20;
+}
+td.warning {
+  @apply bg-warning/20;
+}
+td.success {
+  @apply bg-success/20;
+}
+
+/* Form stuff */
+form.form-trs label {
+  @apply font-bold;
+}
+input, select, textarea {
+  @apply pt-0 pb-0;
+  @apply text-base-content bg-base-100;
+}
+input[type=number] {
+  /* Too wide */
+  @apply w-20;
+}
+#booking-table input[type=number] {
+  /* Even smaller  */
+  @apply w-11;
+}
+th.not-as-header {
+  @apply text-base-content;
+}

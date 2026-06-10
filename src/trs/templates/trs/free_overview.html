@@ -4,68 +4,68 @@
 {% block full-width %}
   <h1>Overzicht vrije dagen / feestdagen {{ view.person }} {{ view.year }}</h1>
 
+  <div class="text-muted">
+    Jaar:
+    {% for year in view.available_years %}
+      {% if year == view.year %}
+        {{ year }}
+      {% else %}
+        <a href="?year={{ year }}">{{ year }}</a>
+      {% endif %}
+      {% if not forloop.last %}
+        |
+      {% endif %}
+    {% endfor %}
+  </div>
+
   <p>Noot: ik filter op projecten met "feest" en "verlof" in de naam.</p>
 
-  <div class="row">
-    <div class="col-md-10">
-      <p>
-        Je kan op het weeknummer klikken om de uren van die week te bewerken.
-      </p>
+  <p>
+    Je kan op het weeknummer klikken om de uren van die week te bewerken.
+  </p>
 
-      <table class="table table-hover table-condensed table-fixed-header">
-        <thead class="header">
-          <tr>
-            <th>Week</th>
-            <th>Begindag</th>
-            {% for project in view.free_projects %}
-            <th class="text-right">
-              <a href="{{ project.get_absolute_url }}">
-                {{ project.code }}
-              </a>
-            </th>
-            {% endfor %}
-          </tr>
-          <tr>
-            <th></th>
-            <th></th>
-            {% for project in view.free_projects %}
-            <th class="text-right">
-              {{ project.description }}
-            </th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for line in view.lines %}
-            <tr>
-              <td>
-                <a href="{% url 'trs.booking' pk=view.person.id year=line.year_week.year week=line.year_week.week %}">
-                  Week {{ line.year_week.week }}
-                </a>
-              </td>
-              <td>
-                <span class="year-date-hint">
-                  {{ line.year_week.formatted_first_day }}
-                </span>
-              </td>
-              {% for hour in line.hours %}
-              <td class="text-right {% if hour %}success{% endif %}">{{ hour|hours }}</th>
-              {% endfor %}
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-
-    </div>
-    <div class="col-md-2">
-      <p>Beschikbare jaren:</p>
-      <ul>
-        {% for year in view.available_years %}
-          <li><a href="?year={{ year }}">{{ year }}</a></li>
+  <table class="table table-compact table-fixed-header table-hover-row">
+    <thead class="header">
+      <tr>
+        <th>Week</th>
+        <th>Begindag</th>
+        {% for project in view.free_projects %}
+          <th class="text-right">
+            <a href="{{ project.get_absolute_url }}">
+              {{ project.code }}
+            </a>
+          </th>
         {% endfor %}
-      </ul>
-
-    </div>
-  </div>
+      </tr>
+      <tr>
+        <th></th>
+        <th></th>
+        {% for project in view.free_projects %}
+          <th class="text-right">
+            {{ project.description }}
+          </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in view.lines %}
+        <tr>
+          <td>
+            <a href="{% url 'trs.booking' pk=view.person.id year=line.year_week.year week=line.year_week.week %}">
+              Week {{ line.year_week.week }}
+            </a>
+          </td>
+          <td>
+            <span class="year-date-hint">
+              {{ line.year_week.formatted_first_day }}
+            </span>
+          </td>
+          {% for hour in line.hours %}
+            <td class="text-right {% if hour %}success{% endif %}">{{ hour|hours }}</th>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
 {% endblock %}

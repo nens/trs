@@ -7,25 +7,16 @@
     <a class="pull-right"
        title="Download .excel"
        href="{% url 'trs.overviews.payables.excel' %}?{{ view.request.GET.urlencode }}">
-      <span class="glyphicon glyphicon-download-alt"></span>
+      <span class="inline-icon icon-[mdi--file-excel-outline]"></span>
     </a>
   </h1>
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissable">
-      <button type="button"
-              class="close"
-              data-dismiss="alert"
-              aria-hidden="true">&times;</button>
-      {{ message }}
-    </div>
-  {% endfor %}
 
   {% include "trs/filter-snippet.html" %}
 
-  <table class="table table-condensed table-fixed-header">
+  <table class="table table-compact table-fixed-header">
     <thead class="header">
       <tr>
-        <th class="text-right">Factuurdatum</th>
+        <th>Factuurdatum</th>
         <th>Factuurnummer</th>
         <th>Project</th>
         <th>Opdrachtgever</th>
@@ -37,13 +28,13 @@
     <tbody>
       {% for payable in view.payables %}
       <tr id="{{ payable.id }}">
-        <td class="text-right">
+        <td>
           <span class="date">{{ payable.date|date:"j b Y" }}</span>
         </td>
         <td>
           {% if not payable.project.archived %}
             <a href="{% url 'trs.payable.edit' project_pk=payable.project.pk pk=payable.pk %}?from_payable_overview">
-              <span class="glyphicon glyphicon-pencil"></span>
+              <span class="inline-icon icon-[mdi--pencil]"></span>
               {{ payable.number }}
             </a>
           {% else %}
@@ -54,7 +45,7 @@
         <td>{{ payable.project.principal }}</td>
         <td>{{ payable.description }}</td>
         <td class="text-right">{{ payable.amount|money_with_decimal }}</td>
-        <td class="text-right">
+        <td class="whitespace-nowrap text-right">
           <span class="date">
             {{ payable.payed|date:"j b Y"|default:'Nee' }}
           </span>
