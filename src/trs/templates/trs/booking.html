@@ -38,40 +38,49 @@
            class="table table-compact table-fixed-header table-hover-row">
       <thead class="header">
         <tr>
-          <th>Code</th>
-          <th>Omschrijving</th>
-          <th class="rotated-header">Budget</th>
-          <th class="rotated-header">Geboekt</th>
-          <th class="rotated-header">Over</th>
-          <th>&nbsp;</th>
+          <th rowspan="2">Code</th>
+          <th rowspan="2">Omschrijving</th>
+          <th rowspan="2" class="rotated-header">Budget</th>
+          <th rowspan="2" class="rotated-header">Geboekt</th>
+          <th rowspan="2" class="rotated-header">Over</th>
+          <th rowspan="2">&nbsp;</th>
+          {% for year_week in view.year_weeks_to_display %}
+            {% if forloop.counter == 3 %}
+              <th colspan="{{ view.active_dates|length }}">
+                <a href="{% url 'trs.booking' pk=view.person.id year=year_week.year week=year_week.week %}">
+                  {% if year_week == view.this_year_week %}
+                    Huidige week
+                  {% else %}
+                    Week {{ year_week.week }}
+                  {% endif %}
+                  <span>({{ year_week.first_day|date:"j b" }})</span>
+                </a>
+              </th>
+            {% else %}
+              <th class="other-week">
+                <a href="{% url 'trs.booking' pk=view.person.id year=year_week.year week=year_week.week %}">
+                  {% if year_week == view.this_year_week %}
+                    Huidige
+                  {% else %}
+                    Wk {{ year_week.week }}
+                  {% endif %}
+                </a>
+              </th>
+            {% endif %}
+          {% endfor %}
+        <tr>
           {% for year_week in view.year_weeks_to_display %}
             {% if forloop.counter == 3 %}
 
               {# display the (5) dates instead of the 1 week  #}
               {% for date in view.active_dates %}
-                <th class="rotated-header above-form-cells">
-                  {% if forloop.counter == 1 %}
-                    <a href="{% url 'trs.booking' pk=view.person.id year=year_week.year week=year_week.week %}">
-                      {% if year_week == view.this_year_week %}
-                        Huidige
-                      {% else %}
-                        Week {{ year_week.week }}
-                      {% endif %}
-                    </a><br>
-                  {% endif %}
-                  {{ date|date:"D j b" }}
+                <th class="text-right">
+                  {{ date|date:"D" }}
                 </th>
               {% endfor %}
 
             {% else %}
-              <th class="rotated-header other-week">
-                <a href="{% url 'trs.booking' pk=view.person.id year=year_week.year week=year_week.week %}">
-                  {% if year_week == view.this_year_week %}
-                    Huidige
-                  {% else %}
-                    Week {{ year_week.week }}
-                  {% endif %}
-                </a><br>
+              <th class="other-week">
                 <span class="year-date-hint">
                   {{ year_week.first_day|date:"j b" }}
                 </span>
