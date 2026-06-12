@@ -11,6 +11,8 @@ Changelog of TRS
 
 - Project xls export is now date-based instead of week-based.
 
+- Beautified the free day overview + added totals + afas link.
+
 
 3.0 (2026-01-26)
 ----------------
