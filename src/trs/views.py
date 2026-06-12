@@ -800,9 +800,29 @@ class FreeOverview(PersonView):
             hours = [
                 weeks[year_week.week][project.id] for project in self.free_projects
             ]
-            line = {"year_week": year_week, "hours": hours}
+            line = {"year_week": year_week, "hours": hours, "week_total": sum(hours)}
             result.append(line)
         return result
+
+    def totals(self):
+        booked_this_year_per_project = (
+            Booking.objects.filter(
+                booked_by=self.person,
+                year_week__year=self.year,
+                booked_on__in=self.free_projects,
+            )
+            .values("booked_on")
+            .annotate(models.Sum("hours"))
+        )
+        booked_per_project = {}
+        line = []  # projects + 1xtotal
+        for item in booked_this_year_per_project:
+            booked_per_project[item["booked_on"]] = item["hours__sum"]
+        for project in self.free_projects:
+            line.append(booked_per_project.get(project.id, 0))
+        total = sum(line)
+        line.append(total)
+        return line
 
 
 class ProjectsView(BaseView):

@@ -2744,6 +2744,9 @@
   .px-4 {
     padding-inline: calc(var(--spacing) * 4);
   }
+  .pr-2 {
+    padding-right: calc(var(--spacing) * 2);
+  }
   .text-center {
     text-align: center;
   }

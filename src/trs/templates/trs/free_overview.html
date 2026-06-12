@@ -18,9 +18,14 @@
     {% endfor %}
   </div>
 
-  <p>Noot: ik filter op projecten met "feest" en "verlof" in de naam.</p>
-
   <p>
+    In <b>Afas</b> is er <a target="_"
+    href="https://93715.afasinsite.nl/mijn-verlofboeking-prs/overzicht">een pagina met
+    het overzicht van al jouw verlofboekingen daar</a>, inclusief een export naar een
+    spreadsheet als je het helemaal niet meer snapt.
+  </p>
+
+  <p> Noot: ik filter op projecten met "feest" en "verlof" in de naam.<br>
     Je kan op het weeknummer klikken om de uren van die week te bewerken.
   </p>
 
@@ -36,6 +41,7 @@
             </a>
           </th>
         {% endfor %}
+        <th></th>
       </tr>
       <tr>
         <th></th>
@@ -45,27 +51,39 @@
             {{ project.description }}
           </th>
         {% endfor %}
+        <th>Totaal</th>
       </tr>
     </thead>
     <tbody>
       {% for line in view.lines %}
         <tr>
           <td>
-            <a href="{% url 'trs.booking' pk=view.person.id year=line.year_week.year week=line.year_week.week %}">
+            <a class="whitespace-nowrap"
+               href="{% url 'trs.booking' pk=view.person.id year=line.year_week.year week=line.year_week.week %}">
               Week {{ line.year_week.week }}
             </a>
           </td>
           <td>
-            <span class="year-date-hint">
+            <span class="whitespace-nowrap year-date-hint">
               {{ line.year_week.formatted_first_day }}
             </span>
           </td>
           {% for hour in line.hours %}
             <td class="text-right {% if hour %}success{% endif %}">{{ hour|hours }}</th>
           {% endfor %}
+          <td class="text-right font-bold">{{ line.week_total|hours }}</th>
         </tr>
       {% endfor %}
     </tbody>
+    <tfoot>
+      <tr>
+        <th>Totaal</th>
+        <th></th>
+        {% for total in view.totals %}
+          <th class="text-right pr-2">{{ total }}</th>
+        {% endfor %}
+      </tr>
+    </tfoot>
   </table>
 
 {% endblock %}
