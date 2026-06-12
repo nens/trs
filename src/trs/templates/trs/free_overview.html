@@ -35,23 +35,14 @@
         <th>Week</th>
         <th>Begindag</th>
         {% for project in view.free_projects %}
-          <th class="text-right">
+          <th class="rotated-header">
             <a href="{{ project.get_absolute_url }}">
               {{ project.code }}
-            </a>
-          </th>
-        {% endfor %}
-        <th></th>
-      </tr>
-      <tr>
-        <th></th>
-        <th></th>
-        {% for project in view.free_projects %}
-          <th class="text-right">
+            </a><br>
             {{ project.description }}
           </th>
         {% endfor %}
-        <th>Totaal</th>
+        <th class="text-right">Totaal</th>
       </tr>
     </thead>
     <tbody>
