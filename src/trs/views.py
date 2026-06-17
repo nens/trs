@@ -3230,23 +3230,25 @@ class RatingsOverview(BaseView):
 
     @cached_property
     def average_rating_projectteam(self):
-        return statistics.mean(
-            [
-                project.rating_projectteam
-                for project in self.projects
-                if project.rating_projectteam
-            ]
-        )
+        values = [
+            project.rating_projectteam
+            for project in self.projects
+            if project.rating_projectteam
+        ]
+        if not values:
+            return "Geen waarde"
+        return statistics.mean(values)
 
     @cached_property
     def average_rating_customer(self):
-        return statistics.mean(
-            [
-                project.rating_customer
-                for project in self.projects
-                if project.rating_customer
-            ]
-        )
+        values = [
+            project.rating_customer
+            for project in self.projects
+            if project.rating_customer
+        ]
+        if not values:
+            return "Geen waarde"
+        return statistics.mean(values)
 
 
 class WbsoProjectsOverview(BaseView):
