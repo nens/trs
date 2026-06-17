@@ -29,15 +29,14 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = [
         "code",
         "description",
-        "group",
         "mpc",
         "wbso_project",
         "wbso_percentage",
         "internal",
         "archived",
     ]
-    list_filter = ["internal", "archived", "group", "mpc", "wbso_project"]
-    list_editable = ["group", "mpc", "wbso_project", "wbso_percentage"]
+    list_filter = ["internal", "archived", "mpc", "wbso_project"]
+    list_editable = ["mpc", "wbso_project", "wbso_percentage"]
     search_fields = ["code", "description"]
 
 
