@@ -1,7 +1,6 @@
 @import url("https://code.cdn.mozilla.net/fonts/fira.css");
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
-@plugin "@tailwindcss/forms";
 @plugin "daisyui";
 @plugin "@iconify/tailwind4";
 /* I've added 'material design icons', see
@@ -232,6 +231,16 @@ table {
   @apply mb-4;
 }
 
+select {
+  @apply select;
+  height: 1.5rem;
+}
+
+input {
+  @apply input;
+  height: 1.5rem;
+}
+
 .description-table .description-key {
   @apply font-bold;
 }
@@ -273,6 +282,28 @@ input[type=number] {
   /* Too wide */
   @apply w-20;
 }
+select {
+  @apply select;
+  height: 1.5rem;
+}
+
+input {
+  @apply input;
+  height: 1.5rem;
+}
+
+input[type=checkbox] {
+  @apply checkbox;
+}
+
+input.btn {
+  height: 2.5rem;               /* Original daisyui default */
+}
+
+textarea {
+  @apply textarea;
+}
+
 #booking-table input[type=number] {
   /* Even smaller  */
   @apply w-11;
