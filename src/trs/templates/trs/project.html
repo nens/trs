@@ -71,6 +71,10 @@
       </div>
     {% endif %}
 
+    {% if view.project.group %}
+      <div class="description-key">Groep</div>
+      <div>{{ view.project.group }}</div>
+    {% endif %}
     {% if view.project.mpc %}
       <div class="description-key">Markt-product-combinatie</div>
       <div>{{ view.project.mpc }}</div>

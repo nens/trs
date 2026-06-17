@@ -487,6 +487,14 @@ class Project(models.Model):
         related_name="projects_i_manage",
         on_delete=models.CASCADE,
     )
+    group = models.ForeignKey(
+        Group,
+        blank=True,
+        null=True,
+        verbose_name="groep",
+        related_name="projects",
+        on_delete=models.CASCADE,
+    )
     mpc = models.ForeignKey(
         MPC,
         blank=True,
