@@ -870,21 +870,6 @@ class ProjectsView(BaseView):
                 ],
             },
             {
-                "title": "Groep",
-                "param": "group",
-                "default": "all",
-                "choices": [{"value": "all", "title": NO_FILTER, "q": Q()}]
-                + [
-                    {
-                        "value": str(group.id),
-                        "title": group.name,
-                        "q": Q(group=group.id),
-                    }
-                    for group in Group.objects.all()
-                ]
-                + [{"value": "geen", "title": "Zonder groep", "q": Q(group=None)}],
-            },
-            {
                 "title": "MPC",
                 "param": "mpc",
                 "default": "all",
