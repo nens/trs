@@ -200,7 +200,12 @@ class BaseMixin:
     @cached_property
     def year(self):
         # Customization based on year happens a lot.
-        return int(self.request.GET.get("year", this_year_week().year))
+        custom_year = self.request.GET.get("year")
+        if custom_year == "all":
+            custom_year = None
+        if custom_year:
+            return int(custom_year)
+        return this_year_week().year
 
     @cached_property
     def is_custom_year(self):
