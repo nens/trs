@@ -977,7 +977,7 @@ class ProjectsView(BaseView):
 
     @cached_property
     def normally_visible_filters(self):
-        result = ["status", "mpc", "project_leader", "project_manager"]
+        result = ["status", "group", "mpc", "project_leader", "project_manager"]
         if self.can_see_everything:
             result += [
                 "is_subsidized",
@@ -1669,6 +1669,7 @@ class ProjectEditView(LoginAndPermissionsRequiredMixin, UpdateView, BaseMixin):
             return [
                 "code",
                 "description",
+                "group",
                 "mpc",
                 "internal",
                 "hidden",
@@ -1738,6 +1739,7 @@ class ProjectCreateView(LoginAndPermissionsRequiredMixin, CreateView, BaseMixin)
     fields = [
         "code",
         "description",
+        "group",
         "mpc",
         "internal",
         "hidden",
@@ -2603,7 +2605,7 @@ class InvoicesPerMonthOverview(BaseView):
 
 class PayablesView(BaseView):
     template_name = "trs/payables.html"
-    normally_visible_filters = ["status", "year", "projectstatus", "mpc"]
+    normally_visible_filters = ["status", "year", "projectstatus", "group", "mpc"]
 
     @cached_property
     def results_for_selection_pager(self):
@@ -2656,6 +2658,27 @@ class PayablesView(BaseView):
                         "title": "gearchiveerde projecten",
                         "q": Q(project__archived=True),
                     },
+                ],
+            },
+            {
+                "title": "Groep",
+                "param": "group",
+                "default": "all",
+                "choices": [{"value": "all", "title": NO_FILTER, "q": Q()}]
+                + [
+                    {
+                        "value": str(group.id),
+                        "title": group.name,
+                        "q": Q(project__group=group.id),
+                    }
+                    for group in Group.objects.all()
+                ]
+                + [
+                    {
+                        "value": "geen",
+                        "title": "Zonder groep",
+                        "q": Q(project__group=None),
+                    }
                 ],
             },
             {
@@ -3537,6 +3560,11 @@ class FinancialOverview(BaseView):
             "name": "Gehele bedrijf, nieuwe gecombineerde versie",
             "url": reverse("trs.combined_financial.excel"),
         }
+        for pk, name in Group.objects.all().values_list("pk", "name"):
+            yield {
+                "name": name,
+                "url": reverse("trs.financial.excel", kwargs={"group_pk": pk}),
+            }
         for pk, name in MPC.objects.all().values_list("pk", "name"):
             yield {
                 "name": "MPC: " + name,
@@ -3557,6 +3585,12 @@ class FinancialExcelView(ExcelResponseMixin, ProjectsView):
         return [self.title]
 
     @cached_property
+    def group(self):
+        if "group_pk" in self.kwargs:
+            return Group.objects.get(id=self.kwargs["group_pk"])
+        return
+
+    @cached_property
     def mpc(self):
         if "mpc_pk" in self.kwargs:
             return MPC.objects.get(id=self.kwargs["mpc_pk"])
@@ -3565,17 +3599,23 @@ class FinancialExcelView(ExcelResponseMixin, ProjectsView):
     @property
     def projects(self):
         queryset = Project.objects.filter(internal=False)
+        if self.group:
+            queryset = queryset.filter(group=self.group)
         if self.mpc:
             queryset = queryset.filter(mpc=self.mpc)
         return queryset
 
     @property
     def persons(self):
+        if self.group:
+            return Person.objects.filter(group=self.group)
         return Person.objects.all()
 
     @cached_property
     def for_who(self):
-        if self.mpc:
+        if self.group:
+            return self.group.name
+        elif self.mpc:
             return self.mpc.name
         else:
             return "het gehele bedrijf"
@@ -3589,6 +3629,8 @@ class FinancialExcelView(ExcelResponseMixin, ProjectsView):
             .distinct()
         )
         relevant_persons = Person.objects.filter(id__in=relevant_person_ids)
+        if self.group:
+            relevant_persons = relevant_persons.filter(group=self.group)
         pycs = [core.get_pyc(person=person, year=year) for person in relevant_persons]
         return {
             "turnover": sum([pyc.turnover for pyc in pycs]),
@@ -3630,6 +3672,8 @@ class FinancialExcelView(ExcelResponseMixin, ProjectsView):
         years = [self.year - 2, self.year - 1, self.year]
         months = [i + 1 for i in range(12)]
         invoices = Invoice.objects.all()
+        if self.group:
+            invoices = invoices.filter(project__group=self.group)
         if self.mpc:
             invoices = invoices.filter(project__mpc=self.mpc)
         # For both defaultdicts, the first key is year, the second the month.
@@ -3716,7 +3760,9 @@ class FinancialExcelView(ExcelResponseMixin, ProjectsView):
 
     @cached_property
     def target(self):
-        if self.mpc:
+        if self.group:
+            return self.group.target
+        elif self.mpc:
             return self.mpc.target
         else:
             # The target of the whole company is the sum of all groups'
