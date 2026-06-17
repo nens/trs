@@ -4063,6 +4063,9 @@ textarea {
 th.not-as-header {
   color: var(--color-base-content);
 }
+input#id_description {
+  width: calc(var(--spacing) * 160);
+}
 @layer base {
   :where(:root),:root:has(input.theme-controller[value=light]:checked),[data-theme=light] {
     color-scheme: light;

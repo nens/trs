@@ -308,3 +308,6 @@ textarea {
 th.not-as-header {
   @apply text-base-content;
 }
+input#id_description {
+  @apply w-160;
+}
