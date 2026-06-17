@@ -137,12 +137,9 @@
               <div class="card">
                 <h2>
                   {% if view.sidebar_person == view.active_person %}
-                    <a href="{{ view.active_person.get_absolute_url }}">
-                      Jouw
-                    </a>
-                    voortgang
+                    Jouw overzicht
                   {% else %}
-                    Voortgang
+                    Overzicht
                     <small>van {{ view.sidebar_person.name }}</small>
                   {% endif %}
                   {% if view.is_custom_year %}
@@ -150,17 +147,21 @@
                   {% endif %}
                 </h2>
 
-                <div>
-                  Op de
-                  <a href="{% url 'trs.overviews' %}">overzichtenpagina</a>
-                  vind je het jaaroverzicht van je
-                  <span title="{{ view.sidebar_person_year_info.overbooked_percentage|floatformat:0 }}% buiten budget geboekt">
-                    boekingen</span>,
-                    de onderbouwing van je
-                  <span title="Gok voor het jaar: {{ view.sidebar_person_year_info.relative_target_percentage|floatformat:0 }}%">
-                    target</span>
-                  en het verlofoverzicht.
-                </div>
+                <p class="mb-2">
+                  Overzicht van
+                  <a href="{% url 'trs.booking.overview' pk=view.active_person.id %}">
+                    de boekingen</a>
+                </p>
+                <p class="mb-2">
+                  Percentages
+                  <a href="{% url 'trs.person.kpi' pk=view.sidebar_person.id %}">
+                    intern/extern, target, enz.</a>
+                </p>
+                <p>
+                  Afas en TRS qua vrije dagen gelijktrekken?
+                  <a href="{% url 'trs.booking.free-overview' pk=view.sidebar_person.id %}">
+                    Zie het verlofoverzicht</a>.
+                </p>
               </div>
             {% endif %}
 
