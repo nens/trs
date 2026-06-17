@@ -3202,9 +3202,6 @@ pre {
 .table-compact th:first-child {
   padding-inline-start: calc(var(--spacing) * 0);
 }
-.table-compact th:last-child {
-  padding-inline-end: calc(var(--spacing) * 0);
-}
 #booking-table .other-week {
   background-color: var(--color-base-200);
 }
@@ -3212,12 +3209,13 @@ th.other-week {
   padding-right: calc(var(--spacing) * 0);
   padding-left: calc(var(--spacing) * 1);
 }
-#booking-table tfoot tr th:first {
+#booking-tablexxx tfoot tr th:first {
   padding-right: calc(var(--spacing) * 2);
   padding-left: calc(var(--spacing) * 0);
 }
-#booking-table td:last-child {
-  padding-right: calc(var(--spacing) * 2);
+.table-compact td:last-child, .table-compact th:last-child , .table-compact td:first-child, .table-compact th:first-child , .table-compact td, .table-compact th {
+  padding-right: calc(var(--spacing) * 1);
+  padding-left: calc(var(--spacing) * 1);
 }
 input[type='number'] {
   -moz-appearance: textfield;

@@ -46,7 +46,7 @@
           <th rowspan="2">&nbsp;</th>
           {% for year_week in view.year_weeks_to_display %}
             {% if forloop.counter == 3 %}
-              <th colspan="{{ view.active_dates|length }}">
+              <th class="text-center" colspan="{{ view.active_dates|length }}">
                 <a href="{% url 'trs.booking' pk=view.person.id year=year_week.year week=year_week.week %}">
                   {% if year_week == view.this_year_week %}
                     Huidige week
@@ -57,7 +57,7 @@
                 </a>
               </th>
             {% else %}
-              <th class="other-week">
+              <th class="other-week text-right">
                 <a href="{% url 'trs.booking' pk=view.person.id year=year_week.year week=year_week.week %}">
                   {% if year_week == view.this_year_week %}
                     Huidige
@@ -80,7 +80,7 @@
               {% endfor %}
 
             {% else %}
-              <th class="other-week">
+              <th class="other-week text-right">
                 <span class="year-date-hint">
                   {{ year_week.first_day|date:"j b" }}
                 </span>

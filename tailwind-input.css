@@ -164,10 +164,6 @@ pre { max-width: 90vw };
   /* Zap weird padding for th fields */
   @apply ps-0;
 }
-.table-compact th:last-child {
-  /* Zap weird padding for th fields */
-  @apply pe-0;
-}
 
 #booking-table .other-week {
   @apply bg-base-200;
@@ -177,14 +173,15 @@ th.other-week {
   @apply pl-1 pr-0;
 }
 
-#booking-table tfoot tr th:first {
+#booking-tablexxx tfoot tr th:first {
   /* Fix weird inconsistency in the booking table */
   @apply pl-0 pr-2;
 }
 
-#booking-table td:last-child {
-  /* Fix inconsistency in the booking table */
-  @apply pr-2;
+.table-compact td:last-child, .table-compact th:last-child ,
+.table-compact td:first-child, .table-compact th:first-child ,
+.table-compact td, .table-compact th {
+  @apply pr-1 pl-1;
 }
 
 /* Hack to get rid if the up/down spinners in the booking form */
