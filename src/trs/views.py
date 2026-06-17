@@ -2975,6 +2975,10 @@ class PersonsExcelView(ExcelResponseMixin, PersonsView):
 
 
 class ProjectExcelView(ExcelResponseMixin, ProjectView):
+    DAY = "day"
+    WEEK = "week"
+    MONTH = "month"
+
     def has_form_permissions(self):
         return self.can_see_project_financials
 
@@ -2992,6 +2996,8 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
             result += week.days()
         return result
 
+    # TODO: months
+
     @cached_property
     def bookings_per_day_per_person(self):
         bookings = Booking.objects.filter(
@@ -3002,7 +3008,17 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
             for booking in bookings
         }
 
-    @property
+    @cached_property
+    def bookings_per_week_per_person(self):
+        bookings = Booking.objects.filter(
+            booked_on=self.project, year_week__in=self.weeks
+        ).annotate(models.Sum("hours")
+        ).values("booked_by", "year_week", "hours__sum")
+        return {
+            (booking["booked_by"], booking["year_week"]): (booking["hours__sum"])
+            for booking in bookings
+        }
+
     def prepend_lines(self):
         return [
             ["Code", self.project.code],
@@ -3012,8 +3028,7 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
             [],
         ]
 
-    @property
-    def header_line(self):
+    def header_line(self, kind):
         result = [
             "Naam",
             "Uren achter met boeken",
@@ -3027,11 +3042,13 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
             "Verlies",
             "",
         ]
-        result += [day.isoformat() for day in self.days]
+        if kind == self.DAY:
+            result += [day.isoformat() for day in self.days]
+        elif kind == self.WEEK:
+            result += [str(week) for week in self.weeks]
         return result
 
-    @property
-    def excel_lines(self):
+    def excel_lines(self, kind):
         for line in self.lines:
             person = line["person"]
             pl = (person == self.project.project_leader) and "PL" or ""
@@ -3049,10 +3066,17 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
                 line["loss"],
                 "",
             ]
-            result += [
-                self.bookings_per_day_per_person.get((person.pk, day), 0)
-                for day in self.days
-            ]
+            if kind == self.DAY:
+                result += [
+                    self.bookings_per_day_per_person.get((person.pk, day), 0)
+                    for day in self.days
+                ]
+            elif kind == self.WEEK:
+                result += [
+                    self.bookings_per_week_per_person.get((person.pk, week.pk), 0)
+                    for week in self.weeks
+                ]
+
 
             yield result
 
@@ -3091,6 +3115,37 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
         yield (["Totaal", "", "", "", "", self.total_costs, self.total_income])
 
         yield (["Nog te verdelen", "", "", "", "", "", self.project.left_to_dish_out()])
+
+    def render_to_response(self, context, **response_kwargs):
+        """Return a excel response instead of a rendered template."""
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  # noqa
+        )
+        filename = self.excel_filename + ".xlsx"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        workbook = xlsxwriter.Workbook(response)
+
+        for kind in [self.DAY, self.WEEK]:
+            worksheet = workbook.add_worksheet(kind)
+            worksheet.add_write_handler(Group, _django_model_instance_to_string)
+            worksheet.add_write_handler(MPC, _django_model_instance_to_string)
+            worksheet.add_write_handler(Person, _django_model_instance_to_string)
+            worksheet.add_write_handler(Project, _django_model_instance_to_string)
+
+            row_number = 0
+            for line in self.prepend_lines():
+                worksheet.write_row(row_number, 0, line)
+                row_number += 1  # yeah, right...
+            worksheet.write_row(row_number, 0, self.header_line(kind))
+            row_number += 1
+            for line in self.excel_lines(kind):
+                # Note: line should be a list of values.
+                worksheet.write_row(row_number, 0, line)
+                row_number += 1
+
+        workbook.close()
+        return response
 
 
 class ProjectPersonsExcelView(ExcelResponseMixin, ProjectView):
