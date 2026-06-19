@@ -311,3 +311,6 @@ th.not-as-header {
 input#id_description {
   @apply w-160;
 }
+input[type=submit] {
+  @apply cursor-pointer;
+}

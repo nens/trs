@@ -4066,6 +4066,9 @@ th.not-as-header {
 input#id_description {
   width: calc(var(--spacing) * 160);
 }
+input[type=submit] {
+  cursor: pointer;
+}
 @layer base {
   :where(:root),:root:has(input.theme-controller[value=light]:checked),[data-theme=light] {
     color-scheme: light;
