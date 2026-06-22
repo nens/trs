@@ -2996,12 +2996,21 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
             result += week.days()
         return result
 
-    # TODO: months
+    @cached_property
+    def year_months(self):
+        years_and_months = list(
+            self.weeks.values_list("first_day__year", "first_day__month")
+        )
+        # The last day might just be in the next month, so include that, too.
+        last_day = self.days[-1]
+        years_and_months.append((last_day.year, last_day.month))
+        # ^^^ Note: we're appending a tuple
+        return sorted(set(years_and_months))
 
     @cached_property
     def bookings_per_day_per_person(self):
         bookings = Booking.objects.filter(
-            booked_on=self.project, year_week__in=self.weeks
+            booked_on=self.project,
         ).values("booked_by", "date", "hours")
         return {
             (booking["booked_by"], booking["date"]): (booking["hours"])
@@ -3011,12 +3020,26 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
     @cached_property
     def bookings_per_week_per_person(self):
         bookings = (
-            Booking.objects.filter(booked_on=self.project, year_week__in=self.weeks)
+            Booking.objects.filter(booked_on=self.project)
             .values("booked_by", "year_week")
             .annotate(models.Sum("hours"))
         )
         return {
             (booking["booked_by"], booking["year_week"]): (booking["hours__sum"])
+            for booking in bookings
+        }
+
+    @cached_property
+    def bookings_per_month_per_person(self):
+        bookings = (
+            Booking.objects.filter(booked_on=self.project)
+            .values("booked_by", "date__year", "date__month")
+            .annotate(models.Sum("hours"))
+        )
+        return {
+            (booking["booked_by"], booking["date__year"], booking["date__month"]): (
+                booking["hours__sum"]
+            )
             for booking in bookings
         }
 
@@ -3047,6 +3070,8 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
             result += [day.isoformat() for day in self.days]
         elif kind == self.WEEK:
             result += [str(week) for week in self.weeks]
+        elif kind == self.MONTH:
+            result += [f"{year}: {month}" for (year, month) in self.year_months]
         return result
 
     def excel_lines(self, kind):
@@ -3076,6 +3101,11 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
                 result += [
                     self.bookings_per_week_per_person.get((person.pk, week.pk), 0)
                     for week in self.weeks
+                ]
+            elif kind == self.MONTH:
+                result += [
+                    self.bookings_per_month_per_person.get((person.pk, year, month), 0)
+                    for (year, month) in self.year_months
                 ]
 
             yield result
@@ -3126,7 +3156,7 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
 
         workbook = xlsxwriter.Workbook(response)
 
-        for kind in [self.DAY, self.WEEK]:
+        for kind in [self.DAY, self.WEEK, self.MONTH]:
             worksheet = workbook.add_worksheet(kind)
             worksheet.add_write_handler(Group, _django_model_instance_to_string)
             worksheet.add_write_handler(MPC, _django_model_instance_to_string)
