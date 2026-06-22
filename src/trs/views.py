@@ -3012,8 +3012,8 @@ class ProjectExcelView(ExcelResponseMixin, ProjectView):
     def bookings_per_week_per_person(self):
         bookings = (
             Booking.objects.filter(booked_on=self.project, year_week__in=self.weeks)
+            .values("booked_by", "year_week")
             .annotate(models.Sum("hours"))
-            .values("booked_by", "year_week", "hours__sum")
         )
         return {
             (booking["booked_by"], booking["year_week"]): (booking["hours__sum"])
