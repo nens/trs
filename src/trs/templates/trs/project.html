@@ -282,20 +282,23 @@
               <td>
                 &nbsp;&nbsp;&nbsp;
                 {{ line.person.as_widget }}
+                &nbsp;
+                {% if line.is_project_leader %}
+                  <span class="badge badge-outline"
+                        title="Projectleider: gaat over de uren">PL</span>
+                {% endif %}
+                {% if line.is_project_manager %}
+                  <span class="badge badge-outline"
+                        title="Projectmanager: gaat over de financi&euml;n">PM</span>
+                {% endif %}
+
               </td>
               <td>
                 {% if line.person.to_book.friendly %}
-                  <span class="badge"
+                  <span class="badge badge-outline"
                         title="Achter met boeken: {{ line.person.to_book.friendly }}">
                     {{ line.person.to_book.short }}
                   </span>
-                {% endif %}
-                {% if line.is_project_leader %}
-                  <span title="Projectleider: gaat over de uren">PL</span>
-                  &nbsp;
-                {% endif %}
-                {% if line.is_project_manager %}
-                  <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
                 {% endif %}
               </td>
 

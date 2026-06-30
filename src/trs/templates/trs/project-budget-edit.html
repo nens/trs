@@ -122,20 +122,21 @@
               {% for error in form.assigned_to.errors %}
                 <div class="alert alert-error alert-soft">{{ error }}</div>
               {% endfor %}
+              {% if form.is_project_leader %}
+                <span class="badge badge-outline"
+                      title="Projectleider: gaat over de uren">PL</span>
+              {% endif %}
+              {% if form.is_project_manager %}
+                <span class="badge badge-outline"
+                      title="Projectmanager: gaat over de financi&euml;n">PM</span>
+              {% endif %}
             </td>
             <td class="whitespace-nowrap">
               {% if form.person.to_book.friendly %}
-                <span class="badge"
+                <span class="badge badge-outline"
                       title="Achter met boeken: {{ form.person.to_book.friendly }}">
                   {{ form.person.to_book.short }}
                 </span>
-              {% endif %}
-              {% if form.is_project_leader %}
-                <span title="Projectleider: gaat over de uren">PL</span>
-                &nbsp;
-              {% endif %}
-              {% if form.is_project_manager %}
-                <span title="Projectmanager: gaat over de financi&euml;n">PM</span>
               {% endif %}
             </td>
 

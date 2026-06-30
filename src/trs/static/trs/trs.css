@@ -2722,6 +2722,14 @@
     border-left-style: var(--tw-border-style);
     border-left-width: 1px;
   }
+  .badge-outline {
+    @layer daisyui.l1.l2 {
+      color: var(--badge-color);
+      --badge-bg: #0000;
+      background-image: none;
+      border-color: currentColor;
+    }
+  }
   .alert-soft {
     @layer daisyui.l1 {
       color: var(--alert-color, var(--color-base-content));
@@ -2804,6 +2812,12 @@
   }
   .filter {
     filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
+  }
+  .badge-neutral {
+    @layer daisyui.l1.l2 {
+      --badge-color: var(--color-neutral);
+      --badge-fg: var(--color-neutral-content);
+    }
   }
   .badge-primary {
     @layer daisyui.l1.l2 {
