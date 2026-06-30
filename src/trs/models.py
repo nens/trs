@@ -717,6 +717,7 @@ class Project(models.Model):
 
         costs = 0
         income = 0
+        transferred_to_us = 0  # Only used for net_contract_amount
         # Note: a positive budget item is a cost.
         for budget_item in self.budget_items.all():
             if budget_item.amount > 0:
@@ -729,8 +730,10 @@ class Project(models.Model):
             # than a cost.
             if budget_item.amount > 0:
                 income += budget_item.amount
+                transferred_to_us += budget_item.amount
             else:
                 costs += budget_item.amount * -1
+                transferred_to_us += budget_item.amount * -1
 
         # Note: payables ('facturen kosten derden') are treated separately
         # now.
@@ -778,7 +781,7 @@ class Project(models.Model):
             ]
             or 0
         )
-        net_contract_amount = self.contract_amount - third_party_costs
+        net_contract_amount = self.contract_amount - third_party_costs + transferred_to_us
 
         person_costs_incl_reservation = person_costs + self.reservation
         total_costs = costs + person_costs_incl_reservation + third_party_costs

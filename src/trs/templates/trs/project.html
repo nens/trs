@@ -216,16 +216,32 @@
             </td>
             <td></td>
           </tr>
+	  {% for budget_item in view.project.budget_transfers.all %}
+	    <tr>
+	      <td colspan="7">
+		Overboeking van {{ budget_item.project.as_widget }}:
+                <i>{{ budget_item.description }}</i>
+	      </td>
+	      {% if budget_item.amount < 0 %}
+		<td class="text-right"></td>
+		<td class="text-right">{{ budget_item.amount_as_income|money_with_decimal }}</td>
+	      {% else %}
+		<td class="text-right">{{ budget_item.amount|money_with_decimal }}</td>
+		<td class="text-right"></td>
+	      {% endif %}
+	    </tr>
+	  {% empty %}
+	    <tr>
+	      <td colspan="9">
+		Geen overboekingen van andere projecten
+	      </td>
+	    </tr>
+	  {% endfor %}
 
-          <tr>
-            <th colspan="9">
-              Kosten derden
-            </th>
-          </tr>
           {% for third_party_estimate in view.project.third_party_estimates.all %}
             <tr>
               <td colspan="8">
-                &nbsp;&nbsp;&nbsp;
+                Kosten derden:
                 {{ third_party_estimate.description|default:'Niet ingevuld' }}
               </td>
               <td class="text-right">{{ third_party_estimate.amount|money_with_decimal }}</td>
@@ -234,18 +250,17 @@
           {% empty %}
             <tr>
               <td colspan="9">
-                &nbsp;&nbsp;&nbsp;
-                Geen
+                Geen kosten derden
               </td>
             </tr>
           {% endfor %}
 
           <tr>
             <th class="not-as-header">Netto opdrachtsom</th>
-            <td class="text-right">
+	    <th colspan="7" class="text-right not-as-header">
               {{ view.project.net_contract_amount|money_with_decimal }}
             </td>
-            <td colspan="7"></td>
+            <td></td>
         </td>
           </tr>
         </tbody>
@@ -320,10 +335,8 @@
 	    <th class="not-as-header">
 	      Subtotaal personele kosten
 	    </th>
-	    <td class="text-right">
+	    <th colspan="8" class="text-right not-as-header">
 	      {{ view.project.person_costs_incl_reservation|money_with_decimal }}
-	    </td>
-	    <td colspan="7">
 	    </td>
 	  </tr>
         </tbody>
@@ -346,33 +359,6 @@
 		<td class="text-right">{{ budget_item.amount|money_with_decimal }}</td>
 	      {% else %}
 		<td class="text-right">{{ budget_item.amount_as_income|money_with_decimal }}</td>
-		<td class="text-right"></td>
-	      {% endif %}
-	    </tr>
-	  {% empty %}
-	    <tr>
-	      <td colspan="9">
-		&nbsp;&nbsp;&nbsp;
-		Geen
-	      </td>
-	    </tr>
-	  {% endfor %}
-
-	  <tr>
-	    <th colspan="9">Overboekingen van andere projecten</th>
-	  </tr>
-	  {% for budget_item in view.project.budget_transfers.all %}
-	    <tr>
-	      <td colspan="7">
-		&nbsp;&nbsp;&nbsp;
-		{{ budget_item.description }}
-		van {{ budget_item.project.as_widget }}
-	      </td>
-	      {% if budget_item.amount < 0 %}
-		<td class="text-right"></td>
-		<td class="text-right">{{ budget_item.amount_as_income|money_with_decimal }}</td>
-	      {% else %}
-		<td class="text-right">{{ budget_item.amount|money_with_decimal }}</td>
 		<td class="text-right"></td>
 	      {% endif %}
 	    </tr>
@@ -411,10 +397,10 @@
 	    <th class="not-as-header">
 	      Nog te verdelen
 	    </th>
-	    <td class="text-right" colspan="6">
+	    <td class="text-right" colspan="7">
 	      {{ view.project.left_to_dish_out|money_with_decimal }}
 	    </td>
-            <td colspan="2"></td>
+            <td></td>
 	  </tr>
 	</tfoot>
 

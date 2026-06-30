@@ -15,8 +15,8 @@
         <tr>
           <th colspan="6">
           </th>
-          <th>Inkomsten</th>
-          <th>Kosten</th>
+          <th class="text-right">Inkomsten</th>
+          <th class="text-right">Kosten</th>
           <th class="rotated-header">Delete</th>
         </tr>
       </thead>
@@ -24,10 +24,40 @@
       <tbody>
         <tr>
           <th class="not-as-header" colspan="6">Opdrachtsom</th>
-          <td>{{ view.project.contract_amount|money }}</td>
+          <td class="text-right">{{ view.project.contract_amount|money }}</td>
           <td></td>
           <td></td>
         </tr>
+
+        <tr>
+          <th colspan="9">
+            Overboekingen van andere projecten
+          </th>
+        </tr>
+        {% for budget_item in view.project.budget_transfers.all %}
+          <tr>
+            <td>
+              &nbsp;&nbsp;&nbsp;
+              Overboeking van {{ budget_item.project.as_widget }}:
+              <i>{{ budget_item.description }}</i>
+            </td>
+            <td colspan="4">
+            </td>
+            {% if budget_item.amount < 0 %}
+              <td class="text-right">{{ budget_item.amount_as_income|money }}</td>
+              <td></td>
+            {% else %}
+              <td></td>
+              <td class="text-right">{{ budget_item.amount|money }}</td>
+            {% endif %}
+            <td colspan="2"></td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="9">&nbsp;&nbsp;&nbsp;Geen</td>
+          </tr>
+        {% endfor %}
+
 
         <tr>
           <th colspan="9">Kosten derden</th>
@@ -62,10 +92,10 @@
 
         <tr>
           <th class="not-as-header">Netto opdrachtsom</th>
-          <td>
+          <th colspan="6" class="text-right not-as-header">
             {{ view.project.net_contract_amount|money }}
-          </td>
-          <td colspan="7">
+          </th>
+          <td colspan="2">
             </td>
         </tr>
       </tbody>
@@ -115,7 +145,7 @@
                 <div class="alert alert-error alert-soft">{{ error }}</div>
               {% endfor %}
             </td>
-            <td>
+            <td class="text-right">
               <span class="text-muted">
                 {{ form.booked }}
               </span>
@@ -126,12 +156,12 @@
                 <div class="alert alert-error alert-soft">{{ error }}</div>
               {% endfor %}
             </td>
-            <td>
+            <td class="text-right">
               {{ form.person.standard_hourly_tariff }}
             </td>
             <td>
             </td>
-            <td>
+            <td class="text-right">
               {{ form.costs|money }}
             </td>
             <td title="delete">
@@ -163,11 +193,10 @@
           <th class="not-as-header">
             Subtotaal personele kosten
           </th>
-          <td>
+          <th class="text-right not-as-header" colspan="7">
             {{ view.project.person_costs_incl_reservation|money_with_decimal }}
-          </td>
-          <td colspan="7">
-          </td>
+          </th>
+          <td></td>
         </tr>
       </tbody>
 
@@ -202,36 +231,6 @@
             </td>
             <td title="delete">
               {{ form.DELETE }}
-            </td>
-          </tr>
-        {% empty %}
-          <tr>
-            <td colspan="9">&nbsp;&nbsp;&nbsp;Geen</td>
-          </tr>
-        {% endfor %}
-
-        <tr>
-          <th colspan="9">
-            Overboekingen van andere projecten
-          </th>
-        </tr>
-        {% for budget_item in view.project.budget_transfers.all %}
-          <tr>
-            <td>
-              &nbsp;&nbsp;&nbsp;
-              {{ budget_item.description }}
-              van {{ budget_item.project.as_widget }}
-            </td>
-            <td colspan="5">
-            </td>
-            {% if budget_item.amount < 0 %}
-              <td>{{ budget_item.amount_as_income|money }}</td>
-              <td></td>
-            {% else %}
-              <td></td>
-              <td>{{ budget_item.amount|money }}</td>
-            {% endif %}
-            <td>
             </td>
           </tr>
         {% empty %}
@@ -280,12 +279,12 @@
           </th>
           <td colspan="5">
           </td>
-          <td>
+          <th class="text-right not-as-header">
             {{ view.project.total_income|money }}
-          </td>
-          <td>
+          </th>
+          <th class="text-right not-as-header">
             {{ view.project.total_costs|money }}
-          </td>
+          </th>
           <td>
           </td>
         </tr>
@@ -293,10 +292,10 @@
           <th class="not-as-header">
             Nog te verdelen
           </th>
-          <td>
+          <td colspan="6" class="text-right">
             {{ view.project.left_to_dish_out|money }}
           </td>
-          <td colspan="8">
+          <td colspan="2">
           </td>
         </tr>
       </tfoot>
