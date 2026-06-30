@@ -194,7 +194,7 @@
       <h2 id="budget">
         Projectbegroting
         {% if not view.project.budget_ok %}
-          <span class="{{ view.project.budget_not_ok_style }} inline-icon icon-[mdi--alert-outline]"
+          <span class="{{ view.project.budget_not_ok_style }} inline-icon icon-[mdi--alert]"
                 title="Budget is niet goed verdeeld"></span>
         {% endif %}
       </h2>
@@ -443,7 +443,7 @@
 
   {% else %}
     <p>
-      <span class="inline-icon icon-[mdi--alert-outline] text-danger"></span>
+      <span class="inline-icon icon-[mdi--alert] text-danger"></span>
       Dit project is afgeschermd, dus je kan niet zien wie er op dit project
       mogen boeken.
     </p>
