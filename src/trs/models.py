@@ -781,7 +781,9 @@ class Project(models.Model):
             ]
             or 0
         )
-        net_contract_amount = self.contract_amount - third_party_costs + transferred_to_us
+        net_contract_amount = (
+            self.contract_amount - third_party_costs + transferred_to_us
+        )
 
         person_costs_incl_reservation = person_costs + self.reservation
         total_costs = costs + person_costs_incl_reservation + third_party_costs

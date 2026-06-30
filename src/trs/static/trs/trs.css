@@ -2813,12 +2813,6 @@
   .filter {
     filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
   }
-  .badge-neutral {
-    @layer daisyui.l1.l2 {
-      --badge-color: var(--color-neutral);
-      --badge-fg: var(--color-neutral-content);
-    }
-  }
   .badge-primary {
     @layer daisyui.l1.l2 {
       --badge-color: var(--color-primary);
