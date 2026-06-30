@@ -56,7 +56,10 @@
               </div>
             {% endif %}
 
-            <div id="enable-selection-pager" class="card hidden">
+
+
+            {% comment %}
+              <div id="enable-selection-pager" class="card hidden">
               <h2>Bladeren</h2>
               <a href="#">
                 <span class="inline-icon icon-[mdi--playlist-plus]"
@@ -92,8 +95,11 @@
               </div>
 
             </div>
+            {% endcomment %}
 
-            {% if view.sidebar_person %}
+
+
+              {% if view.sidebar_person %}
 
               <div class="card">
                 <h2>Bij met boeken?</h2>
