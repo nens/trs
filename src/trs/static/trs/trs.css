@@ -4340,9 +4340,9 @@ input[type=submit] {
 @layer base {
   :where(:root),:root:has(input.theme-controller[value=nenslight]:checked),[data-theme="nenslight"] {
     color-scheme: light;
-    --color-base-100: oklch(100% 0 0);
-    --color-base-200: oklch(98% 0 0);
-    --color-base-300: oklch(95% 0 0);
+    --color-base-100: oklch(98% 0.003 247.858);
+    --color-base-200: oklch(96% 0.007 247.896);
+    --color-base-300: oklch(92% 0.013 255.508);
     --color-base-content: oklch(21% 0.006 285.885);
     --color-primary: #d66d00;
     --color-primary-content: oklch(100% 0 0);
@@ -4374,9 +4374,9 @@ input[type=submit] {
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme]) {
       color-scheme: dark;
-      --color-base-100: oklch(25.33% 0.016 252.42);
-      --color-base-200: oklch(23.26% 0.014 253.1);
-      --color-base-300: oklch(21.15% 0.012 254.09);
+      --color-base-100: oklch(20% 0.042 265.755);
+      --color-base-200: oklch(27% 0.041 260.031);
+      --color-base-300: oklch(37% 0.044 257.287);
       --color-base-content: oklch(97.807% 0.029 256.847);
       --color-primary: #d66d00;
       --color-primary-content: oklch(100% 0 0);
@@ -4408,9 +4408,9 @@ input[type=submit] {
 @layer base {
   :root:has(input.theme-controller[value=nensdark]:checked),[data-theme="nensdark"] {
     color-scheme: dark;
-    --color-base-100: oklch(25.33% 0.016 252.42);
-    --color-base-200: oklch(23.26% 0.014 253.1);
-    --color-base-300: oklch(21.15% 0.012 254.09);
+    --color-base-100: oklch(20% 0.042 265.755);
+    --color-base-200: oklch(27% 0.041 260.031);
+    --color-base-300: oklch(37% 0.044 257.287);
     --color-base-content: oklch(97.807% 0.029 256.847);
     --color-primary: #d66d00;
     --color-primary-content: oklch(100% 0 0);
