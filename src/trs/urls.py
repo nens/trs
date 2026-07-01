@@ -210,6 +210,7 @@ urlpatterns = [
     ),
     path("locallogin/", views.LoginView.as_view(), name="trs.login"),
     path("logout/", views.logout_view, name="trs.logout"),
+    path("darkmode/", views.set_darkmode, name="trs.darkmode"),
     *override_admin_auth(),
     re_path(r"^admin/", admin.site.urls),
 ]

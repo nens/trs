@@ -53,3 +53,7 @@ class ProjectMemberForm(django_forms.Form):
 
 class SearchForm(django_forms.Form):
     q = django_forms.CharField(max_length=200, label="zoektekst")
+
+
+class ThemeSelectionForm(django_forms.Form):
+    darkmode = django_forms.BooleanField(required=False)

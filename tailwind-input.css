@@ -233,11 +233,6 @@ select {
   height: 1.5rem;
 }
 
-input {
-  @apply input;
-  height: 1.5rem;
-}
-
 .description-table .description-key {
   @apply font-bold;
 }
@@ -271,7 +266,9 @@ td.success {
 form.form-trs label {
   @apply font-bold;
 }
-input, select, textarea {
+input:not(.theme-controller), select, textarea {
+  @apply input;
+  height: 1.5rem;
   @apply pt-0 pb-0;
   @apply text-base-content bg-base-100;
 }
@@ -284,12 +281,8 @@ select {
   height: 1.5rem;
 }
 
-input {
-  @apply input;
-  height: 1.5rem;
-}
 
-input[type=checkbox] {
+input[type=checkbox]:not(.theme-controller) {
   @apply checkbox;
 }
 

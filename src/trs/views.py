@@ -28,7 +28,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, FormView, UpdateView
 
 from trs import core
-from trs.forms import ProjectTeamForm, SearchForm
+from trs.forms import ProjectTeamForm, SearchForm, ThemeSelectionForm
 from trs.models import (
     MPC,
     Booking,
@@ -110,12 +110,25 @@ def home(request):
     return redirect("trs.booking")
 
 
+@login_required
+def set_darkmode(request):
+    form = ThemeSelectionForm(request.POST)
+    if form.is_valid():
+        request.session["use_darkmode"] = form.cleaned_data["darkmode"]
+        return HttpResponse("success")
+    raise ValueError("Dark mode form error")
+
+
 class BaseMixin:
     template_name: str = "trs/base.html"
     title: str = "TRS tijdregistratiesysteem"
     filters_and_choices = []
     normally_visible_filters = None
     results_for_selection_pager = None
+
+    @property
+    def darkmode(self):
+        return self.request.session.get("use_darkmode", False)
 
     @cached_property
     def current_get_params(self):
