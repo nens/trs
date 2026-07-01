@@ -74,7 +74,7 @@
 
               {# display the (5) dates instead of the 1 week  #}
               {% for date in view.active_dates %}
-                <th class="text-right">
+                <th class="text-center">
                   {{ date|date:"D" }}
                 </th>
               {% endfor %}
@@ -119,7 +119,7 @@
             <td class="text-right text-muted other-week">{{ line.hours1|hours }}</td>
 
             {% for field in line.fields %}
-              <td class="text-right hour-for-total hour-for-col{{ forloop.counter }} {% if not forloop.counter|divisibleby:2 %}col-odd{% else %}col-even{% endif %}">
+              <td class="text-center hour-for-total">
                 {{ field }}
                 {% for error in field.errors %}
                   <div class="alert alert-error alert-soft">{{ error }}</div>
@@ -146,7 +146,7 @@
           <th class="text-right other-week">{{ view.totals.1|hours }}</th>
 
           {% for data in view.active_dates %}
-            <th class="text-right">
+            <th class="text-center">
               <div id="hour-total-col{{ forloop.counter }}"></div>
             </th>
           {% endfor %}
