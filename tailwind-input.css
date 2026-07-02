@@ -241,7 +241,7 @@ span[title] {
   @apply border-b-1 border-dotted cursor-help;
 }
 
-th[title] {
+th[title], td[title] {
   @apply cursor-help;
 }
 

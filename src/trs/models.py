@@ -690,6 +690,13 @@ class Project(models.Model):
         else:
             return "text-warning"
 
+    def budget_not_ok_hint(self):
+        """Return hint to match above orange/red warning style."""
+        if self.left_to_dish_out() < 0:
+            return "Het budget is overschreden"
+        else:
+            return "Er is nog budget dat verdeeld kan worden"
+
     @cache_until_any_change
     def work_calculation(self):
         # The big calculation from which the rest derives.

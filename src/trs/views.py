@@ -1097,13 +1097,16 @@ class ProjectsView(BaseView):
         for project in self.projects:
             line = {}
             line["project"] = project
+            klass = "default"
+            klass_explanation = ""
             if project.overbooked_percentage() > 50:
                 klass = "danger"
+                klass_explanation = "Meer dan 50% overboekt"
             elif project.overbooked_percentage():
                 klass = "warning"
-            else:
-                klass = "default"
+                klass_explanation = "0-50% overboekt"
             line["klass"] = klass
+            line["klass_explanation"] = klass_explanation
             invoice_amount = invoice_amounts.get(project.id, 0)
             turnover = project.turnover()
             costs = project.costs()

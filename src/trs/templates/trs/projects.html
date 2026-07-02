@@ -74,17 +74,18 @@
               {{ line.project.description|truncatechars:42 }}
             </span>
           </td>
-          <td class="text-right {{ line.klass }}">
+          <td class="text-right {{ line.klass }}"
+          {% if line.klass_explanation %} title="{{ line.klass_explanation }}" {% endif %}>
             {{ line.project.overbooked|hours }}
           </td>
           <td class="text-right">
             {{ line.project.net_contract_amount|money }}
           </td>
-          <td class="text-right">
+          <td class="text-right"
+              {% if line.project.budget_not_ok_hint %}title="{{ line.project.budget_not_ok_hint }}"{% endif %}>
             {% if not line.project.budget_ok %}
               <a href="{{ line.project.get_absolute_url }}#budget">
-                <span class="{{ line.project.budget_not_ok_style }} inline-icon icon-[mdi--alert]"
-                      title="Budget is niet goed verdeeld"></span>
+                <span class="{{ line.project.budget_not_ok_style }} inline-icon icon-[mdi--alert]"></span>
               </a>
             {% endif %}
           </td>

@@ -3581,7 +3581,7 @@ span[title] {
   --tw-border-style: dotted;
   border-style: dotted;
 }
-th[title] {
+th[title], td[title] {
   cursor: help;
 }
 .text-muted {
