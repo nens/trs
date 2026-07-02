@@ -328,7 +328,7 @@ class PersonYearCombination:
         if self.relative_target_percentage >= 100:
             return "success"
         if self.relative_target_percentage < 50:
-            return "danger"
+            return "error"
         return "warning"
 
 

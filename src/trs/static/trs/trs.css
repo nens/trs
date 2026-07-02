@@ -2801,14 +2801,14 @@
   .table {
     display: table;
   }
+  .w-16 {
+    width: calc(var(--spacing) * 16);
+  }
   .w-52 {
     width: calc(var(--spacing) * 52);
   }
   .w-100 {
     width: calc(var(--spacing) * 100);
-  }
-  .w-150 {
-    width: calc(var(--spacing) * 150);
   }
   .max-w-screen-xl {
     max-width: var(--breakpoint-xl);
@@ -2944,14 +2944,14 @@
       --alert-color: var(--color-warning);
     }
   }
+  .progress-accent {
+    @layer daisyui.l1.l2 {
+      color: var(--color-accent);
+    }
+  }
   .progress-error {
     @layer daisyui.l1.l2 {
       color: var(--color-error);
-    }
-  }
-  .progress-primary {
-    @layer daisyui.l1.l2 {
-      color: var(--color-primary);
     }
   }
   .progress-success {
@@ -4374,8 +4374,8 @@ input[type=submit] {
     --color-primary-content: oklch(100% 0 0);
     --color-secondary: #7290d5;
     --color-secondary-content: oklch(100% 0 0);
-    --color-accent: oklch(77% 0.152 181.912);
-    --color-accent-content: oklch(38% 0.063 188.416);
+    --color-accent: oklch(55% 0.046 257.417);
+    --color-accent-content: oklch(100% 0 0);
     --color-neutral: oklch(14% 0.005 285.823);
     --color-neutral-content: oklch(92% 0.004 286.32);
     --color-info: oklch(74% 0.16 232.661);
@@ -4408,8 +4408,8 @@ input[type=submit] {
       --color-primary-content: oklch(100% 0 0);
       --color-secondary: #7290d5;
       --color-secondary-content: oklch(100% 0 0);
-      --color-accent: oklch(77% 0.152 181.912);
-      --color-accent-content: oklch(38% 0.063 188.416);
+      --color-accent: oklch(86% 0.022 252.894);
+      --color-accent-content: oklch(0% 0 0);
       --color-neutral: oklch(14% 0.005 285.823);
       --color-neutral-content: oklch(92% 0.004 286.32);
       --color-info: oklch(74% 0.16 232.661);
@@ -4442,8 +4442,8 @@ input[type=submit] {
     --color-primary-content: oklch(100% 0 0);
     --color-secondary: #7290d5;
     --color-secondary-content: oklch(100% 0 0);
-    --color-accent: oklch(77% 0.152 181.912);
-    --color-accent-content: oklch(38% 0.063 188.416);
+    --color-accent: oklch(86% 0.022 252.894);
+    --color-accent-content: oklch(0% 0 0);
     --color-neutral: oklch(14% 0.005 285.823);
     --color-neutral-content: oklch(92% 0.004 286.32);
     --color-info: oklch(74% 0.16 232.661);

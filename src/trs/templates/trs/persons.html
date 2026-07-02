@@ -24,17 +24,23 @@
         <th class="text-right">
           Nog te boeken
         </th>
-        <th class="text-right">
-          Buiten<br>budget<br> geboekt
+        <th>
+          Binnen<br>budget<br> geboekt
         </th>
-        <th class="text-right"
-            title="Percentage uren dat op externe projecten is geboekt.">
+        <th title="Percentage uren dat op externe projecten is geboekt.">
           Extern<br>percentage
         </th>
-        <th class="text-right"
-            title="Percentage van het target dat al is omgezet.">
-          Target<br>percentage
-        </th>
+
+        {% if view.is_custom_year %}
+          <th title="Percentage van het target dat al is omgezet.">
+            Target<br>percentage
+          </th>
+        {% else %}
+          <th title="Percentage van het target dat al is omgezet.">
+            Target<br>percentage<br>(relatief)
+          </th>
+        {% endif %}
+
         <th class="text-right text-muted"
             title="Target dit jaar (gebruikt voor target percentage)">
           Target
@@ -64,15 +70,32 @@
               {{ line.pyc.to_book.friendly }}
             </a>
           </td>
-          <td class="text-right {{ line.klass }}">
-            {{ line.pyc.overbooked|hours }}
+          <td title="{{ line.pyc.overbooked_percentage }}% buiten budget geboekt ({{ line.pyc.overbooked }} uur)">
+            <progress class="progress progress-accent w-16"
+                      value="{{ line.pyc.well_booked_percentage }}"
+                      max="100"></progress>
           </td>
-          <td class="text-right">
-            {{ line.pyc.billable_percentage }}%
+          <td title="Extern percentage: {{ line.pyc.billable_percentage }}%">
+            <progress class="progress progress-accent w-16"
+                      value="{{ line.pyc.billable_percentage }}"
+                      max="100"></progress>
           </td>
-          <td class="text-right">
-            {{ line.pyc.target_percentage }}%
-          </td>
+
+          {% if view.is_custom_year %}
+            <td title="{{ line.pyc.target_percentage }}% van het target gehaald">
+              <progress class="progress progress-accent w-16"
+                        value="{{ line.pyc.target_percentage }}"
+                        max="100"></progress>
+            </td>
+          {% else %}
+            <td title="Tot nu toe over hele jaar {{ line.pyc.target_percentage }}% gehaald,
+als de huidige lijn doorgetrokken wordt zou het op {{ line.pyc.relative_target_percentage }}% uitkomen.">
+              <progress class="progress progress-accent w-16"
+                        value="{{ line.pyc.relative_target_percentage }}"
+                        max="100"></progress>
+            </td>
+          {% endif %}
+
           <td class="text-right text-muted">
             {{ line.pyc.target|money }}
           </td>

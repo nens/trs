@@ -19,31 +19,31 @@
 
 
   <div><b>Binnen budget?</b></div>
-  <progress class="progress progress-primary w-100"
+  <progress class="progress progress-accent w-100"
             title="{{ view.sidebar_person_year_info.overbooked_percentage }}% buiten budget geboekt"
             value="{{ view.sidebar_person_year_info.well_booked_percentage }}"
             max="100"></progress>
 
   <div><b>Extern/intern?</b></div>
-  <progress class="progress progress-primary w-100"
+  <progress class="progress progress-accent w-100"
             title="{{ view.sidebar_person_year_info.billable_percentage }}% op externe projecten geboekt"
             value="{{ view.sidebar_person_year_info.billable_percentage }}"
             max="100"></progress>
 
   {% if view.is_custom_year %}
     <div><b>Target (absoluut)</b></div>
-    <progress class="progress progress-primary w-150"
+    <progress class="progress progress-accent w-100"
               title="{{ view.sidebar_person_year_info.target_percentage }}% van je target gehaald"
               value="{{ view.sidebar_person_year_info.target_percentage }}"
-              max="150"></progress>
+              max="100"></progress>
   {% else %}
     <div><b>Target (relatief t.o.v. moment i/h jaar)</b></div>
-    <progress class="progress progress-{{ view.sidebar_person_year_info.relative_bar_color }} w-150"
+    <progress class="progress progress-accent w-100"
               title="Je hebt tot nu toe over hele jaar {{ view.sidebar_person_year_info.target_percentage }}% gehaald,
                      als je de huidige lijn doortrekt zou je op
-                     {{ view.sidebar_person_year_info.relative_target_percentage }}% uit komen."
+                     {{ view.sidebar_person_year_info.relative_target_percentage }}% uitkomen."
               value="{{ view.sidebar_person_year_info.relative_target_percentage }}"
-              max="150"></progress>
+              max="100"></progress>
   {% endif %}
   <hr>
 
