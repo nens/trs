@@ -2804,6 +2804,12 @@
   .w-52 {
     width: calc(var(--spacing) * 52);
   }
+  .w-100 {
+    width: calc(var(--spacing) * 100);
+  }
+  .w-150 {
+    width: calc(var(--spacing) * 150);
+  }
   .max-w-screen-xl {
     max-width: var(--breakpoint-xl);
   }
@@ -2936,6 +2942,26 @@
       color: var(--color-warning-content);
       --alert-border-color: var(--color-warning);
       --alert-color: var(--color-warning);
+    }
+  }
+  .progress-error {
+    @layer daisyui.l1.l2 {
+      color: var(--color-error);
+    }
+  }
+  .progress-primary {
+    @layer daisyui.l1.l2 {
+      color: var(--color-primary);
+    }
+  }
+  .progress-success {
+    @layer daisyui.l1.l2 {
+      color: var(--color-success);
+    }
+  }
+  .progress-warning {
+    @layer daisyui.l1.l2 {
+      color: var(--color-warning);
     }
   }
   .text-base-content {

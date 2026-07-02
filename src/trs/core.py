@@ -326,12 +326,10 @@ class PersonYearCombination:
     @cached_property
     def relative_bar_color(self):
         if self.relative_target_percentage >= 100:
-            color = "success"
-        elif self.relative_target_percentage < 50:
-            color = "danger"
-        else:
-            color = "warning"
-        return "progress-bar-" + color
+            return "success"
+        if self.relative_target_percentage < 50:
+            return "danger"
+        return "warning"
 
 
 def get_pyc(person, year=None):
