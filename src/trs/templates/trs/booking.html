@@ -119,7 +119,7 @@
             <td class="text-right text-muted other-week">{{ line.hours1|hours }}</td>
 
             {% for field in line.fields %}
-              <td class="text-center hour-for-total">
+              <td class="text-center hour-for-total hour-for-col{{ forloop.counter }}">
                 {{ field }}
                 {% for error in field.errors %}
                   <div class="alert alert-error alert-soft">{{ error }}</div>
