@@ -3637,6 +3637,14 @@ td.success {
     background-color: color-mix(in oklab, var(--color-success) 20%, transparent);
   }
 }
+td.danger a, td.warning a, td.success a {
+  --tw-font-weight: var(--font-weight-normal);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-base-content);
+  @supports (color: color-mix(in lab, red, red)) {
+    color: color-mix(in oklab, var(--color-base-content) 70%, transparent);
+  }
+}
 form.form-trs label {
   --tw-font-weight: var(--font-weight-bold);
   font-weight: var(--font-weight-bold);
@@ -4378,13 +4386,13 @@ input[type=submit] {
     --color-accent-content: oklch(100% 0 0);
     --color-neutral: oklch(14% 0.005 285.823);
     --color-neutral-content: oklch(92% 0.004 286.32);
-    --color-info: oklch(74% 0.16 232.661);
+    --color-info: oklch(68% 0.169 237.323);
     --color-info-content: oklch(29% 0.066 243.157);
-    --color-success: oklch(76% 0.177 163.223);
+    --color-success: oklch(76% 0.233 130.85);
     --color-success-content: oklch(37% 0.077 168.94);
-    --color-warning: oklch(82% 0.189 84.429);
+    --color-warning: oklch(79% 0.184 86.047);
     --color-warning-content: oklch(41% 0.112 45.904);
-    --color-error: oklch(71% 0.194 13.428);
+    --color-error: oklch(63% 0.237 25.331);
     --color-error-content: oklch(27% 0.105 12.094);
     --radius-selector: 0.5rem;
     --radius-field: 0.25rem;
@@ -4412,13 +4420,13 @@ input[type=submit] {
       --color-accent-content: oklch(0% 0 0);
       --color-neutral: oklch(14% 0.005 285.823);
       --color-neutral-content: oklch(92% 0.004 286.32);
-      --color-info: oklch(74% 0.16 232.661);
+      --color-info: oklch(82% 0.111 230.318);
       --color-info-content: oklch(29% 0.066 243.157);
-      --color-success: oklch(76% 0.177 163.223);
+      --color-success: oklch(89% 0.196 126.665);
       --color-success-content: oklch(37% 0.077 168.94);
-      --color-warning: oklch(82% 0.189 84.429);
+      --color-warning: oklch(90% 0.182 98.111);
       --color-warning-content: oklch(41% 0.112 45.904);
-      --color-error: oklch(71% 0.194 13.428);
+      --color-error: oklch(80% 0.114 19.571);
       --color-error-content: oklch(27% 0.105 12.094);
       --radius-selector: 0.5rem;
       --radius-field: 0.25rem;
@@ -4446,13 +4454,13 @@ input[type=submit] {
     --color-accent-content: oklch(0% 0 0);
     --color-neutral: oklch(14% 0.005 285.823);
     --color-neutral-content: oklch(92% 0.004 286.32);
-    --color-info: oklch(74% 0.16 232.661);
+    --color-info: oklch(82% 0.111 230.318);
     --color-info-content: oklch(29% 0.066 243.157);
-    --color-success: oklch(76% 0.177 163.223);
+    --color-success: oklch(89% 0.196 126.665);
     --color-success-content: oklch(37% 0.077 168.94);
-    --color-warning: oklch(82% 0.189 84.429);
+    --color-warning: oklch(90% 0.182 98.111);
     --color-warning-content: oklch(41% 0.112 45.904);
-    --color-error: oklch(71% 0.194 13.428);
+    --color-error: oklch(80% 0.114 19.571);
     --color-error-content: oklch(27% 0.105 12.094);
     --radius-selector: 0.5rem;
     --radius-field: 0.25rem;

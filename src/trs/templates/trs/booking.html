@@ -103,7 +103,7 @@
               </span>
             </td>
             <td class="text-right">{{ line.budget|hours }}</td>
-            <td  class="text-right {% if line.is_overbooked %}danger{% endif %}">
+            <td class="text-right {% if line.is_overbooked %}danger{% endif %}">
               {{ line.booked_total|hours }}
             </td>
             <td class="text-right">{{ line.left_to_book|hours }}</td>
