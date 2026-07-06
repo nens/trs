@@ -4125,6 +4125,12 @@ input#id_description {
 input[type=submit] {
   cursor: pointer;
 }
+#project-edit-budget-table input[type=number] {
+  width: calc(var(--spacing) * 13);
+}
+#project-edit-budget-table select {
+  width: calc(var(--spacing) * 68);
+}
 @layer base {
   :where(:root),:root:has(input.theme-controller[value=light]:checked),[data-theme=light] {
     color-scheme: light;

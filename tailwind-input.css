@@ -312,3 +312,10 @@ input#id_description {
 input[type=submit] {
   @apply cursor-pointer;
 }
+
+#project-edit-budget-table input[type=number] {
+  @apply w-13;
+}
+#project-edit-budget-table select {
+  @apply w-68;
+}
