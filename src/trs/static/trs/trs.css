@@ -3649,7 +3649,7 @@ form.form-trs label {
   --tw-font-weight: var(--font-weight-bold);
   font-weight: var(--font-weight-bold);
 }
-input:not(.theme-controller), select, textarea {
+input:not(.theme-controller, .btn), select, textarea {
   @layer daisyui.l1.l2.l3 {
     cursor: text;
     border: var(--border) solid #0000;
