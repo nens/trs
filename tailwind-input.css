@@ -296,7 +296,7 @@ input.btn {
 }
 
 textarea {
-  @apply textarea;
+  @apply textarea w-150 h-50;
 }
 
 #booking-table input[type=number] {

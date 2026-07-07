@@ -4112,6 +4112,8 @@ textarea {
       cursor: not-allowed;
     }
   }
+  height: calc(var(--spacing) * 50);
+  width: calc(var(--spacing) * 150);
 }
 #booking-table input[type=number] {
   width: calc(var(--spacing) * 11);
