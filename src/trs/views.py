@@ -2886,6 +2886,10 @@ class ProjectsExcelView(ExcelResponseMixin, ProjectsView):
         "Financiele opmerking",
     ]
 
+    @cached_property
+    def projects(self):
+        return self.all_projects()
+
     @property
     def excel_lines(self):
         for line in self.lines:
