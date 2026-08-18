@@ -31,6 +31,7 @@ Some commands::
   $ make install
   $ make test
   $ pre-commit run --all
+  $ make upgrade
 
 Keep the python version in sync between the ``Dockerfile`` and the ``pyproject.toml``
 (``requires-python`` and ``target-version``).
@@ -74,4 +75,6 @@ after 2028: adjust the ``TRS_END_YEAR`` setting and run the command again :-)
 CSS, javascript
 ---------------
 
-TODO: tailwindcss, fira font, etc.
+CSS and javascript libraries like tailwindcss and daisyui and the "fira" font are
+installed with npm (see the Makefile). Tailwind/daisyui configuration and some
+explanation is in the ``tailwind-input.css`` file.
