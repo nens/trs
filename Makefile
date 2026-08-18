@@ -25,6 +25,7 @@ run_uv:
 upgrade:
 	uv sync --upgrade
 	pre-commit autoupdate
+	npm update
 
 
 # Note: no var/static anymore.
