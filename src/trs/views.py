@@ -575,22 +575,43 @@ class WorkloadOverview(BaseView):
                     or 0
                 )
                 to_book = assigned_hours - booked_hours
-                # Note: count overbooked projects as 0.
-                result[person.id][project.id] = max(to_book, 0)
-        pprint(result)
+                result[person.id][project.id] = to_book  # Negative is ok for now!
         return result
 
+    @cached_property
     def hours_per_person_per_week(self) -> dict[int, list[float]]:
         result = {}
         for person in self.relevant_persons:
             to_book_per_project = self.to_book_per_project_per_person[person.id]
             hours = [0.0] * self.NUM_WEEKS
             for project_id, to_book in to_book_per_project.items():
+                to_book = max(0, to_book)  # Filter out negative values.
                 ratio_per_week = self.ratio_per_week_per_project[project_id]
                 for i in range(self.NUM_WEEKS):
                     hours[i] += to_book * ratio_per_week[i]
             result[person.id] = hours
-        pprint(result)
+        return result
+
+    @cached_property
+    def overbooked_per_person(self) -> dict[int, int]:
+        """Overbooked on the projects we care about now"""
+        result = {}
+        for person in self.relevant_persons:
+            hours_to_book_per_project = self.to_book_per_project_per_person[person.id].values()
+            overbooked_per_project = [hours for hours in hours_to_book_per_project if hours <
+                                      0]
+            overbooked = sum(overbooked_per_project) * -1
+            result[person.id] = overbooked
+        return result
+
+    def lines(self):
+        result = []
+        for person in self.relevant_persons:
+            line = {"person": person}
+            line["pyc"] = core.get_pyc(person=person)
+            line["overbooked"] = self.overbooked_per_person[person.id]
+            line["hours"] = self.hours_per_person_per_week[person.id]
+            result.append(line)
         return result
 
     # xxx

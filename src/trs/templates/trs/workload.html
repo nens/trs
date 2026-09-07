@@ -11,57 +11,32 @@
 
   {% include "trs/filter-snippet.html" %}
 
-  <pre>{{ view.relevant_year_weeks }}</pre>
-  <pre>{{ view.relevant_persons|length }}</pre>
-  <pre>{{ view.relevant_projects|length }}</pre>
-  {% for project in view.relevant_projects %}
-    <div>{{ project.code }} {{ project.description }}</div>
-  {% endfor %}
-  <pre>{{ view.ratio_per_week_per_project }}</pre>
-  <pre>{{ view.to_book_per_project_per_person }}</pre>
-  <pre>{{ view.hours_per_person_per_week }}</pre>
-
+  <p>
+    De werkvoorraad kijkt alleen naar externe projecten. En projecten waar iemand over
+    het aantal toegewezen uren heen is, daarvoor geldt de werkvoorraad natuurlijk als 0,
+    hoewel er misschien best veel werk nog verzet moet worden. De kolom "over budget"
+    geeft daarom aan hoeveel uren er over budget zijn geboekt op de projecten die in deze weken
+    actief zijn, dat geeft een idee of de druk misschien hoger is dan op de eerste blik lijkt.
+  </p>
 
   <table class="table table-compact table-fixed-header table-hover-row">
     <thead class="header">
       <tr>
         <th>Naam</th>
         <th class="text-right">
-          Nog te boeken
+          Totale<br>
+          werkvoorraad
         </th>
-        <th>
-          Binnen<br>budget<br> geboekt
+        <th class="text-right">
+          Over<br>
+          budget
         </th>
-        <th title="Percentage uren dat op externe projecten is geboekt.">
-          Extern<br>percentage
-        </th>
-
-        {% if view.is_custom_year %}
-          <th title="Percentage van het target dat al is omgezet.">
-            Target<br>percentage
+        {% for year_week in view.relevant_year_weeks %}
+          <th class="text-right"
+              title="{{ year_week.first_day|date:"j b" }}">
+            Wk {{ year_week.week }}
           </th>
-        {% else %}
-          <th title="Percentage van het target dat al is omgezet.">
-            Target<br>percentage<br>(relatief)
-          </th>
-        {% endif %}
-
-        <th class="text-right text-muted"
-            title="Target dit jaar (gebruikt voor target percentage)">
-          Target
-        </th>
-        <th class="text-right text-muted"
-            title="Omzet (gebruikt voor target percentage)">
-          Omzet
-        </th>
-        <th class="text-right"
-            title="Nog boekbare uren op externe projecten">
-          Werkvoorraad
-        </th>
-        <th class="text-right text-muted"
-            title="Vertaling van werkvoorraad (in uren) naar omzet">
-          Nog om te zetten
-        </th>
+        {% endfor %}
       </tr>
     </thead>
     <tbody>
@@ -70,71 +45,20 @@
           <td style="white-space: nowrap;">
             {{ line.person.as_widget }}
           </td>
-          <td class="{{ line.pyc.to_book.klass }} text-right">
-            <a href="{% url 'trs.booking.overview' pk=line.person.id %}">
-              {{ line.pyc.to_book.friendly }}
-            </a>
-          </td>
-          <td title="{{ line.pyc.overbooked_percentage }}% buiten budget geboekt ({{ line.pyc.overbooked }} uur)">
-            <progress class="progress progress-accent w-16"
-                      value="{{ line.pyc.well_booked_percentage }}"
-                      max="100"></progress>
-          </td>
-          <td title="Extern percentage: {{ line.pyc.billable_percentage }}%">
-            <progress class="progress progress-accent w-16"
-                      value="{{ line.pyc.billable_percentage }}"
-                      max="100"></progress>
-          </td>
-
-          {% if view.is_custom_year %}
-            <td title="{{ line.pyc.target_percentage }}% van het target gehaald">
-              <progress class="progress progress-accent w-16"
-                        value="{{ line.pyc.target_percentage }}"
-                        max="100"></progress>
-            </td>
-          {% else %}
-            <td title="Tot nu toe over hele jaar {{ line.pyc.target_percentage }}% gehaald,
-als de huidige lijn doorgetrokken wordt zou het op {{ line.pyc.relative_target_percentage }}% uitkomen.">
-              <progress class="progress progress-accent w-16"
-                        value="{{ line.pyc.relative_target_percentage }}"
-                        max="100"></progress>
-            </td>
-          {% endif %}
-
-          <td class="text-right text-muted">
-            {{ line.pyc.target|money }}
-          </td>
-          <td class="text-right text-muted">
-            {{ line.pyc.turnover|money }}
-          </td>
           <td class="text-right">
             {{ line.pyc.left_to_book_external|hours }}
           </td>
-          <td class="text-right text-muted">
-            {{ line.pyc.left_to_turn_over|money }}
+          <td class="text-right">
+            {{ line.overbooked|hours }}
           </td>
+          {% for hours_to_book in line.hours %}
+            <td class="text-right">
+              {{ hours_to_book|hours }}
+            </td>
+          {% endfor %}
         </tr>
       {% endfor %}
     </tbody>
-    <tfoot>
-      <tr>
-        <th>Totaal</th>
-        <th colspan="5">
-        </th>
-        <th class="text-right text-muted"
-            title="Dit jaar gerealiseerde omzet">
-          {{ view.total_turnover|money }}
-        </th>
-        <th class="text-right"
-            title="Werkvoorraad in uren">
-          {{ view.total_left_to_book|hours }}
-        </th>
-        <th class="text-right text-muted"
-            title="Werkvoorraad in geld uitgedrukt">
-          {{ view.total_left_to_turn_over|money }}
-        </th>
-      </tr>
-    </tfoot>
   </table>
 
 {% endblock %}
