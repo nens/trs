@@ -29,6 +29,11 @@
         Overzicht projectleiders en projectmanagers
       </a>
     </li>
+    <li>
+      <a href="{% url 'trs.overviews.workload' %}">
+        Werkvoorraad komende weken
+      </a>
+    </li>
     {% if view.can_see_everything %}
       <li>
         <a href="{% url 'trs.overviews.invoices' %}">

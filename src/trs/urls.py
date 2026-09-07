@@ -211,7 +211,7 @@ urlpatterns = [
     path(
         "overviews/workload/",
         views.WorkloadOverview.as_view(),
-        name="trs.overviews.financial",
+        name="trs.overviews.workload",
     ),
     path("locallogin/", views.LoginView.as_view(), name="trs.login"),
     path("logout/", views.logout_view, name="trs.logout"),
