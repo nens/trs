@@ -489,7 +489,9 @@ class WorkloadOverview(BaseView):
                         "title": group.name,
                         "q": Q(group=group.id),
                     }
-                    for group in Group.objects.all()
+                    for group in Group.objects.filter(
+                        persons__archived=False
+                    ).distinct()
                 ]
                 + [{"value": "geen", "title": "Zonder groep", "q": Q(group=None)}],
             },
@@ -607,6 +609,8 @@ class WorkloadOverview(BaseView):
         return result
 
     def lines(self):
+        if "group" not in self.request.GET:
+            return []
         result = []
         for person in self.relevant_persons:
             line = {"person": person}

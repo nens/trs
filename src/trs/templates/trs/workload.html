@@ -16,8 +16,14 @@
     het aantal toegewezen uren heen is, daarvoor geldt de werkvoorraad natuurlijk als 0,
     hoewel er misschien best veel werk nog verzet moet worden. De kolom "over budget"
     geeft daarom aan hoeveel uren er over budget zijn geboekt op de projecten die in deze weken
-    actief zijn, dat geeft een idee of de druk misschien hoger is dan op de eerste blik lijkt.
+    actief zijn, dat geeft een idee of de druk misschien hoger is dan op het eerste gezicht lijkt.
   </p>
+
+  {% if not view.lines %}
+    <p>
+      <b>Kies een actieve groep.</b>
+    </p>
+  {% endif %}
 
   <table class="table table-compact table-fixed-header table-hover-row">
     <thead class="header">
