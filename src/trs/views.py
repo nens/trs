@@ -6,7 +6,6 @@ import urllib.parse
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from decimal import Decimal
-from pprint import pprint
 
 import xlsxwriter
 from django import forms
@@ -597,9 +596,12 @@ class WorkloadOverview(BaseView):
         """Overbooked on the projects we care about now"""
         result = {}
         for person in self.relevant_persons:
-            hours_to_book_per_project = self.to_book_per_project_per_person[person.id].values()
-            overbooked_per_project = [hours for hours in hours_to_book_per_project if hours <
-                                      0]
+            hours_to_book_per_project = self.to_book_per_project_per_person[
+                person.id
+            ].values()
+            overbooked_per_project = [
+                hours for hours in hours_to_book_per_project if hours < 0
+            ]
             overbooked = sum(overbooked_per_project) * -1
             result[person.id] = overbooked
         return result
