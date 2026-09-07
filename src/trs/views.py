@@ -6,6 +6,7 @@ import urllib.parse
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from decimal import Decimal
+from pprint import pprint
 
 import xlsxwriter
 from django import forms
@@ -469,6 +470,8 @@ class PersonsView(BaseView):
 
 
 class WorkloadOverview(BaseView):
+    NUM_WEEKS = 12
+
     title = "Werkvoorraad"
     normally_visible_filters = ["group"]
     template_name = "trs/workload.html"
@@ -498,7 +501,7 @@ class WorkloadOverview(BaseView):
     def relevant_year_weeks(self):
         """Return 12 weeks (including the current week)"""
         active_first_day = this_year_week().first_day
-        end = active_first_day + datetime.timedelta(weeks=11)
+        end = active_first_day + datetime.timedelta(weeks=self.NUM_WEEKS - 1)
         result = list(
             YearWeek.objects.filter(first_day__lte=end).filter(
                 first_day__gte=active_first_day
@@ -525,6 +528,70 @@ class WorkloadOverview(BaseView):
             .filter(members__in=self.relevant_persons)
             .distinct()
         )
+
+    @cached_property
+    def ratio_per_week_per_project(self) -> dict[int, list[float]]:
+        """Return ratio per week to multiply bookable hours with.
+
+        So: look up how many weeks a project is still active and spread that out over
+        the weeks. If a project overflows the weeks, the ratio will be lower. If a
+        project ends halfway the period, spread it over the active weeks and return zero
+        for the rest.
+
+        And if a project starts after the end of the period, fill the first weeks with
+        zero.
+
+        """
+        result = {}
+        for project in self.relevant_projects:
+            remaining_active_weeks = YearWeek.objects.filter(
+                first_day__gte=this_year_week().first_day
+            ).filter(first_day__lte=project.end.first_day)
+            ratio = 1 / len(remaining_active_weeks)
+            per_week = [
+                ratio if year_week in remaining_active_weeks else 0.0
+                for year_week in self.relevant_year_weeks
+            ]
+            result[project.id] = per_week
+            logger.debug(f"{project.code}  ratio:  {per_week}")
+        return result
+
+    @cached_property
+    def to_book_per_project_per_person(self) -> dict[int, dict[int, int]]:
+        result = {}  # {person_id: {project_id: to_book}}
+        for person in self.relevant_persons:
+            result[person.id] = {}
+            for project in self.relevant_projects:
+                assigned_hours = (
+                    WorkAssignment.objects.filter(
+                        assigned_on=project, assigned_to=person
+                    ).aggregate(models.Sum("hours"))["hours__sum"]
+                    or 0
+                )
+                booked_hours = (
+                    Booking.objects.filter(
+                        booked_on=project, booked_by=person
+                    ).aggregate(models.Sum("hours"))["hours__sum"]
+                    or 0
+                )
+                to_book = assigned_hours - booked_hours
+                # Note: count overbooked projects as 0.
+                result[person.id][project.id] = max(to_book, 0)
+        pprint(result)
+        return result
+
+    def hours_per_person_per_week(self) -> dict[int, list[float]]:
+        result = {}
+        for person in self.relevant_persons:
+            to_book_per_project = self.to_book_per_project_per_person[person.id]
+            hours = [0.0] * self.NUM_WEEKS
+            for project_id, to_book in to_book_per_project.items():
+                ratio_per_week = self.ratio_per_week_per_project[project_id]
+                for i in range(self.NUM_WEEKS):
+                    hours[i] += to_book * ratio_per_week[i]
+            result[person.id] = hours
+        pprint(result)
+        return result
 
     # xxx
 

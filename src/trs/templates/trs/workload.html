@@ -17,6 +17,9 @@
   {% for project in view.relevant_projects %}
     <div>{{ project.code }} {{ project.description }}</div>
   {% endfor %}
+  <pre>{{ view.ratio_per_week_per_project }}</pre>
+  <pre>{{ view.to_book_per_project_per_person }}</pre>
+  <pre>{{ view.hours_per_person_per_week }}</pre>
 
 
   <table class="table table-compact table-fixed-header table-hover-row">
