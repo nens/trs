@@ -1,0 +1,70 @@
+{% extends "trs/base.html" %}
+{% load trs_formatting %}
+
+{% block full-width %}
+  <h1>
+    {{ view.title }}
+    {% if view.small_title %}
+      <small>({{ view.small_title }})</small>
+    {% endif %}
+  </h1>
+
+  {% include "trs/filter-snippet.html" %}
+
+  <p>
+    De werkvoorraad kijkt alleen naar externe projecten. En projecten waar iemand over
+    het aantal toegewezen uren heen is, daarvoor geldt de werkvoorraad natuurlijk als 0,
+    hoewel er misschien best veel werk nog verzet moet worden. De kolom "over budget"
+    geeft daarom aan hoeveel uren er over budget zijn geboekt op de projecten die in deze weken
+    actief zijn, dat geeft een idee of de druk misschien hoger is dan op het eerste gezicht lijkt.
+  </p>
+
+  {% if not view.lines %}
+    <p>
+      <b>Kies een actieve groep.</b>
+    </p>
+  {% endif %}
+
+  <table class="table table-compact table-fixed-header table-hover-row">
+    <thead class="header">
+      <tr>
+        <th>Naam</th>
+        <th class="text-right">
+          Totale<br>
+          werkvoorraad
+        </th>
+        <th class="text-right">
+          Over<br>
+          budget
+        </th>
+        {% for year_week in view.relevant_year_weeks %}
+          <th class="text-right"
+              title="{{ year_week.first_day|date:"j b" }}">
+            Wk {{ year_week.week }}
+          </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in view.lines %}
+        <tr>
+          <td style="white-space: nowrap;">
+            {{ line.person.as_widget }}
+          </td>
+          <td class="text-right">
+            {{ line.pyc.left_to_book_external|hours }}
+          </td>
+          <td class="text-right">
+            {{ line.overbooked|hours }}
+          </td>
+          {% for hours_to_book in line.hours %}
+            <td class="text-right">
+              {{ hours_to_book|hours }}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

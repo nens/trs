@@ -24,6 +24,12 @@ NENS_AUTH_ISSUER = env("NENS_AUTH_ISSUER", default="")
 NENS_AUTH_CLIENT_ID = env("NENS_AUTH_CLIENT_ID", default="")
 NENS_AUTH_CLIENT_SECRET = env("NENS_AUTH_CLIENT_SECRET", default="")
 
+# Settings that nens auth client requires, but that we don't use:
+NENS_AUTH_REGION_NAME = "unused"
+NENS_AUTH_ACCESS_KEY_ID = "unused"
+NENS_AUTH_SECRET_ACCESS_KEY = "unused"
+NENS_AUTH_USER_POOL_ID = "unused"
+NENS_AUTH_APPLICATION = "unused"
 
 ALLOWED_HOSTS = ["trs.lizard.net", "localhost", "trs.nelen-schuurmans.nl"]
 

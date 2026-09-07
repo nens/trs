@@ -468,6 +468,161 @@ class PersonsView(BaseView):
         return sum([line["pyc"].left_to_turn_over for line in self.lines])
 
 
+class WorkloadOverview(BaseView):
+    NUM_WEEKS = 12
+
+    title = "Werkvoorraad"
+    normally_visible_filters = ["group"]
+    template_name = "trs/workload.html"
+
+    @cached_property
+    def filters_and_choices(self):
+        result = [
+            {
+                "title": "Groep",
+                "param": "group",
+                "default": "all",
+                "choices": [{"value": "all", "title": NO_FILTER, "q": Q()}]
+                + [
+                    {
+                        "value": str(group.id),
+                        "title": group.name,
+                        "q": Q(group=group.id),
+                    }
+                    for group in Group.objects.filter(
+                        persons__archived=False
+                    ).distinct()
+                ]
+                + [{"value": "geen", "title": "Zonder groep", "q": Q(group=None)}],
+            },
+        ]
+        return result
+
+    @cached_property
+    def relevant_year_weeks(self):
+        """Return 12 weeks (including the current week)"""
+        active_first_day = this_year_week().first_day
+        end = active_first_day + datetime.timedelta(weeks=self.NUM_WEEKS - 1)
+        result = list(
+            YearWeek.objects.filter(first_day__lte=end).filter(
+                first_day__gte=active_first_day
+            )
+        )
+        return result
+
+    @cached_property
+    def relevant_persons(self):
+        """Return persons belonging to the group"""
+        # TODO: return empty list if nothing has been chosen?
+        q_objects = [filter["q"] for filter in self.prepared_filters]
+        return Person.objects.filter(*q_objects).filter(archived=False)
+
+    @cached_property
+    def relevant_projects(self):
+        """Return external projects that are active in the period"""
+        start = self.relevant_year_weeks[0].first_day
+        end = self.relevant_year_weeks[-1].first_day
+        return (
+            Project.objects.filter(internal=False)
+            .filter(start__first_day__lte=end)
+            .filter(end__first_day__gte=start)
+            .filter(members__in=self.relevant_persons)
+            .distinct()
+        )
+
+    @cached_property
+    def ratio_per_week_per_project(self) -> dict[int, list[float]]:
+        """Return ratio per week to multiply bookable hours with.
+
+        So: look up how many weeks a project is still active and spread that out over
+        the weeks. If a project overflows the weeks, the ratio will be lower. If a
+        project ends halfway the period, spread it over the active weeks and return zero
+        for the rest.
+
+        And if a project starts after the end of the period, fill the first weeks with
+        zero.
+
+        """
+        result = {}
+        for project in self.relevant_projects:
+            remaining_active_weeks = YearWeek.objects.filter(
+                first_day__gte=this_year_week().first_day
+            ).filter(first_day__lte=project.end.first_day)
+            ratio = 1 / len(remaining_active_weeks)
+            per_week = [
+                ratio if year_week in remaining_active_weeks else 0.0
+                for year_week in self.relevant_year_weeks
+            ]
+            result[project.id] = per_week
+            logger.debug(f"{project.code}  ratio:  {per_week}")
+        return result
+
+    @cached_property
+    def to_book_per_project_per_person(self) -> dict[int, dict[int, int]]:
+        result = {}  # {person_id: {project_id: to_book}}
+        for person in self.relevant_persons:
+            result[person.id] = {}
+            for project in self.relevant_projects:
+                assigned_hours = (
+                    WorkAssignment.objects.filter(
+                        assigned_on=project, assigned_to=person
+                    ).aggregate(models.Sum("hours"))["hours__sum"]
+                    or 0
+                )
+                booked_hours = (
+                    Booking.objects.filter(
+                        booked_on=project, booked_by=person
+                    ).aggregate(models.Sum("hours"))["hours__sum"]
+                    or 0
+                )
+                to_book = assigned_hours - booked_hours
+                result[person.id][project.id] = to_book  # Negative is ok for now!
+        return result
+
+    @cached_property
+    def hours_per_person_per_week(self) -> dict[int, list[float]]:
+        result = {}
+        for person in self.relevant_persons:
+            to_book_per_project = self.to_book_per_project_per_person[person.id]
+            hours = [0.0] * self.NUM_WEEKS
+            for project_id, to_book in to_book_per_project.items():
+                to_book = max(0, to_book)  # Filter out negative values.
+                ratio_per_week = self.ratio_per_week_per_project[project_id]
+                for i in range(self.NUM_WEEKS):
+                    hours[i] += to_book * ratio_per_week[i]
+            result[person.id] = hours
+        return result
+
+    @cached_property
+    def overbooked_per_person(self) -> dict[int, int]:
+        """Overbooked on the projects we care about now"""
+        result = {}
+        for person in self.relevant_persons:
+            hours_to_book_per_project = self.to_book_per_project_per_person[
+                person.id
+            ].values()
+            overbooked_per_project = [
+                hours for hours in hours_to_book_per_project if hours < 0
+            ]
+            overbooked = sum(overbooked_per_project) * -1
+            result[person.id] = overbooked
+        return result
+
+    def lines(self):
+        if "group" not in self.request.GET:
+            return []
+        result = []
+        for person in self.relevant_persons:
+            line = {"person": person}
+            line["pyc"] = core.get_pyc(person=person)
+            line["overbooked"] = self.overbooked_per_person[person.id]
+            line["hours"] = self.hours_per_person_per_week[person.id]
+            result.append(line)
+        return result
+
+    # xxx
+
+
 class PersonView(BaseView):
     template_name = "trs/person.html"
 
