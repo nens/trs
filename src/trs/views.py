@@ -468,6 +468,67 @@ class PersonsView(BaseView):
         return sum([line["pyc"].left_to_turn_over for line in self.lines])
 
 
+class WorkloadOverview(BaseView):
+    title = "Werkvoorraad"
+    normally_visible_filters = ["group"]
+    template_name = "trs/workload.html"
+
+    @cached_property
+    def filters_and_choices(self):
+        result = [
+            {
+                "title": "Groep",
+                "param": "group",
+                "default": "all",
+                "choices": [{"value": "all", "title": NO_FILTER, "q": Q()}]
+                + [
+                    {
+                        "value": str(group.id),
+                        "title": group.name,
+                        "q": Q(group=group.id),
+                    }
+                    for group in Group.objects.all()
+                ]
+                + [{"value": "geen", "title": "Zonder groep", "q": Q(group=None)}],
+            },
+        ]
+        return result
+
+    @cached_property
+    def relevant_year_weeks(self):
+        """Return 12 weeks (including the current week)"""
+        active_first_day = this_year_week().first_day
+        end = active_first_day + datetime.timedelta(weeks=11)
+        result = list(
+            YearWeek.objects.filter(first_day__lte=end).filter(
+                first_day__gte=active_first_day
+            )
+        )
+        return result
+
+    @cached_property
+    def relevant_persons(self):
+        """Return persons belonging to the group"""
+        # TODO: return empty list if nothing has been chosen?
+        q_objects = [filter["q"] for filter in self.prepared_filters]
+        return Person.objects.filter(*q_objects).filter(archived=False)
+
+    @cached_property
+    def relevant_projects(self):
+        """Return external projects that are active in the period"""
+        start = self.relevant_year_weeks[0].first_day
+        end = self.relevant_year_weeks[-1].first_day
+        return (
+            Project.objects.filter(internal=False)
+            .filter(start__first_day__lte=end)
+            .filter(end__first_day__gte=start)
+            .filter(members__in=self.relevant_persons)
+            .distinct()
+        )
+
+    # xxx
+
+
 class PersonView(BaseView):
     template_name = "trs/person.html"
 

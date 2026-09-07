@@ -208,6 +208,11 @@ urlpatterns = [
         views.FinancialOverview.as_view(),
         name="trs.overviews.financial",
     ),
+    path(
+        "overviews/workload/",
+        views.WorkloadOverview.as_view(),
+        name="trs.overviews.financial",
+    ),
     path("locallogin/", views.LoginView.as_view(), name="trs.login"),
     path("logout/", views.logout_view, name="trs.logout"),
     path("darkmode/", views.set_darkmode, name="trs.darkmode"),
